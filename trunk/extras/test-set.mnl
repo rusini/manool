@@ -1,0 +1,29 @@
+{ {extern "build/std-1.0"} in
+: let
+  { A = {set of 1; 2; 3; 4; 5; 6}
+    B = {set of 3; 4; 7; 8; 9}
+  }
+  in
+: let
+  { WriteElems =
+    { proc { Stream; Elems } as
+    : do Stream.WriteLine[] after
+    : for { Elem = Elems } do
+      Stream.Write[" "; Elem]
+    }
+  }
+  in
+  Out.WriteLine["Set A:"]; Out.WriteElems[A]
+  Out.WriteLine["Set B:"]; Out.WriteElems[B]
+: for
+  { Test =
+    { array of
+      {record of Op = (+); Descr = "Set union A + B"}
+      {record of Op = (*); Descr = "Set intersection A * B"}
+      {record of Op = (-); Descr = "Set difference A - B"}
+      {record of Op = (/); Descr = "Set symmetric difference A / B"}
+    }
+  }
+  do
+  Out.WriteLine[Test[Descr]; ":"]; Out.WriteElems[A.(Test[Op])[B]]
+}
