@@ -1,0 +1,14 @@
+{ {extern "manool/build/std-1.0"} in
+: {extern "rat"} in
+: var {A; B} in
+  A = Rat[1; 2]
+  B = Rat[3; 4]
+  Out.WriteLine["A = "; A]
+  Out.WriteLine["B = "; B]
+  Out.WriteLine["A + B = "; A + B]
+  Out.WriteLine["A - B = "; A - B]
+  Out.WriteLine["A * B = "; A * B]
+  Out.WriteLine["A / B = "; A / B]
+  {for {_ = Range[1000000]} do A + B}
+  Out.WriteLine["Done"]
+}

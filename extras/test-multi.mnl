@@ -1,0 +1,31 @@
+
+{ {extern "manool/build/std-1.0"} in
+: let { Q = MakePtr[]; M = MakeMutex[] } in
+: let { Empty = MakeCond[M]; Full = MakeCond[M] } in
+  { (StartThread)
+  : proc {} as
+    ReserveStack[1024]
+    --{let rec {P = {proc {N} as Out.WriteLine[N]; P[N + 1]}} in P[0]}
+  : for { N = Range[1000] } do
+    Out.WriteLine["Thread 1 "; N]
+    Acquire[M]
+    Out.WriteLine["Generating "; N]
+    {while Q^ <> Nil do Wait[Empty]}
+    Q^ = N * 2
+    Notify[Full]
+    Release[M]
+  : for {_ = Range[70000000]} do Nil
+  }
+  --2 / 0
+  --/*ReserveStack[256];*/ {let rec {P = {proc {N} as Out.WriteLine[N]; P[N + 1]}} in P[0]}
+: for { N = Range[1000] } do
+: var { V } in
+  Out.WriteLine["Main Thread "; N]
+  Acquire[M]
+  {while Q^ == Nil do Wait[Full]}
+  V = Q^; Q^ = Nil
+  Notify[Empty]
+  Release[M]
+  Out.WriteLine["Got "; V]
+--: for {_ = Range[60000000]} do Nil
+}

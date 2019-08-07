@@ -1,0 +1,39 @@
+# Local WSL (Ubuntu 18.04 LTS)
+
+#dir=~/develop/build
+#params=(CFLAGS='-O3 -fno-stack-protector')
+
+# SmartBox
+
+ host=ssh.smartbox.host port=10110 login=alex dir=manool
+#params=(SCL='scl enable devtoolset-3 --' GCC='gcc -fpermissive' GXX='g++ -fpermissive')
+#params=(SCL='scl enable devtoolset-4 --' GCC='gcc -fpermissive' GXX='g++ -fpermissive')
+#params=(SCL='scl enable devtoolset-7 --')
+ params=(SCL='scl enable devtoolset-7 --' GCC='$(HOME)/gcc/install/bin/gcc' GXX='$(HOME)/gcc/install/bin/g++' LDFLAGS='-s -Wl,-rpath,$(HOME)/gcc/install/lib64')
+#params=(PATH=/home/alex/bin:/home/alex/gcc/install/bin:/opt/rh/devtoolset-7/root/usr/bin:/usr/bin:/bin LD_LIBRARY_PATH=/home/alex/gcc/install/lib64)
+#params=(
+#  GXX='clang++ --gcc-toolchain=/opt/rh/devtoolset-3/root/usr'
+#  GCC='clang   --gcc-toolchain=/opt/rh/devtoolset-3/root/usr'
+#  CPPFLAGS='-I/opt/rh/devtoolset-3/root/usr/lib/gcc/x86_64-redhat-linux/4.9.2/include-fixed'
+#)
+
+# Local Rusinux VM
+
+#host=192.168.3.2 login=alex dir=manool
+#params=(CFLAGS='-O' CPPFLAGS='-DMNL_{WITH_{OPTIMIZE,FLOAT128,MULTITHREADING},USE_{INLINE,EXPECT}}')
+#params=(GXX=clang++ GCC=clang++ CFLAGS='-O' CPPFLAGS='-DMNL_{WITH_{OPTIMIZE,FLOAT128,MULTITHREADING},USE_{INLINE,EXPECT}}')
+#params=(CFLAGS='-O3' CPPFLAGS='-DMNL_{WITH_{OPTIMIZE,FLOAT128,MULTITHREADING},USE_{INLINE,EXPECT}}')
+
+# Amazon AWS
+
+#host=3.86.215.116 login=ec2-user dir=manool make=make
+#params=(
+#   MNL_CONFIG='-UMNL_WITH_FLOAT128'
+#)
+
+#host=dev.webprise.net login=alex dir=manool
+#params=(                                                        CFLAGS='-O3' CPPFLAGS='-DMNL_{WITH_{OPTIMIZE,FLOAT128,MULTITHREADING},USE_{INLINE,EXPECT}}')
+#params=(GXX='/opt/gcc-4.9.4/bin/g++' GCC=/opt/gcc-4.9.4/bin/gcc CFLAGS='-O3' CPPFLAGS='-DMNL_{WITH_{OPTIMIZE,FLOAT128,MULTITHREADING},USE_{INLINE,EXPECT}}' LDFLAGS='-s -Wl,-rpath,/opt/gcc-4.9.4/lib64')
+#params=(GXX='/opt/gcc-5.4/bin/g++'   GCC=/opt/gcc-5.4/bin/gcc   CFLAGS='-O3' CPPFLAGS='-DMNL_{WITH_{OPTIMIZE,FLOAT128,MULTITHREADING},USE_{INLINE,EXPECT}}' LDFLAGS='-s -Wl,-rpath,/opt/gcc-5.4/lib64')
+#params=(GXX='/opt/gcc-6.2/bin/g++'   GCC=/opt/gcc-6.2/bin/gcc   CFLAGS='-O3' CPPFLAGS='-DMNL_{WITH_{OPTIMIZE,FLOAT128,MULTITHREADING},USE_{INLINE,EXPECT}}' LDFLAGS='-s -Wl,-rpath,/opt/gcc-6.2/lib64')
+#params=(GXX='/opt/gcc-7.1/bin/g++'   GCC=/opt/gcc-7.1/bin/gcc   CFLAGS='-O3' CPPFLAGS='-DMNL_{WITH_{OPTIMIZE,FLOAT128,MULTITHREADING},USE_{INLINE,EXPECT}}' LDFLAGS='-s -Wl,-rpath,/opt/gcc-7.1/lib64')

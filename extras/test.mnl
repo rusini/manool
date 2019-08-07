@@ -1,0 +1,45 @@
+
+/*
+Success!
+Dizque corriendo - hopefully running...
+1 3
+Elapsed time: 11.463
+Connection to dev.webprise.net closed.
+*/
+
+{ {extern "manool.org.18/std/0.2/all"} in
+: let
+  { MatrixAdd =
+    { proc {A; B} as
+      { var {I; N} in I = 0; N = Size[A]
+      : while I < N do
+      : var {AI; BI} in
+        AI = A[I]; BI = B[I]
+        { var {J; N} in J = 0; N = Size[AI]
+        : while J < N do
+          AI[J] = AI[J] + BI[J] --A[I; J] = A[I; J] + B[I; J]
+          J = J + 1
+        }
+        A[I] = AI
+        I = I + 1
+      }
+      A
+    }
+  }
+  in
+: var {A; C} in
+  --A = ArrayOf[10; ArrayOf[10; 1]]
+  A = {array 10 of: array 10 of 1}
+  { var {I} in I = 0
+  : while I < 1000000 do
+    C = MatrixAdd
+    [
+      A
+      --ArrayOf[10; ArrayOf[10; 2]]$
+      {array 10 of: array 10 of 2}$
+    ]
+    I = I + 1
+  }
+  WriteLine[Out; Str[A[1; 1]] + " " + Str[C[1; 1]]]
+  0
+}

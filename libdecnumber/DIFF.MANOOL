@@ -1,0 +1,780 @@
+--- original/decContext.h	2010-02-10 09:56:54.000000000 +0000
++++ decContext.h	2019-05-28 02:08:01.741188800 +0000
+@@ -1,3 +1,21 @@
++// libdecnumber/decContext.h
++
++/*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
++
++   This file is part of MANOOL.
++
++   MANOOL is free software: you can redistribute it and/or modify it under the terms of the version 3 of the GNU General Public License
++   as published by the Free Software Foundation (and only version 3).
++
++   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
++   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <http://www.gnu.org/licenses/>.  */
++
++
++// This file incorporates work covered by the following copyright and
++// permission notice:
++
+ /* ------------------------------------------------------------------ */
+ /* Decimal Context module header                                      */
+ /* ------------------------------------------------------------------ */
+@@ -35,6 +53,9 @@
+ /*                                                                    */
+ /* ------------------------------------------------------------------ */
+ 
++#include "mnl0.h"
++MNL_DSO_HIDE_BEGIN
++
+ #if !defined(DECCONTEXT)
+   #define DECCONTEXT
+   #define DECCNAME     "decContext"                     /* Short name */
+@@ -42,10 +63,14 @@
+   #define DECCAUTHOR   "Mike Cowlishaw"               /* Who to blame */
+ 
+   #if !defined(int32_t)
++    MNL_DSO_UNHIDE_BEGIN
+     #include <stdint.h>            /* C99 standard integers           */
++    MNL_DSO_UNHIDE_END
+   #endif
++  MNL_DSO_UNHIDE_BEGIN
+   #include <stdio.h>               /* for printf, etc.                */
+   #include <signal.h>              /* for traps                       */
++  MNL_DSO_UNHIDE_END
+ 
+   /* Extended flags setting -- set this to 0 to use only IEEE flags   */
+   #if !defined(DECEXTFLAG)
+@@ -233,6 +258,10 @@
+   #define DEC_INIT_DECDOUBLE  DEC_INIT_DECIMAL64
+   #define DEC_INIT_DECQUAD    DEC_INIT_DECIMAL128
+ 
++  #ifdef __cplusplus
++  extern "C" {
++  #endif
++
+   /* decContext routines                                              */
+   extern decContext  * decContextClearStatus(decContext *, uint32_t);
+   extern decContext  * decContextDefault(decContext *, int32_t);
+@@ -251,4 +280,10 @@
+   extern uint32_t      decContextTestStatus(decContext *, uint32_t);
+   extern decContext  * decContextZeroStatus(decContext *);
+ 
++  #ifdef __cplusplus
++  }
++  #endif
++
+ #endif
++
++MNL_DSO_HIDE_END
+--- original/decDPD.h	2008-06-21 09:59:08.000000000 +0000
++++ decDPD.h	2019-05-28 01:58:43.627565300 +0000
+@@ -1,3 +1,21 @@
++// libdecnumber/decDPD.h
++
++/*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
++
++   This file is part of MANOOL.
++
++   MANOOL is free software: you can redistribute it and/or modify it under the terms of the version 3 of the GNU General Public License
++   as published by the Free Software Foundation (and only version 3).
++
++   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
++   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <http://www.gnu.org/licenses/>.  */
++
++
++// This file incorporates work covered by the following copyright and
++// permission notice:
++
+ /* ------------------------------------------------------------------------ */
+ /* Binary Coded Decimal and Densely Packed Decimal conversion lookup tables */
+ /* [Automatically generated -- do not edit.  2008.06.21]                    */
+@@ -31,6 +49,9 @@
+ /* This mechanism allows software to only include tables that are needed.   */
+ /* ------------------------------------------------------------------------ */
+  
++#include "mnl0.h"
++MNL_DSO_HIDE_BEGIN
++
+ #if defined(DEC_BCD2DPD) && DEC_BCD2DPD==1 && !defined(DECBCD2DPD)
+ #define DECBCD2DPD
+  
+@@ -1183,3 +1204,4 @@
+  9,9,9,3};
+ #endif
+  
++MNL_DSO_HIDE_END
+--- original/decDouble.h	2010-01-23 09:06:57.000000000 +0000
++++ decDouble.h	2019-05-28 02:14:16.430899000 +0000
+@@ -1,3 +1,21 @@
++// libdecnumber/decDouble.h
++
++/*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
++
++   This file is part of MANOOL.
++
++   MANOOL is free software: you can redistribute it and/or modify it under the terms of the version 3 of the GNU General Public License
++   as published by the Free Software Foundation (and only version 3).
++
++   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
++   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <http://www.gnu.org/licenses/>.  */
++
++
++// This file incorporates work covered by the following copyright and
++// permission notice:
++
+ /* ------------------------------------------------------------------ */
+ /* decDouble.h -- Decimal 64-bit format module header                 */
+ /* ------------------------------------------------------------------ */
+@@ -17,6 +35,9 @@
+ /*   IBM UK, PO Box 31, Birmingham Road, Warwick CV34 5JL, UK         */
+ /* ------------------------------------------------------------------ */
+ 
++#include "mnl0.h"
++MNL_DSO_HIDE_BEGIN
++
+ #if !defined(DECDOUBLE)
+   #define DECDOUBLE
+ 
+@@ -55,6 +76,10 @@
+   /* Routines -- implemented as decFloat routines in common files     */
+   /* ---------------------------------------------------------------- */
+ 
++  #ifdef __cplusplus
++  extern "C" {
++  #endif
++
+   /* Utilities and conversions, extractors, etc.) */
+   extern decDouble * decDoubleFromBCD(decDouble *, int32_t, const uint8_t *, int32_t);
+   extern decDouble * decDoubleFromInt32(decDouble *, int32_t);
+@@ -146,10 +171,21 @@
+   extern uint32_t      decDoubleSameQuantum(const decDouble *, const decDouble *);
+   extern const char *  decDoubleVersion(void);
+ 
++  #ifdef __cplusplus
++  }
++  #endif
++
+   /* decNumber conversions; these are implemented as macros so as not  */
+   /* to force a dependency on decimal64 and decNumber in decDouble.    */
+   /* decDoubleFromNumber returns a decimal64 * to avoid warnings.      */
++  #if 0
+   #define decDoubleToNumber(dq, dn) decimal64ToNumber((decimal64 *)(dq), dn)
+   #define decDoubleFromNumber(dq, dn, set) decimal64FromNumber((decimal64 *)(dq), dn, set)
++  #else
++  #define decDoubleToNumber(dq, dn) (MNL_BARRIER(), decimal64ToNumber((decimal64 *)(dq), dn))
++  #define decDoubleFromNumber(dq, dn, set) (MNL_BARRIER(), decimal64FromNumber((decimal64 *)(dq), dn, set))
++  #endif
+ 
+ #endif
++
++MNL_DSO_HIDE_END
+--- original/decNumber.h	2010-02-10 10:00:13.000000000 +0000
++++ decNumber.h	2019-05-28 02:05:52.740187800 +0000
+@@ -1,3 +1,21 @@
++// libdecnumber/decNumber.h
++
++/*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
++
++   This file is part of MANOOL.
++
++   MANOOL is free software: you can redistribute it and/or modify it under the terms of the version 3 of the GNU General Public License
++   as published by the Free Software Foundation (and only version 3).
++
++   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
++   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <http://www.gnu.org/licenses/>.  */
++
++
++// This file incorporates work covered by the following copyright and
++// permission notice:
++
+ /* ------------------------------------------------------------------ */
+ /* Decimal Number arithmetic module header                            */
+ /* ------------------------------------------------------------------ */
+@@ -17,6 +35,9 @@
+ /*   IBM UK, PO Box 31, Birmingham Road, Warwick CV34 5JL, UK         */
+ /* ------------------------------------------------------------------ */
+ 
++#include "mnl0.h"
++MNL_DSO_HIDE_BEGIN
++
+ #if !defined(DECNUMBER)
+   #define DECNUMBER
+   #define DECNAME     "decNumber"                       /* Short name */
+@@ -95,6 +116,11 @@
+   /* ---------------------------------------------------------------- */
+   /* decNumber public functions and macros                            */
+   /* ---------------------------------------------------------------- */
++
++  #ifdef __cplusplus
++  extern "C" {
++  #endif
++
+   /* Conversions                                                      */
+   decNumber * decNumberFromInt32(decNumber *, int32_t);
+   decNumber * decNumberFromUInt32(decNumber *, uint32_t);
+@@ -165,6 +191,10 @@
+   int32_t decNumberIsNormal(const decNumber *, decContext *);
+   int32_t decNumberIsSubnormal(const decNumber *, decContext *);
+ 
++  #ifdef __cplusplus
++  }
++  #endif
++
+   /* Macros for testing decNumber *dn                                 */
+   #define decNumberIsCanonical(dn) (1)  /* All decNumbers are saintly */
+   #define decNumberIsFinite(dn)    (((dn)->bits&DECSPECIAL)==0)
+@@ -180,3 +210,5 @@
+   #define decNumberRadix(dn)       (10)
+ 
+ #endif
++
++MNL_DSO_HIDE_END
+--- original/decNumberLocal.h	2010-02-10 09:56:42.000000000 +0000
++++ decNumberLocal.h	2019-05-28 02:03:09.287160500 +0000
+@@ -1,3 +1,21 @@
++// libdecnumber/decNumberLocal.h
++
++/*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
++
++   This file is part of MANOOL.
++
++   MANOOL is free software: you can redistribute it and/or modify it under the terms of the version 3 of the GNU General Public License
++   as published by the Free Software Foundation (and only version 3).
++
++   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
++   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <http://www.gnu.org/licenses/>.  */
++
++
++// This file incorporates work covered by the following copyright and
++// permission notice:
++
+ /* ------------------------------------------------------------------ */
+ /* decNumber package local type, tuning, and macro definitions        */
+ /* ------------------------------------------------------------------ */
+@@ -22,13 +40,18 @@
+ /* decNumber.h or one of decDouble (etc.) must be included first.     */
+ /* ------------------------------------------------------------------ */
+ 
++#include "mnl0.h"
++MNL_DSO_HIDE_BEGIN
++
+ #if !defined(DECNUMBERLOC)
+   #define DECNUMBERLOC
+   #define DECVERSION    "decNumber 3.68" /* Package Version [16 max.] */
+   #define DECNLAUTHOR   "Mike Cowlishaw"              /* Who to blame */
+ 
++  MNL_DSO_UNHIDE_BEGIN
+   #include <stdlib.h>         /* for abs                              */
+   #include <string.h>         /* for memset, strcpy                   */
++  MNL_DSO_UNHIDE_END
+ 
+   /* Conditional code flag -- set this to match hardware platform     */
+   #if !defined(DECLITEND)
+@@ -755,3 +778,5 @@
+ #else
+   #error decNumberLocal included more than once
+ #endif
++
++MNL_DSO_HIDE_END
+--- original/decQuad.h	2010-01-23 09:08:24.000000000 +0000
++++ decQuad.h	2019-05-28 02:14:39.858969900 +0000
+@@ -1,3 +1,21 @@
++// libdecnumber/decQuad.h
++
++/*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
++
++   This file is part of MANOOL.
++
++   MANOOL is free software: you can redistribute it and/or modify it under the terms of the version 3 of the GNU General Public License
++   as published by the Free Software Foundation (and only version 3).
++
++   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
++   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <http://www.gnu.org/licenses/>.  */
++
++
++// This file incorporates work covered by the following copyright and
++// permission notice:
++
+ /* ------------------------------------------------------------------ */
+ /* decQuad.h -- Decimal 128-bit format module header                  */
+ /* ------------------------------------------------------------------ */
+@@ -19,6 +37,9 @@
+ /* This include file is always included by decSingle and decDouble,   */
+ /* and therefore also holds useful constants used by all three.       */
+ 
++#include "mnl0.h"
++MNL_DSO_HIDE_BEGIN
++
+ #if !defined(DECQUAD)
+   #define DECQUAD
+ 
+@@ -79,6 +100,10 @@
+   /* Routines -- implemented as decFloat routines in common files     */
+   /* ---------------------------------------------------------------- */
+ 
++  #ifdef __cplusplus
++  extern "C" {
++  #endif
++
+   /* Utilities and conversions, extractors, etc.) */
+   extern decQuad * decQuadFromBCD(decQuad *, int32_t, const uint8_t *, int32_t);
+   extern decQuad * decQuadFromInt32(decQuad *, int32_t);
+@@ -168,10 +193,21 @@
+   extern uint32_t      decQuadSameQuantum(const decQuad *, const decQuad *);
+   extern const char *  decQuadVersion(void);
+ 
++  #ifdef __cplusplus
++  }
++  #endif
++
+   /* decNumber conversions; these are implemented as macros so as not  */
+   /* to force a dependency on decimal128 and decNumber in decQuad.     */
+   /* decQuadFromNumber returns a decimal128 * to avoid warnings.       */
++  #if 0
+   #define decQuadToNumber(dq, dn) decimal128ToNumber((decimal128 *)(dq), dn)
+   #define decQuadFromNumber(dq, dn, set) decimal128FromNumber((decimal128 *)(dq), dn, set)
++  #else
++  #define decQuadToNumber(dq, dn) (MNL_BARRIER(), decimal128ToNumber((decimal128 *)(dq), dn))
++  #define decQuadFromNumber(dq, dn, set) (MNL_BARRIER(), decimal128FromNumber((decimal128 *)(dq), dn, set))
++  #endif
+ 
+ #endif
++
++MNL_DSO_HIDE_END
+--- original/decimal128.h	2008-06-21 09:48:38.000000000 +0000
++++ decimal128.h	2019-05-28 02:01:06.226059700 +0000
+@@ -1,3 +1,21 @@
++// libdecnumber/decimal128.h
++
++/*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
++
++   This file is part of MANOOL.
++
++   MANOOL is free software: you can redistribute it and/or modify it under the terms of the version 3 of the GNU General Public License
++   as published by the Free Software Foundation (and only version 3).
++
++   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
++   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <http://www.gnu.org/licenses/>.  */
++
++
++// This file incorporates work covered by the following copyright and
++// permission notice:
++
+ /* ------------------------------------------------------------------ */
+ /* Decimal 128-bit format module header                               */
+ /* ------------------------------------------------------------------ */
+@@ -17,6 +35,9 @@
+ /*   IBM UK, PO Box 31, Birmingham Road, Warwick CV34 5JL, UK         */
+ /* ------------------------------------------------------------------ */
+ 
++#include "mnl0.h"
++MNL_DSO_HIDE_BEGIN
++
+ #if !defined(DECIMAL128)
+   #define DECIMAL128
+   #define DEC128NAME     "decimal128"                 /* Short name   */
+@@ -64,6 +85,11 @@
+   /* ---------------------------------------------------------------- */
+   /* Routines                                                         */
+   /* ---------------------------------------------------------------- */
++
++  #ifdef __cplusplus
++  extern "C" {
++  #endif
++
+   /* String conversions                                               */
+   decimal128 * decimal128FromString(decimal128 *, const char *, decContext *);
+   char * decimal128ToString(const decimal128 *, char *);
+@@ -78,4 +104,10 @@
+   uint32_t    decimal128IsCanonical(const decimal128 *);
+   decimal128 * decimal128Canonical(decimal128 *, const decimal128 *);
+ 
++  #ifdef __cplusplus
++  }
++  #endif
++
+ #endif
++
++MNL_DSO_HIDE_END
+--- original/decimal64.h	2008-06-21 09:48:18.000000000 +0000
++++ decimal64.h	2019-05-28 02:07:25.987609000 +0000
+@@ -1,3 +1,21 @@
++// libdecnumber/decimal64.h
++
++/*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
++
++   This file is part of MANOOL.
++
++   MANOOL is free software: you can redistribute it and/or modify it under the terms of the version 3 of the GNU General Public License
++   as published by the Free Software Foundation (and only version 3).
++
++   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
++   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <http://www.gnu.org/licenses/>.  */
++
++
++// This file incorporates work covered by the following copyright and
++// permission notice:
++
+ /* ------------------------------------------------------------------ */
+ /* Decimal 64-bit format module header                                */
+ /* ------------------------------------------------------------------ */
+@@ -17,6 +35,9 @@
+ /*   IBM UK, PO Box 31, Birmingham Road, Warwick CV34 5JL, UK         */
+ /* ------------------------------------------------------------------ */
+ 
++#include "mnl0.h"
++MNL_DSO_HIDE_BEGIN
++
+ #if !defined(DECIMAL64)
+   #define DECIMAL64
+   #define DEC64NAME     "decimal64"                   /* Short name   */
+@@ -66,6 +87,11 @@
+   /* ---------------------------------------------------------------- */
+   /* Routines                                                         */
+   /* ---------------------------------------------------------------- */
++
++  #ifdef __cplusplus
++  extern "C" {
++  #endif
++
+   /* String conversions                                               */
+   decimal64 * decimal64FromString(decimal64 *, const char *, decContext *);
+   char * decimal64ToString(const decimal64 *, char *);
+@@ -80,4 +106,10 @@
+   uint32_t    decimal64IsCanonical(const decimal64 *);
+   decimal64 * decimal64Canonical(decimal64 *, const decimal64 *);
+ 
++  #ifdef __cplusplus
++  }
++  #endif
++
+ #endif
++
++MNL_DSO_HIDE_END
+--- original/decBasic.c	2010-01-23 09:19:41.000000000 +0000
++++ decBasic.c	2019-05-17 02:30:02.237563900 +0000
+@@ -1,3 +1,21 @@
++// libdecnumber/decBasic.c
++
++/*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
++
++   This file is part of MANOOL.
++
++   MANOOL is free software: you can redistribute it and/or modify it under the terms of the version 3 of the GNU General Public License
++   as published by the Free Software Foundation (and only version 3).
++
++   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
++   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <http://www.gnu.org/licenses/>.  */
++
++
++// This file incorporates work covered by the following copyright and
++// permission notice:
++
+ /* ------------------------------------------------------------------ */
+ /* decBasic.c -- common base code for Basic decimal types             */
+ /* ------------------------------------------------------------------ */
+--- original/decCommon.c	2010-01-22 09:48:50.000000000 +0000
++++ decCommon.c	2019-05-17 02:30:15.161116000 +0000
+@@ -1,3 +1,21 @@
++// libdecnumber/decCommon.c
++
++/*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
++
++   This file is part of MANOOL.
++
++   MANOOL is free software: you can redistribute it and/or modify it under the terms of the version 3 of the GNU General Public License
++   as published by the Free Software Foundation (and only version 3).
++
++   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
++   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <http://www.gnu.org/licenses/>.  */
++
++
++// This file incorporates work covered by the following copyright and
++// permission notice:
++
+ /* ------------------------------------------------------------------ */
+ /* decCommon.c -- common code for all three fixed-size types          */
+ /* ------------------------------------------------------------------ */
+--- original/decContext.c	2009-12-24 11:12:56.000000000 +0000
++++ decContext.c	2019-05-28 02:04:21.092530200 +0000
+@@ -1,3 +1,21 @@
++// libdecnumber/decContext.c
++
++/*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
++
++   This file is part of MANOOL.
++
++   MANOOL is free software: you can redistribute it and/or modify it under the terms of the version 3 of the GNU General Public License
++   as published by the Free Software Foundation (and only version 3).
++
++   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
++   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <http://www.gnu.org/licenses/>.  */
++
++
++// This file incorporates work covered by the following copyright and
++// permission notice:
++
+ /* ------------------------------------------------------------------ */
+ /* Decimal Context module                                             */
+ /* ------------------------------------------------------------------ */
+@@ -20,8 +38,14 @@
+ /* context structures.                                                */
+ /* ------------------------------------------------------------------ */
+ 
++#include "config.h"
++#include "mnl0.h"
++MNL_DSO_HIDE_BEGIN
++
++MNL_DSO_UNHIDE_BEGIN
+ #include <string.h>           // for strcmp
+ #include <stdio.h>            // for printf if DECCHECK
++MNL_DSO_UNHIDE_END
+ #include "decContext.h"       // context and base types
+ #include "decNumberLocal.h"   // decNumber local types, etc.
+ 
+@@ -435,3 +459,4 @@
+   return context;
+   } // decContextZeroStatus
+ 
++MNL_DSO_HIDE_END
+--- original/decDouble.c	2010-01-23 09:07:41.000000000 +0000
++++ decDouble.c	2019-05-28 01:52:18.897974700 +0000
+@@ -1,3 +1,21 @@
++// libdecnumber/decDouble.c
++
++/*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
++
++   This file is part of MANOOL.
++
++   MANOOL is free software: you can redistribute it and/or modify it under the terms of the version 3 of the GNU General Public License
++   as published by the Free Software Foundation (and only version 3).
++
++   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
++   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <http://www.gnu.org/licenses/>.  */
++
++
++// This file incorporates work covered by the following copyright and
++// permission notice:
++
+ /* ------------------------------------------------------------------ */
+ /* decDouble.c -- decDouble operations module                         */
+ /* ------------------------------------------------------------------ */
+@@ -19,6 +37,10 @@
+ /* This module comprises decDouble operations (including conversions) */
+ /* ------------------------------------------------------------------ */
+ 
++#include "config.h"
++#include "mnl0.h"
++MNL_DSO_HIDE_BEGIN
++
+ #include "decContext.h"       // public includes
+ #include "decDouble.h"        // ..
+ 
+@@ -138,3 +160,4 @@
+ #include "decCommon.c"        // non-arithmetic decFloat routines
+ #include "decBasic.c"         // basic formats routines
+ 
++MNL_DSO_HIDE_END
+--- original/decNumber.c	2009-12-24 08:41:06.000000000 +0000
++++ decNumber.c	2019-05-28 01:50:45.650410800 +0000
+@@ -1,3 +1,21 @@
++// libdecnumber/decNumber.c
++
++/*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
++
++   This file is part of MANOOL.
++
++   MANOOL is free software: you can redistribute it and/or modify it under the terms of the version 3 of the GNU General Public License
++   as published by the Free Software Foundation (and only version 3).
++
++   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
++   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <http://www.gnu.org/licenses/>.  */
++
++
++// This file incorporates work covered by the following copyright and
++// permission notice:
++
+ /* ------------------------------------------------------------------ */
+ /* Decimal Number arithmetic module                                   */
+ /* ------------------------------------------------------------------ */
+@@ -162,10 +180,16 @@
+ /*      **  -- raise to the power                                     */
+ /* ------------------------------------------------------------------ */
+ 
++#include "config.h"
++#include "mnl0.h"
++MNL_DSO_HIDE_BEGIN
++
++MNL_DSO_UNHIDE_BEGIN
+ #include <stdlib.h>                // for malloc, free, etc.
+ #include <stdio.h>                 // for printf [if needed]
+ #include <string.h>                // for strcpy
+ #include <ctype.h>                 // for lower
++MNL_DSO_UNHIDE_END
+ #include "decNumber.h"             // base number library
+ #include "decNumberLocal.h"        // decNumber local types, etc.
+ 
+@@ -8139,3 +8163,5 @@
+ #define malloc(a) decMalloc(a)
+ #define free(a) decFree(a)
+ #endif
++
++MNL_DSO_HIDE_END
+--- original/decQuad.c	2010-01-23 09:09:14.000000000 +0000
++++ decQuad.c	2019-05-28 01:52:58.147378100 +0000
+@@ -1,3 +1,21 @@
++// libdecnumber/decQuad.c
++
++/*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
++
++   This file is part of MANOOL.
++
++   MANOOL is free software: you can redistribute it and/or modify it under the terms of the version 3 of the GNU General Public License
++   as published by the Free Software Foundation (and only version 3).
++
++   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
++   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <http://www.gnu.org/licenses/>.  */
++
++
++// This file incorporates work covered by the following copyright and
++// permission notice:
++
+ /* ------------------------------------------------------------------ */
+ /* decQuad.c -- decQuad operations module                             */
+ /* ------------------------------------------------------------------ */
+@@ -19,6 +37,9 @@
+ /* This module comprises decQuad operations (including conversions)   */
+ /* ------------------------------------------------------------------ */
+ 
++#include "config.h"
++#include "mnl0.h"
++MNL_DSO_HIDE_BEGIN
+ 
+ /* Constant mappings for shared code */
+ #define DECPMAX     DECQUAD_Pmax
+@@ -133,3 +154,4 @@
+ #include "decCommon.c"        // non-arithmetic decFloat routines
+ #include "decBasic.c"         // basic formats routines
+ 
++MNL_DSO_HIDE_END
+--- original/decimal128.c	2008-06-21 09:50:36.000000000 +0000
++++ decimal128.c	2019-05-28 01:54:48.670381400 +0000
+@@ -1,3 +1,21 @@
++// libdecnumber/decimal128.c
++
++/*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
++
++   This file is part of MANOOL.
++
++   MANOOL is free software: you can redistribute it and/or modify it under the terms of the version 3 of the GNU General Public License
++   as published by the Free Software Foundation (and only version 3).
++
++   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
++   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <http://www.gnu.org/licenses/>.  */
++
++
++// This file incorporates work covered by the following copyright and
++// permission notice:
++
+ /* ------------------------------------------------------------------ */
+ /* Decimal 128-bit format module                                      */
+ /* ------------------------------------------------------------------ */
+@@ -24,8 +42,15 @@
+ /*                                                                    */
+ /* Error handling is the same as decNumber (qv.).                     */
+ /* ------------------------------------------------------------------ */
++
++#include "config.h"
++#include "mnl0.h"
++MNL_DSO_HIDE_BEGIN
++
++MNL_DSO_UNHIDE_BEGIN
+ #include <string.h>           // [for memset/memcpy]
+ #include <stdio.h>            // [for printf]
++MNL_DSO_UNHIDE_END
+ 
+ #define  DECNUMDIGITS 34      // make decNumbers with space for 34
+ #include "decNumber.h"        // base number library
+@@ -551,3 +576,5 @@
+     }
+   } // decimal128Show
+ #endif
++
++MNL_DSO_HIDE_END
+--- original/decimal64.c	2009-12-24 11:12:33.000000000 +0000
++++ decimal64.c	2019-05-28 01:53:55.476716800 +0000
+@@ -1,3 +1,21 @@
++// libdecnumber/decimal64.c
++
++/*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
++
++   This file is part of MANOOL.
++
++   MANOOL is free software: you can redistribute it and/or modify it under the terms of the version 3 of the GNU General Public License
++   as published by the Free Software Foundation (and only version 3).
++
++   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
++   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <http://www.gnu.org/licenses/>.  */
++
++
++// This file incorporates work covered by the following copyright and
++// permission notice:
++
+ /* ------------------------------------------------------------------ */
+ /* Decimal 64-bit format module                                       */
+ /* ------------------------------------------------------------------ */
+@@ -24,8 +42,15 @@
+ /*                                                                    */
+ /* Error handling is the same as decNumber (qv.).                     */
+ /* ------------------------------------------------------------------ */
++
++#include "config.h"
++#include "mnl0.h"
++MNL_DSO_HIDE_BEGIN
++
++MNL_DSO_UNHIDE_BEGIN
+ #include <string.h>           // [for memset/memcpy]
+ #include <stdio.h>            // [for printf]
++MNL_DSO_UNHIDE_END
+ 
+ #define  DECNUMDIGITS 16      // make decNumbers with space for 16
+ #include "decNumber.h"        // base number library
+@@ -837,3 +862,5 @@
+   #endif
+   return;
+   } //decDigitsFromDPD
++
++MNL_DSO_HIDE_END

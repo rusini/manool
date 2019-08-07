@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+# mnl
+test -e build/mnlexec && MNL_PATH=${MNL_PATH-build/lib} exec build/mnlexec "$@"
+printf 'Try first: make\n' >&2; exit 127

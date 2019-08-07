@@ -1,0 +1,17 @@
+
+{ {extern "manool.org.18/std/0.2/all"} in
+: let
+  { MatrixAdd =
+    { proc { A; B } as
+    : do A after
+    : for { I = Keys[A] } do
+    : for { J = Keys[A[I]] } do
+      A[I; J] = A[I; J] + B[I; J]
+    }
+  }
+  in
+: var {A; C} in
+  A = {array 10 of: array 10 of 1}
+  {repeat 5000 do C = MatrixAdd[A; {array 10 of: array 10 of 2}$]}
+  Out.WriteLine[{if (A[1; 1] == 1) & (C[1; 1] == 3) then "Success" else "Fail"}]
+}

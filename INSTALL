@@ -1,0 +1,103 @@
+Try, e.g.:
+
+cd <check-in directory>
+make
+echo $'{{extern "manool.org.18/std/0.2/all"} in Out.WriteLine["Hello, world!"]}' | ./mnl /dev/stdin
+
+CONFIRMED BUILDS
+
+Ubuntu Server 18.04 LTS, x86-64 (AMD), x86-64, g++
+apt install g++ make
+make
+
+Ubuntu Server 18.04 LTS, x86-64 (AMD), i386+sse2, g++
+apt install g++-multilib make
+make MARCH='-m32 -msse2 -mfpmath=sse' LDFLAGS_SO=
+
+Ubuntu Server 18.04 LTS, x86-64 (AMD), x86-64/ilp32, g++
+apt install g++-multilib make
+make MARCH=-mx32
+
+Ubuntu Server 18.04 LTS, x86-64 (AMD), x86-64, clang++
+apt install clang make
+make GCC=clang GXX=clang++
+
+
+RHEL 8, x86-64 (AMD), x86-64, g++
+yum install gcc-c++ make
+make
+
+RHEL 8, x86-64 (AMD), i386+sse2, g++
+yum install gcc-c++ make glibc-devel.i686 libstdc++-devel.i686
+make MARCH='-m32 -msse2 -mfpmath=sse' LDFLAGS_SO=
+
+RHEL 8, x86-64 (AMD), x86-64, clang++
+yum install clang make
+make GCC=clang GXX=clang++
+
+RHEL 8, x86-64 (AMD), i386+sse2, clang++
+yum install clang make glibc-devel.i686 libstdc++-devel.i686
+make GCC=clang GXX=clang++ MARCH='-m32 -msse2 -mfpmath=sse' LDFLAGS_SO=
+
+
+Ubuntu Server 18.04 LTS, aarch64 (ARM), aarch64-el, g++
+apt install g++ make
+make MARCH=
+
+Ubuntu Server 18.04 LTS, aarch64 (ARM), aarch64-el, clang++
+apt install clang make
+make GCC=clang GXX=clang++ MARCH=
+
+
+FreeBSD 12, x86-64 (Intel), x86-64, clang++
+pkg install gmake
+gmake GCC=clang GXX=clang++
+
+FreeBSD 12, x86-64 (Intel), x86-64, g++
+pkg install lang/gcc gmake
+gmake
+
+
+openSUSE Leap 15.1, x86-64 (Intel), x86-64, g++
+zypper install gcc-c++ make
+make
+
+
+Android 4.4.2, armv7+vfp, armv7l, clang++
+# (from cxxdroid terminal)
+make GCC=clang GXX=clang++ MARCH=
+
+
+============================================================
+
+CentOS 6, x86-64 (Intel), x86-64, g++
+yum install centos-release-scl && yum install devtoolset-8-gcc-c++
+make SCL='scl enable devtoolset-8 --'
+
+CentOS 7, x86-64 (AMD), x86-64, g++
+yum install centos-release-scl && yum install devtoolset-8-gcc-c++
+make SCL='scl enable devtoolset-8 --'
+
+CentOS 7, x86-64 (AMD), x86-64, clang++
+yum install centos-release-scl && yum install llvm-toolset-7-clang
+make SCL='scl enable llvm-toolset-7 --' GCC=clang GXX=clang++
+
+Debian GNU/Linux 9 (Stretch), x86-64 (AMD), x86-64, clang++
+apt install clang-4.0 make
+make GCC=clang-4.0 GXX=clang++-4.0
+
+Debian GNU/Linux 9 (Stretch), x86-64 (AMD), x86-64, g++
+apt install g++ make
+make GXX='g++ -fpermissive'
+
+Ubuntu Server 16.04 LTS, x86-64 (AMD), x86-64, clang++
+apt install clang-6.0 make
+make GCC=clang-6.0 GXX=clang++-6.0
+
+Ubuntu Server 16.04 LTS, x86-64 (AMD), x86-64, g++
+apt install g++ make
+make GXX='g++ -fpermissive'
+
+Debian GNU/Linux 8 (Jessie), x86-64 (Intel), x86-64, g++
+apt install g++
+make GXX='g++ -fpermissive'

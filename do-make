@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# do-make
+
+if [ "$host$dir" ]; then
+   unset -v params
+else
+   unset -v host port login key dir make params; test -f do-make.cf && . ./do-make.cf
+fi
+dir=${dir-do-make.rsync}
+
+if [ "$host$port$login$key" ]; then
+   if [ -t 1 ]; then term=-t; else unset -v term; fi
+   rsync -e "ssh${port:+ -p$(printf %q "${port}")}${key:+ -i$(printf %q "${key}")}" \
+      -crz --delete --exclude={.svn,build,do-make{,.cf}} . "${login:+${login}@}${host:-localhost}:${dir}" &&
+   exec ssh${port:+ -p"${port}"}${key:+ -i"${key}"} ${term} "${login:+${login}@}${host:-localhost}" \
+      "mkdir -p $(printf %q "${dir:-.}")/build &&" \
+      exec nice "$(printf %q "${make:-make}")${dir:+ -C$(printf %q "${dir}") --no-print-directory}${params:+$(printf ' %q' "${params[@]}")}${@:+$(printf ' %q' "$@")}"
+else
+   rsync -cr --delete --exclude={.svn,build,do-make{,.cf}} . "${dir:-.}" &&
+   mkdir -p "${dir:-.}"/build &&
+   exec "${make:-make}"${dir:+ -C"${dir}" --no-print-directory} "${params[@]}" "$@"
+fi
