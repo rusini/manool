@@ -297,7 +297,7 @@ int main(int argc, char *argv[]) {
 # ifdef MNL_STACK
    MNL_STACK
 # else
-   "8388608" // 8 MiB
+   "6291456" // 6 MiB
 # endif
    , false)) return perror("Cannot setenv"), EXIT_FAILURE;
    {  char *end; long long val; static const char nonzero = !0;
