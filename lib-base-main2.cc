@@ -24,7 +24,6 @@
 
 namespace MNL_AUX_UUID { using namespace aux;
    namespace aux {
-      using std::forward; // <utility>
       using std::make_shared; // <memory>
       using std::deque; using std::list;
    }
@@ -1548,7 +1547,7 @@ namespace aux { namespace {
       }
    private:
       template<typename Functor> struct _finally { const Functor _; MNL_INLINE ~_finally() noexcept(noexcept(_())) { _(); } };
-      template<typename Functor> MNL_INLINE static inline _finally<Functor> finally(Functor &&_) { return { forward<Functor>(_) }; }
+      template<typename Functor> MNL_INLINE static inline _finally<Functor> finally(Functor &&_) { return { (move)(_) }; }
    };
 
 }} // namespace aux::<anon>

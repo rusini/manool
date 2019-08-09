@@ -649,7 +649,7 @@ namespace aux { namespace pub {
 
 // Operations /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-namespace aux { namespace pub { const auto max_i48 = (1ll << 48 - 1) - 1, min_i48 = -max_i48; } }
+namespace aux { namespace pub { constexpr auto max_i48 = (1ll << 48 - 1) - 1, min_i48 = -max_i48; } }
 
 namespace aux {
 
