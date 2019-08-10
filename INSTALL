@@ -65,7 +65,7 @@ make
 
 Android 4.4.2, armv7+vfp, armv7l, clang++
 # (from cxxdroid terminal)
-make GCC=clang GXX=clang++ MARCH=
+make GCC=clang GXX=clang++ MARCH= LDLIBS='-Wl,--as-needed -lm -ldl'
 
 
 ============================================================

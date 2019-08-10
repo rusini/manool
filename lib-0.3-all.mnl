@@ -19,6 +19,7 @@
 : {extern "_ieee754-cmpx"} in
 : {extern "_streams"} in
 : {extern "_threads"} in
+: {extern "_misc"} in
 
 : let
   { (') =
@@ -337,6 +338,7 @@
     I  = {proc {T} as Sqrt[T[(~1)$]]}
   }
   in
+: let {Delay = {proc {T} as Delay[1000000 * T]}} in
 
 : export
   ('); if; (&); (|); while; repeat; do; on; signal
@@ -363,4 +365,5 @@
   ProcessArgv; ProcessEnviron; ProcessExit; ReserveStack; ReserveHeap
   Out; Err; In; OpenFile; OpenPipe; OpenTemp
   StartThread; MakeMutex; MakeCond
+  Random; Clock; Delay
 }

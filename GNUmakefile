@@ -20,7 +20,7 @@ CPPFLAGS =
 CFLAGS   = -O3
 CXXFLAGS = $(CFLAGS)
 LDFLAGS  = -s
-LDLIBS   = -Wl,--as-needed -lm -ldl
+LDLIBS   = -Wl,--as-needed -lm -ldl -lrt
 
 SCL        =
 GCC        = gcc
@@ -99,6 +99,7 @@ plugins = $(patsubst %,build/lib/manool.org.18/std/_%.mnl-plugin, \
    ieee754-cmpx \
    streams \
    threads \
+   misc \
 ) # end
 build/lib/manool.org.18/std/0.3/all.mnl : lib-0.3-all.mnl | $(plugins) ; @mkdir -p $(dir $@)
 	cp $< $@
