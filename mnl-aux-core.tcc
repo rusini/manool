@@ -221,7 +221,7 @@ namespace aux { namespace pub {
          { return rhs.test<Dat>(); }
       template<typename Dat = decltype(nullptr)> MNL_INLINE friend Dat  cast(const val &rhs) noexcept(std::is_nothrow_copy_constructible<Dat>::value)
          { return rhs.cast<Dat>(); }
-      val operator()(int argc, val argv[], val *argv_out = {}) &&; // functional application
+      val operator()(int argc, val argv[], val *argv_out = {}) &&; // functional application (!argc => !argv_out)
       val default_invoke(const sym &op, int argc, val argv[]);
       long rc() const noexcept; // reference counter
    private: // Concrete representation
