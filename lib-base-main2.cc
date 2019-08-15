@@ -449,6 +449,7 @@ namespace aux { namespace {
             tmp_cnt = move(saved_tmp_cnt);
             for (auto &&el: tmp_ids) symtab.update(el, move(saved_tmp_ents.front())), saved_tmp_ents.pop_front();
 
+            if (form[1].size() > val::max_argc) MNL_ERR(MNL_SYM("LimitExceeded"));
             switch (form[1].size()) {
             # define MNL_M1(ARG_COUNT) \
                MNL_INLINE val invoke(val &&self, const sym &op, int argc, val argv[], val *) { \
@@ -504,6 +505,7 @@ namespace aux { namespace {
             tmp_cnt = move(saved_tmp_cnt);
             for (auto &&el: tmp_ids) symtab.update(el, move(saved_tmp_ents.front())), saved_tmp_ents.pop_front();
 
+            if (form[1].size() > val::max_argc) MNL_ERR(MNL_SYM("LimitExceeded"));
             struct proc {
                vector<unsigned char> mode; code body;
             public:
