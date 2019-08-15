@@ -14,8 +14,8 @@
 
 
 # Configuration Variables #####################################################################################################################################
-CC       = $(SCL) $(GCC) $(PIPE) -w -pedantic-errors -pedantic $(MARCH) -pthread -std=c99
-CXX      = $(SCL) $(GXX) $(PIPE) -w -pedantic-errors -pedantic $(MARCH) -pthread -std=c++11
+CC       = $(SCL) $(GCC) $(PIPE) -w $(MARCH) -pthread -std=c99
+CXX      = $(SCL) $(GXX) $(PIPE) -w $(MARCH) -pthread -std=c++11
 CPPFLAGS =
 CFLAGS   = -O3
 CXXFLAGS = $(CFLAGS)
