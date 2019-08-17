@@ -43,6 +43,7 @@ namespace aux { namespace pub { // Temporary Variables (or Temporaries)
    code pub::make_lit(const val &value) { return optimize(expr_lit<>{value}); }
 
    code aux::compile_apply(code &&target, const form &form, const loc &_loc) {
+      if (form.size() - 1 > val::max_argc) MNL_ERR(MNL_SYM("LimitExceeded"));
       struct arg_vector: vector<val> { using vector::vector; ~arg_vector() { while (!empty()) pop_back(); } };
    opt1: // Application without input-output parameters
       for (auto &&el: form + 1)

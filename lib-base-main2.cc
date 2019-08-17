@@ -24,7 +24,6 @@
 
 namespace MNL_AUX_UUID { using namespace aux;
    namespace aux {
-      using std::forward; // <utility>
       using std::make_shared; // <memory>
       using std::deque; using std::list;
    }
@@ -450,6 +449,7 @@ namespace aux { namespace {
             tmp_cnt = move(saved_tmp_cnt);
             for (auto &&el: tmp_ids) symtab.update(el, move(saved_tmp_ents.front())), saved_tmp_ents.pop_front();
 
+            if (form[1].size() > val::max_argc) MNL_ERR(MNL_SYM("LimitExceeded"));
             switch (form[1].size()) {
             # define MNL_M1(ARG_COUNT) \
                MNL_INLINE val invoke(val &&self, const sym &op, int argc, val argv[], val *) { \
@@ -505,6 +505,7 @@ namespace aux { namespace {
             tmp_cnt = move(saved_tmp_cnt);
             for (auto &&el: tmp_ids) symtab.update(el, move(saved_tmp_ents.front())), saved_tmp_ents.pop_front();
 
+            if (form[1].size() > val::max_argc) MNL_ERR(MNL_SYM("LimitExceeded"));
             struct proc {
                vector<unsigned char> mode; code body;
             public:
@@ -1548,11 +1549,12 @@ namespace aux { namespace {
       }
    private:
       template<typename Functor> struct _finally { const Functor _; MNL_INLINE ~_finally() noexcept(noexcept(_())) { _(); } };
-      template<typename Functor> MNL_INLINE static inline _finally<Functor> finally(Functor &&_) { return { forward<Functor>(_) }; }
+      template<typename Functor> MNL_INLINE static inline _finally<Functor> finally(Functor &&_) { return { (move)(_) }; }
    };
 
 }} // namespace aux::<anon>
 
+// Integral Range Constructors ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace aux { namespace {
    template<bool Rev> class proc_Range {
       MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
@@ -1719,42 +1721,201 @@ namespace aux { extern "C" code mnl_aux_base() {
       return parse(cast<const string &>(argv[0]));
    }};
 
+   // Functional Programming Utilities ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    struct proc_VarArg { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
       if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      struct expr { val target;
+      if (MNL_UNLIKELY(argc != 2)) {
+         if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+      } else {
+         if (MNL_UNLIKELY(!test<long long>(argv[1]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+         if (MNL_UNLIKELY(cast<long long>(argv[1]) < 0)) MNL_ERR(MNL_SYM("ConstraintViolation"));
+         if (MNL_UNLIKELY(cast<long long>(argv[1]) + 1 > val::max_argc)) MNL_ERR(MNL_SYM("LimitExceeded"));
+      }
+      struct proc { val target; int min_argc;
          MNL_INLINE val invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) const {
+            stk_check();
             if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-            if (MNL_LIKELY(!argv_out)) {
-               val args = vector<val>{}; cast<vector<val> &>(args).reserve(argc);
-               for (int sn = 0; sn < argc; ++sn) cast<vector<val> &>(args).push_back(move(argv[sn]));
-               return target(args);
+            if (MNL_UNLIKELY(argc < min_argc)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+            val _argv[min_argc + 1] /*VLA*/;
+            for (int sn = 0; sn < min_argc; ++sn) _argv[sn].swap(argv[sn]);
+            if (MNL_LIKELY(argc == min_argc))
+               _argv[min_argc] = []()->const val &{ static const val res = vector<val>{}; return res; }();
+            else {
+               cast<vector<val> &>(_argv[min_argc] = vector<val>{}).reserve(argc - min_argc);
+               int sn = min_argc; do cast<vector<val> &>(_argv[min_argc]).push_back(move(argv[sn])); while (++sn < argc);
             }
-            return [&]()->val{
-               val args_out, args = vector<val>{}; cast<vector<val> &>(args).reserve(argc);
-               for (int sn = 0; sn < argc; ++sn) cast<vector<val> &>(args).push_back(move(argv[sn]));
-               auto res = target(args, &args_out); if (MNL_LIKELY(!args_out)) return res;
-               if (MNL_UNLIKELY(!test<vector<val>>(args_out))) MNL_ERR(MNL_SYM("TypeMismatch"));
-               if (MNL_UNLIKELY(cast<const vector<val> &>(args_out).size() != argc)) MNL_ERR(MNL_SYM("ConstraintViolation"));
-               if (MNL_LIKELY(args_out.rc() == 1))
-                  for (auto it = cast<vector<val> &>(args_out).begin(); it != cast<vector<val> &>(args_out).end(); ++it, ++argv_out) argv_out->swap(*it); else
-                  for (auto it = cast<const vector<val> &>(args_out).begin(); it != cast<const vector<val> &>(args_out).end(); ++it, ++argv_out) *argv_out = *it;
+            return MNL_LIKELY(!argv_out) ? target(min_argc + 1, _argv) : [&]()->val{
+               val _argv_out[min_argc + 1] /*VLA*/, res = target(min_argc + 1, _argv, _argv_out);
+               for (int sn = 0; sn < min_argc; ++sn) argv_out[sn].swap(_argv_out[sn]);
+               if (MNL_LIKELY(!_argv_out[min_argc])) return res;
+               if (MNL_UNLIKELY(!test<vector<val>>(_argv_out[min_argc]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+               if (MNL_UNLIKELY(cast<const vector<val> &>(_argv_out[min_argc]).size() != argc - min_argc)) MNL_ERR(MNL_SYM("ConstraintViolation"));
+               if (MNL_LIKELY(_argv_out[min_argc].rc() == 1))
+                  for (int sn = min_argc; sn < argc; ++sn) argv_out[sn].swap(cast<vector<val> &>(_argv_out[min_argc])[sn - min_argc]); else
+                  for (int sn = min_argc; sn < argc; ++sn) argv_out[sn] = cast<const vector<val> &>(_argv_out[min_argc])[sn - min_argc];
+               return res;
             }();
          }
       };
-      return expr{move(argv[0])};
+      return proc{move(argv[0]), MNL_UNLIKELY(argc != 2) ? 0 : (int)cast<long long>(argv[1])};
    }};
    struct proc_VarApply { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) {
       if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-      if (MNL_UNLIKELY(argc != 2)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      if (MNL_UNLIKELY(!test<vector<val>>(argv[1]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-      if (MNL_LIKELY(!argv_out)) return MNL_LIKELY(argv[1].rc() == 1) ?
-         move(argv[0])(cast<vector<val> &>(argv[1]).size(), cast<vector<val> &>(argv[1]).data()) :
-         move(argv[0])(cast<const vector<val> &>(argv[1]).size(), vector<val>(cast<const vector<val> &>(argv[1])).data());
-      argv_out[1] = vector<val>(cast<const vector<val> &>(argv[1]).size());
-      return MNL_LIKELY(argv[1].rc() == 1) ?
-         move(argv[0])(cast<vector<val> &>(argv[1]).size(), cast<vector<val> &>(argv[1]).data(), cast<vector<val> &>(argv_out[1]).data()) :
-         move(argv[0])(cast<const vector<val> &>(argv[1]).size(), vector<val>(cast<const vector<val> &>(argv[1])).data(), cast<vector<val> &>(argv_out[1]).data());
+      if (MNL_UNLIKELY(argc < 2)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+      if (MNL_UNLIKELY(!test<vector<val>>(argv[argc - 1]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+      if (MNL_UNLIKELY(cast<const vector<val> &>(argv[argc - 1]).size() + argc - 2 > val::max_argc)) MNL_ERR(MNL_SYM("LimitExceeded"));
+      val _argv[cast<const vector<val> &>(argv[argc - 1]).size() + argc - 2] /*VLA*/;
+      {  int sn = 0;
+         for (; sn < argc - 2; ++sn) _argv[sn].swap(argv[sn + 1]);
+         if (MNL_LIKELY(argv[argc - 1].rc() == 1))
+            for (auto &&el: cast<vector<val> &>(argv[argc - 1])) _argv[sn++].swap(el); else
+            for (auto &&el: cast<const vector<val> &>(argv[argc - 1])) _argv[sn++] = el;
+      }
+      return MNL_LIKELY(!argv_out) ? move(argv[0])(cast<const vector<val> &>(argv[argc - 1]).size() + argc - 2 , _argv) : [&]()->val{
+         val _argv_out[cast<const vector<val> &>(argv[argc - 1]).size() + argc - 2] /*VLA*/,
+            res = move(argv[0])(cast<const vector<val> &>(argv[argc - 1]).size() + argc - 2, _argv, _argv_out);
+         int sn = 0;
+         for (; sn < argc - 2; ++sn) argv_out[sn + 1].swap(_argv_out[sn]);
+         argv_out[argc - 1] = MNL_LIKELY(argv[argc - 1].rc() == 1) ? move(argv[argc - 1]) :
+            (val)vector<val>(cast<const vector<val> &>(argv[argc - 1]).size());
+         for (auto &&el: cast<vector<val> &>(argv_out[argc - 1])) el.swap(_argv_out[sn++]);
+         return res;
+      }();
+   }};
+   struct proc_Bind { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+      if (MNL_UNLIKELY(argc < 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+      switch (argc) {
+         {  static constexpr int argc_bound = 0;
+         case argc_bound + 1: return move(argv[0]);
+         }
+         {  struct proc { val target; vector<val> args;
+               MNL_INLINE val invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) const {
+                  stk_check();
+                  if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+                  if (MNL_UNLIKELY(argc + args.size() > val::max_argc)) MNL_ERR(MNL_SYM("LimitExceeded"));
+                  val _argv[argc + args.size()] /*VLA*/
+               # if !__clang__ && !__INTEL_COMPILER // true GCC
+                  {args[0], args[1], args[2], args[3], args[4], args[5]}
+               # else
+                  ; _argv[0] = args[0], _argv[1] = args[1], _argv[2] = args[2], _argv[3] = args[3], _argv[4] = args[4], _argv[5] = args[5]
+               # endif
+                  ; { int sn = 6; do _argv[sn] = args[sn]; while (++sn < args.size()); }
+                  for (int sn = 0; sn < argc; ++sn) _argv[sn + args.size()].swap(argv[sn]);
+                  return MNL_LIKELY(!argv_out) ? target(argc + args.size(), _argv) : [&]()->val{
+                     val _argv_out[argc + args.size()], res = target(argc + args.size(), _argv, _argv_out);
+                     for (int sn = 0; sn < argc; ++sn) argv_out[sn].swap(_argv_out[sn + args.size()]);
+                     return res;
+                  }();
+               }
+            };
+         default:
+            vector<val> args; args.reserve(argc - 1);
+            for (int sn = 1; sn < argc; ++sn) args.push_back(move(argv[sn]));
+            return proc{move(argv[0]), move(args)};
+         }
+         {  static constexpr int argc_bound = 1;
+            struct proc { val target, arg0;
+               MNL_INLINE val invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) const {
+               # define MNL_M1 \
+                  stk_check(); \
+                  if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv); \
+                  if (MNL_UNLIKELY(argc + argc_bound > val::max_argc)) MNL_ERR(MNL_SYM("LimitExceeded")); \
+                  val _argv[argc + argc_bound] /*VLA*/ \
+               // end # define MNL_M1
+                  MNL_M1
+               # if !__clang__ && !__INTEL_COMPILER // true GCC
+                  {arg0}
+               # else
+                  ; _argv[0] = arg0
+               # endif
+               # define MNL_M2 \
+                  ; \
+                  for (int sn = 0; sn < argc; ++sn) _argv[sn + argc_bound].swap(argv[sn]); \
+                  return MNL_LIKELY(!argv_out) ? target(argc + argc_bound, _argv) : [&]()->val{ \
+                     val _argv_out[argc + argc_bound], res = target(argc + argc_bound, _argv, _argv_out); \
+                     for (int sn = 0; sn < argc; ++sn) argv_out[sn].swap(_argv_out[sn + argc_bound]); \
+                     return res; \
+                  }(); \
+               // end # define MNL_M2
+                  MNL_M2
+               }
+            };
+         case argc_bound + 1: return proc{move(argv[0]), move(argv[1])};
+         }
+         {  static constexpr int argc_bound = 2;
+            struct proc { val target, arg0, arg1;
+               MNL_INLINE val invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) const {
+                  MNL_M1
+               # if !__clang__ && !__INTEL_COMPILER // true GCC
+                  {arg0, arg1}
+               # else
+                  ; _argv[0] = arg0, _argv[1] = arg1
+               # endif
+                  MNL_M2
+               }
+            };
+         case argc_bound + 1: return proc{move(argv[0]), move(argv[1]), move(argv[2])};
+         }
+         {  static constexpr int argc_bound = 3;
+            struct proc { val target, arg0, arg1, arg2;
+               MNL_INLINE val invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) const {
+                  MNL_M1
+               # if !__clang__ && !__INTEL_COMPILER // true GCC
+                  {arg0, arg1, arg2}
+               # else
+                  ; _argv[0] = arg0, _argv[1] = arg1, _argv[2] = arg2
+               # endif
+                  MNL_M2
+               }
+            };
+         case argc_bound + 1: return proc{move(argv[0]), move(argv[1]), move(argv[2]), move(argv[3])};
+         }
+         {  static constexpr int argc_bound = 4;
+            struct proc { val target, arg0, arg1, arg2, arg3;
+               MNL_INLINE val invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) const {
+                  MNL_M1
+               # if !__clang__ && !__INTEL_COMPILER // true GCC
+                  {arg0, arg1, arg2, arg3}
+               # else
+                  ; _argv[0] = arg0, _argv[1] = arg1, _argv[2] = arg2, _argv[3] = arg3
+               # endif
+                  MNL_M2
+               }
+            };
+         case argc_bound + 1: return proc{move(argv[0]), move(argv[1]), move(argv[2]), move(argv[3]), move(argv[4])};
+         }
+         {  static constexpr int argc_bound = 5;
+            struct proc { val target, arg0, arg1, arg2, arg3, arg4;
+               MNL_INLINE val invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) const {
+                  MNL_M1
+               # if !__clang__ && !__INTEL_COMPILER // true GCC
+                  {arg0, arg1, arg2, arg3, arg4}
+               # else
+                  ; _argv[0] = arg0, _argv[1] = arg1, _argv[2] = arg2, _argv[3] = arg3, _argv[4] = arg4
+               # endif
+                  MNL_M2
+               }
+            };
+         case argc_bound + 1: return proc{move(argv[0]), move(argv[1]), move(argv[2]), move(argv[3]), move(argv[4]), move(argv[5])};
+         }
+         {  static constexpr int argc_bound = 6;
+            struct proc { val target, arg0, arg1, arg2, arg3, arg4, arg5;
+               MNL_INLINE val invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) const {
+                  MNL_M1
+               # undef MNL_M1
+               # if !__clang__ && !__INTEL_COMPILER // true GCC
+                  {arg0, arg1, arg2, arg3, arg4, arg5}
+               # else
+                  ; _argv[0] = arg0, _argv[1] = arg1, _argv[2] = arg2, _argv[3] = arg3, _argv[4] = arg4, _argv[5] = arg5
+               # endif
+                  MNL_M2
+               # undef MNL_M2
+               }
+            };
+         case argc_bound + 1: return proc{move(argv[0]), move(argv[1]), move(argv[2]), move(argv[3]), move(argv[4]), move(argv[5]), move(argv[6])};
+         }
+      }
    }};
 
    return expr_export{
@@ -1821,6 +1982,7 @@ namespace aux { extern "C" code mnl_aux_base() {
       {"Parse",       make_lit(proc_Parse{})},
       {"VarArg",      make_lit(proc_VarArg{})},
       {"VarApply",    make_lit(proc_VarApply{})},
+      {"Bind",        make_lit(proc_Bind{})},
       {"Min",         make_lit(proc_Min{})},
       {"Max",         make_lit(proc_Max{})},
    };

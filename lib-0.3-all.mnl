@@ -1,0 +1,441 @@
+-- lib-0.3-all.mnl
+
+/*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
+
+   This file is part of MANOOL.
+
+   MANOOL is free software: you can redistribute it and/or modify it under the terms of the version 3 of the GNU General Public License
+   as published by the Free Software Foundation (and only version 3).
+
+   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <http://www.gnu.org/licenses/>.  */
+
+
+{ {extern "_base"} in
+: {extern "_runtime"} in
+: {extern "_ieee754-dec"} in
+: {extern "_ieee754-cmpx"} in
+: {extern "_streams"} in
+: {extern "_threads"} in
+: {extern "_misc"} in
+: let -- quotation --------------------------------------------------------------------------------------------------------------------------------------------
+  { (') =
+    { macro
+    : proc { F } as
+    : if Size[F] <> 2 then {array} /*syntax error*/ else
+      F[1]#
+    }
+  }
+  in
+: let ---------------------------------------------------------------------------------------------------------------------------------------------------------
+  { ($) = -- E$
+    { macro
+    : proc { F } as
+    : if Size[F] <> 2 then {array} /*syntax error*/ else
+    : array of let# {array of: array of (=)' R' F[1]} in' R'
+    }
+    (%) = -- V%
+    { macro
+    : proc { F } as
+    : if Size[F] <> 2 then {array} /*syntax error*/ else
+    : array of
+    : array of macro#
+    : array of proc# {array of MakeSym[]} as' F[1]
+    }
+    do = -- simply "do"
+    { macro
+    : proc { F } as
+      {array of let# {array} in'} + F[Range[1; Size[F]]]
+    }
+    on = -- "on" without "with" clause
+    { macro
+    : proc { F } as
+    : if (Size[F] >= 6) & (F[2] == do') & (F[4] == after')
+      then -- {on K do B after B; B; ...}
+      {array of on# F[1] with' MakeSym[] do' F[3] after'} + F[Range[5; Size[F]]]
+      else -- fallback
+      {array of on#} + F[Range[1; Size[F]]]
+    }
+    signal = -- "signal" without "with" clause
+    { macro
+    : proc { F } as
+    : if (Size[F] == 2)
+      then -- {signal V}
+      {array of signal# F[1] with' Nil#}
+      else -- fallback
+      {array of signal#} + F[Range[1; Size[F]]]
+    }
+  }
+  in
+: let ---------------------------------------------------------------------------------------------------------------------------------------------------------
+  { do = -- "do" ... "after" ...
+    { macro
+    : proc { F } as
+    : if (Size[F] >= 4) & (F[2] == after')
+      then -- {do E after B; ...}
+      {array of do#} + F[Range[3; Size[F]]] | F[1]
+      else -- fallback
+      {array of do#} + F[Range[1; Size[F]]]
+    }
+    on = -- the current "on" is actually "broad"
+    { macro
+    : proc { F } as
+    : if F[1] == broad'
+      then -- {on broad ...}
+      {array of on#} + F[Range[2; Size[F]]]
+      else
+    : if (Size[F] >= 8) & (F[2] == with') & (F[4] == do') & (F[6] == after') & F[1].IsSym[]
+      then -- {on I with I do B after B; B; ...}
+      { var { U = {if Str[F[1]][0] <> "_"[0]$ then F[1]# else MakeSym[]} } in
+      : array of on# U with' F[3] do' F[5] after' {array of let# {array of: array of (=)' F[1] U} in'} + F[Range[7; Size[F]]]
+      }
+      else
+    : if (Size[F] >= 6) & (F[2] == do') & (F[4] == after') & F[1].IsSym[]
+      then -- {on I do B after B; B; ...}
+      { var { U = {if Str[F[1]][0] <> "_"[0]$ then F[1]# else MakeSym[]} } in
+      : array of on# U do' F[3] after' {array of let# {array of: array of (=)' F[1] U} in'} + F[Range[5; Size[F]]]
+      }
+      else -- fallback
+      {array of on#} + F[Range[1; Size[F]]]
+    }
+  }
+  in
+: let -- auxiliary --------------------------------------------------------------------------------------------------------------------------------------------
+  { IsPair = {proc {V} as V.IsList[] & (Size[V] == 3) & (V[0] == (=)')}
+  }
+  in
+: let -- logic quantifications, foldings, and comprehensions --------------------------------------------------------------------------------------------------
+  { for =
+    { macro
+    : proc { F } as
+    : if (Size[F] == 4) & (F[2] == all')
+      then -- {for {I = V; I = V; ...} all C}
+      { let { X = MakeSym[] } in
+      : array of on# broad' X do' False# after'
+      : array of do# True# after'
+      : array of for# F[1] do'
+      : array of if# {array of (~)# F[3]} then'
+      : array of signal# X
+      }
+      else
+    : if (Size[F] == 4) & (F[2] == some')
+      then -- {for {I = V; I = V; ...} some C}
+      { let { X = MakeSym[] } in
+      : array of on# broad' X do' True# after'
+      : array of do# False# after'
+      : array of for# F[1] do'
+      : array of if# F[3] then'
+      : array of signal# X
+      }
+      else
+    : if (Size[F] >= 6) & (F[2] == and') & (F[4] == do')
+      then -- {for {I = V; I = V; ...} and C do B; B; ...}
+      {array of for# F[1] do' {array of if# F[3] then'} + F[Range[5; Size[F]]]}
+      else
+    : if (Size[F] == 8) & (F[2] == and') & (F[4] == from') & (F[6] == next') & F[5].IsPair[] & F[5; 1].IsSym[]
+      then -- {for {I = V; I = V; ...} and C from I = V next V}
+      { array of var# {array of F[5]} in'
+      : array of do# F[5; 1] after'
+      : array of for# F[1] do'
+      : array of if# F[3] then'
+      : array of (=)# F[5; 1] F[7]
+      }
+      else
+    : if (Size[F] == 6) & (F[2] == from') & (F[4] == next') & F[3].IsPair[] & F[3; 1].IsSym[]
+      then -- {for {I = V; I = V; ...} from I = V next V}
+      { array of var# {array of F[3]} in'
+      : array of do# F[3; 1] after'
+      : array of for# F[1] do'
+      : array of (=)# F[3; 1] F[5]
+      }
+      else -- fallback
+      {array of for#} + F[Range[1; Size[F]]]
+    }
+    array =
+    { macro
+    : proc { F } as
+    : if (Size[F] == 7) & (F[1] == for') & (F[3] == and') & (F[5] == of')
+      then -- {array for {I = V; I = V; ...} and C of V}
+      { var { U = MakeSym[] } in
+      : array of var# {array of: array of (=)' U: array of array#} in'
+      : array of do# U after'
+      : array of for# F[2] do'
+      : array of if# F[4] then'
+      : array of (=)# U {array of (|)'# {array of (!)# U} F[6]}
+      }
+      else
+    : if (Size[F] == 5) & (F[1] == for') & (F[3] == of')
+      then -- {array for {I = V; I = V; ...} of V}
+      { var { U = MakeSym[] } in
+      : array of var# {array of: array of (=)' U: array of array#} in'
+      : array of do# U after'
+      : array of for# F[2] do'
+      : array of (=)# U {array of (|)'# {array of (!)# U} F[4]}
+      }
+      else -- fallback
+      {array of array#} + F[Range[1; Size[F]]]
+    }
+    sequence =
+    { macro
+    : proc { F } as
+    : if (Size[F] == 7) & (F[1] == for') & (F[3] == and') & (F[5] == of')
+      then -- {sequence for {I = V; I = V; ...} and C of V}
+      { var { U = MakeSym[] } in
+      : array of var# {array of: array of (=)' U: array of sequence#} in'
+      : array of do# U after'
+      : array of for# F[2] do'
+      : array of if# F[4] then'
+      : array of (=)# U {array of (|)'# {array of (!)# U} F[6]}
+      }
+      else
+    : if (Size[F] == 5) & (F[1] == for') & (F[3] == of')
+      then -- {sequence for {I = V; I = V; ...} of V}
+      { var { U = MakeSym[] } in
+      : array of var# {array of: array of (=)' U: array of sequence#} in'
+      : array of do# U after'
+      : array of for# F[2] do'
+      : array of (=)# U {array of (|)'# {array of (!)# U} F[4]}
+      }
+      else -- fallback
+      {array of sequence#} + F[Range[1; Size[F]]]
+    }
+    set =
+    { macro
+    : proc { F } as
+    : if (Size[F] == 7) & (F[1] == for') & (F[3] == and') & (F[5] == of')
+      then -- {set for {I = V; I = V; ...} and C of V}
+      { var { U = MakeSym[] } in
+      : array of var# {array of: array of (=)' U: array of set#} in'
+      : array of do# U after'
+      : array of for# F[2] do'
+      : array of if# F[4] then'
+      : array of (=)# U {array of (|)'# {array of (!)# U} F[6]}
+      }
+      else
+    : if (Size[F] == 5) & (F[1] == for') & (F[3] == of')
+      then -- {set for {I = V; I = V; ...} of V}
+      { var { U = MakeSym[] } in
+      : array of var# {array of: array of (=)' U: array of set#} in'
+      : array of do# U after'
+      : array of for# F[2] do'
+      : array of (=)# U {array of (|)'# {array of (!)# U} F[4]}
+      }
+      else -- fallback
+      {array of set#} + F[Range[1; Size[F]]]
+    }
+    map =
+    { macro
+    : proc { F } as
+    : if (Size[F] == 7) & (F[1] == for') & (F[3] == and') & (F[5] == of') & F[6].IsPair[]
+      then -- {map for {I = V; I = V; ...} and C of K = V}
+      { var { U = MakeSym[] } in
+      : array of var# {array of: array of (=)' U: array of map#} in'
+      : array of do# U after'
+      : array of for# F[2] do'
+      : array of if# F[4] then'
+      : array of (=)# {array of U F[6; 1]} F[6; 2]
+      }
+      else
+    : if (Size[F] == 5) & (F[1] == for') & (F[3] == of') & F[4].IsPair[]
+      then -- {map for {I = V; I = V; ...} of K = V}
+      { var { U = MakeSym[] } in
+      : array of var# {array of: array of (=)' U: array of map#} in'
+      : array of do# U after'
+      : array of for# F[2] do'
+      : array of (=)# {array of U F[4; 1]} F[4; 2]
+      }
+      else -- fallback
+      {array of map#} + F[Range[1; Size[F]]]
+    }
+  }
+  in
+: let ---------------------------------------------------------------------------------------------------------------------------------------------------------
+  { let = -- shorthand "let" for symbols
+    { macro
+    : proc { F } as
+    : if (Size[F] >= 4) & (F[2] == in') & F[1].IsList[] & {for {E = F[1]} all E.IsSym[]}
+      then -- {let {I; ...} in B; ...}
+      {array of let# {array for {E = F[1]} of: array of (=)' E: if Str[E][0] <> "_"[0]$ then E# else MakeSym[]} in'} + F[Range[3; Size[F]]]
+      else -- fallback
+      {array of let#} + F[Range[1; Size[F]]]
+    }
+    export = -- "export" with name binding clauses
+    { macro
+    : proc { F } as
+    : if (Size[F] >= 2) & {for {E = F[Range[1; Size[F]]]} all E.IsPair[] & E[1].IsSym[]}
+      then -- {export I = E; ...}
+      {array of let# F[Range[1; Size[F]]] in' {array of export#} + {array for {E = F[Range[1; Size[F]]]} of E[1]}}
+      else -- fallback
+      {array of export#} + F[Range[1; Size[F]]]
+    }
+    do = -- "do" ... "where" ...
+    { macro
+    : proc { F } as
+    : if (Size[F] >= 4) & (F[2] == where') & {for {E = F[Range[3; Size[F]]]} all E.IsPair[] & E[1].IsSym[]}
+      then -- {do E where I = E; ...}
+      {for {E = F[Range[3; Size[F]]]} from R = F[1] next: array of let# {array of E} in' R}
+      else -- fallback
+      {array of do#} + F[Range[1; Size[F]]]
+    }
+    object = -- "object" without "cleanup" clause
+    { macro
+    : proc { F } as
+    : if (Size[F] >= 4) & (F[2] == with') & {for {E = F[1; Range[Size[F[1]]]] + F[Range[3; Size[F]]]} all E.IsPair[]}
+      then -- {object {K = V; ...} with K = V; ...}
+      {array of object# F[1] cleanup' Nil# with'} + F[Range[3; Size[F]]]
+      else
+    : if (Size[F] >= 2) & {for {E = F[Range[1; Size[F]]]} all E.IsPair[]}
+      then -- {object K = V; ...}
+      {array of object# F[Range[1; Size[F]]] cleanup' Nil#}
+      else -- fallback
+      {array of object#} + F[Range[1; Size[F]]]
+    }
+    on = -- "on" with "revert" clause
+    { macro
+    : proc { F } as
+    : if (Size[F] >= 8) & (F[2] == revert') & (F[4] == do') & (F[6] == after') & F[3].IsList[]
+      then -- {on K revert {V; ...} do B after B; B; ...}
+      { var {U = {array for {_ = F[3].Keys[]} of MakeSym[]}} in
+      : array of var# {array for {U = U; V = F[3]} of: array of (=)' U V} in'
+        { array of on# F[1]
+          do' {array of do#} + {array for {U = U; V = F[3]} of: array of (=)# V: array of (!)# U}[RevRange[Size[U]]] | F[5] after'
+        } + F[Range[7; Size[F]]]
+      }
+      else
+    : if (Size[F] >= 10) & (F[2] == with') & (F[4] == revert') & (F[6] == do') & (F[8] == after') & F[3].IsSym[] & F[5].IsList[]
+      then -- {on K with I revert {V; ...} do B after B; B; ...}
+      { var {U = {array for {_ = F[5].Keys[]} of MakeSym[]}} in
+      : array of var# {array for {U = U; V = F[5]} of: array of (=)' U V} in'
+        { array of on# F[1] with' F[3]
+          do' {array of do#} + {array for {U = U; V = F[5]} of: array of (=)# V: array of (!)# U}[RevRange[Size[U]]] | F[7] after'
+        } + F[Range[9; Size[F]]]
+      }
+      else
+    : if (Size[F] >= 9) & (F[1] == broad') & (F[3] == revert') & (F[5] == do') & (F[7] == after') & F[4].IsList[]
+      then -- {on broad K revert {V; ...} do B after B; B; ...}
+      { var {U = {array for {_ = F[4].Keys[]} of MakeSym[]}} in
+      : array of var# {array for {U = U; V = F[4]} of: array of (=)' U V} in'
+        { array of on# broad' F[2]
+          do' {array of do#} + {array for {U = U; V = F[4]} of: array of (=)# V: array of (!)# U}[RevRange[Size[U]]] | F[6] after'
+        } + F[Range[8; Size[F]]]
+      }
+      else
+    : if (Size[F] >= 11) & (F[1] == broad') & (F[3] == with') & (F[5] == revert') & (F[7] == do') & (F[9] == after') & F[4].IsSym[] & F[6].IsList[]
+      then -- {on broad K with I revert {V; ...} do B after B; B; ...}
+      { var {U = {array for {_ = F[6].Keys[]} of MakeSym[]}} in
+      : array of var# {array for {U = U; V = F[6]} of: array of (=)' U V} in'
+        { array of on# broad' F[2] with' F[4]
+          do' {array of do#} + {array for {U = U; V = F[6]} of: array of (=)# V: array of (!)# U}[RevRange[Size[U]]] | F[8] after'
+        } + F[Range[10; Size[F]]]
+      }
+      else -- fallback
+      {array of on#} + F[Range[1; Size[F]]]
+    }
+    assign = -- "assign" expression
+    { macro
+    : proc { F } as
+    : if (Size[F] == 2) & F[1].IsList[] & (Size[F[1]] == 3) & (F[1; 0] == (=)')
+      then -- {assign D = S}
+      {var {U = MakeSym[]} in: array of var# {array of: array of (=)' U F[1; 2]} in' {array of (=)# F[1; 1] U}; U}
+      else
+    : if (Size[F] >= 2) & {for {E = F[Range[1; Size[F]]]} all E.IsList[] & (Size[E] == 3) & (E[0] == (=)')}
+      then -- {assign D = S; ...}
+      { var { U = {array for {_ = Range[1; Size[F]]} of MakeSym[]} } in
+        {array of var# {array for {U = U; V = F[Range[1; Size[F]]]} of: array of (=)' U V[2]} in'} +
+        {array for {U = U; V = F[Range[1; Size[F]]]} of: array of (=)# V[1] U}
+      }
+      else -- syntax error
+      {array}
+    }
+    unless = -- "unless" expression
+    { macro
+    : proc { F } as
+    : if (Size[F] >= 8) & (F[2] == signal') & (F[4] == with') & (F[6] == else')
+      then -- {unless C signal K with V else B; B; ...}
+      {array of if# {array of (~)# F[1]} then' {array of signal# F[3] with' F[5]} else'} + F[Range[7; Size[F]]]
+      else
+    : if (Size[F] >= 6) & (F[2] == signal') & (F[4] == else')
+      then -- {unless C signal K else B; B; ...}
+      {array of if# {array of (~)# F[1]} then' {array of signal# F[3]} else'} + F[Range[5; Size[F]]]
+      else -- syntax error
+      {array}
+    }
+    ensure = -- "ensure" expression
+    { macro
+    : proc { F } as
+    : if (Size[F] >= 4) & (F[2] == in')
+      then -- {ensure C in E} \ {ensure C in B; B; B; ...}
+      {array of (%)#: array of if# F[1] then' ({array of do#} + F[Range[3; Size[F]]])# else' {array of error# "Test failed"}#}
+      else -- syntax error
+      {array}
+    }
+    proc = -- "proc" .. "etc" ... "with" ...
+    { macro
+    : proc { F } as
+    : if (Size[F] >= 6) & (F[2] == etc') & (F[4] == as') & F[1].IsList[]
+      then -- {proc {I\I?; ...} etc I\I? as B; B; ...}
+      {array of ($)# {array of VarArg# {array of proc# F[1; F[1].Keys[]] | F[3] as'} + F[Range[5; Size[F]]]} | Size[F[1]]}
+      else
+    : if (Size[F] >= 6) & (F[2] == with') & (F[4] == as') & F[1].IsList[] & F[3].IsList[] & {for {E = F[3]} all E.IsSym[]}
+      then -- {proc {I\I?; ...} with {I; ...} as B; B; ...}
+      {array of Bind# {array of proc# F[3; F[3].Keys[]] + F[1; F[1].Keys[]] as'} + F[Range[5; Size[F]]]} + F[3; F[3].Keys[]]
+      else
+    : if (Size[F] >= 6) & (F[2] == with') & (F[4] == as') & F[1].IsList[] & F[3].IsList[] & {for {E = F[3]} all E.IsPair[] & E[1].IsSym[]}
+      then -- {proc {I\I?; ...} with {I = V; ...} as B; B; ...}
+      {array of Bind# {array of proc# {array for {E = F[3]} of E[1]} + F[1; F[1].Keys[]] as'} + F[Range[5; Size[F]]]} + {array for {E = F[3]} of E[2]}
+      else
+    : if (Size[F] >= 8) & (F[2] == etc') & (F[4] == with') & (F[6] == as') & F[1].IsList[] & F[5].IsList[] & {for {E = F[5]} all E.IsSym[]}
+      then -- {proc {I\I?; ...} etc I\I? with {I; ...} as B; B; ...}
+      { array of Bind#
+      : array of ($)#
+        {array of VarArg# {array of proc# F[5; F[5].Keys[]] + F[1; F[1].Keys[]] | F[3] as'} + F[Range[7; Size[F]]]} | (Size[F[1]] + Size[F[5]])
+      } + F[5; F[5].Keys[]]
+      else
+    : if (Size[F] >= 8) & (F[2] == etc') & (F[4] == with') & (F[6] == as') & F[1].IsList[] & F[5].IsList[] & {for {E = F[5]} all E.IsPair[] & E[1].IsSym[]}
+      then -- {proc {I\I?; ...} etc I\I? with {I = V; ...} as B; B; ...}
+      { array of Bind#
+      : array of ($)#
+        {array of VarArg# {array of proc# {array for {E = F[5]} of E[1]} + F[1; F[1].Keys[]] | F[3] as'} + F[Range[7; Size[F]]]} | (Size[F[1]] + Size[F[5]])
+      } + {array for {E = F[5]} of E[2]}
+      else -- fallback
+      {array of proc#} + F[Range[1; Size[F]]]
+    }
+    -----------------------------------------------------------------------------------------------------------------------------------------------------------
+    E  = {proc {T} as Exp[T[1]]}
+    Pi = {proc {T} as Acos[T[(~1)$]]}
+    I  = {proc {T} as Sqrt[T[(~1)$]]}
+    -----------------------------------------------------------------------------------------------------------------------------------------------------------
+    Delay = {proc {T} as Delay[1000000 * T]}
+  }
+  in
+: let { J = I } in
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+: export
+  ('); if; (&); (|); while; repeat; do; on; signal
+  for; case
+  (=); (!); (^); assign
+  proc; var; let; ($)
+  array; record; map; set; sequence
+  object; (@)
+  export; scope
+  macro; (#); error; eval; (%)
+  unless; ensure
+  True; False; Nil
+  F64; F32; I48; MakeSym; S8; U32; D64; D128; C64; C128; Z64; Z32
+  MakePtr
+  Range; RevRange; RangeExt; RevRangeExt
+  IsI48; IsF64; IsF32; IsS8; IsU32; IsBool; IsNull
+  IsArray; IsMap; IsSet; IsSequence
+  IsSym; IsPtr; IsWeakPtr
+  IsList; IsForm
+  IsRange; IsRevRange
+  Parse
+  VarArg; VarApply; Bind
+  Min; Max; E; Pi; I; J
+  ProcessArgv; ProcessEnviron; ProcessExit; ReserveStack; ReserveHeap
+  Out; Err; In; OpenFile; OpenPipe; OpenTemp
+  StartThread; MakeMutex; MakeCond
+  Random; Clock; Delay
+}

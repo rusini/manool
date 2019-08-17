@@ -96,6 +96,7 @@ namespace aux { namespace pub {
       MNL_INLINE explicit operator const char *() const noexcept { return ((const string &)*this).c_str(); }
    public: // Functional application
       val operator()(int argc, val argv[], val *argv_out = {}) const; // essential
+      static constexpr int max_argc = 999;
       val operator()(const val &arg, val *arg_out = {}) const, operator()(val &&arg, val *arg_out = {}) const;
       template<size_t Argc> val operator()(args<Argc> &&, val *args_out = {}) const;
       // ...and their tracing counterparts:
@@ -221,7 +222,8 @@ namespace aux { namespace pub {
          { return rhs.test<Dat>(); }
       template<typename Dat = decltype(nullptr)> MNL_INLINE friend Dat  cast(const val &rhs) noexcept(std::is_nothrow_copy_constructible<Dat>::value)
          { return rhs.cast<Dat>(); }
-      val operator()(int argc, val argv[], val *argv_out = {}) &&; // functional application
+      val operator()(int argc, val argv[], val *argv_out = {}) &&; // functional application (!argc => !argv_out)
+      static constexpr int max_argc = sym::max_argc;
       val default_invoke(const sym &op, int argc, val argv[]);
       long rc() const noexcept; // reference counter
    private: // Concrete representation
@@ -649,7 +651,7 @@ namespace aux { namespace pub {
 
 // Operations /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-namespace aux { namespace pub { const auto max_i48 = (1ll << 48 - 1) - 1, min_i48 = -max_i48; } }
+namespace aux { namespace pub { constexpr auto max_i48 = (1ll << 48 - 1) - 1, min_i48 = -max_i48; } }
 
 namespace aux {
 

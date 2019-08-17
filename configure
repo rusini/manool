@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+# configure
+printf 'Relax, there is no need to run ./configure here!\n'

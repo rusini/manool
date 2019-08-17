@@ -1,4 +1,4 @@
-// main.cc -- mnlexec - main translation unit
+// main.cc -- mnlexec main translation unit
 
 /*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
 
@@ -18,7 +18,7 @@
 # include <stdlib.h>   // ::getenv, ::setenv
 # include <fcntl.h>    // ::open, ::posix_fadvise
 # include <sys/stat.h> // ::open, ::fstat, struct ::stat
-# include <unistd.h>   // ::read, ::close, ::posix_fadvise, ::environ
+# include <unistd.h>   // ::read, ::close
 # include <sys/mman.h> // ::mmap, ::munmap, ::posix_madvise
 # include <dlfcn.h>    // ::dlopen, ::dlsym, ::dlclose
 # include <libgen.h>   // ::dirname
@@ -27,10 +27,9 @@
 # include <cstdio>     // printf, stderr, fputs, fflush, perror
 # include <deque>
 
-extern char **environ;
+extern "C" char **environ;
 
-# include "manool.hh"       // MNL_NONVALUE(), class expr_export, etc.
-# include "mnl-lib-base.hh" // class box<dict>, etc.
+# include "mnl-lib-base.hh" // MNL_NONVALUE(), class expr_export, class box<dict>, etc.
 
 namespace MNL_AUX_UUID { using namespace aux;
    namespace aux {
@@ -38,13 +37,12 @@ namespace MNL_AUX_UUID { using namespace aux;
       using std::isdigit; // <cctype>
       using std::strlen; using std::strchr; // <cstring>
       using std::printf; using std::fputs; using std::fflush; using std::perror; // <cstdio>
-      using std::forward; // <utility>
       using std::deque;
    }
 
 namespace aux { namespace {
    template<typename Functor> struct _finally { const Functor _; MNL_INLINE ~_finally() { _(); } };
-   template<typename Functor> MNL_INLINE inline _finally<Functor> finally(Functor &&_) { return { forward<Functor>(_) }; }
+   template<typename Functor> MNL_INLINE inline _finally<Functor> finally(Functor &&_) { return { (move)(_) }; }
 
    vector<string> mnl_path;
 
@@ -182,22 +180,22 @@ namespace aux { namespace {
    }
 }} // namespace aux::<unnamed>
 
-namespace aux { namespace { char **argv; } }
+namespace aux { static char **argv; }
 namespace aux { extern "C" code mnl_aux_runtime() {
-   struct proc_ProcessExit  { MNL_INLINE val invoke(val &&self, const sym &op, int argc, val argv[], val *) const {
+   struct proc_ProcessExit  { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
       if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
       if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
       if (MNL_UNLIKELY(!test<long long>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
       fflush({}), _Exit(cast<long long>(argv[0]));
    }};
-   struct proc_ReserveStack { MNL_INLINE val invoke(val &&self, const sym &op, int argc, val argv[], val *) const {
+   struct proc_ReserveStack { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
       if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
       if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
       if (MNL_UNLIKELY(!test<long long>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
       if (MNL_UNLIKELY(cast<long long>(argv[0]) < 0)) MNL_ERR(MNL_SYM("ConstraintViolation"));
       return stk_reserve (cast<long long>(argv[0]));
    }};
-   struct proc_ReserveHeap  { MNL_INLINE val invoke(val &&self, const sym &op, int argc, val argv[], val *) const {
+   struct proc_ReserveHeap  { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
       if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
       if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
       if (MNL_UNLIKELY(!test<long long>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
@@ -223,8 +221,8 @@ namespace aux { extern "C" code mnl_aux_runtime() {
    };
 }}
 
-namespace aux { namespace {
-   MNL_INLINE inline int main(char *argv[]) {
+namespace aux {
+   MNL_INLINE static inline int main(char *argv[]) {
       aux::argv = argv;
       heap_limit(strtoll(::getenv("MNL_HEAP"),  {}, {}));
       stk_limit (strtoll(::getenv("MNL_STACK"), {}, {}));
@@ -236,7 +234,7 @@ namespace aux { namespace {
          # if !__ANDROID__
             ::posix_fadvise(fd, {}, {}, POSIX_FADV_SEQUENTIAL | POSIX_FADV_WILLNEED | POSIX_FADV_NOREUSE); // NOREUSE -> EINVAL on CentOS 6
          # endif
-            for (static const auto room_size = 1 * 1024*1024/*MiB*/;;) { // HACK: ?mostly optimal according to testing on *my* system
+            for (constexpr auto room_size = 1 * 1024*1024/*MiB*/;;) { // HACK: ?mostly optimal according to testing on *my* system
                buf.resize(buf.size() + room_size);
             # if 1
                auto count = ::read(fd, &*(buf.end() - room_size), room_size);
@@ -248,7 +246,7 @@ namespace aux { namespace {
                buf.resize(buf.size() - room_size + count);
                if (MNL_UNLIKELY(!count)) break;
             }
-            buf.shrink_to_fit(), ::close(fd);
+            buf.shrink_to_fit(); ::close(fd);
             if (buf[0] == '#' && buf[1] == '!') buf[1] = buf[0] = '-'; // #! strip shebang
             if (!S_ISREG(st.st_mode)) **argv = {};
          }
@@ -274,7 +272,7 @@ namespace aux { namespace {
    extern "C" code mnl_main() { // overrides definitions in other SOs under ordinary lookup
       fputs("mnl_main() was called via ordinary symbol lookup.\n", stderr), fflush(stderr), abort();
    }
-}} // namespace aux::<unnamed>
+} // namespace aux
 
 } // namespace MNL_AUX_UUID
 
@@ -286,7 +284,7 @@ int main(int argc, char *argv[]) {
       "MNL_STACK Maximum allowed utilization of stack memory, in bytes (per thread)\n"
       "MNL_HEAP  Maximum allowed utilization of heap memory, in bytes\n"
       "MNL_PATH  ':'-separated list of directories in which to look for extern entities\n\n"
-      "mnlexec (MANOOL) 0.2.0\n"
+      "mnlexec (MANOOL) 0.3.0\n"
       "Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)\nLicense GPLv3: GNU GPL version 3 <http://gnu.org/licenses/gpl-3.0.html>\n"
       "This is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n\n"
       "Report bugs to: bugs@manool.org\nMANOOL home page: <http://manool.org>\n\n"), EXIT_SUCCESS;
@@ -297,7 +295,7 @@ int main(int argc, char *argv[]) {
 # ifdef MNL_STACK
    MNL_STACK
 # else
-   "8388608" // 8 MiB
+   "6291456" // 6 MiB
 # endif
    , false)) return perror("Cannot setenv"), EXIT_FAILURE;
    {  char *end; long long val; static const char nonzero = !0;
@@ -325,5 +323,5 @@ int main(int argc, char *argv[]) {
 # endif
    , false)) return perror("Cannot setenv"), EXIT_FAILURE;
 
-   return mnl::aux::main(argv);
+   return mnl::main(argv);
 }
