@@ -59,7 +59,7 @@ namespace aux { namespace {
    void scan_startup(const string &, string &&), scan_cleanup() noexcept;
    void scan(); // precond: C's locale is "C"
 
-}} // namespace aux::<anon>
+}} // namespace aux::<unnamed>
 
 // Parser /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -177,7 +177,7 @@ namespace aux { namespace {
       }
    }
 
-}} // namespace aux::<anon>
+}} // namespace aux::<unnamed>
 
 namespace aux { namespace pub {
    ast parse(const string &source, string origin) {
@@ -353,7 +353,7 @@ namespace aux { namespace {
       }
    } // void scan()
 
-}} // namespace aux::<anon>
+}} // namespace aux::<unnamed>
 
 } // namespace MNL_AUX_UUID
 

@@ -1313,7 +1313,7 @@ namespace aux { namespace {
       }
    };
 
-}} // namespace aux::<anon>
+}} // namespace aux::<unnamed>
 
 // Map, Set, and Sequence Aggregates //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1434,7 +1434,7 @@ namespace aux { namespace {
       }
    };
 
-}} // namespace aux::<anon>
+}} // namespace aux::<unnamed>
 
 // Metaprogramming Facilities /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1552,7 +1552,7 @@ namespace aux { namespace {
       template<typename Functor> MNL_INLINE static inline _finally<Functor> finally(Functor &&_) { return { (move)(_) }; }
    };
 
-}} // namespace aux::<anon>
+}} // namespace aux::<unnamed>
 
 // Integral Range Constructors ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace aux { namespace {
