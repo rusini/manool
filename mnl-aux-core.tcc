@@ -312,21 +312,21 @@ namespace aux { namespace pub {
       vector<ast>::const_iterator begin() const noexcept, end() const noexcept;
       vector<ast>::const_reverse_iterator rbegin() const noexcept, rend() const noexcept;
       bool empty() const noexcept;
-      int size() const noexcept;
-      const val &operator[](int) const noexcept, &at(int) const /*unused*/;
-      const val &front() const noexcept, &back() const noexcept /*unused*/;
+      long size() const noexcept;
+      const ast &operator[](long) const noexcept, &at(long) const /*unused*/;
+      const ast &front() const noexcept, &back() const noexcept /*unused*/;
       const loc &_loc(const loc &) const noexcept;
       // list subranges:
       typedef struct { vector<ast>::const_iterator _begin, _end;
          MNL_INLINE vector<ast>::const_iterator begin() const noexcept { return _begin; }
          MNL_INLINE vector<ast>::const_iterator end() const noexcept { return _end; }
       } vector_const_iterator_range, vci_range;
-      vci_range  operator+(int) const noexcept;
+      vci_range  operator+(long) const noexcept;
       typedef struct { vector<ast>::const_reverse_iterator _begin, _end;
          MNL_INLINE vector<ast>::const_reverse_iterator begin() const noexcept { return _begin; }
          MNL_INLINE vector<ast>::const_reverse_iterator end() const noexcept { return _end; }
       } vector_const_reverse_iterator_range, vcri_range;
-      vcri_range operator-(int) const noexcept;
+      vcri_range operator-(long) const noexcept;
    public: // Related stuff
       friend val sym::operator()(int, val [], val *) const;
       template<typename> friend class mnl::box;
@@ -440,36 +440,36 @@ namespace aux { namespace pub {
 
    MNL_NOINLINE inline val::val(const char *rhs): val((string)rhs) {} // postponed definition because the complete type box<std::string> was needed
    // postponed definitions because the complete types box<std::vector<ast>>, box<std::pair<std::vector<ast>, loc>> were needed:
-   MNL_INLINE inline val::val(vector<ast> first, loc second)
+   MNL_INLINE inline ast::val(vector<ast> first, loc second)
       : ast(make_pair(move(first), move(second))) {}
-   MNL_INLINE inline bool val::is_list() const noexcept
+   MNL_INLINE inline bool ast::is_list() const noexcept
       { return test<vector<ast>>() || test<pair<vector<ast>, loc>>(); }
-   MNL_INLINE inline std::vector<ast>::const_iterator val::begin() const noexcept
+   MNL_INLINE inline std::vector<ast>::const_iterator ast::begin() const noexcept
       { return (test<vector<ast>>() ? cast<const vector<ast> &>() : cast<const pair<vector<ast>, loc> &>().first).begin(); }
-   MNL_INLINE inline std::vector<ast>::const_iterator val::end() const noexcept
+   MNL_INLINE inline std::vector<ast>::const_iterator ast::end() const noexcept
       { return (test<vector<ast>>() ? cast<const vector<ast> &>() : cast<const pair<vector<ast>, loc> &>().first).end(); }
-   MNL_INLINE inline std::vector<ast>::const_reverse_iterator val::rbegin() const noexcept
+   MNL_INLINE inline std::vector<ast>::const_reverse_iterator ast::rbegin() const noexcept
       { return (test<vector<ast>>() ? cast<const vector<ast> &>() : cast<const pair<vector<ast>, loc> &>().first).rbegin(); }
-   MNL_INLINE inline std::vector<ast>::const_reverse_iterator val::rend() const noexcept
+   MNL_INLINE inline std::vector<ast>::const_reverse_iterator ast::rend() const noexcept
       { return (test<vector<ast>>() ? cast<const vector<ast> &>() : cast<const pair<vector<ast>, loc> &>().first).rend(); }
-   MNL_INLINE inline bool val::empty() const noexcept
+   MNL_INLINE inline bool ast::empty() const noexcept
       { return (test<vector<ast>>() ? cast<const vector<ast> &>() : cast<const pair<vector<ast>, loc> &>().first).empty(); }
-   MNL_INLINE inline int val::size() const noexcept
+   MNL_INLINE inline long ast::size() const noexcept
       { return (test<vector<ast>>() ? cast<const vector<ast> &>() : cast<const pair<vector<ast>, loc> &>().first).size(); }
-   MNL_INLINE inline const val &val::operator[](int sn) const noexcept
+   MNL_INLINE inline const ast &ast::operator[](long sn) const noexcept
       { return (test<vector<ast>>() ? cast<const vector<ast> &>() : cast<const pair<vector<ast>, loc> &>().first)[sn]; }
-   MNL_INLINE inline const val &val::at(int sn) const
+   MNL_INLINE inline const ast &ast::at(long sn) const
       { return (test<vector<ast>>() ? cast<const vector<ast> &>() : cast<const pair<vector<ast>, loc> &>().first).at(sn); }
-   MNL_INLINE inline const val &val::front() const noexcept
+   MNL_INLINE inline const ast &ast::front() const noexcept
       { return (test<vector<ast>>() ? cast<const vector<ast> &>() : cast<const pair<vector<ast>, loc> &>().first).front(); }
-   MNL_INLINE inline const val &val::back() const noexcept
+   MNL_INLINE inline const ast &ast::back() const noexcept
       { return (test<vector<ast>>() ? cast<const vector<ast> &>() : cast<const pair<vector<ast>, loc> &>().first).back(); }
-   MNL_INLINE inline const loc &val::_loc(const loc &_loc) const noexcept
+   MNL_INLINE inline const loc &ast::_loc(const loc &_loc) const noexcept
       { return test<pair<vector<ast>, loc>>() ? cast<const pair<vector<ast>, loc> &>().second : _loc; }
-   MNL_INLINE inline val::vci_range  val::operator+(int sn) const noexcept { return test<vector<ast>>() ?
+   MNL_INLINE inline ast::vci_range  ast::operator+(long sn) const noexcept { return test<vector<ast>>() ?
       vci_range {cast<const vector<ast> &>().begin() + sn, cast<const vector<ast> &>().end()} :
       vci_range {cast<const pair<vector<ast>, loc> &>().first.begin() + sn, cast<const pair<vector<ast>, loc> &>().first.end()}; }
-   MNL_INLINE inline val::vcri_range val::operator-(int sn) const noexcept { return test<vector<ast>>() ?
+   MNL_INLINE inline ast::vcri_range ast::operator-(long sn) const noexcept { return test<vector<ast>>() ?
       vcri_range{cast<const vector<ast> &>().rbegin(), cast<const vector<ast> &>().rend() - sn} :
       vcri_range{cast<const pair<vector<ast>, loc> &>().first.rbegin(), cast<const pair<vector<ast>, loc> &>().first.rend() - sn}; }
 
