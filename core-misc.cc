@@ -34,7 +34,7 @@ namespace MNL_AUX_UUID { using namespace aux;
          symtab[cast<const sym &>(form)] :
    # if 1
       test<sym>(form) && ((const string &)cast<const sym &>(form))[0] >= 'a' && ((const string &)cast<const sym &>(form))[0] <= 'z' ?
-         (err_compile("unbound keyword", form._loc(_loc)), code{}) :
+         (err_compile("unbound keyword (nested in this context)", form._loc(_loc)), code{}) :
    # endif
       test<long long>(form) || test<string>(form) || test<sym>(form) ?
          [&]()->code{ code make_lit(const val &); return make_lit(form); }() : // actually from Base
