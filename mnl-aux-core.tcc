@@ -269,7 +269,6 @@ namespace aux { namespace pub {
       void addref() const noexcept, release() const noexcept;
       template<typename     = decltype(nullptr)> bool test() const noexcept;
       template<typename Dat = decltype(nullptr)> Dat  cast() const noexcept(std::is_nothrow_copy_constructible<Dat>::value);
-      MNL_IF_CLANG(public:)
       class root;
    public: // Convenience - Functional application
       /* val operator()(int argc, val argv[], val *argv_out = {}) &&; // basic form */
@@ -329,7 +328,8 @@ namespace aux { namespace pub {
       } vector_const_reverse_iterator_range, vcri_range;
       vcri_range operator-(int) const noexcept;
    public: // Related stuff
-      friend sym;
+      friend val sym::operator()(int, val [], val *) const;
+      template<typename> friend class mnl::box;
       friend val _eq(val &&, val &&), _ne(val &&, val &&), _lt(val &&, val &&), _le(val &&, val &&), _gt(val &&, val &&), _ge(val &&, val &&);
       friend val _add(val &&, val &&), _sub(val &&, val &&), _mul(val &&, val &&), _neg(val &&), _abs(val &&), _xor(val &&, val &&), _not(val &&);
       friend struct proc_Min; friend struct proc_Max;
