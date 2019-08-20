@@ -377,7 +377,7 @@ namespace aux { namespace pub {
    MNL_INLINE inline val::rep::rep(double dat) noexcept
       { memcpy(this, &dat, sizeof dat); }
    MNL_INLINE inline val::rep::rep(unsigned tag, const sym &dat) noexcept
-      : _tag(tag) { new(&_sym) sym(dat); }
+      : _tag(tag), _sym(dat) {}
 
 // Bit-Layout Management - Data Read //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    template<typename Dat> MNL_INLINE inline Dat val::rep::dat() const noexcept {
