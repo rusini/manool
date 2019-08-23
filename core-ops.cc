@@ -123,7 +123,7 @@ namespace MNL_AUX_UUID { using namespace aux;
       MNL_M
    # undef MNL_S
    };
-   MNL_PRIORITY(1002) decltype(sym::inverse) sym::inverse{
+   MNL_PRIORITY(1002) std::remove_extent<decltype(sym::inverse)>::type sym::inverse[lim<unsigned short>::max() + 1]{
    # define MNL_S(ID, TXT) dict.find(TXT),
       MNL_M
    # undef MNL_S

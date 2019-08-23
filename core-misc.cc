@@ -65,8 +65,8 @@ namespace MNL_AUX_UUID { using namespace aux;
          } else {
             if (!static_cast<decltype(rep)>(dict.size())) // wrap-around means no more IDs available
                fputs("MANOOL: FATAL ERROR: Symbol space exhausted\n", stderr), fflush(stderr), _Exit(EXIT_FAILURE);
-            inverse.reserve(dict.size() + 1), pool.reserve(dict.size() + 1);
-            inverse.push_back(it = dict.insert(make_pair(move(txt), static_cast<decltype(rep)>(dict.size()))).first);
+            pool.reserve(dict.size() + 1);
+            it = dict.insert(make_pair(move(txt), static_cast<decltype(rep)>(dict.size()))).first, inverse[dict.size() - 1] = it;
          }
          return rc[it->second] = 1, it->second;
       MNL_IF_WITH_MT( }(); )
@@ -86,8 +86,8 @@ namespace MNL_AUX_UUID { using namespace aux;
                fputs("MANOOL: FATAL ERROR: Symbol space exhausted\n", stderr), fflush(stderr), _Exit(EXIT_FAILURE);
             char txt[sizeof "`65535"];
             sprintf(txt, "`%u", (unsigned)dict.size() ^ mask);
-            inverse.reserve(dict.size() + 1), pool.reserve(dict.size() + 1);
-            inverse.push_back(it = dict.insert(make_pair(move(txt), static_cast<decltype(rep)>(dict.size()))).first);
+            pool.reserve(dict.size() + 1);
+            it = dict.insert(make_pair(move(txt), static_cast<decltype(rep)>(dict.size()))).first, inverse[dict.size() - 1] = it;
          }
          return rc[it->second] = 1, it->second;
       MNL_IF_WITH_MT( }(); )

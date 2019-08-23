@@ -107,7 +107,7 @@ namespace aux { namespace pub {
       enum rep: unsigned short;
       enum rep rep; // "enum" is required as per ISO/IEC 14882:2011 S3.3.7 P1, however some C++ compilers do not issue any diagnostic message
       static map<string, const decltype(rep)> dict;
-      static vector<decltype(dict)::const_iterator> inverse;
+      static decltype(dict)::const_iterator inverse[];
       static vector<decltype(rep)> pool;
       MNL_IF_WITH_MT(static std::mutex mutex;)
       static /*atomic*/ long rc[];
