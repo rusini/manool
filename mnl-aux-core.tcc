@@ -418,7 +418,7 @@ namespace aux { namespace pub {
    };
    template<typename Dat> class box final: val::root {
       Dat dat;
-      box(Dat &&dat): dat(std::move(dat)) {}
+      explicit box(Dat &&dat): dat(std::move(dat)) {}
       ~box() {}
       val invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) override { return dat.invoke(std::move(self), op, argc, argv, argv_out); }
       friend val;
@@ -615,7 +615,7 @@ namespace aux { namespace pub {
       } *rep{};
       template<typename Dat> class box final: public root { public:
          const Dat dat;
-         box(Dat dat): dat((move)(dat)) {}
+         explicit box(Dat dat): dat((move)(dat)) {}
          code compile(code &&self, const form &form, const loc &loc) const override { return dat.compile(move(self), form, loc); }
          val  execute(bool fast_sig) const override { return dat.execute(fast_sig); }
          void exec_in(val &&val) const override { dat.exec_in(move(val)); }
