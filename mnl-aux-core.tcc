@@ -205,17 +205,17 @@ namespace aux { namespace pub {
       MNL_INLINE void swap(val &rhs) noexcept { using std::swap; swap(rep, rhs.rep); }
       MNL_INLINE explicit operator bool() const noexcept { return *this != nullptr; }
    public: // Construction - implicit conversion (to)
-      MNL_INLINE val(long long rhs) noexcept: rep{0x7FFAu, rhs} {} // valid range: min_i48 .. max_i48
-      MNL_INLINE val(int rhs) noexcept:       val((long long)rhs) {}
-      MNL_INLINE val(double rhs) noexcept: rep(rhs) {}
-      MNL_INLINE val(float rhs) noexcept: rep{0x7FFCu, rhs} {}
-      MNL_INLINE val(const sym &rhs) noexcept: rep{0x7FFBu, rhs} {}
-      MNL_INLINE val(bool rhs) noexcept: rep{0x7FFEu | rhs} {}
-      MNL_INLINE val(unsigned rhs) noexcept: rep{0x7FFDu, rhs} {}
-      MNL_INLINE val(char rhs) noexcept:     val((unsigned)(unsigned char)rhs) {}
-      template<typename Rhs> val(Rhs rhs): rep{0x7FF8u, (void *)(root *)new box<Rhs>((move)(rhs))} {}
+      MNL_INLINE val(long long dat) noexcept: rep{0x7FFAu, dat} {} // valid range: min_i48 .. max_i48
+      MNL_INLINE val(int dat) noexcept:       val((long long)dat) {}
+      MNL_INLINE val(double dat) noexcept: rep(dat) {}
+      MNL_INLINE val(float dat) noexcept: rep{0x7FFCu, dat} {}
+      MNL_INLINE val(const sym &dat) noexcept: rep{0x7FFBu, dat} {}
+      MNL_INLINE val(bool dat) noexcept: rep{0x7FFEu | dat} {}
+      MNL_INLINE val(unsigned dat) noexcept: rep{0x7FFDu, dat} {}
+      MNL_INLINE val(char dat) noexcept:     val((unsigned)(unsigned char)dat) {}
+      template<typename Dat> val(Dat dat): rep{0x7FF8u, (void *)(root *)new box<Dat>{(move)(dat)}} {}
       val(const char *);
-      MNL_INLINE val(char *rhs): val((const char *)rhs) {}
+      MNL_INLINE val(char *dat): val((const char *)dat) {}
    public: // Extraction
       template<typename Dat = decltype(nullptr)> MNL_INLINE friend bool test(const val &rhs) noexcept
          { return rhs.test<Dat>(); }
@@ -438,7 +438,7 @@ namespace aux { namespace pub {
    template<> val box<std::vector<val>>::invoke(val &&, const sym &, int, val [], val *);
    template<> inline box<std::vector<val>>::~box() { while (!dat.empty()) dat.pop_back(); }
 
-   MNL_NOINLINE inline val::val(const char *rhs): val((string)rhs) {} // postponed definition because the complete type box<std::string> was needed
+   MNL_NOINLINE inline val::val(const char *dat): val((string)dat) {} // postponed definition because the complete type box<std::string> was needed
    // postponed definitions because the complete types box<std::vector<ast>>, box<std::pair<std::vector<ast>, loc>> were needed:
    MNL_INLINE inline ast::val(vector<ast> first, loc second)
       : ast(make_pair(move(first), move(second))) {}
@@ -595,7 +595,7 @@ namespace aux { namespace pub {
       MNL_INLINE friend bool operator==(const code &lhs, const code &rhs) noexcept { return lhs.rep == rhs.rep; }
       MNL_INLINE explicit operator bool() const noexcept { return rep; }
    public: // Construction - implicit conversion (to) + Compilation/Execution operations
-      template<typename Rhs> code(Rhs rhs): rep(new box<Rhs>((move)(rhs))) {}
+      template<typename Dat> code(Dat dat): rep(new box<Dat>{(move)(dat)}) {}
       MNL_INLINE code compile(const form &form, const loc &loc) && { return rep->compile(move(*this), form, loc); }
       MNL_INLINE val  execute(bool fast_sig = {}) const { return rep->execute(fast_sig); }
       MNL_INLINE void exec_in(val &&val) const { rep->exec_in(move(val)); }
