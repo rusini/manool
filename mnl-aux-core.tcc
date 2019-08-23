@@ -420,7 +420,7 @@ namespace aux { namespace pub {
       Dat dat;
       box(Dat &&dat): dat(std::move(dat)) {}
       ~box() {}
-      val invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) { return dat.invoke(std::move(self), op, argc, argv, argv_out); }
+      val invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) override { return dat.invoke(std::move(self), op, argc, argv, argv_out); }
       friend val;
    };
    template<> class box<decltype(nullptr)>; // to be left incomplete to improve diagnostics
@@ -616,12 +616,12 @@ namespace aux { namespace pub {
       template<typename Dat> class box final: public root { public:
          const Dat dat;
          box(Dat dat): dat((move)(dat)) {}
-         code compile(code &&self, const form &form, const loc &loc) const { return dat.compile(move(self), form, loc); }
-         val  execute(bool fast_sig) const { return dat.execute(fast_sig); }
-         void exec_in(val &&val) const { dat.exec_in(move(val)); }
-         val  exec_out() const { return dat.exec_out(); }
-         bool is_rvalue() const noexcept { return dat.is_rvalue(); }
-         bool is_lvalue() const noexcept { return dat.is_lvalue(); } // shall imply is_rvalue()
+         code compile(code &&self, const form &form, const loc &loc) const override { return dat.compile(move(self), form, loc); }
+         val  execute(bool fast_sig) const override { return dat.execute(fast_sig); }
+         void exec_in(val &&val) const override { dat.exec_in(move(val)); }
+         val  exec_out() const override { return dat.exec_out(); }
+         bool is_rvalue() const noexcept override { return dat.is_rvalue(); }
+         bool is_lvalue() const noexcept override { return dat.is_lvalue(); } // shall imply is_rvalue()
       };
    private: // Implementation helpers
       MNL_INLINE void addref() const noexcept
