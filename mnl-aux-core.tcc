@@ -635,7 +635,7 @@ namespace aux { namespace pub {
       template<typename Dat> bool test() const
          { return typeid(*rep) == typeid(box<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type>); }
       template<typename Dat> Dat  cast() const
-         { return static_cast<box<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type> *>(&*rep)->dat; }
+         { return static_cast<box<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type> *>(rep)->dat; }
       template<typename Dat = decltype(nullptr)> MNL_INLINE friend bool test(const code &rhs) { return rhs.test<Dat>(); }
       template<typename Dat = decltype(nullptr)> MNL_INLINE friend bool test(code &rhs)       { return rhs.test<Dat>(); } // TODO: do we need non-const version here?
       template<typename Dat = decltype(nullptr)> MNL_INLINE friend Dat  cast(const code &rhs) { return rhs.cast<Dat>(); }
