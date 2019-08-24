@@ -328,8 +328,7 @@ namespace aux { namespace pub {
       } vector_const_reverse_iterator_range, vcri_range;
       vcri_range operator-(long) const noexcept;
    public: // Related stuff
-      friend val sym::operator()(int, val [], val *) const;
-      template<typename> friend class mnl::box;
+      friend sym;
       friend val _eq(val &&, val &&), _ne(val &&, val &&), _lt(val &&, val &&), _le(val &&, val &&), _gt(val &&, val &&), _ge(val &&, val &&);
       friend val _add(val &&, val &&), _sub(val &&, val &&), _mul(val &&, val &&), _neg(val &&), _abs(val &&), _xor(val &&, val &&), _not(val &&);
       friend struct proc_Min; friend struct proc_Max;
