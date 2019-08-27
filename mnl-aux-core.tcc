@@ -596,6 +596,11 @@ namespace aux { namespace pub {
       MNL_INLINE val  exec_out() const { return rep->exec_out(); }
       MNL_INLINE bool is_rvalue() const noexcept { return rep->is_rvalue(); }
       MNL_INLINE bool is_lvalue() const noexcept { return rep->is_lvalue(); } // implies is_rvalue()
+   public: // Extraction
+      template<typename Dat> MNL_INLINE friend bool test(const code &rhs) noexcept
+         { return typeid(*rhs.rep) == typeid(box<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type>); }
+      template<typename Dat> MNL_INLINE friend Dat  cast(const code &rhs) noexcept
+         { return static_cast<box<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type> *>(rhs.rep)->dat; }
    private: // Concrete representation
       class root { public:
          /*atomic*/ long rc = 1;
@@ -625,19 +630,12 @@ namespace aux { namespace pub {
    private: // Support for <expr># constructs
       MNL_INLINE val invoke(val &&self, const sym &op, int argc, val argv[], val *) { return self.default_invoke(op, argc, argv); }
       friend mnl::box<code>;
-   public: // Extraction
-      template<typename Dat> bool test() const
-         { return typeid(*rep) == typeid(box<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type>); }
-      template<typename Dat> Dat  cast() const
-         { return static_cast<box<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type> *>(rep)->dat; }
-      template<typename Dat = decltype(nullptr)> MNL_INLINE friend bool test(const code &rhs) { return rhs.test<Dat>(); }
-      template<typename Dat = decltype(nullptr)> MNL_INLINE friend bool test(code &rhs)       { return rhs.test<Dat>(); } // TODO: do we need non-const version here?
-      template<typename Dat = decltype(nullptr)> MNL_INLINE friend Dat  cast(const code &rhs) { return rhs.cast<Dat>(); }
-      template<typename Dat = decltype(nullptr)> MNL_INLINE friend Dat  cast(code &rhs)       { return rhs.cast<Dat>(); }
    };
    MNL_INLINE inline void swap(code &lhs, code &rhs) noexcept { lhs.swap(rhs); }
    bool operator==(const code &, const code &) noexcept;
    MNL_INLINE inline bool operator!=(const code &lhs, const code &rhs) noexcept { return std::rel_ops::operator!=(lhs, rhs); }
+   template<typename>     bool test(const code &) noexcept;
+   template<typename Dat> Dat  cast(const code &) noexcept;
 
    extern MNL_IF_WITH_MT(thread_local) sym::tab<> symtab;
    code compile(const form &, const loc & = MNL_IF_GCC5(loc)MNL_IF_GCC6(loc){});
