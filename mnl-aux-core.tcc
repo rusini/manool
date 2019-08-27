@@ -105,7 +105,7 @@ namespace aux { namespace pub {
       template<size_t Argc> val operator()(const loc &, args<Argc> &&, val * = {}) const;
    private: // Concrete representation
       enum rep: unsigned short;
-      enum rep rep; // "enum" is required as per ISO/IEC 14882:2011 S3.3.7 P1, however some C++ compilers do not issue any diagnostic message
+      enum rep rep; // "enum" is required as per ISO/IEC 14882:2011 S3.3.7 P1, although some C++ compilers do not issue any diagnostic message
       static map<string, const decltype(rep)> dict;
       static decltype(dict)::const_iterator inverse[];
       static vector<decltype(rep)> pool;
@@ -187,11 +187,9 @@ namespace aux { MNL_NOINLINE inline sym::tab<signed char> disp(initializer_list<
 }}
 
 // class val //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
    template<typename> class box;
 
 namespace aux { namespace pub {
-
    typedef val ast; // val when used as an Abstract Syntax Tree - for documentation purposes
 
    class val/*ue*/ {
@@ -271,7 +269,7 @@ namespace aux { namespace pub {
       template<typename Dat = decltype(nullptr)> Dat  cast() const noexcept(std::is_nothrow_copy_constructible<Dat>::value);
       class root;
    public: // Convenience - Functional application
-      /* val operator()(int argc, val argv[], val *argv_out = {}) &&; // basic form */
+      /* val operator()(int argc, val argv[], val *argv_out = {}) &&; // essential form */
       MNL_INLINE val operator()(const val &arg, val *arg_out = {}) && { return move(*this)(val(arg), arg_out); }
       MNL_INLINE val operator()(val &&arg, val *arg_out = {}) && { return move(*this)(1, &arg, arg_out); }
       template<size_t Argc> MNL_INLINE val operator()(args<Argc> &&args, val *args_out = {}) && { return move(*this)((int)Argc, args.data(), args_out); }
@@ -339,7 +337,7 @@ namespace aux { namespace pub {
    template<typename Dat> Dat  cast(const val &) noexcept(std::is_nothrow_copy_constructible<Dat>::value);
 
    // Forward-declared as members of class sym
-   /* val sym::operator()(int argc, val argv[], val *argv_out = {}) const; // basic form */
+   /* val sym::operator()(int argc, val argv[], val *argv_out = {}) const; // essential form */
    MNL_INLINE inline val sym::operator()(const val &arg, val *arg_out) const { return (*this)(val(arg), arg_out); }
    MNL_INLINE inline val sym::operator()(val &&arg, val *arg_out) const { return (*this)(1, &arg, arg_out); }
    template<size_t Argc> MNL_INLINE inline val sym::operator()(args<Argc> &&args, val *args_out) const { return (*this)((int)Argc, args.data(), args_out); }
@@ -353,13 +351,13 @@ namespace aux { namespace pub {
    template<size_t Argc> MNL_INLINE inline val sym::operator()(const loc &loc, args<Argc> &&args, val *args_out) const
       { try { return (*this)(move(args), args_out); } catch (...) { MNL_NORETURN void trace_execute(const mnl::loc &); trace_execute(loc); } }
 
+   // Fake test/case for non-val inputs
    template<typename Dat> MNL_INLINE inline bool test(const typename std::remove_cv<typename std::remove_reference<
       typename std::enable_if<!std::is_same<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type, val>::value, Dat>::type
       >::type>::type &) noexcept { return true; }
    template<typename Dat> MNL_INLINE inline Dat  cast(const typename std::remove_cv<typename std::remove_reference<
       typename std::enable_if<!std::is_same<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type, val>::value, Dat>::type
-      >::type>::type &rhs) noexcept(std::is_nothrow_copy_constructible<Dat>::value) { return rhs; }
-
+      >::type>::type &dat) noexcept(std::is_nothrow_copy_constructible<Dat>::value) { return dat; }
 }} // namespace aux::pub
 
 // Bit-Layout Management - Data Write /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -511,7 +509,6 @@ namespace aux { namespace pub {
 # endif
 
 // val Extractors /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
    template<typename Dat> MNL_INLINE inline bool val::test() const noexcept {
       return MNL_LIKELY(rep.tag() == 0x7FF8u) &&
          typeid(*static_cast<root *>(rep.dat<void *>())) == typeid(box<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type>);
@@ -522,6 +519,7 @@ namespace aux { namespace pub {
    MNL_INLINE inline long val::rc() const noexcept
       { return static_cast<const root *>(rep.dat<void *>())->rc(); }
 
+   // Fake test/cast for val outputs
    template<> MNL_INLINE inline bool val::test<const val &>() const noexcept { return true; }
    template<> MNL_INLINE inline bool val::test<val>() const noexcept         { return test<const val &>(); }
    template<> MNL_INLINE inline const val &val::cast() const noexcept { return *this; }
@@ -574,9 +572,7 @@ namespace aux { namespace pub {
 }} // namespace aux::pub
 
 // Translation Infrastructure /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 namespace aux { namespace pub {
-
    ast parse(const string &, string origin = "<anonymous>");
    MNL_INLINE inline ast parse(string &&source, string origin = "<anonymous>") // parse won't take advantage of source's resources, but
       { auto res = parse(source, move(origin)); source.clear(); return res; } // this is to release its resources earlier, which is useful in practice
@@ -593,7 +589,7 @@ namespace aux { namespace pub {
       MNL_INLINE void swap(code &rhs) noexcept { using std::swap; swap(rep, rhs.rep); }
       MNL_INLINE friend bool operator==(const code &lhs, const code &rhs) noexcept { return lhs.rep == rhs.rep; }
       MNL_INLINE explicit operator bool() const noexcept { return rep; }
-   public: // Construction - implicit conversion (to) + Compilation/Execution operations
+   public: // Construction - implicit conversion (to) + Compilation/execution operations
       template<typename Dat> code(Dat dat): rep(new box<Dat>{(move)(dat)}) {}
       MNL_INLINE code compile(const form &form, const loc &loc) && { return rep->compile(move(*this), form, loc); }
       MNL_INLINE val  execute(bool fast_sig = {}) const { return rep->execute(fast_sig); }
