@@ -394,11 +394,10 @@ namespace aux { namespace pub {
       { return _sym; }
 
 // class Template box ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
    class val::root {
    protected:
       root() = default;
-      virtual MNL_INLINE ~root() {}
+      virtual ~root() = default;
    private:
       root(const root &) = delete;
       root &operator=(const root &) = delete;
@@ -580,7 +579,7 @@ namespace aux { namespace pub {
 
    class code { // Compiled entity
    public: // Standard operations
-      MNL_INLINE code() = default;
+      code() = default;
       MNL_INLINE code(const code &rhs) noexcept: rep(rhs.rep) { addref(); }
       MNL_INLINE code(code &&rhs) noexcept: rep(rhs.rep) { rhs.rep = {}; }
       MNL_INLINE ~code() { release(); }
@@ -600,7 +599,7 @@ namespace aux { namespace pub {
    private: // Concrete representation
       class root { public:
          /*atomic*/ long rc = 1;
-         virtual MNL_INLINE ~root() {}
+         virtual ~root() = default;
          virtual code compile(code &&self, const form &, const loc &) const = 0;
          virtual val  execute(bool fast_sig) const = 0;
          virtual void exec_in(val &&) const = 0;
