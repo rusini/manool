@@ -641,7 +641,6 @@ namespace aux { namespace pub {
 
    extern MNL_IF_WITH_MT(thread_local) sym::tab<> symtab;
    code compile(const form &, const loc & = MNL_IF_GCC5(loc)MNL_IF_GCC6(loc){});
-
 }} // namespace aux::pub
 
 // Operations /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
