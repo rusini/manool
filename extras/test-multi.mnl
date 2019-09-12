@@ -1,5 +1,5 @@
 
-{ {extern "manool/build/std-1.0"} in
+{ {extern "manool.org.18/std/0.3/all"} in
 : let { Q = MakePtr[]; M = MakeMutex[] } in
 : let { Empty = MakeCond[M]; Full = MakeCond[M] } in
   { (StartThread)
