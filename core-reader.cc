@@ -258,6 +258,13 @@ namespace aux { namespace {
             case '"':
                do if (*(++curr_loc._final.second, ++pc) == '"') { ++curr_loc._final.second, ++pc; break; } while (*pc != '\n' && *pc);
                continue;
+            case '\\':
+               if (*(++curr_loc._final.second, ++pc) == '}') for (;;) {
+                  switch (*(++curr_loc._final.second, ++pc))
+                  case '\\': if (*(++curr_loc._final.second, ++pc) != '{') default: continue; else case 0: ; // hacky :-)
+                  break;
+               }
+               continue;
             case '*':
                if (*(++curr_loc._final.second, ++pc) != '/') continue;
                if (*(++curr_loc._final.second, ++pc) == '*') { ++curr_loc._final.second, ++pc; ++depth; continue; }
@@ -328,6 +335,21 @@ namespace aux { namespace {
             curr_loc._start = curr_loc._final, ++curr_loc._final.second;
             err_compile("unexpected end of input");
          }
+      case '\\':
+         curr_loc._start = curr_loc._final;
+         if (*(++curr_loc._final.second, ++pc) == '}')
+         for (auto start = ++pc;;) switch (*(++curr_loc._final.second, ++pc)) {
+         case '\\':
+            if (*(++curr_loc._final.second, ++pc) != '{') continue;
+            curr_typ = tk_lit, curr_ast = string(start, pc - 1);
+            ++curr_loc._final.second, ++pc;
+            return;
+         case 0:
+            curr_loc._start = curr_loc._final, ++curr_loc._final.second;
+            err_compile("unexpected end of input");
+         }
+         curr_loc._start = curr_loc._final, ++curr_loc._final.second;
+         err_compile("unexpected character");
       default:
          if (isalpha(*pc) || *pc == '_') {
             curr_loc._start = curr_loc._final;
