@@ -98,6 +98,10 @@ Ubuntu Server 16.04 LTS, x86-64 (AMD), x86-64, g++
 apt install g++ make
 make GXX='g++ -fpermissive'
 
+Debian GNU/Linux 8 (Jessie), x86-64 (Intel), x86-64, clang++
+apt install clang-4.0
+make GCC=clang-4.0 GXX=clang++-4.0
+
 Debian GNU/Linux 8 (Jessie), x86-64 (Intel), x86-64, g++
 apt install g++
 make GXX='g++ -fpermissive'
