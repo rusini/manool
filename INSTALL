@@ -83,8 +83,8 @@ yum install centos-release-scl && yum install llvm-toolset-7-clang
 make SCL='scl enable llvm-toolset-7 --' GCC=clang GXX=clang++
 
 Debian GNU/Linux 9 (Stretch), x86-64 (AMD), x86-64, clang++
-apt install clang-4.0 make
-make GCC=clang-4.0 GXX=clang++-4.0
+apt install clang-7 make
+make GCC=clang-7 GXX=clang++-7
 
 Debian GNU/Linux 9 (Stretch), x86-64 (AMD), x86-64, g++
 apt install g++ make
