@@ -267,6 +267,7 @@ namespace aux { namespace pub {
       void addref() const noexcept, release() const noexcept;
       template<typename     = decltype(nullptr)> bool test() const noexcept;
       template<typename Dat = decltype(nullptr)> Dat  cast() const noexcept(std::is_nothrow_copy_constructible<Dat>::value);
+      MNL_IF_CLANG(public:)
       class root;
    public: // Convenience - Functional application
       /* val operator()(int argc, val argv[], val *argv_out = {}) &&; // essential form */

@@ -466,7 +466,7 @@ namespace aux { namespace {
                } \
             // end
                {  struct proc { const int arg_count; code body; MNL_M1(arg_count) };
-               default: return optimize(expr_lit<>{proc{form[1].size(), move(body)}});
+               default: return optimize(expr_lit<>{proc{(int)form[1].size(), move(body)}});
                }
             # define MNL_M2(ARG_COUNT) \
                {  struct proc { code body; MNL_M1(ARG_COUNT) }; \
@@ -578,7 +578,7 @@ namespace aux { namespace {
                } \
             // end
                {  struct expr { MNL_LVALUE(body.is_lvalue()) const int var_count; code body; MNL_M1(var_count) };
-               default: return expr{form[1].size(), move(body)};
+               default: return expr{(int)form[1].size(), move(body)};
                }
             # define MNL_M2(VAR_COUNT) \
                {  struct expr { MNL_LVALUE(body.is_lvalue()) code body; MNL_M1(VAR_COUNT) }; \
