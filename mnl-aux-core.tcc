@@ -168,10 +168,10 @@ namespace aux { namespace pub {
    public:
       MNL_NOINLINE void update(initializer_list<pair<sym, Val>> il) { for (auto &&pair: il) update(pair); }
       MNL_INLINE   void update(pair<const sym &, Val> pair) { update(pair.first, (move)(pair.second)); }
-   private: // Implementation details
+   private: // Concrete representation
       vector<typename std::conditional<std::is_same<Val, bool>::value, unsigned char, Val>::type> rep;
       Val undef{};
-   private:
+   private: // Implementation helpers
       void addref()  const noexcept
          { for (int key = 0; key < (int)rep.size(); ++key) if (MNL_UNLIKELY(undef != rep[key])) sym::addref (static_cast<decltype(sym::rep)>(key)); }
       void release() const noexcept
