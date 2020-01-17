@@ -6,9 +6,11 @@
 # SmartBox
 
  host=ssh.smartbox.host port=10110 login=alex dir=manool
-#params=(SCL='scl enable devtoolset-3 --' GCC='gcc -fpermissive' GXX='g++ -fpermissive')
-#params=(SCL='scl enable devtoolset-4 --' GCC='gcc -fpermissive' GXX='g++ -fpermissive')
- params=(SCL='scl enable devtoolset-7 --')
+#params=(SCL='scl enable devtoolset-3 --' GXX='g++ -fpermissive')
+#params=(SCL='scl enable devtoolset-4 --' GXX='g++ -fpermissive')
+#params=(SCL='scl enable devtoolset-6 --' GXX='g++ -fpermissive')
+#params=(SCL='scl enable devtoolset-7 --')
+ params=(SCL='scl enable devtoolset-8 --')
 #params=(SCL='scl enable devtoolset-7 --' GCC='$(HOME)/gcc/install/bin/gcc' GXX='$(HOME)/gcc/install/bin/g++' LDFLAGS='-s -Wl,-rpath,$(HOME)/gcc/install/lib64')
 #params=(PATH=/home/alex/bin:/home/alex/gcc/install/bin:/opt/rh/devtoolset-7/root/usr/bin:/usr/bin:/bin LD_LIBRARY_PATH=/home/alex/gcc/install/lib64)
 #params=(

@@ -32,9 +32,9 @@ namespace MNL_AUX_UUID { using namespace aux;
    code pub::compile(const form &form, const loc &_loc) { return // *** The Compiler Core Dispatcher! ***
       test<sym>(form) && symtab[cast<const sym &>(form)] ?
          symtab[cast<const sym &>(form)] :
-   # if 1
+   # if 1 // TODO: think about other restrictions: _, _Sym, mb non-standard special symbols
       test<sym>(form) && ((const string &)cast<const sym &>(form))[0] >= 'a' && ((const string &)cast<const sym &>(form))[0] <= 'z' ?
-         (err_compile("unbound keyword", form._loc(_loc)), code{}) :
+         (err_compile("unbound keyword (nested in this context)", form._loc(_loc)), code{}) :
    # endif
       test<long long>(form) || test<string>(form) || test<sym>(form) ?
          [&]()->code{ code make_lit(const val &); return make_lit(form); }() : // actually from Base
@@ -65,8 +65,8 @@ namespace MNL_AUX_UUID { using namespace aux;
          } else {
             if (!static_cast<decltype(rep)>(dict.size())) // wrap-around means no more IDs available
                fputs("MANOOL: FATAL ERROR: Symbol space exhausted\n", stderr), fflush(stderr), _Exit(EXIT_FAILURE);
-            inverse.reserve(dict.size() + 1), pool.reserve(dict.size() + 1);
-            inverse.push_back(it = dict.insert(make_pair(move(txt), static_cast<decltype(rep)>(dict.size()))).first);
+            pool.reserve(dict.size() + 1);
+            it = dict.insert(make_pair(move(txt), static_cast<decltype(rep)>(dict.size()))).first, inverse[dict.size() - 1] = it;
          }
          return rc[it->second] = 1, it->second;
       MNL_IF_WITH_MT( }(); )
@@ -86,8 +86,8 @@ namespace MNL_AUX_UUID { using namespace aux;
                fputs("MANOOL: FATAL ERROR: Symbol space exhausted\n", stderr), fflush(stderr), _Exit(EXIT_FAILURE);
             char txt[sizeof "`65535"];
             sprintf(txt, "`%u", (unsigned)dict.size() ^ mask);
-            inverse.reserve(dict.size() + 1), pool.reserve(dict.size() + 1);
-            inverse.push_back(it = dict.insert(make_pair(move(txt), static_cast<decltype(rep)>(dict.size()))).first);
+            pool.reserve(dict.size() + 1);
+            it = dict.insert(make_pair(move(txt), static_cast<decltype(rep)>(dict.size()))).first, inverse[dict.size() - 1] = it;
          }
          return rc[it->second] = 1, it->second;
       MNL_IF_WITH_MT( }(); )

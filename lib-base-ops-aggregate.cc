@@ -1,4 +1,4 @@
-// lib-base-ops-aggreg.cc
+// lib-base-ops-aggregate.cc
 
 /*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
 
@@ -72,7 +72,7 @@ namespace aux { namespace {
    template<typename Container> MNL_INLINE inline typename Container::const_iterator cseek(const Container &cont, long index)
       { return seek(cont.size(), cont.begin(), cont.end(), index); }
 
-}} // namespace aux::<anon>
+}} // namespace aux::<unnamed>
 
    template<> val box<dict<val, val>>::invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) {
       switch (MNL_DISP("Apply", "Exists", "Repl", "Delete", "Size", "Keys", "Elems", "==", "<>", "Order", "Succ", "Pred", "Clone", "DeepClone")[op]) {

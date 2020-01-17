@@ -40,34 +40,3 @@ Usage: mnl [<runtime opt>]... [<startup opt>]... <expr> [<arg>]...
 Environment variables:
   MNL_PATH
   MNL_STARTUP
-
-
-
-
-namespace aux {
-   string do_readfile(const string &path) {
-      constexpr int
-         page_size = 1024 * 4, buf_size = 1024 * 1024 * 16;
-      auto fd = ::open(path.c_str(), O_RDONLY);
-      if (MNL_UNLIKELY(fd == -1)) MNL_ERR(MNL_SYM("PosixOpenFailed"));
-      auto _finally_fd = finally([&]{ if (MNL_UNLIKELY(::close(*this)) && !uncaught_exception()) MNL_ERR(MNL_SYM("PosixCloseFailed")); });
-      struct ::stat st; if (MNL_UNLIKELY(::fstat(fd, &st))) MNL_ERR(MNL_SYM("PosixFstatFailed"));
-      if (S_ISREG(st.st_mode) && st.st_size > page_size) {
-         auto ptr = ::mmap({}, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
-         if (MNL_UNLIKELY(ptr == MAP_FAILED)) MNL_ERR(MNL_SYM("PosixMmapFailed"));
-         auto _finally_ptr = finally([&]{ if(MNL_UNLIKELY(::munmap(*this, st_size)) && !uncaught_exception()) MNL_ERR(MNL_SYM("PosixMunmapFailed")); });
-         if (MNL_UNLIKELY(::posix_madvise(ptr, st.st_size, POSIX_MADV_WILLNEED))) MNL_ERR(MNL_SYM("PosixMadviseFailed"));
-         return string(static_cast<const char *>(implicit_cast<void *>(ptr)), st.st_size);
-      }
-      return [&]()->string{
-         string res;
-         for (;;) {
-            res.resize(res.size() + buf_size);
-            int count = read(fd, &res.front() + res.size() - buf_size, buf_size);
-            if (MNL_UNLIKELY(count == -1)) MNL_ERR(MNL_SYM("PosixReadFailed"));
-            res.resize(res.size() - buf_size + count);
-            if (MNL_UNLIKELY(!count)) return res;
-         }
-      }();
-   }
-} // namespace aux

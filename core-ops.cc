@@ -21,6 +21,7 @@
 
 namespace MNL_AUX_UUID { using namespace aux;
    namespace aux {
+      using std::isdigit; // <cstdlib>
       using std::isnan; using std::isfinite; using std::fmod;   using std::fma;   using std::copysign; using std::signbit; // <cmath>
       using std::exp;   using std::expm1;    using std::log;    using std::log1p; using std::log10;    using std::log2; // <cmath>
       using std::sqrt;  using std::hypot;    using std::cbrt;   using std::pow; // <cmath>
@@ -123,7 +124,7 @@ namespace MNL_AUX_UUID { using namespace aux;
       MNL_M
    # undef MNL_S
    };
-   MNL_PRIORITY(1002) decltype(sym::inverse) sym::inverse{
+   MNL_PRIORITY(1002) std::remove_extent<decltype(sym::inverse)>::type sym::inverse[lim<unsigned short>::max() + 1]{
    # define MNL_S(ID, TXT) dict.find(TXT),
       MNL_M
    # undef MNL_S
@@ -188,6 +189,16 @@ namespace aux {
    template<typename Dat> MNL_INLINE static inline enable_same<Dat, long long, string> _str(Dat rhs) {
       char res[sizeof "+140737488355327"];
       return sprintf(res, "%lld", rhs), res;
+   }
+   template<typename Dat> MNL_INLINE static inline enable_same<Dat, long long, string> _str(Dat rhs, const string &format) {
+      auto pc = format.c_str();
+      for (;;) { switch (*pc) case ' ': case '#': case '+': case '-': case '0': { ++pc; continue; } break; }
+      if (isdigit(*pc) && isdigit(*++pc)) ++pc;
+      if (*pc == '.' && isdigit(*++pc) && isdigit(*++pc)) ++pc;
+      switch (*pc) { default: MNL_ERR(MNL_SYM("SyntaxError")); case 'd': case 'i': ; }
+      if (MNL_UNLIKELY(*++pc)) MNL_ERR(MNL_SYM("SyntaxError"));
+      char res[512];
+      return sprintf(res, ("%" + string(format.begin(), format.end() - 1) + "lld").c_str(), rhs), res;
    }
 
    // F64, F32 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -379,6 +390,16 @@ namespace aux {
       char res[sizeof "+3.40282347e+38"];
       return sprintf(res, "%.8e", rhs), res;
    }
+   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat, string> _str(Dat rhs, const string &format) {
+      auto pc = format.c_str();
+      for (;;) { switch (*pc) case ' ': case '#': case '+': case '-': case '0': { ++pc; continue; } break; }
+      if (isdigit(*pc) && isdigit(*++pc)) ++pc;
+      if (*pc == '.' && isdigit(*++pc) && isdigit(*++pc)) ++pc;
+      switch (*pc) { default: MNL_ERR(MNL_SYM("SyntaxError")); case 'f': case 'F': case 'e': case 'E': case 'g': case 'G': case 'a': case 'A': ; }
+      if (MNL_UNLIKELY(*++pc)) MNL_ERR(MNL_SYM("SyntaxError"));
+      char res[512];
+      return sprintf(res, ("%" + format).c_str(), rhs), res;
+   }
    template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat, long long> _int(Dat rhs) {
       if (MNL_LIKELY((double)rhs >= min_i48) && MNL_LIKELY((double)rhs <= max_i48)) return (double)rhs;
       MNL_ERR(MNL_SYM("Overflow"));
@@ -387,6 +408,17 @@ namespace aux {
    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    template<typename Dat> MNL_INLINE static inline enable_same<Dat, unsigned> _neg(Dat rhs) { return -rhs; }
    template<typename Dat> MNL_INLINE static inline enable_same<Dat, unsigned> _abs(Dat rhs) { return +rhs; }
+   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   template<typename Dat> MNL_INLINE static inline enable_same<Dat, unsigned, string> _str(Dat rhs, const string &format) {
+      auto pc = format.c_str();
+      for (;;) { switch (*pc) case ' ': case '#': case '+': case '-': case '0': { ++pc; continue; } break; }
+      if (isdigit(*pc) && isdigit(*++pc)) ++pc;
+      if (*pc == '.' && isdigit(*++pc) && isdigit(*++pc)) ++pc;
+      switch (*pc) { default: MNL_ERR(MNL_SYM("SyntaxError")); case 'u': case 'o': case 'x': case 'X': ; }
+      if (MNL_UNLIKELY(*++pc)) MNL_ERR(MNL_SYM("SyntaxError"));
+      char res[512];
+      return sprintf(res, ("%" + format).c_str(), rhs), res;
+   }
 } // namespace aux
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -491,8 +523,10 @@ namespace aux {
             if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
             return cast<long long>(argv[0]);
          case sym::op_str:
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            return aux::_str(cast<long long>(argv[0]));
+            if (MNL_LIKELY(argc == 1)) return aux::_str(cast<long long>(argv[0]));
+            if (MNL_UNLIKELY(argc != 2)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+            if (MNL_UNLIKELY(!test<string>(argv[1]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+            return aux::_str(cast<long long>(argv[0]), cast<const string &>(argv[1]));
          }
          MNL_ERR(MNL_SYM("UnrecognizedOperation"));
       # define MNL_M(DAT) \
@@ -670,8 +704,10 @@ namespace aux {
             if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
             return cast<DAT>(argv[0]); \
          case sym::op_str: \
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return aux::_str(cast<DAT>(argv[0])); \
+            if (MNL_LIKELY(argc == 1)) return aux::_str(cast<DAT>(argv[0])); \
+            if (MNL_UNLIKELY(argc != 2)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
+            if (MNL_UNLIKELY(!test<string>(argv[1]))) MNL_ERR(MNL_SYM("TypeMismatch")); \
+            return aux::_str(cast<DAT>(argv[0]), cast<const string &>(argv[1])); \
          case sym::op_int: \
             if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
             return aux::_int(cast<DAT>(argv[0])); \
@@ -879,8 +915,10 @@ namespace aux {
             if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
             return cast<unsigned>(argv[0]);
          case op_str:
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            { char res[sizeof(unsigned) * 2 + sizeof "0x"]; return sprintf(res, "0x%08X", cast<unsigned>(argv[0])), res; }
+            if (MNL_LIKELY(argc == 1)) { char res[sizeof(unsigned) * 2 + sizeof "0x"]; return sprintf(res, "0x%08X", cast<unsigned>(argv[0])), res; }
+            if (MNL_UNLIKELY(argc != 2)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+            if (MNL_UNLIKELY(!test<string>(argv[1]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+            return aux::_str(cast<unsigned>(argv[0]), cast<const string &>(argv[1]));
          case op_int:
             if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
             return (long long)cast<unsigned>(argv[0]);
@@ -1201,8 +1239,18 @@ namespace aux {
          if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
          return MNL_LIKELY(rc() == 1) ? move(self) : dat;
       case sym::op_str:
-         if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-         return move(self);
+         if (MNL_LIKELY(argc == 0)) return move(self);
+         if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+         if (MNL_UNLIKELY(!test<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+         {  auto pc = cast<const string &>(argv[0]).c_str();
+            for (;;) { switch (*pc) case ' ': case '#': case '+': case '-': case '0': { ++pc; continue; } break; }
+            if (isdigit(*pc) && isdigit(*++pc)) ++pc;
+            if (*pc == '.' && isdigit(*++pc) && isdigit(*++pc)) ++pc;
+            switch (*pc) { default: MNL_ERR(MNL_SYM("SyntaxError")); case 's': ; }
+            if (MNL_UNLIKELY(*++pc)) MNL_ERR(MNL_SYM("SyntaxError"));
+            char res[512];
+            return sprintf(res, ("%" + cast<const string &>(argv[0])).c_str(), dat.c_str()), res;
+         }
       }
       return self.default_invoke(op, argc, argv);
    }

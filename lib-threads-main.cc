@@ -16,21 +16,20 @@
 # include "config.tcc"
 
 # ifdef MNL_WITH_MULTITHREADING
-   # include <stdlib.h>
-   # include <stdio.h>
-   # include <pthread.h>
-   # include <sys/time.h>
-   # include <sys/resource.h>
-   # include <utility>
-   # include <cstdlib>
-   # include <cstdio>
-   # include <thread>
-# endif
+
+# include <stdlib.h>
+# include <stdio.h>
+# include <pthread.h>
+# include <sys/time.h>
+# include <sys/resource.h>
+# include <utility>
+# include <cstdlib>
+# include <cstdio>
+# include <thread>
 
 # include "manool.hh"
 
 extern "C" mnl::code mnl_main() {
-# ifdef MNL_WITH_MULTITHREADING
    using std::_Exit;
    using std::fputs; using std::fflush;
    using std::move;
@@ -168,13 +167,14 @@ extern "C" mnl::code mnl_main() {
       }
    };
 
-# endif // # ifdef MNL_WITH_MULTITHREADING
-
    return expr_export{
-   # ifdef MNL_WITH_MULTITHREADING
       {"StartThread", make_lit(proc_StartThread{})},
       {"MakeMutex",   make_lit(proc_MakeMutex{})},
       {"MakeCond",    make_lit(proc_MakeCond{})},
-   # endif
    };
 }
+
+# else
+# include "manool.hh"
+extern "C" mnl::code mnl_main() { return mnl::expr_export{}; }
+# endif // # ifdef MNL_WITH_MULTITHREADING
