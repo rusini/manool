@@ -890,7 +890,7 @@ namespace aux { namespace pub {
 // I48 Range ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace aux { namespace pub {
-   template<bool /*Rev[erse]*/ = MNL_IF_CLANG(bool){}> struct range {
+   template<bool /*Rev[erse]*/ = false> struct range {
       long long lo, hi;
    private:
       MNL_INLINE inline val invoke(val &&, const sym &, int, val [], val *);
