@@ -156,26 +156,26 @@ namespace aux { namespace pub {
       void update(const sym &key, Val val) {
          if (key >= (int)rep.size())
             rep.resize(key + 1, undef);
-         if (undef == rep[key]) {
-            if (undef != (rep[key] = (move)(val))) sym::addref(key);
+         if (rep[key] == undef) {
+            if ((rep[key] = (move)(val)) != undef) sym::addref(key);
          } else {
-            if (undef == (rep[key] = (move)(val))) sym::release(key);
+            if ((rep[key] = (move)(val)) == undef) sym::release(key);
          }
       }
    public: // Compatibility/convenience stuff
       void clear()         { release(); rep.clear(); }
       void shrink_to_fit() { rep.shrink_to_fit(); }
    public:
-      MNL_NOINLINE void update(initializer_list<pair<sym, Val>> il) { for (auto &&pair: il) update(pair); }
-      MNL_INLINE   void update(pair<const sym &, Val> pair) { update(pair.first, (move)(pair.second)); }
+      MNL_NOINLINE void update(initializer_list<pair<sym, Val>> il) { for (auto &&kv: il) update(kv); }
+      MNL_INLINE   void update(pair<const sym &, Val> kv) { update(kv.first, (move)(kv.second)); }
    private: // Concrete representation
       vector<typename std::conditional<std::is_same<Val, bool>::value, unsigned char, Val>::type> rep;
       Val undef{};
    private: // Implementation helpers
       void addref()  const noexcept
-         { for (int key = 0; key < (int)rep.size(); ++key) if (MNL_UNLIKELY(undef != rep[key])) sym::addref (static_cast<decltype(sym::rep)>(key)); }
+         { for (int sn = 0; sn < (int)rep.size(); ++sn) if (MNL_UNLIKELY(rep[sn] != undef)) sym::addref (static_cast<decltype(sym::rep)>(sn)); }
       void release() const noexcept
-         { for (int key = 0; key < (int)rep.size(); ++key) if (MNL_UNLIKELY(undef != rep[key])) sym::release(static_cast<decltype(sym::rep)>(key)); }
+         { for (int sn = 0; sn < (int)rep.size(); ++sn) if (MNL_UNLIKELY(rep[sn] != undef)) sym::release(static_cast<decltype(sym::rep)>(sn)); }
    };
 
 }} // namespace aux::pub
