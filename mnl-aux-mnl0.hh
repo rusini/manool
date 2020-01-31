@@ -78,8 +78,8 @@
 # define MNL_DSO_UNHIDE_END   _Pragma("GCC visibility pop")           // ditto
 
 # if MNL_USE_PURE
-   # define MNL_PURE      __attribute__((__const__)) // currently have no use in MANOOL codebase but might be handy for plugin writers
-   # define MNL_NOCLOBBER __attribute__((__pure__))  // ditto
+   # define MNL_PURE      __attribute__((__const__))
+   # define MNL_NOCLOBBER __attribute__((__pure__))
 # elif MNL_USE_NOCLOBBER
    # define MNL_PURE      __attribute__((__pure__))
    # define MNL_NOCLOBBER __attribute__((__pure__))
