@@ -141,12 +141,12 @@ namespace aux { namespace pub {
       tab() = default;
       tab(const tab &rhs): rep(rhs.rep), undef(rhs.undef) { addref(); }
       MNL_INLINE tab(tab &&rhs) noexcept(std::is_nothrow_move_constructible<Val>::value): rep(move(rhs.rep)), undef((move)(rhs.undef)) { rhs.rep.clear(); }
-      ~tab() { release(); }
+      ~tab() noexcept { release(); }
       tab &operator=(const tab &rhs) { if (&rhs == this) return *this; release(); rep = rhs.rep, undef = rhs.undef; addref(); return *this; }
       MNL_INLINE tab &operator=(tab &&rhs) { swap(rhs); return *this; }
       MNL_INLINE void swap(tab &rhs) { using std::swap; swap(rep, rhs.rep), swap(undef, rhs.undef); }
    public: // Specialized construction
-      MNL_INLINE explicit tab(Val undef): undef((move)(undef)) {}
+      MNL_INLINE explicit tab(Val undef) noexcept(std::is_nothrow_move_constructible<Val>::value): undef((move)(undef)) {}
       MNL_INLINE tab(initializer_list<pair<sym, Val>> il) { update(il); }
       MNL_INLINE tab(Val undef, initializer_list<pair<sym, Val>> il): undef((move)(undef)) { update(il); }
    public: // Queries/incremental updates
