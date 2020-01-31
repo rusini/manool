@@ -828,9 +828,9 @@ namespace aux { namespace pub {
 namespace aux { namespace pub {
    class record_descr/*iptor*/ {
    public: // Standard operations
-      record_descr() noexcept: rep(store.end()) {}
+      MNL_INLINE record_descr() noexcept: rep(store.end()) {}
       record_descr(const record_descr &) noexcept;
-      record_descr(record_descr &&rhs) noexcept: rep(rhs.rep) { rhs.rep = store.end(); }
+      MNL_INLINE record_descr(record_descr &&rhs) noexcept: rep(rhs.rep) { rhs.rep = store.end(); }
       ~record_descr();
       record_descr &operator=(const record_descr &) noexcept;
       MNL_INLINE record_descr &operator=(record_descr &&rhs) noexcept { swap(rhs); return *this; }
@@ -846,8 +846,7 @@ namespace aux { namespace pub {
       static map<set<sym>, pair<const sym::tab<unsigned char>, /*atomic*/ long>> store;
       decltype(store)::iterator rep;
       MNL_IF_WITH_MT(static std::mutex mutex;)
-      MNL_INLINE inline void addref() const noexcept;
-      MNL_INLINE inline void release() const noexcept;
+      MNL_INLINE inline void addref() const noexcept, release() const noexcept;
    };
    MNL_INLINE inline void swap(record_descr &lhs, record_descr &rhs) noexcept { lhs.swap(rhs); }
    bool operator==(const record_descr &, const record_descr &) noexcept;

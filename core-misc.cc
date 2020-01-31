@@ -141,11 +141,11 @@ namespace MNL_AUX_UUID { using namespace aux;
    record_descr::~record_descr() { release(); }
    record_descr &record_descr::operator=(const record_descr &rhs) noexcept { rhs.addref(), release(), rep = rhs.rep; return *this; }
 
-   MNL_INLINE inline void record_descr::addref() const noexcept {
+   void record_descr::addref() const noexcept {
       if (rep == store.end()) return;
       MNL_IF_WITHOUT_MT(++rep->second.second) MNL_IF_WITH_MT(__atomic_add_fetch(&rep->second.second, 1, __ATOMIC_RELAXED));
    }
-   MNL_INLINE inline void record_descr::release() const noexcept {
+   void record_descr::release() const noexcept {
       if (rep == store.end()) return;
       if (MNL_UNLIKELY(! MNL_IF_WITHOUT_MT(--rep->second.second) MNL_IF_WITH_MT(__atomic_sub_fetch(&rep->second.second, 1, __ATOMIC_RELAXED)) ))
          MNL_IF_WITH_MT( std::lock_guard<std::mutex>{mutex}, [=]{ if (!__atomic_load_n(&rep->second.second, __ATOMIC_RELAXED)) )
