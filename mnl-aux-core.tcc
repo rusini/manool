@@ -187,8 +187,6 @@ namespace aux { MNL_NOINLINE inline sym::tab<signed char> disp(initializer_list<
 }}
 
 // class val ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-   template<typename> class box;
-
 namespace aux { namespace pub {
    typedef val ast; // val when used as an Abstract Syntax Tree - for documentation purposes
 
