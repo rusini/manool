@@ -49,10 +49,10 @@ namespace aux { namespace {
    void pub::heap_limit(long long size) noexcept {
       heap_lim = (long long)heap_use + size;
    }
-   long long pub::stk_reserve (long long size) noexcept { // TODO: this probably should be inline
+   long long pub::stk_reserve (long long size) noexcept {
       auto saved_size = stk_res; (stk_lim -= stk_res) += size, stk_res = size; return saved_size;
    }
-   long long pub::heap_reserve(long long size) noexcept { // TODO: this probably should be inline
+   long long pub::heap_reserve(long long size) noexcept {
       auto saved_size = heap_res; heap_res = size; return saved_size;
    }
    void aux::err_stk_overflow() {

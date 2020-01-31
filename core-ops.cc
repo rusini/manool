@@ -1498,7 +1498,7 @@ namespace aux {
 
 // Record Aggregate ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    template<int Size> val _record<Size>::invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) {
-      switch (op) { // TODO: consider more broad valid comparisons
+      switch (op) {
       case sym::op_apply:
          if (MNL_LIKELY(argc == 1)) { // Record[Key]
             if (MNL_UNLIKELY(!test<sym>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));

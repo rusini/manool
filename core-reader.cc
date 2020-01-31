@@ -65,7 +65,7 @@ namespace aux { namespace {
 
    MNL_INLINE inline void err_compile(const char *msg) { err_compile(msg, curr_loc); }
 
-   MNL_INLINE inline void err_syntax_error() { // TODO: MNL_NORETURN for diagnostic purposes in g++-8?
+   MNL_INLINE inline void err_syntax_error() {
       err_compile("syntax error (unexpected token)");
    }
    MNL_INLINE inline ast parse(decltype(curr_typ) typ = curr_typ) {

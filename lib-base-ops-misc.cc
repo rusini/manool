@@ -32,7 +32,7 @@ namespace MNL_AUX_UUID { using namespace aux;
          }
          sig_state = move(saved_sig_state);
          heap_reserve(saved_heap_res), stk_reserve(saved_stk_res);
-      } MNL_CATCH_UNEXPECTED // TODO: at least mention main/destructor/thread in the error message?
+      } MNL_CATCH_UNEXPECTED
    }
    object::object(_record<> &&attribs, shared_ptr<const _record<>> &&methods) noexcept
       : _record<>(move(attribs)), methods(move(methods)) {}
