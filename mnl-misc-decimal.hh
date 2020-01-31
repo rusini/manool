@@ -1,6 +1,6 @@
 // mnl-misc-decimal.hh -- thin wrapper around libdecnumber for IEEE 754 formats
 
-/*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
+/*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 
    This file is part of MANOOL.
 

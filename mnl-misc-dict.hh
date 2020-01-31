@@ -1,6 +1,6 @@
 // mnl-misc-dict.hh -- Dictionary ADT (with bounded behavior where std::map/set have UB)
 
-/*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
+/*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 
    This file is part of MANOOL.
 

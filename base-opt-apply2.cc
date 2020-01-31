@@ -1,6 +1,6 @@
 // base-opt-apply2.cc
 
-/*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
+/*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 
    This file is part of MANOOL.
 

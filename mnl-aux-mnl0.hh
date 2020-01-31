@@ -1,6 +1,6 @@
 // mnl-aux-mnl0.hh -- Minimal Infrastructure (mnl:: namespaces + host compiler idiosyncrasies) for otherwise self-sufficient modules
 
-/*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
+/*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 
    This file is part of MANOOL.
 
