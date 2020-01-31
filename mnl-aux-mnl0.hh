@@ -137,7 +137,7 @@
    # define MNL_IF_GCC8(...)
    # define MNL_IF_NOT_GCC8(...) __VA_ARGS__
 # endif
-# if !__clang__ && !__INTEL_COMPILER && __GNUC__ == 8
+# if !__clang__ && !__INTEL_COMPILER && __GNUC__ == 9
    # define MNL_IF_GCC9(...) __VA_ARGS__
    # define MNL_IF_NOT_GCC9(...)
 # else
