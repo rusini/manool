@@ -860,7 +860,7 @@ namespace aux { namespace pub {
 }} // namespace aux::pub
 namespace aux {
    template<int Size = 0> struct _record { // too large Size implies more copying at creation time!
-      static_assert(Size >= 0 && Size <= 12, "Invalid Size");
+      static_assert(Size >= 0 && Size <= 12, "Size >= 0 && Size <= 12");
       record_descr descr;
       typename std::conditional<Size >= 1 && Size <= 12, val [Size >= 1 && Size <= 12 ? Size : 1], vector<val>>::type items;
       void swap(_record &rhs) noexcept { std::swap(*this, rhs); } // default swap is nice here
