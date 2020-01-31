@@ -837,7 +837,6 @@ namespace aux { namespace pub {
       MNL_INLINE void swap(record_descr &rhs) noexcept { using std::swap; swap(rep, rhs.rep); }
    public: // Misc public operations
       record_descr(set<sym> /*items*/), record_descr(initializer_list<const char *>); // precond: items.size() <= (unsigned char)-1
-      template<typename Dummy> friend const record_descr &Record_descr(initializer_list<const char *>, Dummy);
       MNL_INLINE const set<sym> &items() const noexcept { return rep->first; }
       MNL_INLINE const sym::tab<unsigned char> &tab() const noexcept { return rep->second.first; }
       MNL_INLINE int operator[](const sym &id) const noexcept { return tab()[id]; }
@@ -853,11 +852,8 @@ namespace aux { namespace pub {
    MNL_INLINE inline void swap(record_descr &lhs, record_descr &rhs) noexcept { lhs.swap(rhs); }
    bool operator==(const record_descr &, const record_descr &) noexcept;
    MNL_INLINE inline bool operator!=(const record_descr &lhs, const record_descr &rhs) noexcept { return std::rel_ops::operator!=(lhs, rhs); }
-
-   template<typename Dummy> MNL_INLINE inline const record_descr &Record_descr(initializer_list<const char *> il, Dummy)
-      { static const record_descr res = il; return res; }
-   // TODO: test for records
 }} // namespace aux::pub
+   # define MNL_RECORD_DESCR(...) MNL_AUX_INIT(::mnl::record_descr({__VA_ARGS__}))
 namespace aux {
    template<int Size = 0> struct _record { // too large Size implies more copying at creation time!
       static_assert(Size >= 0 && Size <= 12, "Size >= 0 && Size <= 12");
