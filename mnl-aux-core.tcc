@@ -907,4 +907,4 @@ namespace aux { namespace pub {
    extern template class box<range<>>;
    extern template class box<range<true>>;
 
-} // MNL_AUX_UUID
+} // namespace MNL_AUX_UUID

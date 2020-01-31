@@ -139,4 +139,3 @@ void *operator new[](std::size_t size) { return mnl::_new(size); }
 void *operator new[](std::size_t size, const std::nothrow_t &) noexcept { return mnl::_new(size, std::nothrow); }
 void operator delete[](void *ptr) noexcept { mnl::_delete(ptr); }
 void operator delete[](void *ptr, const std::nothrow_t &) noexcept { mnl::_delete(ptr); }
-

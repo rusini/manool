@@ -1,6 +1,6 @@
 Try, e.g.:
 
-cd <check-in directory>
+cd <check-out directory>
 make
 echo $'{{extern "manool.org.18/std/0.3/all"} in Out.WriteLine["Hello, world!"]}' | ./mnl /dev/stdin
 
