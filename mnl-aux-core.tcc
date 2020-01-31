@@ -328,7 +328,7 @@ namespace aux { namespace pub {
       friend sym;
       friend val _eq(val &&, val &&), _ne(val &&, val &&), _lt(val &&, val &&), _le(val &&, val &&), _gt(val &&, val &&), _ge(val &&, val &&);
       friend val _add(val &&, val &&), _sub(val &&, val &&), _mul(val &&, val &&), _neg(val &&), _abs(val &&), _xor(val &&, val &&), _not(val &&);
-      friend struct proc_Min; friend struct proc_Max;
+      friend class proc_Min; friend class proc_Max;
    };
    MNL_INLINE inline void swap(val &lhs, val &rhs) noexcept { lhs.swap(rhs); }
    // defined in friend declarations above:
@@ -816,8 +816,8 @@ namespace aux { namespace pub {
 }} // namespace aux::pub
 
 namespace aux { namespace pub {
-   struct proc_Min { MNL_INLINE static inline val invoke(val &&, const sym &, int, val [], val *); };
-   struct proc_Max { MNL_INLINE static inline val invoke(val &&, const sym &, int, val [], val *); };
+   class proc_Min { MNL_INLINE static inline val invoke(val &&, const sym &, int, val [], val *); friend box<proc_Min>; };
+   class proc_Max { MNL_INLINE static inline val invoke(val &&, const sym &, int, val [], val *); friend box<proc_Max>; };
 }} // namespace aux::pub
    extern template class box<proc_Min>;
    extern template class box<proc_Max>;
