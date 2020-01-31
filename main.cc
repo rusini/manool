@@ -10,7 +10,7 @@
    MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <https://www.gnu.org/licenses/>.  */
 
 
 # include "config.tcc"
@@ -285,9 +285,9 @@ int main(int argc, char *argv[]) {
       "MNL_HEAP  Maximum allowed utilization of heap memory, in bytes\n"
       "MNL_PATH  ':'-separated list of directories in which to look for extern entities\n\n"
       "mnlexec (MANOOL) 0.3.0\n"
-      "Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)\nLicense GPLv3: GNU GPL version 3 <http://gnu.org/licenses/gpl-3.0.html>\n"
+      "Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)\nLicense GPLv3: GNU GPL version 3 <https://gnu.org/licenses/gpl-3.0.html>\n"
       "This is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n\n"
-      "Report bugs to: bugs@manool.org\nMANOOL home page: <http://manool.org>\n\n"), EXIT_SUCCESS;
+      "Report bugs to: bugs@manool.org\nMANOOL home page: <https://manool.org>\n\n"), EXIT_SUCCESS;
    if (::setenv("MNL_MNLEXEC", *argv++, true))
       return perror("Cannot setenv"), EXIT_FAILURE;
 
