@@ -163,7 +163,7 @@ namespace aux { namespace pub {
          }
       }
    public: // Compatibility/convenience stuff
-      void clear()         { rep.clear(); }
+      void clear()         { release(); rep.clear(); }
       void shrink_to_fit() { rep.shrink_to_fit(); }
    public:
       MNL_NOINLINE void update(initializer_list<pair<sym, Val>> il) { for (auto &&pair: il) update(pair); }
