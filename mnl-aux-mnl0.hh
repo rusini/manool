@@ -13,7 +13,8 @@
    You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <https://www.gnu.org/licenses/>.  */
 
 
-# pragma once
+# ifndef MNL_INCLUDED_MNL0
+# define MNL_INCLUDED_MNL0
 
 // Toolchain Checks ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 # ifndef MNL_C_SOURCE
@@ -163,3 +164,5 @@
    # include <iostream>
    namespace MNL_AUX_UUID { namespace aux { using std::cerr; } }
 # endif
+
+# endif // # ifndef MNL_INCLUDED_MNL0

@@ -13,7 +13,8 @@
    You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <https://www.gnu.org/licenses/>.  */
 
 
-# pragma once
+# ifndef MNL_INCLUDED_MEMMGM
+# define MNL_INCLUDED_MEMMGM
 
 # include "mnl-aux-mnl0.hh"
 
@@ -36,3 +37,5 @@ namespace aux { namespace pub {
 }} // namespace aux::pub
 
 } // namespace MNL_AUX_UUID
+
+#endif // # ifndef MNL_INCLUDED_MEMMGM

@@ -13,7 +13,8 @@
    You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <https://www.gnu.org/licenses/>.  */
 
 
-# pragma once
+# ifndef MNL_INCLUDED_BASE
+# define MNL_INCLUDED_BASE
 
 # include <list>
 
@@ -76,3 +77,5 @@ namespace aux { namespace pub {
    extern template class box<strong_pointer>;
 
 } // namespace MNL_AUX_UUID
+
+# endif // # ifndef MNL_INCLUDED_BASE
