@@ -827,7 +827,7 @@ namespace aux { namespace pub {
 // Record Aggregate ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace aux { namespace pub {
    class record_descr/*iptor*/ {
-   public:
+   public: // Standard operations
       record_descr() noexcept: rep(store.end()) {}
       record_descr(const record_descr &) noexcept;
       record_descr(record_descr &&rhs) noexcept: rep(rhs.rep) { rhs.rep = store.end(); }
@@ -835,7 +835,7 @@ namespace aux { namespace pub {
       record_descr &operator=(const record_descr &) noexcept;
       MNL_INLINE record_descr &operator=(record_descr &&rhs) noexcept { swap(rhs); return *this; }
       MNL_INLINE void swap(record_descr &rhs) noexcept { using std::swap; swap(rep, rhs.rep); }
-   public:
+   public: // Misc public operations
       record_descr(set<sym> /*items*/), record_descr(initializer_list<const char *>); // precond: items.size() <= (unsigned char)-1
       template<typename Dummy> friend const record_descr &Record_descr(initializer_list<const char *>, Dummy);
       MNL_INLINE const set<sym> &items() const noexcept { return rep->first; }
@@ -843,7 +843,7 @@ namespace aux { namespace pub {
       MNL_INLINE int operator[](const sym &id) const noexcept { return tab()[id]; }
       MNL_INLINE bool has(const sym &id) const noexcept { return (*this)[id] != (unsigned char)-1; }
       MNL_INLINE friend bool operator==(const record_descr &lhs, const record_descr &rhs) noexcept { return lhs.rep == rhs.rep; }
-   private:
+   private: // Concrete representation and implementation helpers
       static map<set<sym>, pair<const sym::tab<unsigned char>, /*atomic*/ long>> store;
       decltype(store)::iterator rep;
       MNL_IF_WITH_MT(static std::mutex mutex;)
