@@ -32,10 +32,8 @@ namespace MNL_AUX_UUID { using namespace aux;
    code pub::compile(const form &form, const loc &_loc) { return // *** The Compiler Core Dispatcher! ***
       test<sym>(form) && symtab[cast<const sym &>(form)] ?
          symtab[cast<const sym &>(form)] :
-   # if 1 // TODO: think about other restrictions: _, _Sym, mb non-standard special symbols
       test<sym>(form) && ((const string &)cast<const sym &>(form))[0] >= 'a' && ((const string &)cast<const sym &>(form))[0] <= 'z' ?
          (err_compile("unbound keyword (nested in this context)", form._loc(_loc)), code{}) :
-   # endif
       test<long long>(form) || test<string>(form) || test<sym>(form) ?
          [&]()->code{ code make_lit(const val &); return make_lit(form); }() : // actually from Base
       form.is_list() && !form.empty() ?
