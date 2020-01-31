@@ -1569,7 +1569,6 @@ namespace aux {
       }
       return self.default_invoke(op, argc, argv);
    }
-   template class box<_record<   >>;
    template class box<_record<0x1>>;
    template class box<_record<0x2>>;
    template class box<_record<0x3>>;
@@ -1582,6 +1581,7 @@ namespace aux {
    template class box<_record<0xA>>;
    template class box<_record<0xB>>;
    template class box<_record<0xC>>;
+   template class box<_record<>>;
 
 // I48 Range ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    template<bool Rev> val range<Rev>::invoke(val &&self, const sym &op, int argc, val argv[], val *) {

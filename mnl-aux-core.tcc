@@ -871,7 +871,6 @@ namespace aux {
    };
 } // namespace aux
    template<> MNL_INLINE inline box<aux::_record<>>::~box() { while (!dat.items.empty()) dat.items.pop_back(); }
-   extern template class box<aux::_record<   >>;
    extern template class box<aux::_record<0x1>>;
    extern template class box<aux::_record<0x2>>;
    extern template class box<aux::_record<0x3>>;
@@ -884,6 +883,7 @@ namespace aux {
    extern template class box<aux::_record<0xA>>;
    extern template class box<aux::_record<0xB>>;
    extern template class box<aux::_record<0xC>>;
+   extern template class box<aux::_record<>>;
 namespace aux { namespace pub {
    template<int Size> using record = _record<(Size >= 1 && Size <= (unsigned char)-1 ? Size <= 12 ? Size : 0 : -1)>;
    // invariant: size(r.items) == size(r.descr.items())
