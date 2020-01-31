@@ -26,7 +26,7 @@ namespace MNL_AUX_UUID { using namespace aux;
       using std::time; // <time>
    }
 
-// Translation Infrastructure /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Translation Infrastructure //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    MNL_IF_WITH_MT(thread_local) decltype(symtab) pub::symtab;
 
    code pub::compile(const form &form, const loc &_loc) { return // *** The Compiler Core Dispatcher! ***
@@ -51,7 +51,7 @@ namespace MNL_AUX_UUID { using namespace aux;
          (sprintf(buf, " %d:%d-%d:%d Error: ", loc._start.first, loc._start.second, loc._final.first, loc._final.second - 1), buf)) + msg};
    }
 
-// class sym //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// class sym ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    MNL_PRIORITY(1003) decltype(sym::pool) sym::pool;
    MNL_IF_WITH_MT(MNL_PRIORITY(1004) decltype(sym::mutex) sym::mutex;)
 
@@ -98,7 +98,7 @@ namespace MNL_AUX_UUID { using namespace aux;
       MNL_IF_WITH_MT( }(); )
    }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    val val::default_invoke(const sym &op, int argc, val argv[]) {
    switch (MNL_DISP("==", "<>", "Order", "Clone", "DeepClone", "Str")[op]) {
    case 1: // ==
@@ -124,7 +124,7 @@ namespace MNL_AUX_UUID { using namespace aux;
       MNL_ERR(MNL_SYM("UnrecognizedOperation"));
    }}
 
-// Signals, Exceptions, and Invocation Traces /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Signals, Exceptions, and Invocation Traces //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    MNL_IF_WITH_MT(thread_local) decltype(sig_state) pub::sig_state;
    MNL_IF_WITH_MT(thread_local) decltype(sig_trace) pub::sig_trace = []()->decltype(sig_trace){ decltype(sig_trace) res; res.reserve(100 + 1); return res; }();
    void pub::trace_execute (const loc &loc) { if (loc.origin && sig_trace.size() < sig_trace.capacity()) sig_trace.push_back({loc, "evaluating"});         throw; }
@@ -136,7 +136,7 @@ namespace MNL_AUX_UUID { using namespace aux;
    void aux::error(const loc &loc, const sym &err)
       { if (loc.origin && sig_trace.size() < sig_trace.capacity()) sig_trace.push_back({loc, "evaluating"}); throw make_pair(err, val{}); }
 
-// Record Descriptors /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Record Descriptors //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    record_descr::record_descr(const record_descr &rhs) noexcept: rep(rhs.rep) { addref(); }
    record_descr::~record_descr() { release(); }
    record_descr &record_descr::operator=(const record_descr &rhs) noexcept { rhs.addref(), release(), rep = rhs.rep; return *this; }
@@ -167,7 +167,7 @@ namespace MNL_AUX_UUID { using namespace aux;
    decltype(record_descr::store) record_descr::store;
    MNL_IF_WITH_MT(decltype(record_descr::mutex) record_descr::mutex;)
 
-// Seed Legacy Random Number Generator ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Seed Legacy Random Number Generator /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace aux { namespace { MNL_PRIORITY(1000) struct { int _ = (srand(time({})), 0); } _srand; }}
 
 } // namespace MNL_AUX_UUID
