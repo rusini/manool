@@ -74,7 +74,7 @@ manool-objs = $(patsubst %,build/obj/%.o, \
    misc-memmgm \
    misc-decimal \
    lib-base-main2 \
-   lib-base-ops-aggregate \
+   lib-base-ops-composite \
    lib-base-ops-misc \
    lib-ieee754-dec-main2 \
    lib-ieee754-cmpx-main2 \
