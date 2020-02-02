@@ -26,7 +26,6 @@ namespace MNL_AUX_UUID { using namespace aux;
    }
 
 namespace aux { namespace {
-
    MNL_IF_WITH_MT(thread_local) enum {
       tk_end,
       tk_lit,
@@ -58,7 +57,6 @@ namespace aux { namespace {
 
    void scan_startup(const string &, string &&), scan_cleanup() noexcept;
    void scan(); // precond: C's locale is "C"
-
 }} // namespace aux::<unnamed>
 
 // Parser //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

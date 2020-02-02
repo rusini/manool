@@ -39,7 +39,6 @@ namespace aux {
 } // namespace aux
 
 namespace aux { namespace pub {
-
    template<typename Key> struct default_order
       { int operator()(const Key &lhs, const Key &rhs) const noexcept(noexcept(order(lhs, rhs))) { return order(lhs, rhs); } };
 
@@ -164,7 +163,6 @@ namespace aux { namespace pub {
       int                       height;
       node                      *parent;
    };
-
    template<typename Key, typename Val, typename Ord> inline int dict<Key, Val, Ord>::max(int lhs, int rhs) {
       return lhs >= rhs ? lhs : rhs;
    }
@@ -243,13 +241,10 @@ namespace aux { namespace pub {
       while (res->child[dir]) res = res->child[dir];
       return res;
    }
-
 }} // namespace aux::pub
 
    // Iterators ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 namespace aux {
-
    template<typename Key, typename Val, typename Ord, typename IterVal>
    class dict_iterator: public std::iterator<std::bidirectional_iterator_tag, IterVal> { // Strictly conforming to STL bidirectional iterators
    public: // Standard operations
@@ -317,7 +312,6 @@ namespace aux {
       dict<Key, Val, Ord>::crbegin() const noexcept { return rbegin(); }
    template<typename Key, typename Val, typename Ord> inline typename dict<Key, Val, Ord>::const_reverse_iterator
       dict<Key, Val, Ord>::crend()   const noexcept { return rend(); }
-
 } // namespace aux
 
 } // namespace MNL_AUX_UUID

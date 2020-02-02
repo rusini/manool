@@ -46,8 +46,7 @@ namespace MNL_AUX_UUID {
    /* For atomics and memory order refer to:
       - http://en.cppreference.com/w/cpp/atomic/memory_order
       - http://preshing.com
-      - http://www.boost.org/doc/libs/1_66_0/doc/html/atomic/usage_examples.html
-   */
+      - http://www.boost.org/doc/libs/1_66_0/doc/html/atomic/usage_examples.html  */
 
 // Utilities for Static Initialization /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    # define MNL_AUX_INIT(...) []()noexcept->const decltype(__VA_ARGS__) &{ \
@@ -65,7 +64,6 @@ namespace aux {
 } // namespace aux
 
 // Preliminary Declarations ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
    namespace aux { namespace pub { class val; } }
    template<typename> class box;
    namespace aux { template<int> struct _record; }
@@ -75,9 +73,7 @@ namespace aux {
    namespace aux { template<size_t Argc> using args = array<val, Argc>; } // assume any g++-like compiler relaxes ISO/IEC 14882:2011 S8.5.1 P11 as in C++14
 
 // class sym ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 namespace aux { namespace pub {
-
    class sym/*bol*/ {
    public: // Standard operations
       MNL_INLINE sym() noexcept: sym{decltype(rep){}} {}
@@ -177,7 +173,6 @@ namespace aux { namespace pub {
       void release() const noexcept
          { for (int sn = 0; sn < (int)rep.size(); ++sn) if (MNL_UNLIKELY(rep[sn] != undef)) sym::release(static_cast<decltype(sym::rep)>(sn)); }
    };
-
 }} // namespace aux::pub
 
    # define MNL_SYM(TXT)  MNL_AUX_INIT(::mnl::sym(TXT))
@@ -888,7 +883,6 @@ namespace aux { namespace pub {
 }} // namespace aux::pub
 
 // I48 Range ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 namespace aux { namespace pub {
    template<bool /*Rev[erse]*/ = false> struct range {
       long long lo, hi;
