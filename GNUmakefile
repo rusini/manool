@@ -1,4 +1,4 @@
-# GNUmakefile
+# GNUmakefile -- MANOOL build Makefile
 
 #    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 #

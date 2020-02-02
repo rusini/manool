@@ -1,4 +1,4 @@
-// core-misc.cc
+// core-misc.cc -- core miscellaneous
 
 /*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 

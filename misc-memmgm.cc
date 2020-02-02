@@ -1,4 +1,4 @@
-// misc-memmgm.cc -- General Memory Management
+// misc-memmgm.cc -- general memory management
 
 /*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 

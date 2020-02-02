@@ -1,4 +1,4 @@
-// core-ops.cc
+// core-ops.cc -- core operations
 
 /*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 

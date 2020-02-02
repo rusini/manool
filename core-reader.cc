@@ -1,4 +1,4 @@
-// core-reader.cc
+// core-reader.cc -- scanner and parser
 
 /*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 

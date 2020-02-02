@@ -29,7 +29,7 @@ namespace MNL_AUX_UUID {
 namespace aux { namespace pub {
    template<int Width, bool Bankers = true> class dec/*imal FP*/ {
       static_assert(Width == 64 || Width == 128, "Width == 64 || Width == 128");
-   public:
+   public: // Construction and simple assignment
       dec() = default;
       dec &operator=(const dec &) = default;
       MNL_INLINE dec(const char rhs[]) noexcept: dec(make(rhs)) {}
@@ -41,18 +41,18 @@ namespace aux { namespace pub {
       MNL_INLINE dec &operator=(int rhs) noexcept           { return *this = rhs; }
       MNL_INLINE dec &operator=(unsigned rhs) noexcept      { return *this = rhs; }
       MNL_INLINE explicit dec(dec<Width, !Bankers> rhs) noexcept: _(rhs._) {}
-   public:
+   public: // Extraction
       typedef char str_buf[Width == 64 ? 25 : Width == 128 ? 43 : 0];
       char *to_str(str_buf) const noexcept, *to_eng_str(str_buf) const noexcept;
       MNL_INLINE string to_str() const     { str_buf buf; return to_str(buf), buf; }
       MNL_INLINE string to_eng_str() const { str_buf buf; return to_eng_str(buf), buf; }
       MNL_INLINE operator string() const   { return to_str(); }
-   public:
+   public: // Compound assignment
       MNL_INLINE dec &operator+=(dec rhs) noexcept { return *this = *this + rhs; }
       MNL_INLINE dec &operator-=(dec rhs) noexcept { return *this = *this - rhs; }
       MNL_INLINE dec &operator*=(dec rhs) noexcept { return *this = *this * rhs; }
       MNL_INLINE dec &operator/=(dec rhs) noexcept { return *this = *this / rhs; }
-   private:
+   private: // Internals
       typename std::aligned_storage<Width / 8, 8>::type _;
       static dec make(const char []) noexcept, make(int) noexcept, make(unsigned) noexcept;
    };

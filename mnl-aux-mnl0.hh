@@ -1,4 +1,4 @@
-// mnl-aux-mnl0.hh -- Minimal Infrastructure (mnl:: namespaces + host compiler idiosyncrasies) for otherwise self-sufficient modules
+// mnl-aux-mnl0.hh -- minimal infrastructure (mnl:: Namespaces + Host Compiler Idiosyncrasies) for otherwise self-sufficient modules
 
 /*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 

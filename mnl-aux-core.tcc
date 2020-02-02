@@ -1,4 +1,4 @@
-// mnl-aux-core -- MANOOL core
+// mnl-aux-core.tcc -- MANOOL core
 
 /*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 
@@ -636,7 +636,7 @@ namespace aux { namespace pub {
    MNL_NORETURN void err_compile(const char *msg, const loc &);
 }} // namespace aux::pub
 
-// Operations //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Primitive Operations ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace aux { namespace pub { constexpr auto max_i48 = (1ll << 48 - 1) - 1, min_i48 = -max_i48; } }
 

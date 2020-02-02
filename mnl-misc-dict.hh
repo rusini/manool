@@ -1,4 +1,4 @@
-// mnl-misc-dict.hh -- Dictionary ADT (with bounded behavior where std::map/set have UB)
+// mnl-misc-dict.hh -- dictionary ADT (with bounded behavior where std::map/set have UB)
 
 /*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 
@@ -243,7 +243,7 @@ namespace aux { namespace pub {
    }
 }} // namespace aux::pub
 
-   // Iterators ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Iterators ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace aux {
    template<typename Key, typename Val, typename Ord, typename IterVal>
    class dict_iterator: public std::iterator<std::bidirectional_iterator_tag, IterVal> { // Strictly conforming to STL bidirectional iterators

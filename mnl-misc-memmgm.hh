@@ -1,4 +1,4 @@
-// mnl-misc-memmgm.hh -- General Memory Management
+// mnl-misc-memmgm.hh -- general memory management
 
 /*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 
