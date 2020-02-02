@@ -127,14 +127,15 @@ namespace MNL_AUX_UUID { using namespace aux;
 // Signals, Exceptions, and Invocation Traces //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    MNL_IF_WITH_MT(thread_local) decltype(sig_state) pub::sig_state;
    MNL_IF_WITH_MT(thread_local) decltype(sig_trace) pub::sig_trace = []()->decltype(sig_trace){ decltype(sig_trace) res; res.reserve(100 + 1); return res; }();
-   void pub::trace_execute (const loc &loc) { if (loc.origin && sig_trace.size() < sig_trace.capacity()) sig_trace.push_back({loc, "evaluating"});         throw; }
-   void pub::trace_exec_in (const loc &loc) { if (loc.origin && sig_trace.size() < sig_trace.capacity()) sig_trace.push_back({loc, "storing a value"});    throw; }
-   void pub::trace_exec_out(const loc &loc) { if (loc.origin && sig_trace.size() < sig_trace.capacity()) sig_trace.push_back({loc, "moving-out a value"}); throw; }
 
    void aux::error(const sym &err)
       { throw make_pair(err, val{}); }
    void aux::error(const loc &loc, const sym &err)
       { if (loc.origin && sig_trace.size() < sig_trace.capacity()) sig_trace.push_back({loc, "evaluating"}); throw make_pair(err, val{}); }
+
+   void pub::trace_execute (const loc &loc) { if (loc.origin && sig_trace.size() < sig_trace.capacity()) sig_trace.push_back({loc, "evaluating"});         throw; }
+   void pub::trace_exec_in (const loc &loc) { if (loc.origin && sig_trace.size() < sig_trace.capacity()) sig_trace.push_back({loc, "storing a value"});    throw; }
+   void pub::trace_exec_out(const loc &loc) { if (loc.origin && sig_trace.size() < sig_trace.capacity()) sig_trace.push_back({loc, "moving-out a value"}); throw; }
 
 // Record Descriptors //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    record_descr::record_descr(const record_descr &rhs) noexcept: rep(rhs.rep) { addref(); }

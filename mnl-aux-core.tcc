@@ -638,6 +638,7 @@ namespace aux { namespace pub {
 
    extern MNL_IF_WITH_MT(thread_local) sym::tab<> symtab;
    code compile(const form &, const loc & = MNL_IF_GCC5(loc)MNL_IF_GCC6(loc){});
+   MNL_NORETURN void err_compile(const char *msg, const loc &);
 }} // namespace aux::pub
 
 // Operations //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -804,15 +805,6 @@ namespace aux { namespace pub {
    template<typename Dat> MNL_INLINE inline enable_same<Dat, decltype(nullptr), bool> _ne(Dat, val &&rhs) noexcept
       { return !test<>(rhs); }
 
-   // Convenience Routines /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-   MNL_NORETURN void err_compile(const char *msg, const loc &);
-
-   template<typename Dat> MNL_INLINE inline Dat safe_cast(const val &rhs)
-      { if (MNL_LIKELY(test<Dat>(rhs))) return cast<Dat>(rhs); MNL_ERR(MNL_SYM("TypeMismatch")); }
-   template<typename Dat> MNL_INLINE inline Dat safe_cast(const loc &loc, const val &rhs)
-      { if (MNL_LIKELY(test<Dat>(rhs))) return cast<Dat>(rhs); MNL_ERR_LOC(loc, MNL_SYM("TypeMismatch")); }
-
 }} // namespace aux::pub
 
 namespace aux { namespace pub {
@@ -821,6 +813,14 @@ namespace aux { namespace pub {
 }} // namespace aux::pub
    extern template class box<proc_Min>;
    extern template class box<proc_Max>;
+
+// Convenience Routines ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+namespace aux { namespace pub {
+   template<typename Dat> MNL_INLINE inline Dat safe_cast(const val &rhs)
+      { if (MNL_LIKELY(test<Dat>(rhs))) return cast<Dat>(rhs); MNL_ERR(MNL_SYM("TypeMismatch")); }
+   template<typename Dat> MNL_INLINE inline Dat safe_cast(const loc &loc, const val &rhs)
+      { if (MNL_LIKELY(test<Dat>(rhs))) return cast<Dat>(rhs); MNL_ERR_LOC(loc, MNL_SYM("TypeMismatch")); }
+}} // namespace aux::pub
 
 // Record Aggregate ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace aux { namespace pub {
