@@ -1493,8 +1493,9 @@ namespace aux {
             return move(argv[0]);
          }
          MNL_ERR(MNL_SYM("TypeMismatch"));
+      case 0:
+         return self.default_invoke(op, argc, argv);
       }
-      return self.default_invoke(op, argc, argv);
    }
 
 // Record Aggregate ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
