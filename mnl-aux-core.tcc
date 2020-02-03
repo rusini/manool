@@ -85,7 +85,7 @@ namespace aux { namespace pub {
       MNL_INLINE friend bool operator==(const sym &lhs, const sym &rhs) noexcept { return lhs.rep == rhs; }
       MNL_INLINE friend bool operator< (const sym &lhs, const sym &rhs) noexcept { auto mask = MNL_AUX_RAND(unsigned); return (lhs ^ mask) < (rhs ^ mask); }
       MNL_INLINE explicit operator bool() const noexcept { return rep; }
-   public: // Construction/extraction via conversion
+   public: // Construction and extraction via conversion
       sym(string), sym(const char *);
       explicit sym(decltype(nullptr));
       MNL_INLINE explicit operator const string &() const noexcept { return inverse[rep]->first; } // no sync required
@@ -145,7 +145,7 @@ namespace aux { namespace pub {
       MNL_INLINE explicit tab(Val undef) noexcept(std::is_nothrow_move_constructible<Val>::value): undef((move)(undef)) {}
       MNL_INLINE tab(initializer_list<pair<sym, Val>> il) { update(il); }
       MNL_INLINE tab(Val undef, initializer_list<pair<sym, Val>> il): undef((move)(undef)) { update(il); }
-   public: // Queries/incremental updates
+   public: // Queries and incremental updates
       MNL_INLINE typename std::conditional<std::is_same<Val, bool>::value, bool, const Val &>::type operator[](const sym &key) const noexcept {
          return MNL_LIKELY(key < (int)rep.size()) ? rep[key] : undef;
       }
@@ -195,7 +195,7 @@ namespace aux { namespace pub {
       MNL_INLINE val &operator=(val &&rhs) noexcept { release(), rep = rhs.rep, rhs.rep = {0x7FF9u}; return *this; }
       MNL_INLINE void swap(val &rhs) noexcept { using std::swap; swap(rep, rhs.rep); }
       MNL_INLINE explicit operator bool() const noexcept { return *this != nullptr; }
-   public: // Construction - implicit conversion (to)
+   public: // Construction -- Implicit conversion (to)
       MNL_INLINE val(long long dat) noexcept: rep{0x7FFAu, dat} {} // valid range: min_i48 .. max_i48
       MNL_INLINE val(int dat) noexcept:       val((long long)dat) {}
       MNL_INLINE val(double dat) noexcept: rep(dat) {}
@@ -216,7 +216,7 @@ namespace aux { namespace pub {
       static constexpr int max_argc = sym::max_argc;
       val operator()(int argc, val argv[], val *argv_out = {}) &&; // functional application - !argc => !argv && !argv_out
       val default_invoke(const sym &op, int argc, val argv[]);
-      long rc() const noexcept; // reference counter
+      long rc /*reference counter*/() const noexcept;
    private: // Concrete representation
       static_assert(sizeof(double) == 8, "sizeof(double) == 8");
       class MNL_ALIGN(8) rep { // bit-layout management - IEEE 754 FP representation and uniform FP endianness are assumed (and NOT checked)
@@ -228,7 +228,7 @@ namespace aux { namespace pub {
          };
          unsigned short _tag;
       public:
-         MNL_INLINE rep() noexcept {} // unused
+         MNL_INLINE rep() noexcept /*unused*/ {}
          MNL_INLINE ~rep() {}
          MNL_INLINE rep(const rep &rhs) noexcept { copy(rhs); }
          MNL_INLINE rep &operator=(const rep &rhs) noexcept { copy(rhs); return *this; }
@@ -244,7 +244,7 @@ namespace aux { namespace pub {
          MNL_INLINE unsigned tag() const noexcept { return _tag; }
          template<typename Dat> Dat dat() const noexcept;
       private:
-         MNL_INLINE void copy(const rep &rhs) noexcept { // assumption: memcpy copies the union representation AND its active member, if any exists
+         MNL_INLINE void copy(const rep &rhs) noexcept { // assume memcpy copies the union representation AND its active member, if any exists
          # if __clang__ || __GNUC__ >= 5 && !__INTEL_COMPILER
             memmove
          # else
@@ -262,7 +262,7 @@ namespace aux { namespace pub {
       template<typename Dat = decltype(nullptr)> Dat  cast() const noexcept(std::is_nothrow_copy_constructible<Dat>::value);
       MNL_IF_CLANG(public:)
       class root;
-   public: // Convenience - Functional application
+   public: // Convenience -- Functional application
       /* val operator()(int argc, val argv[], val *argv_out = {}) &&; // essential form */
       MNL_INLINE val operator()(const val &arg, val *arg_out = {}) && { return move(*this)(val(arg), arg_out); }
       MNL_INLINE val operator()(val &&arg, val *arg_out = {}) && { return move(*this)(1, &arg, arg_out); }
@@ -294,11 +294,11 @@ namespace aux { namespace pub {
          { return val(*this)(loc, move(args), args_out); }
       MNL_INLINE val operator()(const loc &loc) const &
          { return val(*this)(loc); }
-   public: // Convenience - Direct comparison with other types
+   public: // Convenience -- Direct comparison with other types
       bool operator==(decltype(nullptr)) const noexcept, operator==(const sym &) const noexcept;
       MNL_INLINE bool operator!=(decltype(nullptr)) const noexcept { return !(*this == nullptr); }
       MNL_INLINE bool operator!=(const sym &rhs) const noexcept { return !(*this == rhs); }
-   public: // Convenience - Working with ASTs
+   public: // Convenience -- Working with ASTs
       val(vector<ast>, loc);
       bool is_list() const noexcept;
       vector<ast>::const_iterator begin() const noexcept, end() const noexcept;
@@ -569,9 +569,9 @@ namespace aux { namespace pub {
    ast parse(const string &, string origin = "<anonymous>");
    MNL_INLINE inline ast parse(string &&source, string origin = "<anonymous>") // parse won't take advantage of source's resources, but
       { auto res = parse(source, move(origin)); source.clear(); return res; } // this is to release its resources earlier, which is useful in practice
-   typedef ast form;
+   typedef ast form; // AST when it is to be compiled as a whole - for documentation purposes
 
-   class code { // Compiled entity
+   class code /*compiled entity*/ {
    public: // Standard operations
       code() = default;
       MNL_INLINE code(const code &rhs) noexcept: rep(rhs.rep) { addref(); }
@@ -582,7 +582,7 @@ namespace aux { namespace pub {
       MNL_INLINE void swap(code &rhs) noexcept { using std::swap; swap(rep, rhs.rep); }
       MNL_INLINE friend bool operator==(const code &lhs, const code &rhs) noexcept { return lhs.rep == rhs.rep; }
       MNL_INLINE explicit operator bool() const noexcept { return rep; }
-   public: // Construction - implicit conversion (to) + Compilation/execution operations
+   public: // Construction -- Implicit conversion (to) + Compilation/execution operations
       template<typename Dat> code(Dat dat): rep(new box<Dat>{(move)(dat)}) {}
       MNL_INLINE code compile(const form &form, const loc &loc) && { return rep->compile(move(*this), form, loc); }
       MNL_INLINE val  execute(bool fast_sig = {}) const { return rep->execute(fast_sig); }
@@ -621,7 +621,7 @@ namespace aux { namespace pub {
          { if (MNL_LIKELY(rep)) MNL_IF_WITHOUT_MT(++rep->rc) MNL_IF_WITH_MT(__atomic_add_fetch(&rep->rc, 1, __ATOMIC_RELAXED)); }
       MNL_INLINE void release() const noexcept
          { if (MNL_LIKELY(rep) && MNL_UNLIKELY(! MNL_IF_WITHOUT_MT(--rep->rc) MNL_IF_WITH_MT(__atomic_sub_fetch(&rep->rc, 1, __ATOMIC_ACQ_REL)) )) delete rep; }
-   private: // Support for <expr># constructs
+   private: // Support for <expr># expressions
       MNL_INLINE val invoke(val &&self, const sym &op, int argc, val argv[], val *) { return self.default_invoke(op, argc, argv); }
       friend mnl::box<code>;
    };

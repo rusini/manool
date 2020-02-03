@@ -140,7 +140,7 @@ namespace aux { namespace {
             return []()->ast{ auto res = parse(); parse(tk_rpar); return res; }();
          return []()->ast{ auto res = parse_datum(); parse(tk_rpar); return res; }();
       }
-      err_syntax_error(); // @@@ warning: control reaches end of non-void function
+      err_syntax_error(); // WARNING: control reaches end of non-void function
    }
    vector<ast> parse_args(vector<ast> lhs) {
       // args: args0 | /*epsilon*/

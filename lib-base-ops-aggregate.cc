@@ -483,9 +483,8 @@ namespace aux { namespace {
          }
          MNL_ERR(MNL_SYM("InvalidInvocation"));
       case  3: // Size
-         // TODO: in CentOS-6, even with SCL, list<T>::size() complexity is O(N), whereas in Ubuntu 18.04 LTS it's O(1)
          if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-         return (long long)dat.size();
+         return (long long)dat.size(); // ISSUE: in CentOS 6/7, even with SCL, list<T>::size() complexity is O(N), whereas in Ubuntu 18.04 LTS it's O(1)
       case  4: // +
          if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
          if (MNL_UNLIKELY(!test<list<val>>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));

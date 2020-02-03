@@ -19,7 +19,7 @@
 # include "mnl-aux-mnl0.hh"
 
 # include <type_traits> // remove_const
-# include <utility>     // move, pair, rel_ops
+# include <utility>     // move, pair, make_pair, rel_ops
 # include <iterator>    // iterator, reverse_iterator
 # include <algorithm>   // equal, lexicographical_compare
 # include <functional>  // less
@@ -30,11 +30,11 @@ namespace aux {
    // order falls back to std::less unless overloaded:
    template<typename Key> inline int order(const Key &lhs, const Key &rhs) noexcept(noexcept(std::less<Key>{}(lhs, rhs)))
       { return std::less<Key>{}(lhs, rhs) ? -1 : std::less<Key>{}(rhs, lhs); }
-   // A dict-set is just an instance of dict-map with empty Val - no specific optimizations are attempted for simplicity:
+   // a dict-set is just an instance of dict-map with empty Val - no specific optimizations are attempted for simplicity:
    struct dict_val_empty {};
    inline bool operator==(dict_val_empty, dict_val_empty) noexcept { return true; }
    inline bool operator< (dict_val_empty, dict_val_empty) noexcept { return false; }
-   // Cannot be nested in dict due to template argument deduction issues (for operator==, etc.):
+   // cannot be nested in dict due to template argument deduction issues (for operator==, etc.):
    template<typename Key, typename Val, typename Ord, typename RetVal> class dict_iterator;
 } // namespace aux
 
@@ -45,7 +45,7 @@ namespace aux { namespace pub {
    // STL map and set replacement (not drop-in!) with bounded behavior in case of key ordering inconsistencies
    // and three-state comparator, which is more adequate for large keys:
    template<typename Key, typename Val = dict_val_empty, typename Ord = default_order<Key>> class dict/*ionary*/ {
-   public: // Typedefs almost conforming to STL map and set (most are unused in MANOOL) - no allocator_type
+   public: // Typedefs mostly conforming to STL associative containers (most are unused in MANOOL) - no allocator_type
       typedef Key                                            key_type;
       typedef Val                                            mapped_type;
       typedef std::pair<const key_type, mapped_type>         value_type;
@@ -85,7 +85,7 @@ namespace aux { namespace pub {
       void swap(dict &rhs) {
          using std::swap; swap(ord, rhs.ord); swap(root, rhs.root); swap(count, rhs.count); swap(most, rhs.most);
       }
-   public: // Dict-specific
+   public: // Dict-specific operations
       explicit dict(Ord ord)
          : ord(std::move(ord)) {}
       void set(std::pair<Key, Val> data)
@@ -105,11 +105,11 @@ namespace aux { namespace pub {
       const_reverse_iterator rbegin() const noexcept, rend() const noexcept;
       const_iterator cbegin() const noexcept, cend() const noexcept;
       const_reverse_iterator crbegin() const noexcept, crend() const noexcept;
-   public: // Almost conforming to STL associative containers
+   public: // Mostly conforming to STL associative containers
       Ord key_ord() const { return ord; }
       Val &operator[](const Key &key) { return find(key)->second; }
       const Val &operator[](const Key & key) const { return find(key)->second; }
-   private: // Internal representation
+   private: // Concrete representation
       Ord ord = {};
       struct node;
       node *root = {};
@@ -118,7 +118,7 @@ namespace aux { namespace pub {
       static const auto left = false, right = true;
       friend iterator;
       friend const_iterator;
-   private: // AVL tree helper routines
+   private: // AVL tree helpers
       static int max(int, int);
       static int height(const node *);
       static void update_height(node *);
@@ -261,13 +261,13 @@ namespace aux {
       dict_iterator operator++(int) noexcept { auto res = *this; ++(*this); return res; }
       dict_iterator operator--(int) noexcept { auto res = *this; --(*this); return res; }
       operator dict_iterator<Key, Val, Ord, const IterVal>() const noexcept { return {owner, node}; }
-   private: // Internal representation
+   private: // Concrete representation
       typename dict<Key, Val, Ord>::node *node;
       const dict<Key, Val, Ord> *owner;
       dict_iterator(decltype(owner) owner, decltype(node) node) noexcept: node(node), owner(owner) {}
       friend class dict<Key, Val, Ord>;
       friend class dict_iterator<Key, Val, Ord, typename std::remove_const<IterVal>::type>;
-   private: // Helper routines
+   private: // Implementation helpers
       template<bool dir> void goto_next() noexcept {
          if (node->child[dir]) for (node = node->child[dir]; node->child[!dir]; node = node->child[!dir]);
          else { decltype(node) prev; do prev = node, node = node->parent; while (node && node->child[dir] == prev); }
