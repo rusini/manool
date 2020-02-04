@@ -81,7 +81,8 @@ namespace aux { namespace pub {
          return *this;
       }
       dict &operator=(dict &&rhs) {
-         return swap(rhs), *this;
+         swap(rhs);
+         return *this;
       }
       ~dict() {
          dispose(root);
