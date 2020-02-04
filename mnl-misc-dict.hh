@@ -16,13 +16,13 @@
 # ifndef MNL_INCLUDED_DICT
 # define MNL_INCLUDED_DICT
 
-# include "mnl-aux-mnl0.hh"
-
+# include <cstdlib>     // size_t, ptrdiff_t
 # include <type_traits> // remove_const
 # include <utility>     // move, pair, make_pair, rel_ops
 # include <iterator>    // iterator, reverse_iterator
 # include <algorithm>   // equal, lexicographical_compare
 # include <functional>  // less
+# include "mnl-aux-mnl0.hh"
 
 namespace MNL_AUX_UUID {
 
