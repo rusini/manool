@@ -25,6 +25,10 @@
 # include "mnl-aux-mnl0.hh"
 
 namespace MNL_AUX_UUID {
+   namespace aux {
+      using std::size_t; using std::ptrdiff_t; // <cstdlib>
+      using std::move; using std::pair; using std::make_pair; // <utility>
+   }
 
 namespace aux {
    // order falls back to std::less unless overloaded:
@@ -48,14 +52,14 @@ namespace aux { namespace pub {
    public: // Typedefs mostly conforming to STL associative containers (most are unused in MANOOL) - no allocator_type
       typedef Key                                            key_type;
       typedef Val                                            mapped_type;
-      typedef std::pair<const key_type, mapped_type>         value_type;
+      typedef pair<const key_type, mapped_type>              value_type;
       typedef Ord                                            key_order; // dict-specific - instead of key_compare and value_compare
       typedef value_type                                     &reference;
       typedef const value_type                               &const_reference;
       typedef dict_iterator<Key, Val, Ord, value_type>       iterator;
       typedef dict_iterator<Key, Val, Ord, const value_type> const_iterator;
-      typedef std::size_t                                    size_type;
-      typedef std::ptrdiff_t                                 difference_type;
+      typedef size_t                                         size_type;
+      typedef ptrdiff_t                                      difference_type;
       typedef value_type                                     *pointer;
       typedef const value_type                               *const_pointer;
       typedef std::reverse_iterator<iterator>                reverse_iterator;
@@ -66,7 +70,7 @@ namespace aux { namespace pub {
       dict(const dict &rhs): ord(rhs.ord), root(clone(rhs.root)), count(rhs.count), most{find_most<left>(), find_most<right>()} {
          if (root) root->parent = {};
       }
-      dict(dict &&rhs): ord(std::move(rhs.ord)), root(rhs.root), count(rhs.count), most{rhs.most[left], rhs.most[right]} {
+      dict(dict &&rhs): ord((move)(rhs.ord)), root(rhs.root), count(rhs.count), most{rhs.most[left], rhs.most[right]} {
          rhs.root = {}; rhs.count = {}; rhs.most[left] = {}; // left in an indeterminate but completely consistent state, as in STL
       }
       dict &operator=(const dict &rhs) {
@@ -87,13 +91,13 @@ namespace aux { namespace pub {
       }
    public: // Dict-specific operations
       explicit dict(Ord ord)
-         : ord(std::move(ord)) {}
-      void set(std::pair<Key, Val> data)
-         { set_root(insert(root, std::move(data))); most[left] = find_most<left>(), most[right] = find_most<right>(); }
+         : ord((move)(ord)) {}
+      void set(pair<Key, Val> data)
+         { set_root(insert(root, move(data))); most[left] = find_most<left>(), most[right] = find_most<right>(); }
       void set(Key key, Val val)
-         { set(std::make_pair(std::move(key), std::move(val))); }
+         { set(make_pair((move)(key), (move)(val))); }
       void set(Key key)
-         { set(std::make_pair(std::move(key), Val{})); }
+         { set(make_pair((move)(key), Val{})); }
       void unset(const Key &key)
          { set_root(remove(root, key)); if (!most[left]) most[left] = find_most<left>(); else if (!most[right]) most[right] = find_most<right>(); }
    public: // Strictly conforming to STL associative containers
@@ -129,7 +133,7 @@ namespace aux { namespace pub {
       template<bool> static node *rotate_twice(node *);
       template<bool> static node *rebalance(node *);
       static node *rebalance(node *);
-      node *insert(node *, std::pair<Key, Val> &&data);
+      node *insert(node *, pair<Key, Val> &&data);
       static node *remove_min(node *);
       node *remove(node *, const Key &);
       node *find(node *, const Key &) const;
@@ -158,10 +162,10 @@ namespace aux { namespace pub {
       { return std::rel_ops::operator>=(lhs, rhs); }
 
    template<typename Key, typename Val, typename Ord> struct dict<Key, Val, Ord>::node {
-      std::pair<const Key, Val> data;
-      node                      *child[2];
-      int                       height;
-      node                      *parent;
+      pair<const Key, Val> data;
+      node                 *child[2];
+      int                  height;
+      node                 *parent;
    };
    template<typename Key, typename Val, typename Ord> inline int dict<Key, Val, Ord>::max(int lhs, int rhs) {
       return lhs >= rhs ? lhs : rhs;
@@ -198,12 +202,12 @@ namespace aux { namespace pub {
       update_height(root);
       return balance(root) == 2 ? rebalance<left>(root) : balance(root) == -2 ? rebalance<right>(root) : root;
    }
-   template<typename Key, typename Val, typename Ord> typename dict<Key, Val, Ord>::node *dict<Key, Val, Ord>::insert(node *root, std::pair<Key, Val> &&data) {
-      if (!root) return ++count, new node{std::move(data), {}, 1};
+   template<typename Key, typename Val, typename Ord> typename dict<Key, Val, Ord>::node *dict<Key, Val, Ord>::insert(node *root, pair<Key, Val> &&data) {
+      if (!root) return ++count, new node{move(data), {}, 1};
       auto ord = dict::ord(data.first, root->data.first);
-      if (ord < 0) return set_child<left> (root, insert(root->child[left],  std::move(data))), rebalance(root);
-      if (ord > 0) return set_child<right>(root, insert(root->child[right], std::move(data))), rebalance(root);
-      return root->data.second = std::move(data.second), root;
+      if (ord < 0) return set_child<left> (root, insert(root->child[left],  move(data))), rebalance(root);
+      if (ord > 0) return set_child<right>(root, insert(root->child[right], move(data))), rebalance(root);
+      return root->data.second = (move)(data.second), root;
    }
    template<typename Key, typename Val, typename Ord> typename dict<Key, Val, Ord>::node *dict<Key, Val, Ord>::remove_min(node *root) {
       return root->child[left] ? (set_child<left>(root, remove_min(root->child[left])), rebalance(root)) : root->child[right];
