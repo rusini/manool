@@ -34,6 +34,8 @@ namespace aux {
    // order falls back to std::less unless overloaded:
    template<typename Key> inline int order(const Key &lhs, const Key &rhs) noexcept(noexcept(std::less<Key>{}(lhs, rhs)))
       { return std::less<Key>{}(lhs, rhs) ? -1 : std::less<Key>{}(rhs, lhs); }
+   template<typename Key> struct default_order
+      { int operator()(const Key &lhs, const Key &rhs) const noexcept(noexcept(order(lhs, rhs))) { return order(lhs, rhs); } };
    // a dict-set is just an instance of dict-map with empty Val - no specific optimizations are attempted for simplicity:
    struct dict_val_empty {};
    inline bool operator==(dict_val_empty, dict_val_empty) noexcept { return true; }
@@ -43,9 +45,6 @@ namespace aux {
 } // namespace aux
 
 namespace aux { namespace pub {
-   template<typename Key> struct default_order
-      { int operator()(const Key &lhs, const Key &rhs) const noexcept(noexcept(order(lhs, rhs))) { return order(lhs, rhs); } };
-
    // STL map and set replacement (not drop-in!) with bounded behavior in case of key ordering inconsistencies
    // and three-state comparator, which is more adequate for large keys:
    template<typename Key, typename Val = dict_val_empty, typename Ord = default_order<Key>> class dict/*ionary*/ {
