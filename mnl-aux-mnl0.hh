@@ -1,21 +1,22 @@
-// mnl-aux-mnl0.hh -- Minimal Infrastructure (mnl:: namespaces + host compiler idiosyncrasies) for otherwise self-sufficient modules
+// mnl-aux-mnl0.hh -- minimal infrastructure (mnl:: Namespaces + Host Compiler Idiosyncrasies) for otherwise self-sufficient modules
 
-/*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
+/*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 
    This file is part of MANOOL.
 
    MANOOL is free software: you can redistribute it and/or modify it under the terms of the version 3 of the GNU General Public License
    as published by the Free Software Foundation (and only version 3).
 
-   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <https://www.gnu.org/licenses/>.  */
 
 
-# pragma once
+# ifndef MNL_INCLUDED_MNL0
+# define MNL_INCLUDED_MNL0
 
-// Toolchain Checks ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Toolchain Checks ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 # ifndef MNL_C_SOURCE
    # if __cplusplus < 201103/*C++11*/ || !__STDC_HOSTED__ || !__GNUC__/*g++/clang++/icpc...*/ || !__STRICT_ANSI__/*-std=c++NN*/
       # error "Unsupported C++ compiler or compiler mode"
@@ -32,7 +33,7 @@
    static_assert(sizeof(long) == sizeof(void *), "sizeof(long) == sizeof(void *)");
 # endif
 
-// C++ Namespaces /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// C++ Namespaces //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 # if __cplusplus
    # if MNL_WITH_UUID_NS || defined MNL_AUX_UUID
       # ifndef MNL_AUX_UUID
@@ -45,7 +46,7 @@
    # endif
 # endif
 
-// Compiler Idiosyncrasies ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Compiler Idiosyncrasies /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 # define MNL_PACK          __attribute__((__packed__))
 # define MNL_ALIGN(ALIGN)  __attribute__((__aligned__(ALIGN)))
 # define MNL_PRIORITY(PRI) __attribute__((__init_priority__(PRI)))
@@ -77,8 +78,8 @@
 # define MNL_DSO_UNHIDE_END   _Pragma("GCC visibility pop")           // ditto
 
 # if MNL_USE_PURE
-   # define MNL_PURE      __attribute__((__const__)) // currently have no use in MANOOL codebase but might be handy for plugin writers
-   # define MNL_NOCLOBBER __attribute__((__pure__))  // ditto
+   # define MNL_PURE      __attribute__((__const__))
+   # define MNL_NOCLOBBER __attribute__((__pure__))
 # elif MNL_USE_NOCLOBBER
    # define MNL_PURE      __attribute__((__pure__))
    # define MNL_NOCLOBBER __attribute__((__pure__))
@@ -87,7 +88,7 @@
    # define MNL_NOCLOBBER
 # endif
 
-// Conditionals ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Conditionals ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 # if MNL_WITH_MULTITHREADING
    # define MNL_IF_WITH_MT(...) __VA_ARGS__
    # define MNL_IF_WITHOUT_MT(...)
@@ -137,7 +138,7 @@
    # define MNL_IF_GCC8(...)
    # define MNL_IF_NOT_GCC8(...) __VA_ARGS__
 # endif
-# if !__clang__ && !__INTEL_COMPILER && __GNUC__ == 8
+# if !__clang__ && !__INTEL_COMPILER && __GNUC__ == 9
    # define MNL_IF_GCC9(...) __VA_ARGS__
    # define MNL_IF_NOT_GCC9(...)
 # else
@@ -163,3 +164,5 @@
    # include <iostream>
    namespace MNL_AUX_UUID { namespace aux { using std::cerr; } }
 # endif
+
+# endif // # ifndef MNL_INCLUDED_MNL0

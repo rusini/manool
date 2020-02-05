@@ -1,16 +1,16 @@
-// mnl-aux-core -- MANOOL core
+// mnl-aux-core.tcc -- MANOOL core
 
-/*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
+/*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 
    This file is part of MANOOL.
 
    MANOOL is free software: you can redistribute it and/or modify it under the terms of the version 3 of the GNU General Public License
    as published by the Free Software Foundation (and only version 3).
 
-   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <https://www.gnu.org/licenses/>.  */
 
 
 # include "mnl-aux-mnl0.hh"
@@ -46,10 +46,9 @@ namespace MNL_AUX_UUID {
    /* For atomics and memory order refer to:
       - http://en.cppreference.com/w/cpp/atomic/memory_order
       - http://preshing.com
-      - http://www.boost.org/doc/libs/1_66_0/doc/html/atomic/usage_examples.html
-   */
+      - http://www.boost.org/doc/libs/1_66_0/doc/html/atomic/usage_examples.html  */
 
-// Utilities for Static Initialization ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Utilities for Static Initialization /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    # define MNL_AUX_INIT(...) []()noexcept->const decltype(__VA_ARGS__) &{ \
       struct traits { MNL_INLINE static decltype(__VA_ARGS__) _() noexcept { return (__VA_ARGS__); } }; \
       return ::mnl::aux::_init<traits>::_; \
@@ -64,8 +63,7 @@ namespace aux {
       { static_assert(std::is_unsigned<Val>::value, "std::is_unsigned<Val>::value"); return (unsigned)rand() * (unsigned)rand(); }
 } // namespace aux
 
-// Preliminary Declarations ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+// Preliminary Declarations ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    namespace aux { namespace pub { class val; } }
    template<typename> class box;
    namespace aux { template<int> struct _record; }
@@ -74,10 +72,8 @@ namespace aux {
    namespace aux { namespace pub { struct loc/*ation in source code*/ { shared_ptr<const string> origin; pair<int, int> _start, _final; }; } }
    namespace aux { template<size_t Argc> using args = array<val, Argc>; } // assume any g++-like compiler relaxes ISO/IEC 14882:2011 S8.5.1 P11 as in C++14
 
-// class sym //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+// class sym ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace aux { namespace pub {
-
    class sym/*bol*/ {
    public: // Standard operations
       MNL_INLINE sym() noexcept: sym{decltype(rep){}} {}
@@ -89,7 +85,7 @@ namespace aux { namespace pub {
       MNL_INLINE friend bool operator==(const sym &lhs, const sym &rhs) noexcept { return lhs.rep == rhs; }
       MNL_INLINE friend bool operator< (const sym &lhs, const sym &rhs) noexcept { auto mask = MNL_AUX_RAND(unsigned); return (lhs ^ mask) < (rhs ^ mask); }
       MNL_INLINE explicit operator bool() const noexcept { return rep; }
-   public: // Construction/extraction via conversion
+   public: // Construction and extraction via conversion
       sym(string), sym(const char *);
       explicit sym(decltype(nullptr));
       MNL_INLINE explicit operator const string &() const noexcept { return inverse[rep]->first; } // no sync required
@@ -141,43 +137,42 @@ namespace aux { namespace pub {
       tab() = default;
       tab(const tab &rhs): rep(rhs.rep), undef(rhs.undef) { addref(); }
       MNL_INLINE tab(tab &&rhs) noexcept(std::is_nothrow_move_constructible<Val>::value): rep(move(rhs.rep)), undef((move)(rhs.undef)) { rhs.rep.clear(); }
-      ~tab() { release(); }
+      ~tab() noexcept { release(); }
       tab &operator=(const tab &rhs) { if (&rhs == this) return *this; release(); rep = rhs.rep, undef = rhs.undef; addref(); return *this; }
       MNL_INLINE tab &operator=(tab &&rhs) { swap(rhs); return *this; }
       MNL_INLINE void swap(tab &rhs) { using std::swap; swap(rep, rhs.rep), swap(undef, rhs.undef); }
    public: // Specialized construction
-      MNL_INLINE explicit tab(Val undef): undef((move)(undef)) {}
+      MNL_INLINE explicit tab(Val undef) noexcept(std::is_nothrow_move_constructible<Val>::value): undef((move)(undef)) {}
       MNL_INLINE tab(initializer_list<pair<sym, Val>> il) { update(il); }
       MNL_INLINE tab(Val undef, initializer_list<pair<sym, Val>> il): undef((move)(undef)) { update(il); }
-   public: // Queries/incremental updates
+   public: // Queries and incremental updates
       MNL_INLINE typename std::conditional<std::is_same<Val, bool>::value, bool, const Val &>::type operator[](const sym &key) const noexcept {
          return MNL_LIKELY(key < (int)rep.size()) ? rep[key] : undef;
       }
       void update(const sym &key, Val val) {
          if (key >= (int)rep.size())
             rep.resize(key + 1, undef);
-         if (undef == rep[key]) {
-            if (undef != (rep[key] = (move)(val))) sym::addref(key);
+         if (rep[key] == undef) {
+            if ((rep[key] = (move)(val)) != undef) sym::addref(key);
          } else {
-            if (undef == (rep[key] = (move)(val))) sym::release(key);
+            if ((rep[key] = (move)(val)) == undef) sym::release(key);
          }
       }
    public: // Compatibility/convenience stuff
-      void clear()         { rep.clear(); }
+      void clear()         { release(); rep.clear(); }
       void shrink_to_fit() { rep.shrink_to_fit(); }
    public:
-      MNL_NOINLINE void update(initializer_list<pair<sym, Val>> il) { for (auto &&pair: il) update(pair); }
-      MNL_INLINE   void update(pair<const sym &, Val> pair) { update(pair.first, (move)(pair.second)); }
+      MNL_NOINLINE void update(initializer_list<pair<sym, Val>> il) { for (auto &&kv: il) update(kv); }
+      MNL_INLINE   void update(pair<const sym &, Val> kv) { update(kv.first, (move)(kv.second)); }
    private: // Concrete representation
       vector<typename std::conditional<std::is_same<Val, bool>::value, unsigned char, Val>::type> rep;
       Val undef{};
    private: // Implementation helpers
       void addref()  const noexcept
-         { for (int key = 0; key < (int)rep.size(); ++key) if (MNL_UNLIKELY(undef != rep[key])) sym::addref (static_cast<decltype(sym::rep)>(key)); }
+         { for (int sn = 0; sn < (int)rep.size(); ++sn) if (MNL_UNLIKELY(rep[sn] != undef)) sym::addref (static_cast<decltype(sym::rep)>(sn)); }
       void release() const noexcept
-         { for (int key = 0; key < (int)rep.size(); ++key) if (MNL_UNLIKELY(undef != rep[key])) sym::release(static_cast<decltype(sym::rep)>(key)); }
+         { for (int sn = 0; sn < (int)rep.size(); ++sn) if (MNL_UNLIKELY(rep[sn] != undef)) sym::release(static_cast<decltype(sym::rep)>(sn)); }
    };
-
 }} // namespace aux::pub
 
    # define MNL_SYM(TXT)  MNL_AUX_INIT(::mnl::sym(TXT))
@@ -186,9 +181,7 @@ namespace aux { MNL_NOINLINE inline sym::tab<signed char> disp(initializer_list<
    sym::tab<signed char> res; int val = 0; for (auto &&key: il) res.update(key, ++val); return res;
 }}
 
-// class val //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-   template<typename> class box;
-
+// class val ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace aux { namespace pub {
    typedef val ast; // val when used as an Abstract Syntax Tree - for documentation purposes
 
@@ -202,7 +195,7 @@ namespace aux { namespace pub {
       MNL_INLINE val &operator=(val &&rhs) noexcept { release(), rep = rhs.rep, rhs.rep = {0x7FF9u}; return *this; }
       MNL_INLINE void swap(val &rhs) noexcept { using std::swap; swap(rep, rhs.rep); }
       MNL_INLINE explicit operator bool() const noexcept { return *this != nullptr; }
-   public: // Construction - implicit conversion (to)
+   public: // Construction -- Implicit conversion (to)
       MNL_INLINE val(long long dat) noexcept: rep{0x7FFAu, dat} {} // valid range: min_i48 .. max_i48
       MNL_INLINE val(int dat) noexcept:       val((long long)dat) {}
       MNL_INLINE val(double dat) noexcept: rep(dat) {}
@@ -223,7 +216,7 @@ namespace aux { namespace pub {
       static constexpr int max_argc = sym::max_argc;
       val operator()(int argc, val argv[], val *argv_out = {}) &&; // functional application - !argc => !argv && !argv_out
       val default_invoke(const sym &op, int argc, val argv[]);
-      long rc() const noexcept; // reference counter
+      long rc /*reference counter*/() const noexcept;
    private: // Concrete representation
       static_assert(sizeof(double) == 8, "sizeof(double) == 8");
       class MNL_ALIGN(8) rep { // bit-layout management - IEEE 754 FP representation and uniform FP endianness are assumed (and NOT checked)
@@ -235,7 +228,7 @@ namespace aux { namespace pub {
          };
          unsigned short _tag;
       public:
-         MNL_INLINE rep() noexcept {} // unused
+         MNL_INLINE rep() noexcept /*unused*/ {}
          MNL_INLINE ~rep() {}
          MNL_INLINE rep(const rep &rhs) noexcept { copy(rhs); }
          MNL_INLINE rep &operator=(const rep &rhs) noexcept { copy(rhs); return *this; }
@@ -251,7 +244,7 @@ namespace aux { namespace pub {
          MNL_INLINE unsigned tag() const noexcept { return _tag; }
          template<typename Dat> Dat dat() const noexcept;
       private:
-         MNL_INLINE void copy(const rep &rhs) noexcept { // assumption: memcpy copies the union representation AND its active member, if any exists
+         MNL_INLINE void copy(const rep &rhs) noexcept { // assume memcpy copies the union representation AND its active member, if any exists
          # if __clang__ || __GNUC__ >= 5 && !__INTEL_COMPILER
             memmove
          # else
@@ -269,7 +262,7 @@ namespace aux { namespace pub {
       template<typename Dat = decltype(nullptr)> Dat  cast() const noexcept(std::is_nothrow_copy_constructible<Dat>::value);
       MNL_IF_CLANG(public:)
       class root;
-   public: // Convenience - Functional application
+   public: // Convenience -- Functional application
       /* val operator()(int argc, val argv[], val *argv_out = {}) &&; // essential form */
       MNL_INLINE val operator()(const val &arg, val *arg_out = {}) && { return move(*this)(val(arg), arg_out); }
       MNL_INLINE val operator()(val &&arg, val *arg_out = {}) && { return move(*this)(1, &arg, arg_out); }
@@ -301,11 +294,11 @@ namespace aux { namespace pub {
          { return val(*this)(loc, move(args), args_out); }
       MNL_INLINE val operator()(const loc &loc) const &
          { return val(*this)(loc); }
-   public: // Convenience - Direct comparison with other types
+   public: // Convenience -- Direct comparison with other types
       bool operator==(decltype(nullptr)) const noexcept, operator==(const sym &) const noexcept;
       MNL_INLINE bool operator!=(decltype(nullptr)) const noexcept { return !(*this == nullptr); }
       MNL_INLINE bool operator!=(const sym &rhs) const noexcept { return !(*this == rhs); }
-   public: // Convenience - Working with ASTs
+   public: // Convenience -- Working with ASTs
       val(vector<ast>, loc);
       bool is_list() const noexcept;
       vector<ast>::const_iterator begin() const noexcept, end() const noexcept;
@@ -330,7 +323,7 @@ namespace aux { namespace pub {
       friend sym;
       friend val _eq(val &&, val &&), _ne(val &&, val &&), _lt(val &&, val &&), _le(val &&, val &&), _gt(val &&, val &&), _ge(val &&, val &&);
       friend val _add(val &&, val &&), _sub(val &&, val &&), _mul(val &&, val &&), _neg(val &&), _abs(val &&), _xor(val &&, val &&), _not(val &&);
-      friend struct proc_Min; friend struct proc_Max;
+      friend class proc_Min; friend class proc_Max;
    };
    MNL_INLINE inline void swap(val &lhs, val &rhs) noexcept { lhs.swap(rhs); }
    // defined in friend declarations above:
@@ -361,7 +354,7 @@ namespace aux { namespace pub {
       >::type>::type &dat) noexcept(std::is_nothrow_copy_constructible<Dat>::value) { return dat; }
 }} // namespace aux::pub
 
-// Bit-Layout Management - Data Write /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Bit-Layout Management -- Data Write /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    template<typename Dat> MNL_INLINE inline val::rep::rep(unsigned tag, Dat dat) noexcept: _tag(tag) {
       static_assert(std::is_pod<Dat>::value, "std::is_pod<Dat>::value");
       static_assert(sizeof dat <= 6, "sizeof dat <= 6");
@@ -377,7 +370,7 @@ namespace aux { namespace pub {
    MNL_INLINE inline val::rep::rep(unsigned tag, const sym &dat) noexcept
       : _tag(tag), _sym(dat) {}
 
-// Bit-Layout Management - Data Read //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Bit-Layout Management -- Data Read //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    template<typename Dat> MNL_INLINE inline Dat val::rep::dat() const noexcept {
       Dat dat;
       static_assert(std::is_pod<Dat>::value, "std::is_pod<Dat>::value");
@@ -394,7 +387,7 @@ namespace aux { namespace pub {
    template<> MNL_INLINE inline const sym &val::rep::dat() const noexcept
       { return _sym; }
 
-// class Template box ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// class Template box //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    class val::root {
    protected:
       root() = default;
@@ -470,7 +463,7 @@ namespace aux { namespace pub {
       vcri_range{cast<const vector<ast> &>().rbegin(), cast<const vector<ast> &>().rend() - sn} :
       vcri_range{cast<const pair<vector<ast>, loc> &>().first.rbegin(), cast<const pair<vector<ast>, loc> &>().first.rend() - sn}; }
 
-// Resource Management Helpers ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Resource Management Helpers /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 # if 0
    MNL_INLINE inline void val::addref() const noexcept {
       switch (rep.tag()) {
@@ -508,7 +501,7 @@ namespace aux { namespace pub {
    }
 # endif
 
-// val Extractors /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// val Extractors //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    template<typename Dat> MNL_INLINE inline bool val::test() const noexcept {
       return MNL_LIKELY(rep.tag() == 0x7FF8u) &&
          typeid(*static_cast<root *>(rep.dat<void *>())) == typeid(box<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type>);
@@ -554,7 +547,7 @@ namespace aux { namespace pub {
    template<> MNL_INLINE inline unsigned val::cast() const noexcept { return rep.dat<unsigned>(); }
    template<> MNL_INLINE inline char     val::cast() const noexcept { return cast<unsigned>(); }
 
-// Signals, Exceptions, and Invocation Traces /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Signals, Exceptions, and Invocation Traces //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace aux { namespace pub {
    extern MNL_IF_WITH_MT(thread_local) pair<sym, val>                  sig_state;
    extern MNL_IF_WITH_MT(thread_local) vector<pair<loc, const char *>> sig_trace;
@@ -571,14 +564,14 @@ namespace aux { namespace pub {
    MNL_NORETURN void trace_exec_out(const loc &);
 }} // namespace aux::pub
 
-// Translation Infrastructure /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Translation Infrastructure //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace aux { namespace pub {
    ast parse(const string &, string origin = "<anonymous>");
    MNL_INLINE inline ast parse(string &&source, string origin = "<anonymous>") // parse won't take advantage of source's resources, but
       { auto res = parse(source, move(origin)); source.clear(); return res; } // this is to release its resources earlier, which is useful in practice
-   typedef ast form;
+   typedef ast form; // AST when it is to be compiled as a whole - for documentation purposes
 
-   class code { // Compiled entity
+   class code /*compiled entity*/ {
    public: // Standard operations
       code() = default;
       MNL_INLINE code(const code &rhs) noexcept: rep(rhs.rep) { addref(); }
@@ -589,7 +582,7 @@ namespace aux { namespace pub {
       MNL_INLINE void swap(code &rhs) noexcept { using std::swap; swap(rep, rhs.rep); }
       MNL_INLINE friend bool operator==(const code &lhs, const code &rhs) noexcept { return lhs.rep == rhs.rep; }
       MNL_INLINE explicit operator bool() const noexcept { return rep; }
-   public: // Construction - implicit conversion (to) + Compilation/execution operations
+   public: // Construction -- Implicit conversion (to) + Compilation/execution operations
       template<typename Dat> code(Dat dat): rep(new box<Dat>{(move)(dat)}) {}
       MNL_INLINE code compile(const form &form, const loc &loc) && { return rep->compile(move(*this), form, loc); }
       MNL_INLINE val  execute(bool fast_sig = {}) const { return rep->execute(fast_sig); }
@@ -628,7 +621,7 @@ namespace aux { namespace pub {
          { if (MNL_LIKELY(rep)) MNL_IF_WITHOUT_MT(++rep->rc) MNL_IF_WITH_MT(__atomic_add_fetch(&rep->rc, 1, __ATOMIC_RELAXED)); }
       MNL_INLINE void release() const noexcept
          { if (MNL_LIKELY(rep) && MNL_UNLIKELY(! MNL_IF_WITHOUT_MT(--rep->rc) MNL_IF_WITH_MT(__atomic_sub_fetch(&rep->rc, 1, __ATOMIC_ACQ_REL)) )) delete rep; }
-   private: // Support for <expr># constructs
+   private: // Support for <expr># expressions
       MNL_INLINE val invoke(val &&self, const sym &op, int argc, val argv[], val *) { return self.default_invoke(op, argc, argv); }
       friend mnl::box<code>;
    };
@@ -640,9 +633,10 @@ namespace aux { namespace pub {
 
    extern MNL_IF_WITH_MT(thread_local) sym::tab<> symtab;
    code compile(const form &, const loc & = MNL_IF_GCC5(loc)MNL_IF_GCC6(loc){});
+   MNL_NORETURN void err_compile(const char *msg, const loc &);
 }} // namespace aux::pub
 
-// Operations /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Primitive Operations ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace aux { namespace pub { constexpr auto max_i48 = (1ll << 48 - 1) - 1, min_i48 = -max_i48; } }
 
@@ -657,7 +651,7 @@ namespace aux {
    template<typename Dat, typename Res = Dat> using enable_core_binfloat = typename std::enable_if<
       std::is_same<Dat, double>::value || std::is_same<Dat, float>::value, Res >::type;
 
-   // I48 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   // I48 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    template<typename Dat> MNL_INLINE inline enable_same<Dat, long long> _add(Dat lhs, Dat rhs)
       { auto res = lhs + rhs; if (MNL_LIKELY(res >= min_i48) && MNL_LIKELY(res <= max_i48)) return res; MNL_ERR(MNL_SYM("Overflow")); }
@@ -704,7 +698,7 @@ namespace aux {
    # endif // # if __x86_64__
    }
 
-   // F64, F32 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   // F64, F32 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    template<typename Dat> MNL_INLINE inline enable_core_binfloat<Dat> _add(Dat lhs, Dat rhs)
       { auto res = lhs + rhs; if (MNL_LIKELY(!isinf(res))) return res; MNL_ERR(MNL_SYM("Overflow")); }
@@ -713,7 +707,7 @@ namespace aux {
    template<typename Dat> MNL_INLINE inline enable_core_binfloat<Dat> _mul(Dat lhs, Dat rhs)
       { auto res = lhs * rhs; if (MNL_LIKELY(!isinf(res))) return res; MNL_ERR(MNL_SYM("Overflow")); }
 
-   // U32 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   // U32 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    template<typename Dat> MNL_INLINE inline enable_same<Dat, unsigned> _add(Dat lhs, Dat rhs) { return lhs + rhs; }
    template<typename Dat> MNL_INLINE inline enable_same<Dat, unsigned> _sub(Dat lhs, Dat rhs) { return lhs - rhs; }
@@ -734,7 +728,7 @@ namespace aux { namespace pub {
    val _eq(val &&, val &&), _ne(val &&, val &&), _lt(val &&, val &&), _le(val &&, val &&), _gt(val &&, val &&), _ge(val &&, val &&);
    val _add(val &&, val &&), _sub(val &&, val &&), _mul(val &&, val &&), _neg(val &&), _abs(val &&), _xor(val &&, val &&), _not(val &&);
 
-   // I48, F64, F32, U32 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   // I48, F64, F32, U32 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, val> _eq (val &&lhs, Dat rhs)
       { if (MNL_LIKELY(test<Dat>(lhs))) return cast<Dat>(lhs) == rhs; return _eq(move(lhs), (val)rhs); }
@@ -774,7 +768,7 @@ namespace aux { namespace pub {
    template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, Dat> _mul(Dat lhs, val &&rhs)
       { if (MNL_LIKELY(test<Dat>(rhs))) return aux::_mul(lhs, cast<Dat>(rhs)); MNL_ERR(MNL_SYM("TypeMismatch")); }
 
-   // Misc ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   // Misc /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    template<typename Dat> MNL_INLINE inline enable_same<Dat, sym, val> _eq(val &&lhs, const Dat &rhs)
       { if (MNL_LIKELY(test<sym>(lhs))) return cast<const sym &>(lhs) == rhs; return _eq(move(lhs), (val)rhs); }
@@ -806,61 +800,55 @@ namespace aux { namespace pub {
    template<typename Dat> MNL_INLINE inline enable_same<Dat, decltype(nullptr), bool> _ne(Dat, val &&rhs) noexcept
       { return !test<>(rhs); }
 
-   // Convenience Routines ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-   MNL_NORETURN void err_compile(const char *msg, const loc &);
-
-   template<typename Dat> MNL_INLINE inline Dat safe_cast(const val &rhs)
-      { if (MNL_LIKELY(test<Dat>(rhs))) return cast<Dat>(rhs); MNL_ERR(MNL_SYM("TypeMismatch")); }
-   template<typename Dat> MNL_INLINE inline Dat safe_cast(const loc &loc, const val &rhs)
-      { if (MNL_LIKELY(test<Dat>(rhs))) return cast<Dat>(rhs); MNL_ERR_LOC(loc, MNL_SYM("TypeMismatch")); }
-
 }} // namespace aux::pub
 
 namespace aux { namespace pub {
-   struct proc_Min { MNL_INLINE static inline val invoke(val &&, const sym &, int, val [], val *); };
-   struct proc_Max { MNL_INLINE static inline val invoke(val &&, const sym &, int, val [], val *); };
+   class proc_Min { MNL_INLINE static inline val invoke(val &&, const sym &, int, val [], val *); friend box<proc_Min>; };
+   class proc_Max { MNL_INLINE static inline val invoke(val &&, const sym &, int, val [], val *); friend box<proc_Max>; };
 }} // namespace aux::pub
    extern template class box<proc_Min>;
    extern template class box<proc_Max>;
 
-// Record Aggregate ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Convenience Routines ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+namespace aux { namespace pub {
+   template<typename Dat> MNL_INLINE inline Dat safe_cast(const val &rhs)
+      { if (MNL_LIKELY(test<Dat>(rhs))) return cast<Dat>(rhs); MNL_ERR(MNL_SYM("TypeMismatch")); }
+   template<typename Dat> MNL_INLINE inline Dat safe_cast(const loc &loc, const val &rhs)
+      { if (MNL_LIKELY(test<Dat>(rhs))) return cast<Dat>(rhs); MNL_ERR_LOC(loc, MNL_SYM("TypeMismatch")); }
+}} // namespace aux::pub
+
+// Record Composite ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace aux { namespace pub {
    class record_descr/*iptor*/ {
-   public:
-      record_descr() noexcept: rep(store.end()) {}
+   public: // Standard operations
+      MNL_INLINE record_descr() noexcept: rep(store.end()) {}
       record_descr(const record_descr &) noexcept;
-      record_descr(record_descr &&rhs) noexcept: rep(rhs.rep) { rhs.rep = store.end(); }
+      MNL_INLINE record_descr(record_descr &&rhs) noexcept: rep(rhs.rep) { rhs.rep = store.end(); }
       ~record_descr();
       record_descr &operator=(const record_descr &) noexcept;
       MNL_INLINE record_descr &operator=(record_descr &&rhs) noexcept { swap(rhs); return *this; }
       MNL_INLINE void swap(record_descr &rhs) noexcept { using std::swap; swap(rep, rhs.rep); }
-   public:
+   public: // Misc public operations
       record_descr(set<sym> /*items*/), record_descr(initializer_list<const char *>); // precond: items.size() <= (unsigned char)-1
-      template<typename Dummy> friend const record_descr &Record_descr(initializer_list<const char *>, Dummy);
       MNL_INLINE const set<sym> &items() const noexcept { return rep->first; }
       MNL_INLINE const sym::tab<unsigned char> &tab() const noexcept { return rep->second.first; }
       MNL_INLINE int operator[](const sym &id) const noexcept { return tab()[id]; }
       MNL_INLINE bool has(const sym &id) const noexcept { return (*this)[id] != (unsigned char)-1; }
       MNL_INLINE friend bool operator==(const record_descr &lhs, const record_descr &rhs) noexcept { return lhs.rep == rhs.rep; }
-   private:
+   private: // Concrete representation and implementation helpers
       static map<set<sym>, pair<const sym::tab<unsigned char>, /*atomic*/ long>> store;
       decltype(store)::iterator rep;
       MNL_IF_WITH_MT(static std::mutex mutex;)
-      MNL_INLINE inline void addref() const noexcept;
-      MNL_INLINE inline void release() const noexcept;
+      MNL_INLINE inline void addref() const noexcept, release() const noexcept;
    };
    MNL_INLINE inline void swap(record_descr &lhs, record_descr &rhs) noexcept { lhs.swap(rhs); }
    bool operator==(const record_descr &, const record_descr &) noexcept;
    MNL_INLINE inline bool operator!=(const record_descr &lhs, const record_descr &rhs) noexcept { return std::rel_ops::operator!=(lhs, rhs); }
-
-   template<typename Dummy> MNL_INLINE inline const record_descr &Record_descr(initializer_list<const char *> il, Dummy)
-      { static const record_descr res = il; return res; }
-   // TODO: test for records
 }} // namespace aux::pub
+   # define MNL_RECORD_DESCR(...) MNL_AUX_INIT(::mnl::record_descr({__VA_ARGS__}))
 namespace aux {
    template<int Size = 0> struct _record { // too large Size implies more copying at creation time!
-      static_assert(Size >= 0 && Size <= 12, "Invalid Size");
+      static_assert(Size >= 0 && Size <= 12, "Size >= 0 && Size <= 12");
       record_descr descr;
       typename std::conditional<Size >= 1 && Size <= 12, val [Size >= 1 && Size <= 12 ? Size : 1], vector<val>>::type items;
       void swap(_record &rhs) noexcept { std::swap(*this, rhs); } // default swap is nice here
@@ -876,7 +864,6 @@ namespace aux {
    };
 } // namespace aux
    template<> MNL_INLINE inline box<aux::_record<>>::~box() { while (!dat.items.empty()) dat.items.pop_back(); }
-   extern template class box<aux::_record<   >>;
    extern template class box<aux::_record<0x1>>;
    extern template class box<aux::_record<0x2>>;
    extern template class box<aux::_record<0x3>>;
@@ -889,15 +876,15 @@ namespace aux {
    extern template class box<aux::_record<0xA>>;
    extern template class box<aux::_record<0xB>>;
    extern template class box<aux::_record<0xC>>;
+   extern template class box<aux::_record<>>;
 namespace aux { namespace pub {
    template<int Size> using record = _record<(Size >= 1 && Size <= (unsigned char)-1 ? Size <= 12 ? Size : 0 : -1)>;
    // invariant: size(r.items) == size(r.descr.items())
 }} // namespace aux::pub
 
-// I48 Range //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+// I48 Range ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace aux { namespace pub {
-   template<bool /*Rev[erse]*/ = MNL_IF_CLANG(bool){}> struct range {
+   template<bool /*Rev[erse]*/ = false> struct range {
       long long lo, hi;
    private:
       MNL_INLINE inline val invoke(val &&, const sym &, int, val [], val *);
@@ -907,4 +894,4 @@ namespace aux { namespace pub {
    extern template class box<range<>>;
    extern template class box<range<true>>;
 
-} // MNL_AUX_UUID
+} // namespace MNL_AUX_UUID

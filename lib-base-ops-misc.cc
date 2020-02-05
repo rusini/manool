@@ -1,16 +1,16 @@
 // lib-base-ops-misc.cc
 
-/*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
+/*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 
    This file is part of MANOOL.
 
    MANOOL is free software: you can redistribute it and/or modify it under the terms of the version 3 of the GNU General Public License
    as published by the Free Software Foundation (and only version 3).
 
-   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <https://www.gnu.org/licenses/>.  */
 
 
 # include "config.tcc"
@@ -32,7 +32,7 @@ namespace MNL_AUX_UUID { using namespace aux;
          }
          sig_state = move(saved_sig_state);
          heap_reserve(saved_heap_res), stk_reserve(saved_stk_res);
-      } MNL_CATCH_UNEXPECTED // TODO: at least mention main/destructor/thread in the error message?
+      } MNL_CATCH_UNEXPECTED
    }
    object::object(_record<> &&attribs, shared_ptr<const _record<>> &&methods) noexcept
       : _record<>(move(attribs)), methods(move(methods)) {}
@@ -159,7 +159,7 @@ namespace MNL_AUX_UUID { using namespace aux;
 
    template class box<object>;
 
-// Pointers ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   // Pointers /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    val weak_pointer::invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) const {
       switch (MNL_DISP("^", "Set", "Weak", "Order", "Str")[op]) {

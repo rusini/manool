@@ -1,16 +1,16 @@
-// core-reader.cc
+// core-reader.cc -- scanner and parser
 
-/*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
+/*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 
    This file is part of MANOOL.
 
    MANOOL is free software: you can redistribute it and/or modify it under the terms of the version 3 of the GNU General Public License
    as published by the Free Software Foundation (and only version 3).
 
-   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <https://www.gnu.org/licenses/>.  */
 
 
 # include "config.tcc"
@@ -26,7 +26,6 @@ namespace MNL_AUX_UUID { using namespace aux;
    }
 
 namespace aux { namespace {
-
    MNL_IF_WITH_MT(thread_local) enum {
       tk_end,
       tk_lit,
@@ -58,16 +57,15 @@ namespace aux { namespace {
 
    void scan_startup(const string &, string &&), scan_cleanup() noexcept;
    void scan(); // precond: C's locale is "C"
-
 }} // namespace aux::<unnamed>
 
-// Parser /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Parser //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace aux { namespace {
 
    MNL_INLINE inline void err_compile(const char *msg) { err_compile(msg, curr_loc); }
 
-   MNL_INLINE inline void err_syntax_error() { // TODO: MNL_NORETURN for diagnostic purposes in g++-8?
+   MNL_INLINE inline void err_syntax_error() {
       err_compile("syntax error (unexpected token)");
    }
    MNL_INLINE inline ast parse(decltype(curr_typ) typ = curr_typ) {
@@ -78,17 +76,17 @@ namespace aux { namespace {
       return res;
    }
 
-   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   ast parse_expr(), parse_expr0(), parse_simple(), parse_term(), parse_factor(), parse_prim(), parse_prim0();
+   ast parse_datum(), parse_datum0(), parse_simple(), parse_term(), parse_factor(), parse_prim(), parse_prim0();
    vector<ast> parse_args(vector<ast> = {}), parse_list(), parse_list0();
 
-   ast parse_expr() { // expr: expr0 | expr0 "<equ-op>" expr0
-      auto start = curr_loc._start; auto lhs = parse_expr0();
-      if (curr_typ == tk_equ) lhs = {{parse(), move(lhs), parse_expr0()}, {curr_loc.origin, start, prev_loc_final}};
+   ast parse_datum() { // datum: datum0 | datum0 "<equ-op>" datum0
+      auto start = curr_loc._start; auto lhs = parse_datum0();
+      if (curr_typ == tk_equ) lhs = {{parse(), move(lhs), parse_datum0()}, {curr_loc.origin, start, prev_loc_final}};
       return lhs;
    }
-   ast parse_expr0() { // expr0: simple | simple "<rel-op>" simple
+   ast parse_datum0() { // datum0: simple | simple "<rel-op>" simple
       auto start = curr_loc._start; auto lhs = parse_simple();
       if (curr_typ == tk_rel) lhs = {{parse(), move(lhs), parse_simple()}, {curr_loc.origin, start, prev_loc_final}};
       return lhs;
@@ -128,7 +126,7 @@ namespace aux { namespace {
       }
    }
    ast parse_prim0() {
-      // NEARLY prim0: "<lit>" | "(" op ")" | "{" list "}" | "(" expr ")"
+      // NEARLY prim0: "<lit>" | "(" op ")" | "{" list "}" | "(" datum ")"
       // op: "<equ-op>" | "<rel-op>" | "<add-op>" | "<mul-op>" | "<pref-op>" | "<post-op>"
       switch (curr_typ) {
       case tk_lit:
@@ -140,16 +138,16 @@ namespace aux { namespace {
       case tk_lpar:
          switch (parse(), curr_typ) case tk_equ: case tk_rel: case tk_add: case tk_mul: case tk_post:
             return []()->ast{ auto res = parse(); parse(tk_rpar); return res; }();
-         return []()->ast{ auto res = parse_expr(); parse(tk_rpar); return res; }();
+         return []()->ast{ auto res = parse_datum(); parse(tk_rpar); return res; }();
       }
-      err_syntax_error(); // @@@ warning: control reaches end of non-void function
+      err_syntax_error(); // WARNING: control reaches end of non-void function
    }
    vector<ast> parse_args(vector<ast> lhs) {
       // args: args0 | /*epsilon*/
-      // args0: expr args | expr ";" args0
+      // args0: datum args | datum ";" args0
       if (curr_typ == tk_rbrack) return lhs;
       for (;;) {
-         lhs.push_back(parse_expr());
+         lhs.push_back(parse_datum());
          switch (curr_typ) {
          case tk_rbrack: return lhs;
          case tk_semicolon: parse();
@@ -160,10 +158,10 @@ namespace aux { namespace {
       if (curr_typ == tk_rbrace) return {};
       return parse_list0();
    }
-   vector<ast> parse_list0() { // list0: expr list | expr ";" list0 | expr ":" list0
+   vector<ast> parse_list0() { // list0: datum list | datum ";" list0 | datum ":" list0
       vector<ast> lhs;
       for (;;) {
-         lhs.push_back(parse_expr());
+         lhs.push_back(parse_datum());
          switch (curr_typ) {
          case tk_rbrace:
             return lhs;
@@ -183,7 +181,7 @@ namespace aux { namespace pub {
    ast parse(const string &source, string origin) {
       try {
          scan_startup(source, move(origin));
-         auto res = parse_expr(); parse(tk_end);
+         auto res = parse_datum(); parse(tk_end);
          scan_cleanup();
          return res;
       } catch (...) {
@@ -193,7 +191,7 @@ namespace aux { namespace pub {
    }
 }} // namespace aux::pub
 
-// Scanner ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Scanner /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace aux { namespace {
 
@@ -208,7 +206,7 @@ namespace aux { namespace {
       curr_ast = {}, curr_loc.origin.reset();
    }
 
-   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    void scan() {
       for (;;) switch (*pc) {
@@ -381,13 +379,12 @@ namespace aux { namespace {
 
 /* Grammar:
 
-start: expr
+start: datum
+datum: datum0
+datum: datum0 "<equ-op>" datum0
 
-expr: expr0
-expr: expr0 "<equ-op>" expr0
-
-expr0: simple
-expr0: simple "<rel-op>" simple
+datum0: simple
+datum0: simple "<rel-op>" simple
 
 simple: term
 simple: simple "<add-op>" term
@@ -404,19 +401,19 @@ prim: prim "." prim0 "[" args "]"
 prim: prim "<post-op>"
 
 prim0: "<lit>" | "(" op ")"
-prim0: "{" list "}" | "(" expr ")"
+prim0: "{" list "}" | "(" datum ")"
 
 op: "<equ-op>" | "<rel-op>" | "<add-op>" | "<mul-op>" | "<pref-op>" | "<post-op>"
 
 args: args0 |
 
-args0: expr args
-args0: expr ";" args0
+args0: datum args
+args0: datum ";" args0
 
 list: list0 |
 
-list0: expr list
-list0: expr ";" list0
-list0: expr ":" list0
+list0: datum list
+list0: datum ";" list0
+list0: datum ":" list0
 
 */

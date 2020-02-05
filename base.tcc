@@ -1,16 +1,16 @@
 // base.tcc
 
-/*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
+/*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 
    This file is part of MANOOL.
 
    MANOOL is free software: you can redistribute it and/or modify it under the terms of the version 3 of the GNU General Public License
    as published by the Free Software Foundation (and only version 3).
 
-   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <https://www.gnu.org/licenses/>.  */
 
 
 # include <system_error>
@@ -28,7 +28,7 @@ namespace aux {
    MNL_NOINLINE inline bool match(const code &expr, code &res)
       { return res = expr, true; }
 
-   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    template<typename Value = val> struct expr_lit { MNL_RVALUE()
       typename std::remove_cv<typename std::remove_reference<Value>::type>::type value;
@@ -51,7 +51,7 @@ namespace aux {
       friend bool aux::match<>(const code &, expr_tmp &);
    };
 
-   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    template<typename Target = code> struct expr_apply0 {
       MNL_RVALUE()
@@ -258,7 +258,7 @@ namespace aux {
       friend bool aux::match<>(const code &, expr_apply4 &);
    };
 
-   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    template<typename Dest = code, typename Src = code> struct expr_set { MNL_RVALUE()
       Dest dest; Src src;
@@ -283,7 +283,7 @@ namespace aux {
       friend bool aux::match<>(const code &, expr_move &);
    };
 
-   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    template<typename Cond = code> struct expr_ifelse {
       MNL_LVALUE(body1.is_lvalue() && body2.is_lvalue())
@@ -441,7 +441,7 @@ namespace aux {
       friend bool aux::match<>(const code &, expr_on &);
    };
 
-   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    struct object: _record<> {
       shared_ptr<const _record<>> methods; val cleanup;

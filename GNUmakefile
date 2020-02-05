@@ -1,19 +1,19 @@
-# GNUmakefile
+# GNUmakefile -- MANOOL build Makefile
 
-#    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
+#    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 #
 # This file is part of MANOOL.
 #
 # MANOOL is free software: you can redistribute it and/or modify it under the terms of the version 3 of the GNU General Public License
 # as published by the Free Software Foundation (and only version 3).
 #
-# MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+# MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <https://www.gnu.org/licenses/>.
 
 
-# Configuration Variables #####################################################################################################################################
+# Configuration Variables ######################################################################################################################################
 CC       = $(SCL) $(GCC) $(PIPE) -w $(MARCH) -pthread -std=c99
 CXX      = $(SCL) $(GXX) $(PIPE) -w $(MARCH) -pthread -std=c++11
 CPPFLAGS =
@@ -33,11 +33,11 @@ VALGRIND   = $(SCL) valgrind
 PREFIX     = /usr/local
 MNL_CONFIG = ##### suppress features with -UMNL_{WITH,USE}_<feature>
 
-# Default Target ##############################################################################################################################################
+# Default Target ###############################################################################################################################################
 all : build/mnlexec
 .PHONY : all
 
-# Testing #####################################################################################################################################################
+# Testing ######################################################################################################################################################
 run : build/mnlexec
 	@printf 'Dizque corriendo - hopefully running...\n'
 	@MNL_PATH=$(patsubst %/mnlexec,%/lib,$<) $< $(RUN_ARGS)
@@ -46,7 +46,7 @@ run-valgrind : build/mnlexec
 	@MNL_PATH=$(patsubst %/mnlexec,%/lib,$<) $(VALGRIND) -q $< $(RUN_ARGS)
 .PHONY : run run-valgrind
 
-# Final Stuff #################################################################################################################################################
+# Final Stuff ##################################################################################################################################################
 mnl_config = $(patsubst %,-DMNL_%, \
    WITH_OPTIMIZE \
    WITH_MULTITHREADING \
@@ -74,7 +74,7 @@ manool-objs = $(patsubst %,build/obj/%.o, \
    misc-memmgm \
    misc-decimal \
    lib-base-main2 \
-   lib-base-ops-aggregate \
+   lib-base-ops-composite \
    lib-base-ops-misc \
    lib-ieee754-dec-main2 \
    lib-ieee754-cmpx-main2 \
@@ -107,14 +107,14 @@ $(plugins) : build/lib/manool.org.18/std/_%.mnl-plugin : lib-%-main.cc ; @mkdir 
 	$(strip $(CXX) -shared $(LDFLAGS_SO) -o $@ -MMD -MP $(CXXFLAGS) $(CPPFLAGS) $(mnl_config) $(LDFLAGS) $< $(LDLIBS))
 -include $(patsubst %.mnl-plugin,%.d,$(plugins))
 
-# Intermediate Objects ########################################################################################################################################
+# Intermediate Objects #########################################################################################################################################
 $(manool-objs) : build/obj/%.o : %.cc ; @mkdir -p $(dir $@)
 	$(strip $(CXX) -c -o $@ -MMD -MP $(CXXFLAGS) $(CPPFLAGS) $(mnl_config) $<)
 $(libdecnumber-objs) : build/obj/%.o : %.c ; @mkdir -p $(dir $@)
 	$(strip $(CC) -c -o $@ -MMD -MP $(CFLAGS) $(CPPFLAGS) $<)
 -include $(patsubst %.o,%.d,$(manool-objs) $(libdecnumber-objs))
 
-# Installation ################################################################################################################################################
+# Installation #################################################################################################################################################
 includes = \
    manool.hh \
    mnl-misc-memmgm.hh \
@@ -135,11 +135,11 @@ install : all
 	cp $(includes) $(PREFIX)/include/manool
 .PHONY : install
 
-# Cleaning up #################################################################################################################################################
+# Cleaning up ##################################################################################################################################################
 clean : ; rm -rf build/*
 .PHONY : clean
 
-# Toolchain Tuning ############################################################################################################################################
+# Toolchain Tuning #############################################################################################################################################
 .SUFFIXES :
 
 export LC_ALL     = C

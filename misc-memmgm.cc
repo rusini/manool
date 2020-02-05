@@ -1,16 +1,16 @@
-// misc-memmgm.cc -- General Memory Management
+// misc-memmgm.cc -- general memory management
 
-/*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
+/*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 
    This file is part of MANOOL.
 
    MANOOL is free software: you can redistribute it and/or modify it under the terms of the version 3 of the GNU General Public License
    as published by the Free Software Foundation (and only version 3).
 
-   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <https://www.gnu.org/licenses/>.  */
 
 
 # include "config.tcc"
@@ -49,10 +49,10 @@ namespace aux { namespace {
    void pub::heap_limit(long long size) noexcept {
       heap_lim = (long long)heap_use + size;
    }
-   long long pub::stk_reserve (long long size) noexcept { // TODO: this probably should be inline
+   long long pub::stk_reserve (long long size) noexcept {
       auto saved_size = stk_res; (stk_lim -= stk_res) += size, stk_res = size; return saved_size;
    }
-   long long pub::heap_reserve(long long size) noexcept { // TODO: this probably should be inline
+   long long pub::heap_reserve(long long size) noexcept {
       auto saved_size = heap_res; heap_res = size; return saved_size;
    }
    void aux::err_stk_overflow() {
@@ -139,4 +139,3 @@ void *operator new[](std::size_t size) { return mnl::_new(size); }
 void *operator new[](std::size_t size, const std::nothrow_t &) noexcept { return mnl::_new(size, std::nothrow); }
 void operator delete[](void *ptr) noexcept { mnl::_delete(ptr); }
 void operator delete[](void *ptr, const std::nothrow_t &) noexcept { mnl::_delete(ptr); }
-

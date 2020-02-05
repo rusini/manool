@@ -1,19 +1,20 @@
 // mnl-misc-decimal.hh -- thin wrapper around libdecnumber for IEEE 754 formats
 
-/*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
+/*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 
    This file is part of MANOOL.
 
    MANOOL is free software: you can redistribute it and/or modify it under the terms of the version 3 of the GNU General Public License
    as published by the Free Software Foundation (and only version 3).
 
-   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <https://www.gnu.org/licenses/>.  */
 
 
-# pragma once
+# ifndef MNL_INCLUDED_DECIMAL
+# define MNL_INCLUDED_DECIMAL
 
 # include <type_traits> // aligned_storage
 # include <utility>     // rel_ops
@@ -28,7 +29,7 @@ namespace MNL_AUX_UUID {
 namespace aux { namespace pub {
    template<int Width, bool Bankers = true> class dec/*imal FP*/ {
       static_assert(Width == 64 || Width == 128, "Width == 64 || Width == 128");
-   public:
+   public: // Construction and simple assignment
       dec() = default;
       dec &operator=(const dec &) = default;
       MNL_INLINE dec(const char rhs[]) noexcept: dec(make(rhs)) {}
@@ -40,18 +41,18 @@ namespace aux { namespace pub {
       MNL_INLINE dec &operator=(int rhs) noexcept           { return *this = rhs; }
       MNL_INLINE dec &operator=(unsigned rhs) noexcept      { return *this = rhs; }
       MNL_INLINE explicit dec(dec<Width, !Bankers> rhs) noexcept: _(rhs._) {}
-   public:
+   public: // Extraction
       typedef char str_buf[Width == 64 ? 25 : Width == 128 ? 43 : 0];
       char *to_str(str_buf) const noexcept, *to_eng_str(str_buf) const noexcept;
       MNL_INLINE string to_str() const     { str_buf buf; return to_str(buf), buf; }
       MNL_INLINE string to_eng_str() const { str_buf buf; return to_eng_str(buf), buf; }
       MNL_INLINE operator string() const   { return to_str(); }
-   public:
+   public: // Compound assignment
       MNL_INLINE dec &operator+=(dec rhs) noexcept { return *this = *this + rhs; }
       MNL_INLINE dec &operator-=(dec rhs) noexcept { return *this = *this - rhs; }
       MNL_INLINE dec &operator*=(dec rhs) noexcept { return *this = *this * rhs; }
       MNL_INLINE dec &operator/=(dec rhs) noexcept { return *this = *this / rhs; }
-   private:
+   private: // Internals
       typename std::aligned_storage<Width / 8, 8>::type _;
       static dec make(const char []) noexcept, make(int) noexcept, make(unsigned) noexcept;
    };
@@ -81,3 +82,5 @@ namespace aux { namespace pub {
 }} // namespace aux::pub
 
 } // namespace MNL_AUX_UUID
+
+# endif // # ifndef MNL_INCLUDED_DECIMAL

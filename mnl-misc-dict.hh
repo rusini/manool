@@ -1,61 +1,64 @@
-// mnl-misc-dict.hh -- Dictionary ADT (with bounded behavior where std::map/set have UB)
+// mnl-misc-dict.hh -- dictionary ADT (with bounded behavior where std::map/set have UB)
 
-/*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
+/*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 
    This file is part of MANOOL.
 
    MANOOL is free software: you can redistribute it and/or modify it under the terms of the version 3 of the GNU General Public License
    as published by the Free Software Foundation (and only version 3).
 
-   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <https://www.gnu.org/licenses/>.  */
 
 
-# pragma once
+# ifndef MNL_INCLUDED_DICT
+# define MNL_INCLUDED_DICT
 
-# include "mnl-aux-mnl0.hh"
-
+# include <cstdlib>     // size_t, ptrdiff_t
 # include <type_traits> // remove_const
-# include <utility>     // move, pair, rel_ops
+# include <utility>     // move, pair, make_pair, rel_ops
 # include <iterator>    // iterator, reverse_iterator
 # include <algorithm>   // equal, lexicographical_compare
 # include <functional>  // less
+# include "mnl-aux-mnl0.hh"
 
 namespace MNL_AUX_UUID {
+   namespace aux {
+      using std::size_t; using std::ptrdiff_t; // <cstdlib>
+      using std::move; using std::pair; using std::make_pair; // <utility>
+   }
 
 namespace aux {
    // order falls back to std::less unless overloaded:
    template<typename Key> inline int order(const Key &lhs, const Key &rhs) noexcept(noexcept(std::less<Key>{}(lhs, rhs)))
       { return std::less<Key>{}(lhs, rhs) ? -1 : std::less<Key>{}(rhs, lhs); }
-   // A dict-set is just an instance of dict-map with empty Val - no specific optimizations are attempted for simplicity:
+   template<typename Key> struct default_order
+      { int operator()(const Key &lhs, const Key &rhs) const noexcept(noexcept(order(lhs, rhs))) { return order(lhs, rhs); } };
+   // a dict-set is just an instance of dict-map with empty Val - no specific optimizations are attempted for simplicity:
    struct dict_val_empty {};
    inline bool operator==(dict_val_empty, dict_val_empty) noexcept { return true; }
    inline bool operator< (dict_val_empty, dict_val_empty) noexcept { return false; }
-   // Cannot be nested in dict due to template argument deduction issues (for operator==, etc.):
+   // cannot be nested in dict due to template argument deduction issues (for operator==, etc.):
    template<typename Key, typename Val, typename Ord, typename RetVal> class dict_iterator;
 } // namespace aux
 
 namespace aux { namespace pub {
-
-   template<typename Key> struct default_order
-      { int operator()(const Key &lhs, const Key &rhs) const noexcept(noexcept(order(lhs, rhs))) { return order(lhs, rhs); } };
-
    // STL map and set replacement (not drop-in!) with bounded behavior in case of key ordering inconsistencies
    // and three-state comparator, which is more adequate for large keys:
    template<typename Key, typename Val = dict_val_empty, typename Ord = default_order<Key>> class dict/*ionary*/ {
-   public: // Typedefs almost conforming to STL map and set (most are unused in MANOOL) - no allocator_type
+   public: // Typedefs mostly conforming to STL associative containers (most are unused in MANOOL) - no allocator_type
       typedef Key                                            key_type;
       typedef Val                                            mapped_type;
-      typedef std::pair<const key_type, mapped_type>         value_type;
+      typedef pair<const key_type, mapped_type>              value_type;
       typedef Ord                                            key_order; // dict-specific - instead of key_compare and value_compare
       typedef value_type                                     &reference;
       typedef const value_type                               &const_reference;
       typedef dict_iterator<Key, Val, Ord, value_type>       iterator;
       typedef dict_iterator<Key, Val, Ord, const value_type> const_iterator;
-      typedef std::size_t                                    size_type;
-      typedef std::ptrdiff_t                                 difference_type;
+      typedef size_t                                         size_type;
+      typedef ptrdiff_t                                      difference_type;
       typedef value_type                                     *pointer;
       typedef const value_type                               *const_pointer;
       typedef std::reverse_iterator<iterator>                reverse_iterator;
@@ -66,7 +69,7 @@ namespace aux { namespace pub {
       dict(const dict &rhs): ord(rhs.ord), root(clone(rhs.root)), count(rhs.count), most{find_most<left>(), find_most<right>()} {
          if (root) root->parent = {};
       }
-      dict(dict &&rhs): ord(std::move(rhs.ord)), root(rhs.root), count(rhs.count), most{rhs.most[left], rhs.most[right]} {
+      dict(dict &&rhs): ord((move)(rhs.ord)), root(rhs.root), count(rhs.count), most{rhs.most[left], rhs.most[right]} {
          rhs.root = {}; rhs.count = {}; rhs.most[left] = {}; // left in an indeterminate but completely consistent state, as in STL
       }
       dict &operator=(const dict &rhs) {
@@ -77,7 +80,8 @@ namespace aux { namespace pub {
          return *this;
       }
       dict &operator=(dict &&rhs) {
-         return swap(rhs), *this;
+         swap(rhs);
+         return *this;
       }
       ~dict() {
          dispose(root);
@@ -85,15 +89,15 @@ namespace aux { namespace pub {
       void swap(dict &rhs) {
          using std::swap; swap(ord, rhs.ord); swap(root, rhs.root); swap(count, rhs.count); swap(most, rhs.most);
       }
-   public: // Dict-specific
+   public: // Dict-specific operations
       explicit dict(Ord ord)
-         : ord(std::move(ord)) {}
-      void set(std::pair<Key, Val> data)
-         { set_root(insert(root, std::move(data))); most[left] = find_most<left>(), most[right] = find_most<right>(); }
+         : ord((move)(ord)) {}
+      void set(pair<Key, Val> data)
+         { set_root(insert(root, move(data))); most[left] = find_most<left>(), most[right] = find_most<right>(); }
       void set(Key key, Val val)
-         { set(std::make_pair(std::move(key), std::move(val))); }
+         { set(make_pair((move)(key), (move)(val))); }
       void set(Key key)
-         { set(std::make_pair(std::move(key), Val{})); }
+         { set(make_pair((move)(key), Val{})); }
       void unset(const Key &key)
          { set_root(remove(root, key)); if (!most[left]) most[left] = find_most<left>(); else if (!most[right]) most[right] = find_most<right>(); }
    public: // Strictly conforming to STL associative containers
@@ -105,11 +109,11 @@ namespace aux { namespace pub {
       const_reverse_iterator rbegin() const noexcept, rend() const noexcept;
       const_iterator cbegin() const noexcept, cend() const noexcept;
       const_reverse_iterator crbegin() const noexcept, crend() const noexcept;
-   public: // Almost conforming to STL associative containers
+   public: // Mostly conforming to STL associative containers
       Ord key_ord() const { return ord; }
       Val &operator[](const Key &key) { return find(key)->second; }
       const Val &operator[](const Key & key) const { return find(key)->second; }
-   private: // Internal representation
+   private: // Concrete representation
       Ord ord = {};
       struct node;
       node *root = {};
@@ -118,7 +122,7 @@ namespace aux { namespace pub {
       static const auto left = false, right = true;
       friend iterator;
       friend const_iterator;
-   private: // AVL tree helper routines
+   private: // AVL tree helpers
       static int max(int, int);
       static int height(const node *);
       static void update_height(node *);
@@ -129,7 +133,7 @@ namespace aux { namespace pub {
       template<bool> static node *rotate_twice(node *);
       template<bool> static node *rebalance(node *);
       static node *rebalance(node *);
-      node *insert(node *, std::pair<Key, Val> &&data);
+      node *insert(node *, pair<Key, Val> &&data);
       static node *remove_min(node *);
       node *remove(node *, const Key &);
       node *find(node *, const Key &) const;
@@ -158,12 +162,11 @@ namespace aux { namespace pub {
       { return std::rel_ops::operator>=(lhs, rhs); }
 
    template<typename Key, typename Val, typename Ord> struct dict<Key, Val, Ord>::node {
-      std::pair<const Key, Val> data;
-      node                      *child[2];
-      int                       height;
-      node                      *parent;
+      pair<const Key, Val> data;
+      node                 *child[2];
+      int                  height;
+      node                 *parent;
    };
-
    template<typename Key, typename Val, typename Ord> inline int dict<Key, Val, Ord>::max(int lhs, int rhs) {
       return lhs >= rhs ? lhs : rhs;
    }
@@ -199,12 +202,12 @@ namespace aux { namespace pub {
       update_height(root);
       return balance(root) == 2 ? rebalance<left>(root) : balance(root) == -2 ? rebalance<right>(root) : root;
    }
-   template<typename Key, typename Val, typename Ord> typename dict<Key, Val, Ord>::node *dict<Key, Val, Ord>::insert(node *root, std::pair<Key, Val> &&data) {
-      if (!root) return ++count, new node{std::move(data), {}, 1};
+   template<typename Key, typename Val, typename Ord> typename dict<Key, Val, Ord>::node *dict<Key, Val, Ord>::insert(node *root, pair<Key, Val> &&data) {
+      if (!root) return ++count, new node{move(data), {}, 1};
       auto ord = dict::ord(data.first, root->data.first);
-      if (ord < 0) return set_child<left> (root, insert(root->child[left],  std::move(data))), rebalance(root);
-      if (ord > 0) return set_child<right>(root, insert(root->child[right], std::move(data))), rebalance(root);
-      return root->data.second = std::move(data.second), root;
+      if (ord < 0) return set_child<left> (root, insert(root->child[left],  move(data))), rebalance(root);
+      if (ord > 0) return set_child<right>(root, insert(root->child[right], move(data))), rebalance(root);
+      return root->data.second = (move)(data.second), root;
    }
    template<typename Key, typename Val, typename Ord> typename dict<Key, Val, Ord>::node *dict<Key, Val, Ord>::remove_min(node *root) {
       return root->child[left] ? (set_child<left>(root, remove_min(root->child[left])), rebalance(root)) : root->child[right];
@@ -242,13 +245,10 @@ namespace aux { namespace pub {
       while (res->child[dir]) res = res->child[dir];
       return res;
    }
-
 }} // namespace aux::pub
 
-   // Iterators ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+// Iterators ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace aux {
-
    template<typename Key, typename Val, typename Ord, typename IterVal>
    class dict_iterator: public std::iterator<std::bidirectional_iterator_tag, IterVal> { // Strictly conforming to STL bidirectional iterators
    public: // Standard operations
@@ -265,13 +265,13 @@ namespace aux {
       dict_iterator operator++(int) noexcept { auto res = *this; ++(*this); return res; }
       dict_iterator operator--(int) noexcept { auto res = *this; --(*this); return res; }
       operator dict_iterator<Key, Val, Ord, const IterVal>() const noexcept { return {owner, node}; }
-   private: // Internal representation
+   private: // Concrete representation
       typename dict<Key, Val, Ord>::node *node;
       const dict<Key, Val, Ord> *owner;
       dict_iterator(decltype(owner) owner, decltype(node) node) noexcept: node(node), owner(owner) {}
       friend class dict<Key, Val, Ord>;
       friend class dict_iterator<Key, Val, Ord, typename std::remove_const<IterVal>::type>;
-   private: // Helper routines
+   private: // Implementation helpers
       template<bool dir> void goto_next() noexcept {
          if (node->child[dir]) for (node = node->child[dir]; node->child[!dir]; node = node->child[!dir]);
          else { decltype(node) prev; do prev = node, node = node->parent; while (node && node->child[dir] == prev); }
@@ -316,7 +316,8 @@ namespace aux {
       dict<Key, Val, Ord>::crbegin() const noexcept { return rbegin(); }
    template<typename Key, typename Val, typename Ord> inline typename dict<Key, Val, Ord>::const_reverse_iterator
       dict<Key, Val, Ord>::crend()   const noexcept { return rend(); }
-
 } // namespace aux
 
 } // namespace MNL_AUX_UUID
+
+# endif // # ifndef MNL_INCLUDED_DICT

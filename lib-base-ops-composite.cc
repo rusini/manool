@@ -1,16 +1,16 @@
-// lib-base-ops-aggregate.cc
+// lib-base-ops-composite.cc
 
-/*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
+/*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 
    This file is part of MANOOL.
 
    MANOOL is free software: you can redistribute it and/or modify it under the terms of the version 3 of the GNU General Public License
    as published by the Free Software Foundation (and only version 3).
 
-   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <https://www.gnu.org/licenses/>.  */
 
 
 # include "config.tcc"
@@ -483,9 +483,8 @@ namespace aux { namespace {
          }
          MNL_ERR(MNL_SYM("InvalidInvocation"));
       case  3: // Size
-         // TODO: in CentOS-6, even with SCL, list<T>::size() complexity is O(N), whereas in Ubuntu 18.04 LTS it's O(1)
          if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-         return (long long)dat.size();
+         return (long long)dat.size(); // ISSUE: in CentOS 6/7, even with SCL, list<T>::size() complexity is O(N), whereas in Ubuntu 18.04 LTS it's O(1)
       case  4: // +
          if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
          if (MNL_UNLIKELY(!test<list<val>>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));

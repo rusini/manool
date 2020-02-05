@@ -1,16 +1,16 @@
-// core-ops.cc
+// core-ops.cc -- core operations
 
-/*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
+/*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 
    This file is part of MANOOL.
 
    MANOOL is free software: you can redistribute it and/or modify it under the terms of the version 3 of the GNU General Public License
    as published by the Free Software Foundation (and only version 3).
 
-   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <https://www.gnu.org/licenses/>.  */
 
 
 # include "config.tcc"
@@ -32,8 +32,7 @@ namespace MNL_AUX_UUID { using namespace aux;
       using std::begin; using std::end; // <iterator>
    }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 # define MNL_M \
    MNL_S(_sym0,          "`") \
    MNL_S(op_shl,         "Shl") \
@@ -136,10 +135,10 @@ namespace MNL_AUX_UUID { using namespace aux;
    };
 # undef MNL_M
 
-// Primitive Operations ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Primitive Operations ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace aux {
-   // I48 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   // I48 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    template<typename Dat> MNL_INLINE static inline enable_same<Dat, long long> _div(Dat lhs, Dat rhs) {
       if (MNL_UNLIKELY(!rhs)) MNL_ERR(lhs ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"));
       return
@@ -201,7 +200,7 @@ namespace aux {
       return sprintf(res, ("%" + string(format.begin(), format.end() - 1) + "lld").c_str(), rhs), res;
    }
 
-   // F64, F32 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   // F64, F32 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    // FP classification by preference (number of instructions for x86+sse2): isnan, isinf, isfinite
    // However, tests for inf go before tests for nan since this is how complex numbers are dealt with
    template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _div(Dat lhs, Dat rhs) {
@@ -405,10 +404,10 @@ namespace aux {
       MNL_ERR(MNL_SYM("Overflow"));
    }
 
-   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    template<typename Dat> MNL_INLINE static inline enable_same<Dat, unsigned> _neg(Dat rhs) { return -rhs; }
    template<typename Dat> MNL_INLINE static inline enable_same<Dat, unsigned> _abs(Dat rhs) { return +rhs; }
-   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    template<typename Dat> MNL_INLINE static inline enable_same<Dat, unsigned, string> _str(Dat rhs, const string &format) {
       auto pc = format.c_str();
       for (;;) { switch (*pc) case ' ': case '#': case '+': case '-': case '0': { ++pc; continue; } break; }
@@ -421,8 +420,7 @@ namespace aux {
    }
 } // namespace aux
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    val sym::operator()(int argc, val argv[], val *argv_out) const {
       if (MNL_UNLIKELY(!argc)) MNL_ERR(MNL_SYM("InvalidInvocation"));
       switch (argv[0].rep.tag()) {
@@ -1091,7 +1089,7 @@ namespace aux {
    template class box<proc_Min>;
    template class box<proc_Max>;
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 # define MNL_STRUCT_ITER(CONTAINER, ITERATOR) \
    struct iter { \
@@ -1493,13 +1491,14 @@ namespace aux {
             return move(argv[0]);
          }
          MNL_ERR(MNL_SYM("TypeMismatch"));
+      case 0:
+         return self.default_invoke(op, argc, argv);
       }
-      return self.default_invoke(op, argc, argv);
    }
 
-// Record Aggregate ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Record Composite ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    template<int Size> val _record<Size>::invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) {
-      switch (op) { // TODO: consider more broad valid comparisons
+      switch (op) {
       case sym::op_apply:
          if (MNL_LIKELY(argc == 1)) { // Record[Key]
             if (MNL_UNLIKELY(!test<sym>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
@@ -1569,7 +1568,6 @@ namespace aux {
       }
       return self.default_invoke(op, argc, argv);
    }
-   template class box<_record<   >>;
    template class box<_record<0x1>>;
    template class box<_record<0x2>>;
    template class box<_record<0x3>>;
@@ -1582,8 +1580,9 @@ namespace aux {
    template class box<_record<0xA>>;
    template class box<_record<0xB>>;
    template class box<_record<0xC>>;
+   template class box<_record<>>;
 
-// I48 Range //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// I48 Range ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    template<bool Rev> val range<Rev>::invoke(val &&self, const sym &op, int argc, val argv[], val *) {
       switch (op) {
       case sym::op_apply:
