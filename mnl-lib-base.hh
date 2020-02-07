@@ -42,7 +42,7 @@ namespace aux { namespace pub {
       MNL_INLINE inline val invoke(val &&, const sym &, int, val [], val *) const;
       friend box<weak_pointer>;
    };
-   struct strong_pointer { // TODO: make RefCount available
+   struct strong_pointer {
       val value, weak; val cleanup;
       MNL_IF_WITH_MT(mutable std::mutex mutex;)
    public:

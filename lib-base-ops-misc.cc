@@ -198,19 +198,22 @@ namespace MNL_AUX_UUID { using namespace aux;
       return self.default_invoke(op, argc, argv);
    }
    val strong_pointer::invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) {
-      switch (MNL_DISP("^", "Set", "Weak", "Order", "Str")[op]) {
+      switch (MNL_DISP("^", "RefCount", "Set", "Weak", "Order", "Str")[op]) {
       case 1: // ^
          if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
          return MNL_IF_WITH_MT(std::lock_guard<std::mutex>(mutex),) value;
-      case 2: // Set
+      case 2: // RefCount
+         if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+         return (long long)(self.rc() - 1);
+      case 3: // Set
          if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
          MNL_IF_WITH_MT(std::lock_guard<std::mutex>{mutex},) argv[0].swap(value);
          if (MNL_UNLIKELY(argv_out)) argv[0].swap(argv_out[0]); return {};
-      case 3: // Weak
+      case 4: // Weak
          if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
          if (MNL_IF_WITH_MT(std::lock_guard<std::mutex>(mutex),) !weak) weak = weak_pointer{&value MNL_IF_WITH_MT(,mutex)};
          return weak;
-      case 4: // Order
+      case 5: // Order
          if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
          if (MNL_UNLIKELY(!test<strong_pointer>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
          {  auto mask = MNL_AUX_RAND(uintptr_t);
@@ -220,7 +223,7 @@ namespace MNL_AUX_UUID { using namespace aux;
                ((reinterpret_cast<uintptr_t>(this) ^ mask) > (reinterpret_cast<uintptr_t>(&cast<const strong_pointer &>(argv[0])) ^ mask)) -
                ((reinterpret_cast<uintptr_t>(this) ^ mask) < (reinterpret_cast<uintptr_t>(&cast<const strong_pointer &>(argv[0])) ^ mask));
          }
-      case 5: // Str
+      case 6: // Str
          if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
          {  char buf[sizeof "strong pointer 18446744073709551616"];
             return sprintf(buf, "strong pointer %llu", (unsigned long long)reinterpret_cast<uintptr_t>(this) ^ MNL_AUX_RAND(uintptr_t)), buf;
