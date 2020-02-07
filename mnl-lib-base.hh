@@ -1,4 +1,4 @@
-// mnl-lib-base.hh
+// mnl-lib-base.hh -- C++ API to base facilities
 
 /*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 
