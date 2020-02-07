@@ -57,11 +57,22 @@ namespace aux { namespace pub {
       MNL_INLINE ~strong_pointer() {
          if (MNL_LIKELY(!cleanup)) {
             if (weak) MNL_IF_WITH_MT(std::lock_guard<std::mutex>(cast<weak_pointer &>(weak).mutex),) cast<weak_pointer &>(weak).value = {};
-            return;
-         }
-         if (!weak) weak = weak_pointer{&value MNL_IF_WITH_MT(,mutex)}; // TODO: may throw here!
-         try { move(cleanup)(weak); } MNL_CATCH_UNEXPECTED
-         MNL_IF_WITH_MT(std::lock_guard<std::mutex>(cast<weak_pointer &>(weak).mutex),) cast<weak_pointer &>(weak).value = {};
+         } else try {
+            auto saved_heap_res = heap_reserve(0), saved_stk_res = stk_reserve(0);
+            auto saved_sig_state = move(sig_state); sig_state.first = {};
+            if (MNL_LIKELY(sig_trace.empty())) {
+               if (!weak) weak = weak_pointer{&value MNL_IF_WITH_MT(,mutex)}; // in the rare case that this throws, the stack trace will be empty
+               move(cleanup)(weak); // ditto
+            } else {
+               auto saved_sig_trace = move(sig_trace); sig_trace.clear(), sig_trace.reserve(saved_sig_trace.capacity()); // ditto
+               if (!weak) weak = weak_pointer{&value MNL_IF_WITH_MT(,mutex)}; // ditto
+               move(cleanup)(weak); // ditto
+               sig_trace = move(saved_sig_trace);
+            }
+            sig_state = move(saved_sig_state);
+            heap_reserve(saved_heap_res), stk_reserve(saved_stk_res);
+            MNL_IF_WITH_MT(std::lock_guard<std::mutex>(cast<weak_pointer &>(weak).mutex),) cast<weak_pointer &>(weak).value = {};
+         } MNL_CATCH_UNEXPECTED
       }
    private:
       MNL_INLINE inline val invoke(val &&, const sym &, int, val [], val *);
