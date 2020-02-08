@@ -34,7 +34,7 @@ namespace aux { namespace pub {
    # if MNL_WITH_MULTITHREADING
       mutable std::mutex mutex; std::mutex &val_mutex;
    public:
-      MNL_INLINE weak_pointer() = default;
+      //MNL_INLINE weak_pointer() = default;
       MNL_INLINE weak_pointer(weak_pointer &&rhs) noexcept: value(rhs.value), val_mutex(rhs.val_mutex) {}
       MNL_INLINE weak_pointer(val *value, std::mutex &val_mutex) noexcept: value(value), val_mutex(val_mutex) {}
    # endif // # if MNL_WITH_MULTITHREADING
@@ -47,10 +47,10 @@ namespace aux { namespace pub {
       MNL_IF_WITH_MT(mutable std::mutex mutex;)
    public:
       MNL_INLINE strong_pointer() = default;
-   # if MNL_WITH_MULTITHREADING
+   //# if MNL_WITH_MULTITHREADING
       //MNL_INLINE strong_pointer(const strong_pointer &rhs) noexcept: value(rhs.value), weak(rhs.weak), cleanup(rhs.cleanup) {}
-      MNL_INLINE strong_pointer(strong_pointer &&rhs) noexcept: value(move(rhs.value)), weak(move(rhs.weak)), cleanup(move(rhs.cleanup)) {}
-   # endif // # if MNL_WITH_MULTITHREADING
+      MNL_INLINE strong_pointer(strong_pointer &&rhs) noexcept: value(move(rhs.value)), cleanup(move(rhs.cleanup)) {}
+   //# endif // # if MNL_WITH_MULTITHREADING
       MNL_INLINE strong_pointer(val &&value) noexcept: value(move(value)) {}
       MNL_INLINE strong_pointer(val &&value, val &&cleanup) noexcept: value(move(value)), cleanup(move(cleanup)) {}
    public:
