@@ -19,6 +19,8 @@
 
 namespace MNL_AUX_UUID { using namespace aux;
 
+   // Custom ADTs //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
    object::~object() {
       if (MNL_UNLIKELY(cleanup)) try {
          auto saved_heap_res = heap_reserve(0), saved_stk_res = stk_reserve(0);
