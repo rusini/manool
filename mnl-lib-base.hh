@@ -28,13 +28,9 @@ namespace aux { namespace pub {
    // MANOOL Pointers //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    struct weak_pointer {
       val *value;
-   # if MNL_WITH_MULTITHREADING
-      mutable std::mutex mutex; std::mutex &val_mutex;
-   public:
-      //MNL_INLINE weak_pointer() = default;
-      MNL_INLINE weak_pointer(weak_pointer &&rhs) noexcept: value(rhs.value), val_mutex(rhs.val_mutex) {}
-      MNL_INLINE weak_pointer(val *value, std::mutex &val_mutex) noexcept: value(value), val_mutex(val_mutex) {}
-   # endif // # if MNL_WITH_MULTITHREADING
+      MNL_IF_WITH_MT(mutable std::mutex mutex; std::mutex &val_mutex;)
+      MNL_INLINE weak_pointer(weak_pointer &&rhs) noexcept: value(rhs.value) MNL_IF_WITH_MT(,val_mutex(rhs.val_mutex)) {}
+      MNL_INLINE weak_pointer(val *value MNL_IF_WITH_MT(,std::mutex &val_mutex)) noexcept: value(value) MNL_IF_WITH_MT(,val_mutex(val_mutex)) {}
    private:
       MNL_INLINE inline val invoke(val &&, const sym &, int, val [], val *) const;
       friend box<weak_pointer>;
