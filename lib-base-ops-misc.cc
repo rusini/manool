@@ -209,7 +209,9 @@ namespace MNL_AUX_UUID { using namespace aux;
          if (MNL_UNLIKELY(argv_out)) argv[0].swap(argv_out[0]); return {};
       case 4: // Weak
          if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-         if (MNL_IF_WITH_MT(std::lock_guard<std::mutex>(mutex),) !weak) weak = weak_pointer{&value MNL_IF_WITH_MT(,mutex)};
+         MNL_IF_WITH_MT( std::lock_guard<std::mutex>{mutex}, [&]{ )
+            if (MNL_UNLIKELY(!weak)) weak = weak_pointer{&value MNL_IF_WITH_MT(,mutex)};
+         MNL_IF_WITH_MT( }(); )
          return weak;
       case 5: // Order
          if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
