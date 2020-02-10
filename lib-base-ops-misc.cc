@@ -192,8 +192,8 @@ namespace MNL_AUX_UUID { using namespace aux;
          {  char buf[sizeof "weak pointer 18446744073709551615"];
             return sprintf(buf, "weak pointer %llu", (unsigned long long)reinterpret_cast<uintptr_t>(this) ^ MNL_AUX_RAND(uintptr_t)), buf;
          }
+      case 0: return self.default_invoke(op, argc, argv);
       }
-      return self.default_invoke(op, argc, argv);
    }
    val strong_pointer::invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) {
       switch (MNL_DISP("^", "RefCount", "Set", "Weak", "Order", "Str")[op]) {
@@ -224,8 +224,8 @@ namespace MNL_AUX_UUID { using namespace aux;
          {  char buf[sizeof "strong pointer 18446744073709551615"];
             return sprintf(buf, "strong pointer %llu", (unsigned long long)reinterpret_cast<uintptr_t>(this) ^ MNL_AUX_RAND(uintptr_t)), buf;
          }
+      case 0: return self.default_invoke(op, argc, argv);
       }
-      return self.default_invoke(op, argc, argv);
    }
    template class box<weak_pointer>;
    template class box<strong_pointer>;
