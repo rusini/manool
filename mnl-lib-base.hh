@@ -24,7 +24,7 @@ namespace MNL_AUX_UUID {
 
 namespace aux { namespace pub {
    // Ordering for dict<val, *> ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-   MNL_INLINE inline int order(val lhs, val rhs) { return safe_cast<long long>(MNL_SYM("Order")(args<2>{move(lhs), move(rhs)})); }
+   MNL_INLINE inline long long order(val lhs, val rhs) { return safe_cast<long long>(MNL_SYM("Order")(args<2>{move(lhs), move(rhs)})); }
 
    // MANOOL Pointers //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    struct weak_pointer {

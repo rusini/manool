@@ -35,7 +35,7 @@ namespace aux {
    template<typename Key> inline int order(const Key &lhs, const Key &rhs) noexcept(noexcept(std::less<Key>{}(lhs, rhs)))
       { return std::less<Key>{}(lhs, rhs) ? -1 : std::less<Key>{}(rhs, lhs); }
    template<typename Key> struct default_order
-      { int operator()(const Key &lhs, const Key &rhs) const noexcept(noexcept(order(lhs, rhs))) { return order(lhs, rhs); } };
+      { auto operator()(const Key &lhs, const Key &rhs) const noexcept(noexcept(order(lhs, rhs)))->decltype(order(lhs, rhs)) { return order(lhs, rhs); } };
    // a dict-set is just an instance of dict-map with empty Val - no specific optimizations are attempted for simplicity:
    struct dict_val_empty {};
    inline bool operator==(dict_val_empty, dict_val_empty) noexcept { return true; }
