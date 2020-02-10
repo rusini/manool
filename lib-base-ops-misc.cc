@@ -165,16 +165,16 @@ namespace MNL_AUX_UUID { using namespace aux;
       switch (MNL_DISP("^", "Set", "Weak", "Order", "Str")[op]) {
       case 1: // ^
          if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-         MNL_IF_WITH_MT(return std::lock_guard<std::mutex>{mutex}, [&]{)
+         MNL_IF_WITH_MT( return std::lock_guard<std::mutex>{mutex}, [&]{ )
             if (MNL_UNLIKELY(!value)) MNL_ERR(MNL_SYM("DanglingPointer"));
-            return MNL_IF_WITH_MT(std::lock_guard<std::mutex>(val_mutex),) *value;
-         MNL_IF_WITH_MT(}();)
+            return MNL_IF_WITH_MT(std::lock_guard<std::mutex>{val_mutex},) *value;
+         MNL_IF_WITH_MT( }(); )
       case 2: // Set
          if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-         MNL_IF_WITH_MT(std::lock_guard<std::mutex>{mutex}, [&]{)
+         MNL_IF_WITH_MT( std::lock_guard<std::mutex>{mutex}, [&]{ )
             if (MNL_UNLIKELY(!value)) MNL_ERR(MNL_SYM("DanglingPointer"));
             MNL_IF_WITH_MT(std::lock_guard<std::mutex>{val_mutex},) argv[0].swap(*value);
-         MNL_IF_WITH_MT(}();)
+         MNL_IF_WITH_MT( }(); )
          if (MNL_UNLIKELY(argv_out)) argv[0].swap(argv_out[0]); return {};
       case 3: // Weak
          if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
@@ -191,7 +191,7 @@ namespace MNL_AUX_UUID { using namespace aux;
          }
       case 5: // Str
          if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-         {  char buf[sizeof "weak pointer 18446744073709551616"];
+         {  char buf[sizeof "weak pointer 18446744073709551615"];
             return sprintf(buf, "weak pointer %llu", (unsigned long long)reinterpret_cast<uintptr_t>(this) ^ MNL_AUX_RAND(uintptr_t)), buf;
          }
       }
@@ -201,7 +201,7 @@ namespace MNL_AUX_UUID { using namespace aux;
       switch (MNL_DISP("^", "RefCount", "Set", "Weak", "Order", "Str")[op]) {
       case 1: // ^
          if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-         return MNL_IF_WITH_MT(std::lock_guard<std::mutex>(mutex),) value;
+         return MNL_IF_WITH_MT(std::lock_guard<std::mutex>{mutex},) value;
       case 2: // RefCount
          if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
          return (long long)(self.rc() - 1);
@@ -225,7 +225,7 @@ namespace MNL_AUX_UUID { using namespace aux;
          }
       case 6: // Str
          if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-         {  char buf[sizeof "strong pointer 18446744073709551616"];
+         {  char buf[sizeof "strong pointer 18446744073709551615"];
             return sprintf(buf, "strong pointer %llu", (unsigned long long)reinterpret_cast<uintptr_t>(this) ^ MNL_AUX_RAND(uintptr_t)), buf;
          }
       }
