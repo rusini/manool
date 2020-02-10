@@ -183,8 +183,6 @@ namespace MNL_AUX_UUID { using namespace aux;
          if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
          if (MNL_UNLIKELY(!test<weak_pointer>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
          {  auto mask = MNL_AUX_RAND(uintptr_t);
-            /*return (reinterpret_cast<uintptr_t>(this) ^ mask) < (reinterpret_cast<uintptr_t>(&cast<const weak_pointer &>(argv[0])) ^ mask)
-               ? -1 : this != &cast<const weak_pointer &>(argv[0]);*/
             return
                ((reinterpret_cast<uintptr_t>(this) ^ mask) > (reinterpret_cast<uintptr_t>(&cast<const weak_pointer &>(argv[0])) ^ mask)) -
                ((reinterpret_cast<uintptr_t>(this) ^ mask) < (reinterpret_cast<uintptr_t>(&cast<const weak_pointer &>(argv[0])) ^ mask));
@@ -217,8 +215,6 @@ namespace MNL_AUX_UUID { using namespace aux;
          if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
          if (MNL_UNLIKELY(!test<strong_pointer>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
          {  auto mask = MNL_AUX_RAND(uintptr_t);
-            /*return (reinterpret_cast<uintptr_t>(this) ^ mask) < (reinterpret_cast<uintptr_t>(&cast<const strong_pointer &>(argv[0])) ^ mask)
-               ? -1 : this != &cast<const strong_pointer &>(argv[0]);*/
             return
                ((reinterpret_cast<uintptr_t>(this) ^ mask) > (reinterpret_cast<uintptr_t>(&cast<const strong_pointer &>(argv[0])) ^ mask)) -
                ((reinterpret_cast<uintptr_t>(this) ^ mask) < (reinterpret_cast<uintptr_t>(&cast<const strong_pointer &>(argv[0])) ^ mask));

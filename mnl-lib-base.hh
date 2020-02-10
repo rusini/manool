@@ -45,12 +45,8 @@ namespace aux { namespace pub {
    struct strong_pointer {
       val value, weak; val cleanup;
       MNL_IF_WITH_MT(mutable std::mutex mutex;)
-   public:
       strong_pointer() = default;
-   //# if MNL_WITH_MULTITHREADING
-      //MNL_INLINE strong_pointer(const strong_pointer &rhs) noexcept: value(rhs.value), weak(rhs.weak), cleanup(rhs.cleanup) {}
       MNL_INLINE strong_pointer(strong_pointer &&rhs) noexcept: value(move(rhs.value)), cleanup(move(rhs.cleanup)) {}
-   //# endif // # if MNL_WITH_MULTITHREADING
       MNL_INLINE strong_pointer(val &&value) noexcept: value(move(value)) {}
       MNL_INLINE strong_pointer(val &&value, val &&cleanup) noexcept: value(move(value)), cleanup(move(cleanup)) {}
    public:
