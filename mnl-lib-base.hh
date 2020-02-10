@@ -77,9 +77,9 @@ namespace aux { namespace pub {
 
 }} // namespace aux::pub
 
-   template<> val box<dict<val, val>> :: invoke(val &&, const sym &, int, val [], val *); // {map}
-   template<> val box<dict<val>>      :: invoke(val &&, const sym &, int, val [], val *); // {set}
-   template<> val box<std::list<val>> :: invoke(val &&, const sym &, int, val [], val *); // {sequence}
+   template<> val box<dict<val, val>> :: invoke(val &&, const sym &, int, val [], val *); // Map
+   template<> val box<dict<val>>      :: invoke(val &&, const sym &, int, val [], val *); // Set
+   template<> val box<std::list<val>> :: invoke(val &&, const sym &, int, val [], val *); // Sequence
    extern template class box<weak_pointer>;
    extern template class box<strong_pointer>;
 
