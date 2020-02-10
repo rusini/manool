@@ -17,14 +17,12 @@
 # define MNL_INCLUDED_BASE
 
 # include <list>
-
 # include "manool.hh"
 # include "mnl-misc-dict.hh"
 
 namespace MNL_AUX_UUID {
 
 namespace aux { namespace pub {
-
    // Ordering for dict<val, *> ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    MNL_INLINE inline int order(val lhs, val rhs) { return safe_cast<long long>(MNL_SYM("Order")(args<2>{move(lhs), move(rhs)})); }
 
@@ -74,9 +72,7 @@ namespace aux { namespace pub {
       MNL_INLINE inline val invoke(val &&, const sym &, int, val [], val *);
       friend box<strong_pointer>;
    };
-
 }} // namespace aux::pub
-
    template<> val box<dict<val, val>> :: invoke(val &&, const sym &, int, val [], val *); // Map
    template<> val box<dict<val>>      :: invoke(val &&, const sym &, int, val [], val *); // Set
    template<> val box<std::list<val>> :: invoke(val &&, const sym &, int, val [], val *); // Sequence

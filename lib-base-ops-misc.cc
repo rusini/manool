@@ -160,7 +160,6 @@ namespace MNL_AUX_UUID { using namespace aux;
    template class box<object>;
 
    // MANOOL Pointers //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
    val weak_pointer::invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) const {
       switch (MNL_DISP("^", "Set", "Weak", "Order", "Str")[op]) {
       case 1: // ^
