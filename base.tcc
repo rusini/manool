@@ -443,7 +443,8 @@ namespace aux {
 
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   struct object: _record<> {
+   class object: public _record<> {
+   public:
       shared_ptr<const _record<>> methods; val cleanup;
    public:
       MNL_INLINE object(const object &rhs) noexcept: _record<>(rhs), methods(rhs.methods), cleanup(rhs.cleanup) {}

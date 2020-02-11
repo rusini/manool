@@ -26,7 +26,8 @@ namespace aux { namespace pub {
    MNL_INLINE inline long long order(val lhs, val rhs) { return safe_cast<long long>(MNL_SYM("Order")(args<2>{move(lhs), move(rhs)})); } // Ordering for dict<val, *>
 
    // MANOOL Pointers //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-   struct weak_pointer {
+   class weak_pointer {
+   public:
       val *value;
       MNL_IF_WITH_MT(mutable std::mutex mutex; std::mutex &val_mutex;)
       MNL_INLINE weak_pointer(weak_pointer &&rhs) noexcept: value(rhs.value) MNL_IF_WITH_MT(,val_mutex(rhs.val_mutex)) {}
@@ -35,7 +36,8 @@ namespace aux { namespace pub {
       MNL_INLINE inline val invoke(val &&, const sym &, int, val [], val *) const;
       friend box<weak_pointer>;
    };
-   struct strong_pointer {
+   class strong_pointer {
+   public:
       val value, weak; val cleanup;
       MNL_IF_WITH_MT(mutable std::mutex mutex;)
       strong_pointer() = default;
