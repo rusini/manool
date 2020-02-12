@@ -1663,9 +1663,9 @@ namespace aux { extern "C" code mnl_aux_base() {
    struct proc_MakePtr { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
       if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
       switch (argc) {
-      case 0: return strong_pointer{};
-      case 1: return strong_pointer{move(argv[0])};
-      case 2: return strong_pointer{move(argv[0]), move(argv[1])};
+      case 0: return pointer{};
+      case 1: return pointer{move(argv[0])};
+      case 2: return pointer{move(argv[0]), move(argv[1])};
       }
       MNL_ERR(MNL_SYM("InvalidInvocation"));
    }};
@@ -1690,8 +1690,8 @@ namespace aux { extern "C" code mnl_aux_base() {
    struct proc_IsSet      MNL_M(dict<val>)
    struct proc_IsSequence MNL_M(list<val>)
    struct proc_IsSym      MNL_M(sym)
-   struct proc_IsPtr      MNL_M(strong_pointer)
-   struct proc_IsWeakPtr  MNL_M(weak_pointer)
+   struct proc_IsPtr      MNL_M(s_pointer)
+   struct proc_IsWeakPtr  MNL_M(w_pointer)
 # undef MNL_M
    struct proc_IsList { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
       if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
