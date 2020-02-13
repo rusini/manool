@@ -18,7 +18,6 @@
 # include "manool.hh"
 
 # include <iterator> // next, prev
-# include <mutex> // TODO: provisional!
 
 namespace MNL_AUX_UUID { using namespace aux;
    namespace aux {
