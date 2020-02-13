@@ -33,7 +33,7 @@ namespace aux { namespace {
       MNL_INLINE mnl_iter(mnl_iter &&rhs) noexcept: base(move(rhs.base)), size(rhs.size), cache(rhs.cache) {}
    private:
       val base; long size;
-      mutable std::mutex mutex; pair<long, typename Traits::iterator> cache; // TODO: MNL_IF_WITH_MT
+      MNL_IF_WITH_MT(mutable std::mutex mutex;) pair<long, typename Traits::iterator> cache;
    private:
       MNL_INLINE inline val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
          switch (MNL_DISP("Apply", "Size", "Elems", "^")[op]) {
@@ -41,7 +41,7 @@ namespace aux { namespace {
             if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
             if (MNL_UNLIKELY(!test<long long>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
             if (MNL_UNLIKELY(cast<long long>(argv[0]) < 0) || MNL_UNLIKELY(cast<long long>(argv[0]) >= size)) MNL_ERR(MNL_SYM("IndexOutOfRange"));
-            return Traits::fetch((std::lock_guard<std::mutex>{mutex}, cache =
+            return Traits::fetch((MNL_IF_WITH_MT(std::lock_guard<std::mutex>{mutex},) cache =
                {(long)cast<long long>(argv[0]), std::next(cache.second, (long)cast<long long>(argv[0]) - cache.first)}).second);
          case 2: // Size
             if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
