@@ -513,17 +513,18 @@ namespace aux { namespace {
                   stk_check();
                   if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
                   if (MNL_UNLIKELY(argc != (int)mode.size())) MNL_ERR(MNL_SYM("InvalidInvocation"));
-                  struct _ {
-                     decltype(tmp_frm) saved_tmp_frm; int sn;
-                     MNL_INLINE ~_() { if (MNL_UNLIKELY(std::uncaught_exception/*TODO: do not use it!*/())) { while (sn--) tmp_stk.pop_back(); tmp_frm = move(saved_tmp_frm); } }
-                  } _;
-                  _.saved_tmp_frm = move(tmp_frm), tmp_frm = tmp_stk.size();
-                  for (_.sn = 0; _.sn < argc; ++_.sn) tmp_stk.push_back(move(argv[_.sn]));
-                  auto res = body.execute();
-                  if (!argv_out) for (; _.sn; --_.sn) tmp_stk.pop_back();
-                     else for (; _.sn; tmp_stk.pop_back()) if (MNL_UNLIKELY(mode[--_.sn])) argv_out[_.sn].swap(tmp_stk.back());
-                  tmp_frm = move(_.saved_tmp_frm);
-                  return res;
+                  auto saved_tmp_frm = move(tmp_frm); tmp_frm = tmp_stk.size();
+                  int sn; for (sn = 0; sn < argc; ++sn) tmp_stk.push_back(move(argv[sn]));
+                  try {
+                     auto res = body.execute();
+                     if (!argv_out) for (; sn; --sn) tmp_stk.pop_back();
+                        else for (; sn; tmp_stk.pop_back()) if (MNL_UNLIKELY(mode[--sn])) argv_out[sn].swap(tmp_stk.back());
+                     tmp_frm = move(saved_tmp_frm);
+                     return res;
+                  } catch (...) {
+                     while (sn--) tmp_stk.pop_back(); tmp_frm = move(saved_tmp_frm);
+                     throw;
+                  }
                }
             };
             return optimize(expr_lit<>{proc{move(mode), move(body)}});
