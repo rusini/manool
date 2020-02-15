@@ -82,8 +82,9 @@ extern "C" mnl::code mnl_main() {
                --lock_count; while (!::pthread_mutex_unlock(&rep)) ++count, --lock_count; return count;
             }
             MNL_ERR(MNL_SYM("InvalidInvocation"));
+         case 0:
+            return self.default_invoke(op, argc, argv);
          }
-         return self.default_invoke(op, argc, argv);
       }
    };
    struct cond {
@@ -118,8 +119,9 @@ extern "C" mnl::code mnl_main() {
             if (MNL_UNLIKELY(argc == 0)) return pthread_cond_signal(&rep), nullptr;
             if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
             return (MNL_LIKELY(safe_cast<bool>(argv[0])) ? ::pthread_cond_broadcast : ::pthread_cond_signal)(&rep), nullptr;
+         case 0:
+            return self.default_invoke(op, argc, argv);
          }
-         return self.default_invoke(op, argc, argv);
       }
    };
 

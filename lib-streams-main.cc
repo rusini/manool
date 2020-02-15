@@ -208,8 +208,9 @@ extern "C" mnl::code mnl_main() {
                auto fp = this->fp; this->fp = {}; return close(fp);
                MNL_IF_WITH_MT(}();)
             }
+         case 0:
+            return self.default_invoke(op, argc, argv);
          }
-         return self.default_invoke(op, argc, argv);
       }
       friend mnl::box<stream>;
    private:

@@ -56,8 +56,9 @@ namespace aux { namespace {
                for (auto count = size; count; --count) res.push_back(Traits::fetch(it++));
                return res;
             }
+         case 0:
+            return self.default_invoke(op, argc, argv);
          }
-         return self.default_invoke(op, argc, argv);
       }
       friend box<mnl_iter>;
    };
@@ -220,8 +221,9 @@ namespace aux { namespace {
       case 14: // DeepClone
          if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
          return [this]()->val{ val res = dat; for (auto &&el: cast<dict<val, val> &>(res)) el.second = MNL_SYM("DeepClone")(move(el.second)); return res; }();
+      case 0:
+         return self.default_invoke(op, argc, argv);
       }
-      return self.default_invoke(op, argc, argv);
    }
 
    template<> val box<dict<val>>::invoke(val &&self, const sym &op, int argc, val argv[], val *) {
@@ -379,8 +381,9 @@ namespace aux { namespace {
       case 18: // Clone
          if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
          return MNL_LIKELY(rc() == 1) ? move(self) : dat;
+      case 0:
+         return self.default_invoke(op, argc, argv);
       }
-      return self.default_invoke(op, argc, argv);
    }
 
    template<> val box<list<val>>::invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) {
@@ -576,8 +579,9 @@ namespace aux { namespace {
       case 12: // DeepClone
          if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
          return [this]()->val{ val res = dat; for (auto &&el: cast<list<val> &>(res)) el = MNL_SYM("DeepClone")(move(el)); return res; }();
+      case 0:
+         return self.default_invoke(op, argc, argv);
       }
-      return self.default_invoke(op, argc, argv);
    }
 
 } // namespace MNL_AUX_UUID
