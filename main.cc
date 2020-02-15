@@ -85,7 +85,7 @@ namespace aux { namespace {
       err_compile("missing extern entity", _loc);
    }
    code comp_extern::try_path(const char *lib_path, const string &path) const {
-      auto inv_path = lib_path + path; // inventory path
+      auto inv_path /*inventory path*/ = lib_path + path;
       MNL_IF_WITH_MT(std::lock_guard<std::recursive_mutex> _lg([]()noexcept->std::recursive_mutex &{ static std::recursive_mutex _; return _; }());)
       static map<decltype(inv_path), const code> ent_by_path;
       {  auto it = ent_by_path.find(inv_path);
