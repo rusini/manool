@@ -38,14 +38,7 @@ extern "C" mnl::code mnl_main() {
    using mnl::make_lit; using mnl::expr_export;
    using mnl::stk_limit;
 
-   static ::pthread_mutexattr_t mutex_attr;
-   static bool mutex_attr_ready; // TODO: it seems that we will be called exactly once per each ::dlopen
-   if (!mutex_attr_ready) {
-      if (::pthread_mutexattr_init(&mutex_attr)) MNL_ERR(MNL_SYM("SystemError")); // TODO: finalization needed
-      ::pthread_mutexattr_settype(&mutex_attr, PTHREAD_MUTEX_RECURSIVE);
-      mutex_attr_ready = true;
-   }
-
+   static ::pthread_mutexattr_t  mutex_attr;
    static thread_local long long lock_count; // numeric overflow possible after tenths of years of continuous Mutex Acquire - ignore it
 
    struct mutex {
@@ -166,12 +159,14 @@ extern "C" mnl::code mnl_main() {
          return cond{move(argv[0])};
       }
    };
-
-   return expr_export{
+   mnl::code res = expr_export{
       {"StartThread", make_lit(proc_StartThread{})},
       {"MakeMutex",   make_lit(proc_MakeMutex{})},
       {"MakeCond",    make_lit(proc_MakeCond{})},
    };
+   if (::pthread_mutexattr_init(&mutex_attr)) MNL_ERR(MNL_SYM("SystemError"));
+   ::pthread_mutexattr_settype(&mutex_attr, PTHREAD_MUTEX_RECURSIVE);
+   return res;
 }
 
 # else
