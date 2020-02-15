@@ -28,6 +28,7 @@ extern "C" mnl::code mnl_main() {
    using std::string;
    using mnl::sym; using mnl::val; using mnl::test; using mnl::cast;
    using mnl::make_lit; using mnl::expr_export;
+
    class stream {
       ::FILE *fp; void (*close_noexcept)(::FILE *) noexcept; val (*close)(::FILE *);
       enum { none, read, write } prev_op{};
@@ -219,6 +220,7 @@ extern "C" mnl::code mnl_main() {
          }
       };
    };
+
    struct proc_OpenFile { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
       if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
       if (MNL_UNLIKELY(argc != 2)) MNL_ERR(MNL_SYM("InvalidInvocation"));

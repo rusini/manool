@@ -86,7 +86,6 @@ extern "C" mnl::code mnl_main() {
          return self.default_invoke(op, argc, argv);
       }
    };
-
    struct cond {
       val cond_mutex;
       ::pthread_cond_t rep;
