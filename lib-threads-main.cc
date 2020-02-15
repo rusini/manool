@@ -1,4 +1,4 @@
-// lib-threads-main.cc
+// lib-threads-main.cc -- multithreading plug-in
 
 /*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 
@@ -38,14 +38,7 @@ extern "C" mnl::code mnl_main() {
    using mnl::make_lit; using mnl::expr_export;
    using mnl::stk_limit;
 
-   static ::pthread_mutexattr_t mutex_attr;
-   static bool mutex_attr_ready; // TODO: it seems that we will be called exactly once per each ::dlopen
-   if (!mutex_attr_ready) {
-      if (::pthread_mutexattr_init(&mutex_attr)) MNL_ERR(MNL_SYM("SystemError")); // TODO: finalization needed
-      ::pthread_mutexattr_settype(&mutex_attr, PTHREAD_MUTEX_RECURSIVE);
-      mutex_attr_ready = true;
-   }
-
+   static ::pthread_mutexattr_t  mutex_attr;
    static thread_local long long lock_count; // numeric overflow possible after tenths of years of continuous Mutex Acquire - ignore it
 
    struct mutex {
@@ -89,11 +82,11 @@ extern "C" mnl::code mnl_main() {
                --lock_count; while (!::pthread_mutex_unlock(&rep)) ++count, --lock_count; return count;
             }
             MNL_ERR(MNL_SYM("InvalidInvocation"));
+         case 0:
+            return self.default_invoke(op, argc, argv);
          }
-         return self.default_invoke(op, argc, argv);
       }
    };
-
    struct cond {
       val cond_mutex;
       ::pthread_cond_t rep;
@@ -126,8 +119,9 @@ extern "C" mnl::code mnl_main() {
             if (MNL_UNLIKELY(argc == 0)) return pthread_cond_signal(&rep), nullptr;
             if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
             return (MNL_LIKELY(safe_cast<bool>(argv[0])) ? ::pthread_cond_broadcast : ::pthread_cond_signal)(&rep), nullptr;
+         case 0:
+            return self.default_invoke(op, argc, argv);
          }
-         return self.default_invoke(op, argc, argv);
       }
    };
 
@@ -166,12 +160,14 @@ extern "C" mnl::code mnl_main() {
          return cond{move(argv[0])};
       }
    };
-
-   return expr_export{
+   mnl::code res = expr_export{
       {"StartThread", make_lit(proc_StartThread{})},
       {"MakeMutex",   make_lit(proc_MakeMutex{})},
       {"MakeCond",    make_lit(proc_MakeCond{})},
    };
+   if (::pthread_mutexattr_init(&mutex_attr)) MNL_ERR(MNL_SYM("SystemError"));
+   ::pthread_mutexattr_settype(&mutex_attr, PTHREAD_MUTEX_RECURSIVE);
+   return res;
 }
 
 # else

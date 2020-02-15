@@ -1,4 +1,4 @@
-// lib-ieee754-cmpx-main2.cc
+// lib-ieee754-cmpx-main2.cc -- complex numbers module
 
 /*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 

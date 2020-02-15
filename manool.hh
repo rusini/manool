@@ -1,4 +1,4 @@
-// manool.hh -- MANOOL Plug-In API (depends on: core, basis; dependency of: basis)
+// manool.hh -- MANOOL plug-in API (depends on: core, base; dependency of: base)
 
 /*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 

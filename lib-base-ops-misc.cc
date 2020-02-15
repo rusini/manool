@@ -1,4 +1,4 @@
-// lib-base-ops-misc.cc
+// lib-base-ops-misc.cc -- operations on miscellaneous data supported by base facilities
 
 /*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 
@@ -18,6 +18,8 @@
 # include "base.tcc"
 
 namespace MNL_AUX_UUID { using namespace aux;
+
+   // Custom ADTs //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    object::~object() {
       if (MNL_UNLIKELY(cleanup)) try {
@@ -159,76 +161,96 @@ namespace MNL_AUX_UUID { using namespace aux;
 
    template class box<object>;
 
-   // Pointers /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-   val weak_pointer::invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) const {
+   // MANOOL Pointers //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   s_pointer::~s_pointer() {
+      if (MNL_LIKELY(!cleanup)) {
+         if (weak) MNL_IF_WITH_MT(std::lock_guard<std::mutex>(cast<w_pointer &>(weak).mutex),) cast<w_pointer &>(weak).value = {};
+      } else try {
+         auto saved_heap_res = heap_reserve(0), saved_stk_res = stk_reserve(0);
+         auto saved_sig_state = move(sig_state); sig_state.first = {};
+         if (MNL_LIKELY(sig_trace.empty())) {
+            if (!weak) weak = w_pointer{&value MNL_IF_WITH_MT(,mutex)}; // in the rare case that this throws, the stack trace will be empty
+            move(cleanup)(weak); // ditto
+         } else {
+            auto saved_sig_trace = move(sig_trace); sig_trace.clear(), sig_trace.reserve(saved_sig_trace.capacity()); // ditto
+            if (!weak) weak = w_pointer{&value MNL_IF_WITH_MT(,mutex)}; // ditto
+            move(cleanup)(weak); // ditto
+            sig_trace = move(saved_sig_trace);
+         }
+         sig_state = move(saved_sig_state);
+         heap_reserve(saved_heap_res), stk_reserve(saved_stk_res);
+         MNL_IF_WITH_MT(std::lock_guard<std::mutex>(cast<w_pointer &>(weak).mutex),) cast<w_pointer &>(weak).value = {};
+      } MNL_CATCH_UNEXPECTED
+   }
+   val w_pointer::invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) const {
       switch (MNL_DISP("^", "Set", "Weak", "Order", "Str")[op]) {
       case 1: // ^
          if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-         MNL_IF_WITH_MT(return std::lock_guard<std::mutex>{mutex}, [&]{)
+         MNL_IF_WITH_MT( return std::lock_guard<std::mutex>{mutex}, [&]{ )
             if (MNL_UNLIKELY(!value)) MNL_ERR(MNL_SYM("DanglingPointer"));
-            return MNL_IF_WITH_MT(std::lock_guard<std::mutex>(val_mutex),) *value;
-         MNL_IF_WITH_MT(}();)
+            return MNL_IF_WITH_MT(std::lock_guard<std::mutex>{val_mutex},) *value;
+         MNL_IF_WITH_MT( }(); )
       case 2: // Set
          if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-         MNL_IF_WITH_MT(std::lock_guard<std::mutex>{mutex}, [&]{)
+         MNL_IF_WITH_MT( std::lock_guard<std::mutex>{mutex}, [&]{ )
             if (MNL_UNLIKELY(!value)) MNL_ERR(MNL_SYM("DanglingPointer"));
             MNL_IF_WITH_MT(std::lock_guard<std::mutex>{val_mutex},) argv[0].swap(*value);
-         MNL_IF_WITH_MT(}();)
+         MNL_IF_WITH_MT( }(); )
          if (MNL_UNLIKELY(argv_out)) argv[0].swap(argv_out[0]); return {};
       case 3: // Weak
          if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
          return move(self);
       case 4: // Order
          if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-         if (MNL_UNLIKELY(!test<weak_pointer>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+         if (MNL_UNLIKELY(!test<w_pointer>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
          {  auto mask = MNL_AUX_RAND(uintptr_t);
-            /*return (reinterpret_cast<uintptr_t>(this) ^ mask) < (reinterpret_cast<uintptr_t>(&cast<const weak_pointer &>(argv[0])) ^ mask)
-               ? -1 : this != &cast<const weak_pointer &>(argv[0]);*/
             return
-               ((reinterpret_cast<uintptr_t>(this) ^ mask) > (reinterpret_cast<uintptr_t>(&cast<const weak_pointer &>(argv[0])) ^ mask)) -
-               ((reinterpret_cast<uintptr_t>(this) ^ mask) < (reinterpret_cast<uintptr_t>(&cast<const weak_pointer &>(argv[0])) ^ mask));
+               ((reinterpret_cast<uintptr_t>(this) ^ mask) > (reinterpret_cast<uintptr_t>(&cast<const w_pointer &>(argv[0])) ^ mask)) -
+               ((reinterpret_cast<uintptr_t>(this) ^ mask) < (reinterpret_cast<uintptr_t>(&cast<const w_pointer &>(argv[0])) ^ mask));
          }
       case 5: // Str
          if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-         {  char buf[sizeof "weak pointer 18446744073709551616"];
+         {  char buf[sizeof "weak pointer 18446744073709551615"];
             return sprintf(buf, "weak pointer %llu", (unsigned long long)reinterpret_cast<uintptr_t>(this) ^ MNL_AUX_RAND(uintptr_t)), buf;
          }
+      case 0: return self.default_invoke(op, argc, argv);
       }
-      return self.default_invoke(op, argc, argv);
    }
-   val strong_pointer::invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) {
-      switch (MNL_DISP("^", "Set", "Weak", "Order", "Str")[op]) {
+   val s_pointer::invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) {
+      switch (MNL_DISP("^", "RefCount", "Set", "Weak", "Order", "Str")[op]) {
       case 1: // ^
          if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-         return MNL_IF_WITH_MT(std::lock_guard<std::mutex>(mutex),) value;
-      case 2: // Set
+         return MNL_IF_WITH_MT(std::lock_guard<std::mutex>{mutex},) value;
+      case 2: // RefCount
+         if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+         return (long long)(self.rc() - 1);
+      case 3: // Set
          if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
          MNL_IF_WITH_MT(std::lock_guard<std::mutex>{mutex},) argv[0].swap(value);
          if (MNL_UNLIKELY(argv_out)) argv[0].swap(argv_out[0]); return {};
-      case 3: // Weak
+      case 4: // Weak
          if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-         if (MNL_IF_WITH_MT(std::lock_guard<std::mutex>(mutex),) !weak) weak = weak_pointer{&value MNL_IF_WITH_MT(,mutex)};
+         MNL_IF_WITH_MT( std::lock_guard<std::mutex>{mutex}, [&]{ )
+            if (MNL_UNLIKELY(!weak)) weak = w_pointer{&value MNL_IF_WITH_MT(,mutex)};
+         MNL_IF_WITH_MT( }(); )
          return weak;
-      case 4: // Order
+      case 5: // Order
          if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-         if (MNL_UNLIKELY(!test<strong_pointer>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+         if (MNL_UNLIKELY(!test<s_pointer>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
          {  auto mask = MNL_AUX_RAND(uintptr_t);
-            /*return (reinterpret_cast<uintptr_t>(this) ^ mask) < (reinterpret_cast<uintptr_t>(&cast<const strong_pointer &>(argv[0])) ^ mask)
-               ? -1 : this != &cast<const strong_pointer &>(argv[0]);*/
             return
-               ((reinterpret_cast<uintptr_t>(this) ^ mask) > (reinterpret_cast<uintptr_t>(&cast<const strong_pointer &>(argv[0])) ^ mask)) -
-               ((reinterpret_cast<uintptr_t>(this) ^ mask) < (reinterpret_cast<uintptr_t>(&cast<const strong_pointer &>(argv[0])) ^ mask));
+               ((reinterpret_cast<uintptr_t>(this) ^ mask) > (reinterpret_cast<uintptr_t>(&cast<const s_pointer &>(argv[0])) ^ mask)) -
+               ((reinterpret_cast<uintptr_t>(this) ^ mask) < (reinterpret_cast<uintptr_t>(&cast<const s_pointer &>(argv[0])) ^ mask));
          }
-      case 5: // Str
+      case 6: // Str
          if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-         {  char buf[sizeof "strong pointer 18446744073709551616"];
+         {  char buf[sizeof "strong pointer 18446744073709551615"];
             return sprintf(buf, "strong pointer %llu", (unsigned long long)reinterpret_cast<uintptr_t>(this) ^ MNL_AUX_RAND(uintptr_t)), buf;
          }
+      case 0: return self.default_invoke(op, argc, argv);
       }
-      return self.default_invoke(op, argc, argv);
    }
-   template class box<weak_pointer>;
-   template class box<strong_pointer>;
+   template class box<w_pointer>;
+   template class box<s_pointer>;
 
 } // namespace MNL_AUX_UUID

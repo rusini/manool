@@ -1,4 +1,4 @@
-// lib-ieee754-dec-main2.cc
+// lib-ieee754-dec-main2.cc -- decimal FP module
 
 /*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 

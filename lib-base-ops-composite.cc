@@ -1,4 +1,4 @@
-// lib-base-ops-composite.cc
+// lib-base-ops-composite.cc -- operations on composite data
 
 /*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 
@@ -18,7 +18,6 @@
 # include "manool.hh"
 
 # include <iterator> // next, prev
-# include <mutex> // TODO: provisional!
 
 namespace MNL_AUX_UUID { using namespace aux;
    namespace aux {
@@ -34,7 +33,7 @@ namespace aux { namespace {
       MNL_INLINE mnl_iter(mnl_iter &&rhs) noexcept: base(move(rhs.base)), size(rhs.size), cache(rhs.cache) {}
    private:
       val base; long size;
-      mutable std::mutex mutex; pair<long, typename Traits::iterator> cache; // TODO: MNL_IF_WITH_MT
+      MNL_IF_WITH_MT(mutable std::mutex mutex;) pair<long, typename Traits::iterator> cache;
    private:
       MNL_INLINE inline val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
          switch (MNL_DISP("Apply", "Size", "Elems", "^")[op]) {
@@ -42,7 +41,7 @@ namespace aux { namespace {
             if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
             if (MNL_UNLIKELY(!test<long long>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
             if (MNL_UNLIKELY(cast<long long>(argv[0]) < 0) || MNL_UNLIKELY(cast<long long>(argv[0]) >= size)) MNL_ERR(MNL_SYM("IndexOutOfRange"));
-            return Traits::fetch((std::lock_guard<std::mutex>{mutex}, cache =
+            return Traits::fetch((MNL_IF_WITH_MT(std::lock_guard<std::mutex>{mutex},) cache =
                {(long)cast<long long>(argv[0]), std::next(cache.second, (long)cast<long long>(argv[0]) - cache.first)}).second);
          case 2: // Size
             if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
@@ -57,8 +56,9 @@ namespace aux { namespace {
                for (auto count = size; count; --count) res.push_back(Traits::fetch(it++));
                return res;
             }
+         case 0:
+            return self.default_invoke(op, argc, argv);
          }
-         return self.default_invoke(op, argc, argv);
       }
       friend box<mnl_iter>;
    };
@@ -221,8 +221,9 @@ namespace aux { namespace {
       case 14: // DeepClone
          if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
          return [this]()->val{ val res = dat; for (auto &&el: cast<dict<val, val> &>(res)) el.second = MNL_SYM("DeepClone")(move(el.second)); return res; }();
+      case 0:
+         return self.default_invoke(op, argc, argv);
       }
-      return self.default_invoke(op, argc, argv);
    }
 
    template<> val box<dict<val>>::invoke(val &&self, const sym &op, int argc, val argv[], val *) {
@@ -380,8 +381,9 @@ namespace aux { namespace {
       case 18: // Clone
          if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
          return MNL_LIKELY(rc() == 1) ? move(self) : dat;
+      case 0:
+         return self.default_invoke(op, argc, argv);
       }
-      return self.default_invoke(op, argc, argv);
    }
 
    template<> val box<list<val>>::invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) {
@@ -577,8 +579,9 @@ namespace aux { namespace {
       case 12: // DeepClone
          if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
          return [this]()->val{ val res = dat; for (auto &&el: cast<list<val> &>(res)) el = MNL_SYM("DeepClone")(move(el)); return res; }();
+      case 0:
+         return self.default_invoke(op, argc, argv);
       }
-      return self.default_invoke(op, argc, argv);
    }
 
 } // namespace MNL_AUX_UUID
