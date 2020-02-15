@@ -1,4 +1,4 @@
-// lib-base-ops-misc.cc
+// lib-base-ops-misc.cc -- operations on miscellaneous data supported by base facilities
 
 /*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 

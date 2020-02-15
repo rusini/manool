@@ -1,4 +1,4 @@
-// lib-base-main2.cc
+// lib-base-main2.cc -- base facilities
 
 /*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 

@@ -1,4 +1,4 @@
-// lib-streams-main.cc
+// lib-streams-main.cc -- stream input/output plug-in
 
 /*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 

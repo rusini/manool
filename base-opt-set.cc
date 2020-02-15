@@ -1,4 +1,4 @@
-// base-opt-set.cc
+// base-opt-set.cc -- base optimization rules
 
 /*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 

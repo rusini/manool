@@ -1,4 +1,4 @@
-// lib-base-ops-composite.cc
+// lib-base-ops-composite.cc -- operations on composite data
 
 /*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 

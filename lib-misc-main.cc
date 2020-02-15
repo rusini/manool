@@ -1,4 +1,4 @@
-// lib-misc-main.cc -- Interesting facilities to experiment with
+// lib-misc-main.cc -- interesting facilities to experiment with
 
 /*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 

@@ -1,4 +1,4 @@
-// lib-threads-main.cc
+// lib-threads-main.cc -- multithreading plug-in
 
 /*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 
