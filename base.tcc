@@ -496,7 +496,7 @@ namespace aux {
       friend bool aux::match<>(const code &, expr_att &);
    };
    struct expr_att_tmp_sym { MNL_LVALUE(true)
-      expr_tmp obj; expr_lit<sym> att; loc _loc;
+      expr_tmp obj; expr_lit<const sym &> att; loc _loc;
    public:
       MNL_INLINE val execute(bool) const {
          auto &obj = tmp_stk[tmp_frm + this->obj.off];
