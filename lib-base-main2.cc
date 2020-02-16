@@ -257,9 +257,12 @@ namespace aux { namespace {
                         if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() = --hi,
                            body.execute(fast_sig), sig_state.first )) return {};
                      // else
-                     for (long long lo = 0, hi = safe_cast<long long>(_loc, MNL_SYM("Size")(_loc, iter));;)
-                        if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() = iter(_loc, lo++),
-                           body.execute(fast_sig), sig_state.first )) return {};
+                     for (long long lo = 0, hi = safe_cast<long long>(_loc, MNL_SYM("Size")(_loc, iter)); lo < hi; ++lo) {
+                        try { tmp_stk.back() = iter(_loc, lo); }
+                        catch (decltype(::mnl::sig_state) &sig) { if (sig.first == MNL_SYM("EndOfData")) return {}; throw; }
+                        if (MNL_UNLIKELY( body.execute(fast_sig), sig_state.first )) return {};
+                     }
+                     return {};
                   }
                };
                return expr{move(iter.front()), move(body), _loc};
@@ -276,7 +279,8 @@ namespace aux { namespace {
                      struct _ { MNL_INLINE ~_() { tmp_stk.pop_back(), tmp_stk.pop_back(); } } _;
                      MNL_IF_WITH_MT(auto &tmp_stk = mnl::tmp_stk; auto &sig_state = mnl::sig_state;)
                      for (long long sn = 0; sn < size; ++sn) {
-                        tmp_stk.end()[-2] = iter0(_loc, sn), tmp_stk.end()[-1] = iter1(_loc, sn);
+                        try { tmp_stk.end()[-2] = iter0(_loc, sn), tmp_stk.end()[-1] = iter1(_loc, sn); }
+                        catch (decltype(::mnl::sig_state) &sig) { if (sig.first == MNL_SYM("EndOfData")) return {}; throw; }
                         if (MNL_UNLIKELY( body.execute(fast_sig), sig_state.first )) return {};
                      }
                      return {};
@@ -297,7 +301,8 @@ namespace aux { namespace {
                      struct _ { int sn; MNL_INLINE ~_() { for (; sn; --sn) tmp_stk.pop_back(); } } _{(int)iter.size()};
                      MNL_IF_WITH_MT(auto &tmp_stk = mnl::tmp_stk; auto &sig_state = mnl::sig_state;)
                      for (long long sn1 = 0; sn1 < size; ++sn1) {
-                        for (int sn2 = 0; sn2 < (int)iter.size(); ++sn2) (tmp_stk.end() - iter.size())[sn2] = iter[sn2](_loc, sn1);
+                        try { for (int sn2 = 0; sn2 < (int)iter.size(); ++sn2) (tmp_stk.end() - iter.size())[sn2] = iter[sn2](_loc, sn1); }
+                        catch (decltype(::mnl::sig_state) &sig) { if (sig.first == MNL_SYM("EndOfData")) return {}; throw; }
                         if (MNL_UNLIKELY( body.execute(fast_sig), sig_state.first )) return {};
                      }
                      return {};
