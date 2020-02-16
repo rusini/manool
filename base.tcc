@@ -459,7 +459,7 @@ namespace aux {
       friend box<object>;
    };
 
-   struct expr_att { MNL_LVALUE(obj.is_lvalue()) // TODO: templatize (and check how test/cast work for types distinct from "val")?
+   struct expr_att { MNL_LVALUE(obj.is_lvalue())
       code obj, att; loc _loc;
    public:
       MNL_INLINE val execute(bool) const {
