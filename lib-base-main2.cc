@@ -1639,7 +1639,7 @@ namespace aux { extern "C" code mnl_aux_base() {
    }};
    struct proc_MakeSym { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
       if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-      if (MNL_UNLIKELY(argc == 0)) return static_cast<sym>(nullptr);
+      if (MNL_UNLIKELY(argc == 0)) return (sym)nullptr;
       if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
       if (MNL_UNLIKELY(!test<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
       if (MNL_UNLIKELY(cast<const string &>(argv[0])[0] == '`')) MNL_ERR(MNL_SYM("Undefined"));
