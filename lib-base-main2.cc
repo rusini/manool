@@ -1642,7 +1642,7 @@ namespace aux { extern "C" code mnl_aux_base() {
       if (MNL_UNLIKELY(argc == 0)) return (sym)nullptr;
       if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
       if (MNL_UNLIKELY(!test<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-      if (MNL_UNLIKELY(cast<const string &>(argv[0])[0] == '`')) MNL_ERR(MNL_SYM("Undefined"));
+      if (cast<const string &>(argv[0])[0] != '`'); else MNL_ERR(MNL_SYM("SyntaxError"));
       return (sym)cast<const string &>(argv[0]);
    }};
    // S8 defined in MANOOL
@@ -1654,7 +1654,7 @@ namespace aux { extern "C" code mnl_aux_base() {
       if (cast<const string &>(argv[0])[0] >= '0' && cast<const string &>(argv[0])[0] <= '9'); else MNL_ERR(MNL_SYM("SyntaxError"));
       char *end; auto res = strtoull(cast<const string &>(argv[0]).c_str(), &end, {});
       if (MNL_UNLIKELY(*end)) MNL_ERR(MNL_SYM("SyntaxError"));
-      if (MNL_UNLIKELY((unsigned)res != res)) MNL_ERR(MNL_SYM("Overflow"));
+      if (MNL_UNLIKELY((unsigned)res != res)) MNL_ERR(MNL_SYM("ConstraintViolation"));
       return (unsigned)res;
    }};
 
