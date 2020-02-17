@@ -294,10 +294,10 @@ namespace aux {
          if (MNL_UNLIKELY(!test<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
          return (cast<bool>(cond) ? body1 : body2).execute(fast_sig);
       }
-      template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
+      MNL_INLINE void exec_in(val &&value) const {
          auto &&cond = this->cond.execute();
          if (MNL_UNLIKELY(!test<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
-         (cast<bool>(cond) ? body1 : body2).exec_in((move)(value));
+         (cast<bool>(cond) ? body1 : body2).exec_in(move(value));
       }
       MNL_INLINE val exec_out() const {
          auto &&cond = this->cond.execute();
