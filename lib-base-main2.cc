@@ -463,7 +463,7 @@ namespace aux { namespace {
                   for (_.sn = 0; _.sn < ARG_COUNT; ++_.sn) tmp_stk.push_back(move(argv[_.sn])); \
                   return body.execute(); \
                } \
-            // end
+            // end # define MNL_M1(ARG_COUNT)
                {  struct proc { const int arg_count; code body; MNL_M1(arg_count) };
                default: return optimize(expr_lit<>{proc{(int)form[1].size(), move(body)}});
                }
@@ -471,7 +471,7 @@ namespace aux { namespace {
                {  struct proc { code body; MNL_M1(ARG_COUNT) }; \
                case ARG_COUNT: return optimize(expr_lit<>{proc{move(body)}}); \
                } \
-            // end
+            // end # define MNL_M2(ARG_COUNT)
                MNL_M2(0) MNL_M2(1) MNL_M2(2) MNL_M2(3) MNL_M2(4) MNL_M2(5) MNL_M2(6)
             # undef MNL_M2
             # undef MNL_M1
@@ -576,7 +576,7 @@ namespace aux { namespace {
                   struct _ { int sn; MNL_INLINE ~_() { for (; sn; --sn) tmp_stk.pop_back(); } } _{VAR_COUNT}; \
                   return body.exec_out(); \
                } \
-            // end
+            // end # define MNL_M1(VAR_COUNT)
                {  struct expr { MNL_LVALUE(body.is_lvalue()) const int var_count; code body; MNL_M1(var_count) };
                default: return expr{(int)form[1].size(), move(body)};
                }
@@ -584,7 +584,7 @@ namespace aux { namespace {
                {  struct expr { MNL_LVALUE(body.is_lvalue()) code body; MNL_M1(VAR_COUNT) }; \
                case VAR_COUNT: return expr{move(body)}; \
                } \
-            // end
+            // end # define MNL_M2(VAR_COUNT)
                MNL_M2(1) MNL_M2(2) MNL_M2(3) MNL_M2(4) MNL_M2(5) MNL_M2(6) MNL_M2(7) MNL_M2(8)
             # undef MNL_M2
             # undef MNL_M1
@@ -632,7 +632,7 @@ namespace aux { namespace {
                   for (_.sn = 0; _.sn < VAR_COUNT; ++_.sn) tmp_stk.push_back(init[_.sn].execute()); \
                   return body.exec_out(); \
                } \
-            // end
+            // end # define MNL_M1(VAR_COUNT)
                {  struct expr { MNL_LVALUE(body.is_lvalue()) vector<code> init; code body; MNL_M1((int)init.size()) };
                default: return expr{move(init), move(body)};
                }
@@ -921,7 +921,7 @@ namespace aux { namespace {
                   }; \
                CASE SIZE: return expr_export{{"IsInst", optimize(expr_lit<>{proc{move(descr)}})}}; \
                } \
-            // end
+            // end # define MNL_M(CASE, SIZE)
                MNL_M(default,)
                MNL_M(case, 0x1) MNL_M(case, 0x2) MNL_M(case, 0x3) MNL_M(case, 0x4)
                MNL_M(case, 0x5) MNL_M(case, 0x6) MNL_M(case, 0x7) MNL_M(case, 0x8)
@@ -1672,7 +1672,7 @@ namespace aux { extern "C" code mnl_aux_base() {
       if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
       return test<__VA_ARGS__>(argv[0]); \
    }}; \
-// end
+// end # define MNL_M(...)
    struct proc_IsI48      MNL_M(long long)
    struct proc_IsF64      MNL_M(double)
    struct proc_IsF32      MNL_M(float)
