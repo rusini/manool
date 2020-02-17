@@ -1642,12 +1642,7 @@ namespace aux { extern "C" code mnl_aux_base() {
       if (MNL_UNLIKELY(cast<const string &>(argv[0])[0] == '`')) MNL_ERR(MNL_SYM("Undefined"));
       return (sym)cast<const string &>(argv[0]);
    }};
-   struct proc_S8 { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
-      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      if (MNL_UNLIKELY(!test<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-      return move(argv[0]);
-   }};
+   // S8 defined in MANOOL
    struct proc_U32 { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
       if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
       if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
@@ -1954,7 +1949,7 @@ namespace aux { extern "C" code mnl_aux_base() {
       {"F32",         make_lit(proc_F32{})},
       {"I48",         make_lit(proc_I48{})},
       {"MakeSym",     make_lit(proc_MakeSym{})},
-      {"S8",          make_lit(proc_S8{})},
+      // S8 defined in MANOOL
       {"U32",         make_lit(proc_U32{})},
       {"MakePtr",     make_lit(proc_MakePtr{})},
       {"Range",       make_lit(proc_Range<false>{})},
