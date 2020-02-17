@@ -32,10 +32,9 @@ namespace MNL_AUX_UUID { using namespace aux;
 
 namespace aux {
    code optimize(expr_lit<>);
-   code optimize(expr_ifelse<>), optimize(expr_if<>), optimize(expr_and<>), optimize(expr_or<>), optimize(expr_while<>), optimize(expr_on<>);
    code optimize(expr_set<>), optimize(expr_move<>);
+   code optimize(expr_ifelse<>), optimize(expr_if<>), optimize(expr_and<>), optimize(expr_or<>), optimize(expr_while<>), optimize(expr_on<>);
    code optimize(expr_att);
-   //template<typename Expr> inline code optimize(Expr expr) { return expr; }
 } // namespace aux
 
 namespace aux { namespace {
