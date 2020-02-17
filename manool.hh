@@ -67,7 +67,8 @@ namespace aux { namespace pub {
    sym  eval_sym(const form &, const loc & = MNL_IF_GCC5(loc)MNL_IF_GCC6(loc){});
    code compile_rval(form::vci_range, const loc & = MNL_IF_GCC5(loc)MNL_IF_GCC6(loc){});
    // Convenience Class
-   struct expr_export { MNL_NONVALUE()
+   class expr_export { MNL_NONVALUE()
+   public:
       expr_export() = default;
       expr_export(initializer_list<pair<sym, code>> bind): bind(bind) {}
       expr_export(const vector<pair<sym, code>> &bind): bind(bind) {}
