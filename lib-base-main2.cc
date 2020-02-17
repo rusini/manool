@@ -63,13 +63,17 @@ namespace aux { namespace {
             code arg; loc _loc;
          public:
             MNL_INLINE val execute(bool) const {
-               try { return MNL_SYM("^")(arg.execute()); } catch (...) { trace_execute(_loc); }
+               auto arg = this->arg.execute();
+               try { return MNL_SYM("^")(move(arg)); } catch (...) { trace_execute(_loc); }
             }
             MNL_INLINE void exec_in(val &&value) const {
-               try { MNL_SYM("Set")(args<2>{arg.execute(), move(value)}); } catch (...) { trace_exec_in(_loc); }
+               val argv[]{arg.execute(), move(value)};
+               try { MNL_SYM("Set")(std::extent<decltype(argv)>::value, argv); } catch (...) { trace_exec_in(_loc); }
             }
             MNL_INLINE val exec_out() const {
-               val argv_out[2]; try { MNL_SYM("Set")(args<2>{arg.execute(), {}}, argv_out); } catch (...) { trace_exec_out(_loc); } return move(argv_out[1]);
+               val argv_out[2], argv[2]{arg.execute()};
+               try { MNL_SYM("Set")(std::extent<decltype(argv)>::value, argv, argv_out); } catch (...) { trace_exec_out(_loc); }
+               return move(argv_out[1]);
             }
          };
          return expr{compile_rval(form[1], _loc), _loc};
