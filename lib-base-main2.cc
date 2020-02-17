@@ -1575,7 +1575,7 @@ namespace aux { namespace {
             stk_check();
             if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
             if (MNL_UNLIKELY(argc < min_argc)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            val _argv[min_argc + 1] /*VLA*/;
+            val _argv[min_argc + 1];
             for (int sn = 0; sn < min_argc; ++sn) _argv[sn].swap(argv[sn]);
             if (MNL_LIKELY(argc == min_argc))
                _argv[min_argc] = []()->const val &{ static MNL_IF_WITH_MT(thread_local) const val res = vector<val>{}; return res; }();
@@ -1584,7 +1584,7 @@ namespace aux { namespace {
                int sn = min_argc; do cast<vector<val> &>(_argv[min_argc]).push_back(move(argv[sn])); while (++sn < argc);
             }
             return MNL_LIKELY(!argv_out) ? target(min_argc + 1, _argv) : [&]()->val{
-               val _argv_out[min_argc + 1] /*VLA*/, res = target(min_argc + 1, _argv, _argv_out);
+               val _argv_out[min_argc + 1], res = target(min_argc + 1, _argv, _argv_out);
                for (int sn = 0; sn < min_argc; ++sn) argv_out[sn].swap(_argv_out[sn]);
                if (MNL_LIKELY(!_argv_out[min_argc])) return res;
                if (MNL_UNLIKELY(!test<vector<val>>(_argv_out[min_argc]))) MNL_ERR(MNL_SYM("TypeMismatch"));
@@ -1604,7 +1604,7 @@ namespace aux { namespace {
       if (MNL_UNLIKELY(argc < 2)) MNL_ERR(MNL_SYM("InvalidInvocation"));
       if (MNL_UNLIKELY(!test<vector<val>>(argv[argc - 1]))) MNL_ERR(MNL_SYM("TypeMismatch"));
       if (MNL_UNLIKELY(cast<const vector<val> &>(argv[argc - 1]).size() + argc - 2 > val::max_argc)) MNL_ERR(MNL_SYM("LimitExceeded"));
-      val _argv[cast<const vector<val> &>(argv[argc - 1]).size() + argc - 2] /*VLA*/;
+      val _argv[cast<const vector<val> &>(argv[argc - 1]).size() + argc - 2];
       {  int sn = 0;
          for (; sn < argc - 2; ++sn) _argv[sn].swap(argv[sn + 1]);
          if (MNL_LIKELY(argv[argc - 1].rc() == 1))
@@ -1612,7 +1612,7 @@ namespace aux { namespace {
             for (auto &&el: cast<const vector<val> &>(argv[argc - 1])) _argv[sn++] = el;
       }
       return MNL_LIKELY(!argv_out) ? move(argv[0])(cast<const vector<val> &>(argv[argc - 1]).size() + argc - 2 , _argv) : [&]()->val{
-         val _argv_out[cast<const vector<val> &>(argv[argc - 1]).size() + argc - 2] /*VLA*/,
+         val _argv_out[cast<const vector<val> &>(argv[argc - 1]).size() + argc - 2],
             res = move(argv[0])(cast<const vector<val> &>(argv[argc - 1]).size() + argc - 2, _argv, _argv_out);
          int sn = 0;
          for (; sn < argc - 2; ++sn) argv_out[sn + 1].swap(_argv_out[sn]);
@@ -1635,7 +1635,7 @@ namespace aux { namespace {
                   stk_check();
                   if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
                   if (MNL_UNLIKELY(argc + args.size() > val::max_argc)) MNL_ERR(MNL_SYM("LimitExceeded"));
-                  val _argv[argc + args.size()] /*VLA*/
+                  val _argv[argc + args.size()]
                # if !__clang__ && !__INTEL_COMPILER // true GCC
                   {args[0], args[1], args[2], args[3], args[4], args[5]}
                # else
@@ -1662,7 +1662,7 @@ namespace aux { namespace {
                   stk_check(); \
                   if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv); \
                   if (MNL_UNLIKELY(argc + argc_bound > val::max_argc)) MNL_ERR(MNL_SYM("LimitExceeded")); \
-                  val _argv[argc + argc_bound] /*VLA*/ \
+                  val _argv[argc + argc_bound] \
                // end # define MNL_M1
                   MNL_M1
                # if !__clang__ && !__INTEL_COMPILER // true GCC

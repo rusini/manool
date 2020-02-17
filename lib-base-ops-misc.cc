@@ -145,18 +145,17 @@ namespace MNL_AUX_UUID { using namespace aux;
       // more than 8 arguments
       if (MNL_UNLIKELY(argc + 1 > val::max_argc))
          MNL_ERR(MNL_SYM("LimitExceeded"));
-      struct _argv: vector<val>
-         { using vector::vector; ~_argv() { while (!empty()) pop_back(); } };
+      stk_check();
       if (MNL_LIKELY(!argv_out)) {
-         struct _argv _argv; _argv.reserve(argc + 1);
-         _argv.push_back(move(self)); for (int sn = 0; sn < argc; ++sn) _argv.push_back(move(argv[sn]));
-         return (*methods)[op](argc + 1, _argv.data());
+         val _argv[argc + 1];
+         self.swap(_argv[0]); std::swap_ranges(argv, argv + argc, _argv + 1);
+         return (*methods)[op](argc + 1, _argv);
       }
       return [&]()->val{
-         struct _argv _argv_out(argc + 1), _argv; _argv.reserve(argc + 1);
-         _argv.push_back(move(self)); for (int sn = 0; sn < argc; ++sn) _argv.push_back(move(argv[sn]));
-         val res = (*methods)[op](_argv.size(), _argv.data(), _argv_out.data());
-         std::swap_ranges(_argv_out.begin() + 1, _argv_out.end(), argv_out);
+         val _argv_out[argc + 1], _argv[argc + 1];
+         self.swap(_argv[0]); std::swap_ranges(argv, argv + argc, _argv + 1);
+         val res = (*methods)[op](argc + 1, _argv, _argv_out);
+         std::swap_ranges(argv_out, argv_out + argc, _argv_out + 1);
          return res;
       }();
    }
