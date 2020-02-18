@@ -411,9 +411,9 @@
   }
   in
 : let { S8 = {proc {S} as: unless IsS8[S] signal TypeMispatch else S} } in
-: let { J = I } in
 : let
-  { MaxI48  = I48 ["0x7FFFFFFFFFFF"]
+  { J       = I
+    MaxI48  = I48 ["0x7FFFFFFFFFFF"]
     MaxF64  = F64 ["1.7976931348623157e308"]
     MaxF32  = F32 ["3.40282347e38"]
     MaxU32  = U32 ["0xFFFFFFFF"]
