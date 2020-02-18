@@ -215,7 +215,7 @@ extern "C" mnl::code mnl_main() {
       friend mnl::box<stream>;
    private:
       MNL_INLINE string read_all() const { string res;
-         for (static const auto size = 1 * 1024 * 1024 /*1 MiB*/;;) {
+         for (static constexpr auto size = 1 * 1024 * 1024 /*1 MiB*/;;) {
             res.resize(res.size() + size); res.resize(res.size() - size + ::fread(&res.back() + 1 - size, 1, size, fp));
             if (MNL_UNLIKELY(::feof(fp))) return res; if (MNL_UNLIKELY(::ferror(fp))) MNL_ERR(MNL_SYM("SystemError"));
          }
