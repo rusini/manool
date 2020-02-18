@@ -779,7 +779,7 @@ namespace aux { namespace {
                tab.update(cast<const sym &>(el), true); else err_compile("ambiguous bindings", _loc);
          }
          return [&]()->code{
-            auto saved_symtab = move(symtab); symtab = {};
+            auto saved_symtab = move(symtab); symtab.clear();
             for (auto &&el: form[1]) symtab.update(cast<const sym &>(el), saved_symtab[cast<const sym &>(el)]);
             auto body = form.size() == 4 ? pub::compile(form[3], _loc) : compile_rval(form + 3, _loc);
             symtab = move(saved_symtab);
@@ -1470,12 +1470,11 @@ namespace aux { namespace {
          if (form.size() != 2) err_compile("invalid form", _loc);
          auto res = pub::compile(form[1], _loc);
          if (!res.is_rvalue()) return optimize(expr_lit<>{move(res)});
-         {  struct expr { MNL_RVALUE()
-               code value;
-               MNL_INLINE val execute(bool) const { return optimize(expr_lit<>{value.execute()}); }
-            };
-            return expr{move(res)};
-         }
+         struct expr { MNL_RVALUE()
+            code value;
+            MNL_INLINE val execute(bool) const { return optimize(expr_lit<>{value.execute()}); }
+         };
+         return expr{move(res)};
       }
    };
 
