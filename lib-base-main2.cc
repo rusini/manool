@@ -1559,138 +1559,11 @@ namespace aux { namespace {
 
 }} // namespace aux::<unnamed>
 
-// I48 Range Constructors //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Functional Programming Utilities ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 namespace aux { namespace {
-   template<bool Rev> class proc_Range {
-      MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
-         if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-         if (MNL_LIKELY(argc == 1)) {
-            if (MNL_UNLIKELY(!test<long long>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-            if (MNL_UNLIKELY(cast<long long>(argv[0]) < 0)) MNL_ERR(MNL_SYM("ConstraintViolation"));
-            return range<Rev>{0, cast<long long>(argv[0])};
-         }
-         if (MNL_UNLIKELY(argc != 2)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-         if (MNL_UNLIKELY(!test<long long>(argv[0])) || MNL_UNLIKELY(!test<long long>(argv[1]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-         if (MNL_UNLIKELY(cast<long long>(argv[0]) > cast<long long>(argv[1]))) MNL_ERR(MNL_SYM("ConstraintViolation"));
-         return range<Rev>{cast<long long>(argv[0]), cast<long long>(argv[1])};
-      }
-      friend mnl::box<proc_Range>;
-   };
-   template<bool Rev> class proc_RangeExt {
-      MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
-         if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-         if (MNL_UNLIKELY(argc != 2)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-         if (MNL_UNLIKELY(!test<long long>(argv[0])) || MNL_UNLIKELY(!test<long long>(argv[1]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-         return range<Rev>{cast<long long>(argv[0]), _add(cast<long long>(argv[0]), cast<long long>(argv[1]))};
-      }
-      friend mnl::box<proc_RangeExt>;
-   };
-}} // namespace aux::<unnamed>
 
-namespace aux { extern "C" code mnl_aux_base() {
-
-   struct proc_F64 { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
-      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      if (MNL_LIKELY(test<long long>(argv[0]))) return (double)cast<long long>(argv[0]);
-      if (MNL_UNLIKELY(!test<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-      switch (cast<const string &>(argv[0])[0]) {
-      case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': case '.':
-         break;
-      case '+': case '-':
-         if (cast<const string &>(argv[0])[1] >= '0' && cast<const string &>(argv[0])[1] <= '9' || cast<const string &>(argv[0])[1] == '.') break;
-         //[[fallthrough]];
-      default:
-         MNL_ERR(MNL_SYM("SyntaxError"));
-      }
-      char *end; auto res = strtod(cast<const string &>(argv[0]).c_str(), &end);
-      if (MNL_UNLIKELY(*end)) MNL_ERR(MNL_SYM("SyntaxError"));
-      if (MNL_UNLIKELY(isinf(res))) MNL_ERR(MNL_SYM("Overflow"));
-      return res;
-   }};
-   struct proc_F32 { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
-      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      if (MNL_LIKELY(test<long long>(argv[0]))) return (float)cast<long long>(argv[0]);
-      if (MNL_UNLIKELY(!test<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-      switch (cast<const string &>(argv[0])[0]) {
-      case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': case '.':
-         break;
-      case '+': case '-':
-         if (cast<const string &>(argv[0])[1] >= '0' && cast<const string &>(argv[0])[1] <= '9' || cast<const string &>(argv[0])[1] == '.') break;
-         //[[fallthrough]];
-      default:
-         MNL_ERR(MNL_SYM("SyntaxError"));
-      }
-      char *end; auto res = strtof(cast<const string &>(argv[0]).c_str(), &end);
-      if (MNL_UNLIKELY(*end)) MNL_ERR(MNL_SYM("SyntaxError"));
-      if (MNL_UNLIKELY(isinf(res))) MNL_ERR(MNL_SYM("Overflow"));
-      return res;
-   }};
-   struct proc_I48 { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
-      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      if (MNL_LIKELY(test<long long>(argv[0]))) return cast<long long>(argv[0]);
-      if (MNL_UNLIKELY(!test<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-      if (cast<const string &>(argv[0])[0] >= '0' && cast<const string &>(argv[0])[0] <= '9' ||
-          cast<const string &>(argv[0])[0] == '+' || cast<const string &>(argv[0])[0] == '-'); else MNL_ERR(MNL_SYM("SyntaxError"));
-      char *end; auto res = strtoll(cast<const string &>(argv[0]).c_str(), &end, {});
-      if (MNL_UNLIKELY(*end)) MNL_ERR(MNL_SYM("SyntaxError"));
-      if (MNL_UNLIKELY(res < min_i48) || MNL_UNLIKELY(res > max_i48)) MNL_ERR(MNL_SYM("Overflow"));
-      return res;
-   }};
-   struct proc_MakeSym { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
-      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-      if (MNL_UNLIKELY(argc == 0)) return (sym)nullptr;
-      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      if (MNL_UNLIKELY(!test<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-      if (cast<const string &>(argv[0])[0] != '`'); else MNL_ERR(MNL_SYM("SyntaxError"));
-      return (sym)cast<const string &>(argv[0]);
-   }};
-   // S8 defined in MANOOL
-   struct proc_U32 { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
-      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      if (MNL_LIKELY(test<long long>(argv[0]))) return (unsigned)cast<long long>(argv[0]);
-      if (MNL_UNLIKELY(!test<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-      if (cast<const string &>(argv[0])[0] >= '0' && cast<const string &>(argv[0])[0] <= '9'); else MNL_ERR(MNL_SYM("SyntaxError"));
-      char *end; auto res = strtoull(cast<const string &>(argv[0]).c_str(), &end, {});
-      if (MNL_UNLIKELY(*end)) MNL_ERR(MNL_SYM("SyntaxError"));
-      if (MNL_UNLIKELY((unsigned)res != res)) MNL_ERR(MNL_SYM("ConstraintViolation"));
-      return (unsigned)res;
-   }};
-
-   struct proc_MakePtr { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
-      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-      switch (argc) {
-      case 0: return pointer{};
-      case 1: return pointer{move(argv[0])};
-      case 2: return pointer{move(argv[0]), move(argv[1])};
-      }
-      MNL_ERR(MNL_SYM("InvalidInvocation"));
-   }};
-
-   // probes
-   struct proc_IsList { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
-      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      return argv[0].is_list();
-   }};
-   struct proc_IsForm { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
-      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      return argv[0].is_list() && argv[0].size() || test<sym>(argv[0]) || test<long long>(argv[0]) || test<code>(argv[0]);
-   }};
-
-   struct proc_Parse { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
-      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      if (MNL_UNLIKELY(!test<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-      return parse(cast<const string &>(argv[0]));
-   }};
-
-   // Functional Programming Utilities /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-   struct proc_VarArg { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+   class proc_VarArg { friend box<proc_VarArg>; MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
       if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
       if (MNL_UNLIKELY(argc != 2)) {
          if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
@@ -1727,7 +1600,8 @@ namespace aux { extern "C" code mnl_aux_base() {
       };
       return proc{move(argv[0]), MNL_UNLIKELY(argc != 2) ? 0 : (int)cast<long long>(argv[1])};
    }};
-   struct proc_VarApply { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) {
+
+   class proc_VarApply { friend box<proc_VarApply>; MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) {
       if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
       if (MNL_UNLIKELY(argc < 2)) MNL_ERR(MNL_SYM("InvalidInvocation"));
       if (MNL_UNLIKELY(!test<vector<val>>(argv[argc - 1]))) MNL_ERR(MNL_SYM("TypeMismatch"));
@@ -1750,7 +1624,8 @@ namespace aux { extern "C" code mnl_aux_base() {
          return res;
       }();
    }};
-   struct proc_Bind { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+
+   class proc_Bind { friend box<proc_Bind>; MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
       if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
       if (MNL_UNLIKELY(argc < 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
       switch (argc) {
@@ -1884,6 +1759,138 @@ namespace aux { extern "C" code mnl_aux_base() {
          case argc_bound + 1: return proc{move(argv[0]), move(argv[1]), move(argv[2]), move(argv[3]), move(argv[4]), move(argv[5]), move(argv[6])};
          }
       }
+   }};
+
+}} // namespace aux::<unnamed>
+
+// I48 Range Constructors //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+namespace aux { namespace {
+   template<bool Rev> class proc_Range {
+      MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+         if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+         if (MNL_LIKELY(argc == 1)) {
+            if (MNL_UNLIKELY(!test<long long>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+            if (MNL_UNLIKELY(cast<long long>(argv[0]) < 0)) MNL_ERR(MNL_SYM("ConstraintViolation"));
+            return range<Rev>{0, cast<long long>(argv[0])};
+         }
+         if (MNL_UNLIKELY(argc != 2)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+         if (MNL_UNLIKELY(!test<long long>(argv[0])) || MNL_UNLIKELY(!test<long long>(argv[1]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+         if (MNL_UNLIKELY(cast<long long>(argv[0]) > cast<long long>(argv[1]))) MNL_ERR(MNL_SYM("ConstraintViolation"));
+         return range<Rev>{cast<long long>(argv[0]), cast<long long>(argv[1])};
+      }
+      friend mnl::box<proc_Range>;
+   };
+   template<bool Rev> class proc_RangeExt {
+      MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+         if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+         if (MNL_UNLIKELY(argc != 2)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+         if (MNL_UNLIKELY(!test<long long>(argv[0])) || MNL_UNLIKELY(!test<long long>(argv[1]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+         return range<Rev>{cast<long long>(argv[0]), _add(cast<long long>(argv[0]), cast<long long>(argv[1]))};
+      }
+      friend mnl::box<proc_RangeExt>;
+   };
+}} // namespace aux::<unnamed>
+
+namespace aux { extern "C" code mnl_aux_base() {
+
+   struct proc_F64 { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+      if (MNL_LIKELY(test<long long>(argv[0]))) return (double)cast<long long>(argv[0]);
+      if (MNL_UNLIKELY(!test<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+      switch (cast<const string &>(argv[0])[0]) {
+      case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': case '.':
+         break;
+      case '+': case '-':
+         if (cast<const string &>(argv[0])[1] >= '0' && cast<const string &>(argv[0])[1] <= '9' || cast<const string &>(argv[0])[1] == '.') break;
+         //[[fallthrough]];
+      default:
+         MNL_ERR(MNL_SYM("SyntaxError"));
+      }
+      char *end; auto res = strtod(cast<const string &>(argv[0]).c_str(), &end);
+      if (MNL_UNLIKELY(*end)) MNL_ERR(MNL_SYM("SyntaxError"));
+      if (MNL_UNLIKELY(isinf(res))) MNL_ERR(MNL_SYM("Overflow"));
+      return res;
+   }};
+   struct proc_F32 { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+      if (MNL_LIKELY(test<long long>(argv[0]))) return (float)cast<long long>(argv[0]);
+      if (MNL_UNLIKELY(!test<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+      switch (cast<const string &>(argv[0])[0]) {
+      case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': case '.':
+         break;
+      case '+': case '-':
+         if (cast<const string &>(argv[0])[1] >= '0' && cast<const string &>(argv[0])[1] <= '9' || cast<const string &>(argv[0])[1] == '.') break;
+         //[[fallthrough]];
+      default:
+         MNL_ERR(MNL_SYM("SyntaxError"));
+      }
+      char *end; auto res = strtof(cast<const string &>(argv[0]).c_str(), &end);
+      if (MNL_UNLIKELY(*end)) MNL_ERR(MNL_SYM("SyntaxError"));
+      if (MNL_UNLIKELY(isinf(res))) MNL_ERR(MNL_SYM("Overflow"));
+      return res;
+   }};
+   struct proc_I48 { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+      if (MNL_LIKELY(test<long long>(argv[0]))) return cast<long long>(argv[0]);
+      if (MNL_UNLIKELY(!test<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+      if (cast<const string &>(argv[0])[0] >= '0' && cast<const string &>(argv[0])[0] <= '9' ||
+          cast<const string &>(argv[0])[0] == '+' || cast<const string &>(argv[0])[0] == '-'); else MNL_ERR(MNL_SYM("SyntaxError"));
+      char *end; auto res = strtoll(cast<const string &>(argv[0]).c_str(), &end, {});
+      if (MNL_UNLIKELY(*end)) MNL_ERR(MNL_SYM("SyntaxError"));
+      if (MNL_UNLIKELY(res < min_i48) || MNL_UNLIKELY(res > max_i48)) MNL_ERR(MNL_SYM("Overflow"));
+      return res;
+   }};
+   struct proc_MakeSym { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+      if (MNL_UNLIKELY(argc == 0)) return (sym)nullptr;
+      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+      if (MNL_UNLIKELY(!test<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+      if (cast<const string &>(argv[0])[0] != '`'); else MNL_ERR(MNL_SYM("SyntaxError"));
+      return (sym)cast<const string &>(argv[0]);
+   }};
+   // S8 defined in MANOOL
+   struct proc_U32 { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+      if (MNL_LIKELY(test<long long>(argv[0]))) return (unsigned)cast<long long>(argv[0]);
+      if (MNL_UNLIKELY(!test<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+      if (cast<const string &>(argv[0])[0] >= '0' && cast<const string &>(argv[0])[0] <= '9'); else MNL_ERR(MNL_SYM("SyntaxError"));
+      char *end; auto res = strtoull(cast<const string &>(argv[0]).c_str(), &end, {});
+      if (MNL_UNLIKELY(*end)) MNL_ERR(MNL_SYM("SyntaxError"));
+      if (MNL_UNLIKELY((unsigned)res != res)) MNL_ERR(MNL_SYM("ConstraintViolation"));
+      return (unsigned)res;
+   }};
+
+   struct proc_MakePtr { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+      switch (argc) {
+      case 0: return pointer{};
+      case 1: return pointer{move(argv[0])};
+      case 2: return pointer{move(argv[0]), move(argv[1])};
+      }
+      MNL_ERR(MNL_SYM("InvalidInvocation"));
+   }};
+
+   // probes
+   struct proc_IsList { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+      return argv[0].is_list();
+   }};
+   struct proc_IsForm { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+      return argv[0].is_list() && argv[0].size() || test<sym>(argv[0]) || test<long long>(argv[0]) || test<code>(argv[0]);
+   }};
+
+   struct proc_Parse { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+      if (MNL_UNLIKELY(!test<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+      return parse(cast<const string &>(argv[0]));
    }};
 
    return expr_export{
