@@ -321,7 +321,7 @@ namespace aux { namespace {
             if (form[4] == MNL_SYM("else")); else goto opt2;
             for (auto &&el: form[3]) if (el.is_list() && el.size() == 3 && el[0] == MNL_SYM("=")); else goto opt2;
          }
-         {  if (form[3].size() > lim<unsigned char>::max()) err_compile("too many bindings", _loc);
+         {  if (form[3].size() > lim<unsigned char>::max()) MNL_ERR(MNL_SYM("LimitExceeded"));
          }
          {  auto key = compile_rval(form[1], _loc);
 
@@ -370,7 +370,7 @@ namespace aux { namespace {
             if (form[2] == MNL_SYM("of")); else goto opt3;
             for (auto &&el: form + 3) if (el.is_list() && el.size() == 3 && el[0] == MNL_SYM("=")); else goto opt3;
          }
-         {  if (form.size() - 3 > lim<unsigned char>::max()) err_compile("too many bindings", _loc);
+         {  if (form.size() - 3 > lim<unsigned char>::max()) MNL_ERR(MNL_SYM("LimitExceeded"));
          }
          {  auto key = compile_rval(form[1], _loc);
 
@@ -432,6 +432,8 @@ namespace aux { namespace {
             if (form[2] == MNL_SYM("as")); else goto opt2;
             for (auto &&el: form[1]) if (test<sym>(el)); else goto opt2;
          }
+         {  if (form[1].size() > val::max_argc) MNL_ERR(MNL_SYM("LimitExceeded"));
+         }
          {  sym::tab<bool> tab; for (auto &&el: form[1]) if (!tab[cast<const sym &>(el)])
                tab.update(cast<const sym &>(el), true); else err_compile("ambiguous bindings", _loc);
          }
@@ -451,7 +453,6 @@ namespace aux { namespace {
             tmp_cnt = move(saved_tmp_cnt);
             for (auto &&el: tmp_ids) symtab.update(el, move(saved_tmp_ents.front())), saved_tmp_ents.pop_front();
 
-            if (form[1].size() > val::max_argc) MNL_ERR(MNL_SYM("LimitExceeded"));
             switch (form[1].size()) {
             # define MNL_M1(ARG_COUNT) \
                MNL_INLINE val invoke(val &&self, const sym &op, int argc, val argv[], val *) { \
@@ -487,6 +488,8 @@ namespace aux { namespace {
             for (auto &&el: form[1]) if (test<sym>(el) ||
                el.is_list() && el.size() == 2 && el[0] == MNL_SYM("?") && test<sym>(el[1])); else goto opt3;
          }
+         {  if (form[1].size() > val::max_argc) MNL_ERR(MNL_SYM("LimitExceeded"));
+         }
          {  sym::tab<bool> tab; for (auto &&el: form[1]) if (!tab[cast<const sym &>(test<sym>(el) ? el : el[1])])
                tab.update(cast<const sym &>(test<sym>(el) ? el : el[1]), true); else err_compile("ambiguous bindings", _loc);
          }
@@ -507,7 +510,6 @@ namespace aux { namespace {
             tmp_cnt = move(saved_tmp_cnt);
             for (auto &&el: tmp_ids) symtab.update(el, move(saved_tmp_ents.front())), saved_tmp_ents.pop_front();
 
-            if (form[1].size() > val::max_argc) MNL_ERR(MNL_SYM("LimitExceeded"));
             struct proc {
                vector<unsigned char> mode; code body;
             public:
@@ -898,7 +900,7 @@ namespace aux { namespace {
          {  if (form.size() >= 3); else goto opt2;
             if (form[1] == MNL_SYM("utils")); else goto opt2;
          }
-         {  if (form.size() - 2 > lim<unsigned char>::max()) err_compile("too many bindings", _loc);
+         {  if (form.size() - 2 > lim<unsigned char>::max()) MNL_ERR(MNL_SYM("LimitExceeded"));
          }
          {  set<sym> descr;
 
@@ -937,7 +939,7 @@ namespace aux { namespace {
             if (form[1] == MNL_SYM("of")); else goto opt3;
             for (auto &&el: form + 2) if (el.is_list() && el.size() == 3 && el[0] == MNL_SYM("=")); else goto opt3;
          }
-         {  if (form.size() - 2 > lim<unsigned char>::max()) err_compile("too many bindings", _loc);
+         {  if (form.size() - 2 > lim<unsigned char>::max()) MNL_ERR(MNL_SYM("LimitExceeded"));
          }
          {  set<sym> descr; vector<code> items;
 
@@ -1113,7 +1115,7 @@ namespace aux { namespace {
       opt3: // {record K; K; ...}
          {  if (form.size() >= 2); else goto opt4;
          }
-         {  if (form.size() - 1 > lim<unsigned char>::max()) err_compile("too many bindings", _loc);
+         {  if (form.size() - 1 > lim<unsigned char>::max()) MNL_ERR(MNL_SYM("LimitExceeded"));
          }
          {  set<sym> descr;
 
@@ -1166,7 +1168,7 @@ namespace aux { namespace {
          {  if (form.size() >= 3); else goto opt2;
             if (form[1] == MNL_SYM("utils")); else goto opt2;
          }
-         {  if (form.size() - 2 > lim<unsigned char>::max()) err_compile("too many bindings", _loc);
+         {  if (form.size() - 2 > lim<unsigned char>::max()) MNL_ERR(MNL_SYM("LimitExceeded"));
          }
          {  set<sym> descr;
 
@@ -1222,8 +1224,8 @@ namespace aux { namespace {
             for (auto &&el: form[1]) if (el.is_list() && el.size() == 3 && el[0] == MNL_SYM("=")); else goto opt3;
             for (auto &&el: form + 5) if (el.is_list() && el.size() == 3 && el[0] == MNL_SYM("=")); else goto opt3;
          }
-         {  if (form[1].size() > lim<unsigned char>::max()) err_compile("too many bindings for attributes", _loc);
-            if (form.size() - 5 > lim<unsigned char>::max()) err_compile("too many bindings for methods", _loc);
+         {  if (form[1].size() > lim<unsigned char>::max()) MNL_ERR(MNL_SYM("LimitExceeded"));
+            if (form.size() - 5 > lim<unsigned char>::max()) MNL_ERR(MNL_SYM("LimitExceeded"));
          }
          {  set<sym> descr; vector<code> items;
             {  deque<code> saved_tmp_ents;
@@ -1231,7 +1233,7 @@ namespace aux { namespace {
                auto saved_tmp_cnt = move(tmp_cnt); tmp_cnt = 0;
                auto saved_tmp_ids = move(tmp_ids); tmp_ids.clear();
                deque<sym> keys; for (auto &&el: form[1])
-                  if (keys.push_back(eval_sym(el[1], _loc)), !descr.insert(keys.back()).second) err_compile("ambiguous bindings for attributes", _loc);
+                  if (keys.push_back(eval_sym(el[1], _loc)), !descr.insert(keys.back()).second) err_compile("ambiguous bindings", _loc);
                tmp_ids = move(saved_tmp_ids);
                tmp_cnt = move(saved_tmp_cnt);
                for (auto &&el: tmp_ids) symtab.update(el, move(saved_tmp_ents.front())), saved_tmp_ents.pop_front();
@@ -1257,7 +1259,7 @@ namespace aux { namespace {
                auto saved_tmp_ids = move(tmp_ids); tmp_ids.clear();
 
                deque<sym> keys; for (auto &&el: form + 5)
-                  if (keys.push_back(eval_sym(el[1], _loc)), !methods.descr.insert(keys.back()).second) err_compile("ambiguous bindings for methods", _loc);
+                  if (keys.push_back(eval_sym(el[1], _loc)), !methods.descr.insert(keys.back()).second) err_compile("ambiguous bindings", _loc);
                sym::tab<> tab; for (auto &&el: form + 5) tab.update(move(keys.front()), compile_rval(el[2], _loc)), keys.pop_front();
                methods.items.reserve(methods.descr.size()); for (auto &&el: methods.descr) methods.items.push_back(tab[el].execute());
 
@@ -1273,7 +1275,7 @@ namespace aux { namespace {
             if (form[2] == MNL_SYM("cleanup")); else goto opt4;
             for (auto &&el: form[1]) if (el.is_list() && el.size() == 3 && el[0] == MNL_SYM("=")); else goto opt4;
          }
-         {  if (form[1].size() > lim<unsigned char>::max()) err_compile("too many bindings for attributes", _loc);
+         {  if (form[1].size() > lim<unsigned char>::max()) MNL_ERR(MNL_SYM("LimitExceeded"));
          }
          {  set<sym> descr; vector<code> items;
             {  deque<code> saved_tmp_ents;
@@ -1281,7 +1283,7 @@ namespace aux { namespace {
                auto saved_tmp_cnt = move(tmp_cnt); tmp_cnt = 0;
                auto saved_tmp_ids = move(tmp_ids); tmp_ids.clear();
                deque<sym> keys; for (auto &&el: form[1])
-                  if (keys.push_back(eval_sym(el[1], _loc)), !descr.insert(keys.back()).second) err_compile("ambiguous bindings for attributes", _loc);
+                  if (keys.push_back(eval_sym(el[1], _loc)), !descr.insert(keys.back()).second) err_compile("ambiguous bindings", _loc);
                tmp_ids = move(saved_tmp_ids);
                tmp_cnt = move(saved_tmp_cnt);
                for (auto &&el: tmp_ids) symtab.update(el, move(saved_tmp_ents.front())), saved_tmp_ents.pop_front();

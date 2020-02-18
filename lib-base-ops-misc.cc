@@ -142,7 +142,7 @@ namespace MNL_AUX_UUID { using namespace aux;
          return self.default_invoke(op, argc, argv);
       // more than 8 arguments
       if (MNL_UNLIKELY(argc + 1 > val::max_argc))
-         MNL_ERR(MNL_SYM("Overflow"));
+         MNL_ERR(MNL_SYM("LimitExceeded"));
       struct _argv: vector<val>
          { using vector::vector; ~_argv() { while (!empty()) pop_back(); } };
       if (MNL_LIKELY(!argv_out)) {
