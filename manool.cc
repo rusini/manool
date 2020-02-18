@@ -391,6 +391,7 @@ namespace aux { namespace pub { // Temporary Variables (or Temporaries)
    }
    code expr_export::compile(code &&, const pub::form &form, const loc &_loc) const {
       if (form.size() < 3 || form[1] != MNL_SYM("in")) err_compile("invalid form", _loc);
+      if (form.size() == 3 && test<sym>(form[2])) for (auto &&el: bind) if (MNL_UNLIKELY(el.first == cast<const sym &>(form[2]))) return el.second; // shortcut
       deque<code> overriden_ents;
       for (auto &&el: bind) overriden_ents.push_back(symtab[el.first]), symtab.update(el);
       auto body = form.size() == 3 ? pub::compile(form[2], _loc) : compile_rval(form + 2, _loc);
