@@ -1778,7 +1778,7 @@ namespace aux { namespace {
          if (MNL_UNLIKELY(cast<long long>(argv[0]) > cast<long long>(argv[1]))) MNL_ERR(MNL_SYM("ConstraintViolation"));
          return range<Rev>{cast<long long>(argv[0]), cast<long long>(argv[1])};
       }
-      friend mnl::box<proc_Range>;
+      friend box<proc_Range>;
    };
    template<bool Rev> class proc_RangeExt {
       MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
@@ -1787,7 +1787,7 @@ namespace aux { namespace {
          if (MNL_UNLIKELY(!test<long long>(argv[0])) || MNL_UNLIKELY(!test<long long>(argv[1]))) MNL_ERR(MNL_SYM("TypeMismatch"));
          return range<Rev>{cast<long long>(argv[0]), _add(cast<long long>(argv[0]), cast<long long>(argv[1]))};
       }
-      friend mnl::box<proc_RangeExt>;
+      friend box<proc_RangeExt>;
    };
 }} // namespace aux::<unnamed>
 
