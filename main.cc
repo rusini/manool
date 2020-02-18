@@ -234,16 +234,16 @@ namespace aux {
          # if !__ANDROID__
             ::posix_fadvise(fd, {}, {}, POSIX_FADV_SEQUENTIAL | POSIX_FADV_WILLNEED | POSIX_FADV_NOREUSE); // NOREUSE -> EINVAL on CentOS 6
          # endif
-            for (constexpr auto room_size = 1 * 1024*1024/*MiB*/;;) { // HACK: ?mostly optimal according to testing on *my* system
-               buf.resize(buf.size() + room_size);
+            for (constexpr auto size = 1 * 1024*1024/*MiB*/;;) { // HACK: ?mostly optimal according to testing on *my* system
+               buf.resize(buf.size() + size);
             # if 1
-               auto count = ::read(fd, &*(buf.end() - room_size), room_size);
+               auto count = ::read(fd, &*(buf.end() - size), size);
                if (MNL_UNLIKELY(count < 0)) return perror("Cannot read"), EXIT_FAILURE; // EINTR won't apply here, at least on glibc systems
             # else // paranoid - for broken systems
-               int count; while (MNL_UNLIKELY((count = ::read(fd, &*(buf.end() - room_size), room_size)) < 0))
+               int count; while (MNL_UNLIKELY((count = ::read(fd, &*(buf.end() - size), size)) < 0))
                   if (MNL_UNLIKELY(errno != EINTR)) return perror("Cannot read"), EXIT_FAILURE;
             # endif
-               buf.resize(buf.size() - room_size + count);
+               buf.resize(buf.size() - size + count);
                if (MNL_UNLIKELY(!count)) break;
             }
             buf.shrink_to_fit(); ::close(fd);
