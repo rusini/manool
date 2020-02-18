@@ -72,7 +72,7 @@ namespace aux { namespace pub {
       expr_export() = default;
       expr_export(initializer_list<pair<sym, code>> bind): bind(bind) {}
       expr_export(const vector<pair<sym, code>> &bind): bind(bind) {}
-      MNL_INLINE expr_export(vector<pair<sym, code>> &&bind): bind(move(bind)) {}
+      MNL_INLINE expr_export(vector<pair<sym, code>> &&bind) noexcept: bind(move(bind)) {}
    private:
       vector<pair<sym, code>> bind;
       MNL_INLINE inline code compile(code &&, const form &, const loc &) const;
