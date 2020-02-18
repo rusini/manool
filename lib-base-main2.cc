@@ -229,33 +229,27 @@ namespace aux { namespace {
                      MNL_IF_WITH_MT(auto &tmp_stk = mnl::tmp_stk; auto &sig_state = mnl::sig_state;)
                      if (MNL_UNLIKELY(test<range<>>(iter)))
                      for (auto lo = cast<const range<> &>(iter).lo, hi = cast<const range<> &>(iter).hi;;)
-                        if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() = lo++,
-                           body.execute(fast_sig), sig_state.first )) return {};
+                        if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() =  lo++, body.execute(fast_sig), sig_state.first )) return {};
                      if (MNL_UNLIKELY(test<range<true>>(iter)))
                      for (auto lo = cast<const range<true> &>(iter).lo, hi = cast<const range<true> &>(iter).hi;;)
-                        if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() = --hi,
-                           body.execute(fast_sig), sig_state.first )) return {};
+                        if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() =  --hi, body.execute(fast_sig), sig_state.first )) return {};
                      if (MNL_UNLIKELY(test<vector<val>>(iter)))
                      for (auto lo = cast<const vector<val> &>(iter).begin(), hi = cast<const vector<val> &>(iter).end();;)
-                        if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() = *lo++,
-                           body.execute(fast_sig), sig_state.first )) return {};
+                        if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() = *lo++, body.execute(fast_sig), sig_state.first )) return {};
+                     // else
                      iter = MNL_SYM("Elems")(_loc, move(iter));
                      if (MNL_UNLIKELY(test<vector<val>>(iter)))
                      for (auto lo = cast<const vector<val> &>(iter).begin(), hi = cast<const vector<val> &>(iter).end();;)
-                        if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() = *lo++,
-                           body.execute(fast_sig), sig_state.first )) return {};
+                        if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() = *lo++, body.execute(fast_sig), sig_state.first )) return {};
                      if (MNL_UNLIKELY(test<string>(iter)))
                      for (auto lo = cast<const string &>(iter).begin(), hi = cast<const string &>(iter).end();;)
-                        if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() = *lo++,
-                           body.execute(fast_sig), sig_state.first )) return {};
+                        if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() = *lo++, body.execute(fast_sig), sig_state.first )) return {};
                      if (MNL_UNLIKELY(test<range<>>(iter)))
                      for (auto lo = cast<const range<> &>(iter).lo, hi = cast<const range<> &>(iter).hi;;)
-                        if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() = lo++,
-                           body.execute(fast_sig), sig_state.first )) return {};
+                        if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() =  lo++, body.execute(fast_sig), sig_state.first )) return {};
                      if (MNL_UNLIKELY(test<range<true>>(iter)))
                      for (auto lo = cast<const range<true> &>(iter).lo, hi = cast<const range<true> &>(iter).hi;;)
-                        if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() = --hi,
-                           body.execute(fast_sig), sig_state.first )) return {};
+                        if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() =  --hi, body.execute(fast_sig), sig_state.first )) return {};
                      // else
                      for (long long lo = 0, hi = safe_cast<long long>(_loc, MNL_SYM("Size")(_loc, iter)); lo < hi; ++lo) {
                         try { tmp_stk.back() = iter(_loc, lo); }
