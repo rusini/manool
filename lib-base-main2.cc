@@ -1505,20 +1505,20 @@ namespace aux { namespace {
       MNL_INLINE static code compile(code &&, const form &form, const loc &_loc) {
          if (form.size() != 2) err_compile("invalid form", _loc);
          struct expr { MNL_LVALUE(true)
-            code form; loc _loc; decltype(symtab) _symtab; decltype(tmp_cnt) _tmp_cnt; decltype(tmp_ids) _tmp_ids;
+            code form; decltype(symtab) _symtab; decltype(tmp_cnt) _tmp_cnt; decltype(tmp_ids) _tmp_ids;
          public:
             MNL_INLINE val execute(bool fast_sig) const {
                return [&]()->code{
                   auto form = this->form.execute();
                   auto saved_tmp_frm = move(tmp_frm); tmp_frm = 0;
                   auto _finally_tmp_frm = finally([&]{ tmp_frm = move(saved_tmp_frm); });
-                  auto saved_symtab = move(symtab); symtab = move(_symtab);
+                  auto saved_symtab = move(symtab); symtab = _symtab;
                   auto _finally_symtab = finally([&]{ symtab = move(saved_symtab); });
-                  auto saved_tmp_cnt = move(tmp_cnt); tmp_cnt = move(_tmp_cnt);
+                  auto saved_tmp_cnt = move(tmp_cnt); tmp_cnt = _tmp_cnt;
                   auto _finally_tmp_cnt = finally([&]{ tmp_cnt = move(saved_tmp_cnt); });
-                  auto saved_tmp_ids = move(tmp_ids); tmp_ids = move(_tmp_ids);
+                  auto saved_tmp_ids = move(tmp_ids); tmp_ids = _tmp_ids;
                   auto _finally_tmp_ids = finally([&]{ tmp_ids = move(saved_tmp_ids); });
-                  return compile_rval(form, _loc);
+                  return compile_rval(form);
                }().execute(fast_sig);
             }
             MNL_INLINE void exec_in(val &&value) const {
@@ -1526,13 +1526,13 @@ namespace aux { namespace {
                   auto form = this->form.execute();
                   auto saved_tmp_frm = move(tmp_frm); tmp_frm = 0;
                   auto _finally_tmp_frm = finally([&]{ tmp_frm = move(saved_tmp_frm); });
-                  auto saved_symtab = move(symtab); symtab = move(_symtab);
+                  auto saved_symtab = move(symtab); symtab = _symtab;
                   auto _finally_symtab = finally([&]{ symtab = move(saved_symtab); });
-                  auto saved_tmp_cnt = move(tmp_cnt); tmp_cnt = move(_tmp_cnt);
+                  auto saved_tmp_cnt = move(tmp_cnt); tmp_cnt = _tmp_cnt;
                   auto _finally_tmp_cnt = finally([&]{ tmp_cnt = move(saved_tmp_cnt); });
-                  auto saved_tmp_ids = move(tmp_ids); tmp_ids = move(_tmp_ids);
+                  auto saved_tmp_ids = move(tmp_ids); tmp_ids = _tmp_ids;
                   auto _finally_tmp_ids = finally([&]{ tmp_ids = move(saved_tmp_ids); });
-                  return compile_lval(form, _loc);
+                  return compile_lval(form);
                }().exec_in(move(value));
             }
             MNL_INLINE val exec_out() const {
@@ -1540,17 +1540,17 @@ namespace aux { namespace {
                   auto form = this->form.execute();
                   auto saved_tmp_frm = move(tmp_frm); tmp_frm = 0;
                   auto _finally_tmp_frm = finally([&]{ tmp_frm = move(saved_tmp_frm); });
-                  auto saved_symtab = move(symtab); symtab = move(_symtab);
+                  auto saved_symtab = move(symtab); symtab = _symtab;
                   auto _finally_symtab = finally([&]{ symtab = move(saved_symtab); });
-                  auto saved_tmp_cnt = move(tmp_cnt); tmp_cnt = move(_tmp_cnt);
+                  auto saved_tmp_cnt = move(tmp_cnt); tmp_cnt = _tmp_cnt;
                   auto _finally_tmp_cnt = finally([&]{ tmp_cnt = move(saved_tmp_cnt); });
-                  auto saved_tmp_ids = move(tmp_ids); tmp_ids = move(_tmp_ids);
+                  auto saved_tmp_ids = move(tmp_ids); tmp_ids = _tmp_ids;
                   auto _finally_tmp_ids = finally([&]{ tmp_ids = move(saved_tmp_ids); });
-                  return compile_lval(form, _loc);
+                  return compile_lval(form);
                }().exec_out();
             }
          };
-         return expr{compile_rval(form[1], _loc), form[1]._loc(_loc), symtab, tmp_cnt, tmp_ids};
+         return expr{compile_rval(form[1], _loc), symtab, tmp_cnt, tmp_ids};
       }
    private:
       template<typename Functor> struct _finally { const Functor _; MNL_INLINE ~_finally() noexcept(noexcept(_())) { _(); } };
