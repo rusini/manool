@@ -714,10 +714,11 @@ namespace aux { namespace {
                mutable /*atomic*/ bool defined{}; mutable val value;
             public:
                MNL_INLINE void set(const val &value) const noexcept {
-                  this->value = value, __atomic_store_n(&defined, true, __ATOMIC_RELEASE);
+                  this->value = value, MNL_IF_WITHOUT_MT(defined = true) MNL_IF_WITH_MT(__atomic_store_n(&defined, true, __ATOMIC_RELEASE));
                }
                MNL_INLINE val execute(bool) const {
-                  if (MNL_LIKELY(__atomic_load_n(&defined, __ATOMIC_ACQUIRE))) return value; MNL_ERR(MNL_SYM("LetRecUndefined"));
+                  if (MNL_LIKELY(MNL_IF_WITHOUT_MT(defined) MNL_IF_WITH_MT(__atomic_load_n(&defined, __ATOMIC_ACQUIRE)))) return value;
+                  MNL_ERR(MNL_SYM("LetRecUndefined"));
                }
             };
             deque<code> overriden_ents;
