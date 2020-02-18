@@ -248,6 +248,11 @@ extern "C" mnl::code mnl_main() {
       return stream{fp, [](::FILE *fp)noexcept{ ::fclose(fp); }, [](::FILE *fp)->val{
          if (MNL_UNLIKELY(::fclose(fp))) MNL_ERR(MNL_SYM("SystemError")); return {}; }};
    }};
+   struct proc_IsStream { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+      return test<stream>(argv[0]);
+   }};
    return expr_export{
       {"Out",      make_lit(stream{stdout, [](::FILE *)noexcept{}, [](::FILE *fp)->val{
          if (MNL_UNLIKELY(::fflush(fp))) MNL_ERR(MNL_SYM("SystemError")); return {}; }})},
@@ -257,5 +262,6 @@ extern "C" mnl::code mnl_main() {
       {"OpenFile", make_lit(proc_OpenFile{})},
       {"OpenPipe", make_lit(proc_OpenPipe{})},
       {"OpenTemp", make_lit(proc_OpenTemp{})},
+      {"IsStream", make_lit(proc_IsStream{})},
    };
 }

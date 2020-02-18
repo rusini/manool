@@ -160,10 +160,22 @@ extern "C" mnl::code mnl_main() {
          return cond{move(argv[0])};
       }
    };
+   struct proc_IsMutex { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+      return test<mutex>(argv[0]);
+   }};
+   struct proc_IsCond { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+      return test<cond>(argv[0]);
+   }};
    mnl::code res = expr_export{
       {"StartThread", make_lit(proc_StartThread{})},
       {"MakeMutex",   make_lit(proc_MakeMutex{})},
       {"MakeCond",    make_lit(proc_MakeCond{})},
+      {"IsMutex",     make_lit(proc_IsMutex{})},
+      {"IsCond",      make_lit(proc_IsCond{})},
    };
    if (::pthread_mutexattr_init(&mutex_attr)) MNL_ERR(MNL_SYM("SystemError"));
    ::pthread_mutexattr_settype(&mutex_attr, PTHREAD_MUTEX_RECURSIVE);
