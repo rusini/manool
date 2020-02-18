@@ -66,7 +66,7 @@ namespace aux { namespace pub {
    code compile_rval(const form &, const loc & = MNL_IF_GCC5(loc)MNL_IF_GCC6(loc){}), compile_lval(const form &, const loc & = MNL_IF_GCC5(loc)MNL_IF_GCC6(loc){});
    sym  eval_sym(const form &, const loc & = MNL_IF_GCC5(loc)MNL_IF_GCC6(loc){});
    code compile_rval(form::vci_range, const loc & = MNL_IF_GCC5(loc)MNL_IF_GCC6(loc){});
-   // Convenience Class
+   // Convenience Classes
    class expr_export { MNL_NONVALUE()
    public:
       expr_export() = default;
@@ -76,6 +76,14 @@ namespace aux { namespace pub {
    private:
       vector<pair<sym, code>> bind;
       MNL_INLINE inline code compile(code &&, const form &, const loc &) const;
+   };
+   template<typename Dat> class proc_is_inst {
+      MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+         if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+         if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+         return test<Dat>(argv[0]);
+      }
+      friend class box<proc_is_inst>;
    };
    extern template class code::box<expr_export>;
 }} // namespace aux::pub

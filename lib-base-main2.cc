@@ -1671,28 +1671,6 @@ namespace aux { extern "C" code mnl_aux_base() {
    }};
 
    // probes
-# define MNL_M(...) \
-   { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) { \
-      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv); \
-      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-      return test<__VA_ARGS__>(argv[0]); \
-   }}; \
-// end # define MNL_M(...)
-   struct proc_IsI48      MNL_M(long long)
-   struct proc_IsF64      MNL_M(double)
-   struct proc_IsF32      MNL_M(float)
-   struct proc_IsS8       MNL_M(string)
-   struct proc_IsU32      MNL_M(unsigned)
-   struct proc_IsBool     MNL_M(bool)
-   struct proc_IsNull     MNL_M(decltype(nullptr))
-   struct proc_IsArray    MNL_M(vector<val>)
-   struct proc_IsMap      MNL_M(dict<val, val>)
-   struct proc_IsSet      MNL_M(dict<val>)
-   struct proc_IsSequence MNL_M(list<val>)
-   struct proc_IsSym      MNL_M(sym)
-   struct proc_IsPtr      MNL_M(s_pointer)
-   struct proc_IsWeakPtr  MNL_M(w_pointer)
-# undef MNL_M
    struct proc_IsList { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
       if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
       if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
@@ -1702,16 +1680,6 @@ namespace aux { extern "C" code mnl_aux_base() {
       if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
       if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
       return argv[0].is_list() && argv[0].size() || test<sym>(argv[0]) || test<long long>(argv[0]) || test<code>(argv[0]);
-   }};
-   struct proc_IsRange { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
-      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      return test<range<>>(argv[0]);
-   }};
-   struct proc_IsRevRange { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
-      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      return test<range<true>>(argv[0]);
    }};
 
    struct proc_Parse { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
@@ -1961,24 +1929,25 @@ namespace aux { extern "C" code mnl_aux_base() {
       {"RevRange",    make_lit(proc_Range<true>{})},
       {"RangeExt",    make_lit(proc_RangeExt<false>{})},
       {"RevRangeExt", make_lit(proc_RangeExt<true>{})},
-      {"IsI48",       make_lit(proc_IsI48{})},
-      {"IsF64",       make_lit(proc_IsF64{})},
-      {"IsF32",       make_lit(proc_IsF32{})},
-      {"IsS8",        make_lit(proc_IsS8{})},
-      {"IsU32",       make_lit(proc_IsU32{})},
-      {"IsBool",      make_lit(proc_IsBool{})},
-      {"IsNull",      make_lit(proc_IsNull{})},
-      {"IsArray",     make_lit(proc_IsArray{})},
-      {"IsMap",       make_lit(proc_IsMap{})},
-      {"IsSet",       make_lit(proc_IsSet{})},
-      {"IsSequence",  make_lit(proc_IsSequence{})},
-      {"IsSym",       make_lit(proc_IsSym{})},
-      {"IsPtr",       make_lit(proc_IsPtr{})},
-      {"IsWeakPtr",   make_lit(proc_IsWeakPtr{})},
+      {"IsI48",       make_lit(proc_is_inst<long long>{})},
+      {"IsF64",       make_lit(proc_is_inst<double>{})},
+      {"IsF32",       make_lit(proc_is_inst<float>{})},
+      {"IsS8",        make_lit(proc_is_inst<string>{})},
+      {"IsU32",       make_lit(proc_is_inst<unsigned>{})},
+      {"IsBool",      make_lit(proc_is_inst<bool>{})},
+      {"IsNull",      make_lit(proc_is_inst<decltype(nullptr)>{})},
+      {"IsArray",     make_lit(proc_is_inst<vector<val>>{})},
+      {"IsMap",       make_lit(proc_is_inst<dict<val, val>>{})},
+      {"IsSet",       make_lit(proc_is_inst<dict<val>>{})},
+      {"IsSequence",  make_lit(proc_is_inst<list<val>>{})},
+      {"IsSym",       make_lit(proc_is_inst<sym>{})},
+      {"IsPtr",       make_lit(proc_is_inst<pointer>{})},
+      {"IsWeakPtr",   make_lit(proc_is_inst<w_pointer>{})},
       {"IsList",      make_lit(proc_IsList{})},
       {"IsForm",      make_lit(proc_IsForm{})},
-      {"IsRange",     make_lit(proc_IsRange{})},
-      {"IsRevRange",  make_lit(proc_IsRevRange{})},
+      {"IsRange",     make_lit(proc_is_inst<range<>>{})},
+      {"IsRevRange",  make_lit(proc_is_inst<range<true>>{})},
+      {"IsCode",      make_lit(proc_is_inst<code>{})},
       {"Parse",       make_lit(proc_Parse{})},
       {"VarArg",      make_lit(proc_VarArg{})},
       {"VarApply",    make_lit(proc_VarApply{})},

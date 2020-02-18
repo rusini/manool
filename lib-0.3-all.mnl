@@ -451,7 +451,8 @@
   IsArray; IsMap; IsSet; IsSequence
   IsSym; IsPtr; IsWeakPtr
   IsList; IsForm
-  IsRange; IsRevRange
+  IsRange; IsRevRange; IsCode
+  IsD64; IsC64; IsD128; IsC128; IsZ64; IsZ32
   Parse
   VarArg; VarApply; Bind
   Min; Max; E; Pi; I; J
