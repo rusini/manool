@@ -1707,7 +1707,7 @@ namespace aux { extern "C" code mnl_aux_base() {
             val _argv[min_argc + 1] /*VLA*/;
             for (int sn = 0; sn < min_argc; ++sn) _argv[sn].swap(argv[sn]);
             if (MNL_LIKELY(argc == min_argc))
-               _argv[min_argc] = []()->const val &{ static const val res = vector<val>{}; return res; }();
+               _argv[min_argc] = []()->const val &{ static MNL_IF_WITH_MT(thread_local) const val res = vector<val>{}; return res; }();
             else {
                cast<vector<val> &>(_argv[min_argc] = vector<val>{}).reserve(argc - min_argc);
                int sn = min_argc; do cast<vector<val> &>(_argv[min_argc]).push_back(move(argv[sn])); while (++sn < argc);
