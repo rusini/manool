@@ -1369,7 +1369,7 @@ namespace aux { namespace {
       }
    };
 
-   class comp_set_2 { MNL_NONVALUE()
+   class comp_set_c { MNL_NONVALUE()
       MNL_INLINE static code compile(code &&, const form &form, const loc &_loc) {
       opt1: // {set}
          {  if (form.size() == 1); else goto opt2;
@@ -1909,7 +1909,7 @@ namespace aux { extern "C" code mnl_aux_base() {
       {"object",      comp_object{}},
       {"@",           comp_att{}},
       {"map",         comp_map{}},
-      {"set",         comp_set_2{}},
+      {"set",         comp_set_c{}},
       {"sequence",    comp_sequence{}},
       {"macro",       comp_macro{}},
       {"#",           comp_code{}},
