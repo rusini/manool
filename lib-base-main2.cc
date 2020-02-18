@@ -659,7 +659,7 @@ namespace aux { namespace {
 
    class comp_let { MNL_NONVALUE()
       MNL_INLINE static code compile(code &&, const form &form, const loc &_loc) {
-      opt1: // {let {I = E; ...} in E} \| {let {I = E; ...} in B; B; B; ...}
+      opt1: // {let {I = E; ...} in E}, {let {I = E; ...} in B; B; B; ...}
          {  if (form.size() >= 4); else goto opt2;
             if (form[1].is_list()); else goto opt2;
             if (form[2] == MNL_SYM("in")); else goto opt2;
@@ -695,7 +695,7 @@ namespace aux { namespace {
 
             return body;
          }();
-      opt2: // {let rec {I = V; ...} in E} \| {let rec {I = V; ...} in B; B; B; ...}
+      opt2: // {let rec {I = V; ...} in E}, {let rec {I = V; ...} in B; B; B; ...}
          {  if (form.size() >= 5); else goto opt3;
             if (form[1] == MNL_SYM("rec")); else goto opt3;
             if (form[2].is_list()); else goto opt3;
@@ -771,7 +771,7 @@ namespace aux { namespace {
 
    class comp_scope { MNL_NONVALUE()
       MNL_INLINE static code compile(code &&, const form &form, const loc &_loc) {
-      opt1: // {scope {I; ...} in E} \| {scope {I; ...} in B; B; B; ...}
+      opt1: // {scope {I; ...} in E}, {scope {I; ...} in B; B; B; ...}
          {  if (form.size() >= 4); else goto opt2;
             if (form[1].is_list()); else goto opt2;
             if (form[2] == MNL_SYM("in")); else goto opt2;
