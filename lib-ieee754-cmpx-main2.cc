@@ -29,7 +29,7 @@ namespace rusini {
    using std::sprintf; // <cstdio>
    using std::string; using std::complex;
    using mnl::sym; using mnl::val; using mnl::test; using mnl::cast;
-   using mnl::code; using mnl::make_lit; using mnl::expr_export; using mnl::proc_is_inst;
+   using mnl::code; using mnl::make_lit; using mnl::expr_export; using mnl::make_proc_test;
 } // namespace rusini
 
 namespace rusini {
@@ -378,7 +378,7 @@ namespace rusini { extern "C" mnl::code mnl_aux_ieee754_cmpx() {
    return expr_export{
       {"Z64",   make_lit(proc_Z64{})},
       {"Z32",   make_lit(proc_Z32{})},
-      {"IsZ64", make_lit(proc_is_inst<complex<double>>{})},
-      {"IsZ32", make_lit(proc_is_inst<complex<float>>{})},
+      {"IsZ64", make_proc_test<complex<double>>()},
+      {"IsZ32", make_proc_test<complex<float>>()},
    };
 }}

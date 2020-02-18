@@ -27,7 +27,7 @@
 extern "C" mnl::code mnl_main() {
    using std::string;
    using mnl::sym; using mnl::val; using mnl::test; using mnl::cast;
-   using mnl::make_lit; using mnl::expr_export; using mnl::proc_is_inst;
+   using mnl::make_lit; using mnl::expr_export; using mnl::make_proc_test;
 
    class stream {
       ::FILE *fp; void (*close_noexcept)(::FILE *) noexcept; val (*close)(::FILE *);
@@ -257,6 +257,6 @@ extern "C" mnl::code mnl_main() {
       {"OpenFile", make_lit(proc_OpenFile{})},
       {"OpenPipe", make_lit(proc_OpenPipe{})},
       {"OpenTemp", make_lit(proc_OpenTemp{})},
-      {"IsStream", make_lit(proc_is_inst<stream>{})},
+      {"IsStream", make_proc_test<stream>()},
    };
 }

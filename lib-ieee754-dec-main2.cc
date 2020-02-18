@@ -28,7 +28,7 @@ namespace rusini {
    using std::sprintf; // <cstdio>
    using std::string; using mnl::dec;
    using mnl::sym; using mnl::val; using mnl::test; using mnl::cast;
-   using mnl::code; using mnl::make_lit; using mnl::expr_export; using mnl::proc_is_inst;
+   using mnl::code; using mnl::make_lit; using mnl::expr_export; using mnl::make_proc_test;
 }
 
 namespace rusini {
@@ -297,9 +297,9 @@ namespace rusini { extern "C" code mnl_aux_ieee754_dec() {
       {"C64",    make_lit(proc_C64{})},
       {"D128",   make_lit(proc_D128{})},
       {"C128",   make_lit(proc_C128{})},
-      {"IsD64",  make_lit(proc_is_inst<dec<64, true>>{})},
-      {"IsC64",  make_lit(proc_is_inst<dec<64, false>>{})},
-      {"IsD128", make_lit(proc_is_inst<dec<128, true>>{})},
-      {"IsC128", make_lit(proc_is_inst<dec<128, false>>{})},
+      {"IsD64",  make_proc_test<dec<64, true>>()},
+      {"IsC64",  make_proc_test<dec<64, false>>()},
+      {"IsD128", make_proc_test<dec<128, true>>()},
+      {"IsC128", make_proc_test<dec<128, false>>()},
    };
 }}

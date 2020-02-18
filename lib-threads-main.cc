@@ -35,7 +35,7 @@ extern "C" mnl::code mnl_main() {
    using std::move;
    using std::thread;
    using mnl::sym; using mnl::val; using mnl::test; using mnl::cast; using mnl::safe_cast;
-   using mnl::make_lit; using mnl::expr_export; using mnl::proc_is_inst;
+   using mnl::make_lit; using mnl::expr_export; using mnl::make_proc_test;
    using mnl::stk_limit;
 
    static ::pthread_mutexattr_t  mutex_attr;
@@ -164,8 +164,8 @@ extern "C" mnl::code mnl_main() {
       {"StartThread", make_lit(proc_StartThread{})},
       {"MakeMutex",   make_lit(proc_MakeMutex{})},
       {"MakeCond",    make_lit(proc_MakeCond{})},
-      {"IsMutex",     make_lit(proc_is_inst<mutex>{})},
-      {"IsCond",      make_lit(proc_is_inst<cond>{})},
+      {"IsMutex",     make_proc_test<mutex>()},
+      {"IsCond",      make_proc_test<cond>()},
    };
    if (::pthread_mutexattr_init(&mutex_attr)) MNL_ERR(MNL_SYM("SystemError"));
    ::pthread_mutexattr_settype(&mutex_attr, PTHREAD_MUTEX_RECURSIVE);
