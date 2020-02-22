@@ -42,7 +42,7 @@ namespace MNL_AUX_UUID { using namespace aux;
       : _record<>(move(attribs)), methods(move(methods)) {}
 
    val object::invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) {
-      switch (!methods->has(op) << 31u | argc << 1u | !!argv_out) {
+      switch (!methods->has(op) << 31u | argc << 1u | !!argv_out) { // bit pattern: HCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCO
       // no output parameters requested
       case 0 << 1 | false: // no arguments
          return (*methods)[op](move(self));
