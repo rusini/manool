@@ -44,7 +44,7 @@ namespace aux { namespace pub { // Temporary Variables (or Temporaries)
 
    code aux::compile_apply(code &&target, const form &form, const loc &_loc) {
       if (form.size() - 1 > val::max_argc) MNL_ERR(MNL_SYM("LimitExceeded"));
-   opt1: // Application without input-output parameters
+   opt1: // Application without input/output arguments
       for (auto &&el: form + 1)
          if (!el.is_list() || el.empty() || el[0] != MNL_SYM("?")); else goto opt2;
       {  vector<code> args; args.reserve(form.size() - 1);
@@ -137,7 +137,7 @@ namespace aux { namespace pub { // Temporary Variables (or Temporaries)
          };
          return expr_apply{move(target), move(args), _loc};
       }
-   opt2: // Application with at least one input-output parameter
+   opt2: // Application with at least one input/output argument
       for (auto &&el: form + 1)
          if (!el.is_list() || el.empty() || el[0] != MNL_SYM("?") || el.size() == 2); else goto opt3;
       {  vector<pair<code, bool>> args; args.reserve(form.size() - 1);
