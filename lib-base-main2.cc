@@ -18,7 +18,6 @@
 # include "base.tcc"
 
 # include <deque>
-# include <algorithm>
 # include <exception>
 
 namespace MNL_AUX_UUID { using namespace aux;
