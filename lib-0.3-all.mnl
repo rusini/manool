@@ -410,7 +410,28 @@
     Delay = {proc {T} as Delay[1000000 * T]}
   }
   in
-: let { J = I } in
+: let { S8 = {proc {S} as: unless IsS8[S] signal TypeMispatch else S} } in
+: let
+  { J       = I
+    MaxI48  = I48 ["0x7FFFFFFFFFFF"]
+    MaxF64  = F64 ["1.7976931348623157e308"]
+    MaxF32  = F32 ["3.40282347e38"]
+    MaxU32  = U32 ["0xFFFFFFFF"]
+    MaxD64  = D64 ["9.999999999999999e384"]
+    MaxC64  = C64 ["9.999999999999999e384"]
+    MaxD128 = D128["9.999999999999999999999999999999999e6144"]
+    MaxC128 = C128["9.999999999999999999999999999999999e6144"]
+    Nul     = "" | U32[ 0]
+    Bel     = "" | U32[ 7]
+    Bs      = "" | U32[ 8]
+    Ht      = "" | U32[ 9]
+    Lf      = "" | U32[10]
+    Vt      = "" | U32[11]
+    Ff      = "" | U32[12]
+    Cr      = "" | U32[13]
+    Esc     = "" | U32[27]
+  }
+  in
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 : export
   ('); if; (&); (|); while; repeat; do; on; signal
@@ -430,12 +451,15 @@
   IsArray; IsMap; IsSet; IsSequence
   IsSym; IsPtr; IsWeakPtr
   IsList; IsForm
-  IsRange; IsRevRange
+  IsRange; IsRevRange; IsCode
+  IsD64; IsC64; IsD128; IsC128; IsZ64; IsZ32
   Parse
   VarArg; VarApply; Bind
   Min; Max; E; Pi; I; J
   ProcessArgv; ProcessEnviron; ProcessExit; ReserveStack; ReserveHeap
-  Out; Err; In; OpenFile; OpenPipe; OpenTemp
-  StartThread; MakeMutex; MakeCond
+  Out; Err; In; OpenFile; OpenPipe; OpenTemp; IsStream
+  StartThread; MakeMutex; MakeCond; IsMutex; IsCond
   Random; Clock; Delay
+  MaxI48; MaxF64; MaxF32; MaxU32; MaxD64; MaxC64; MaxD128; MaxC128
+  Nul; Bel; Bs; Ht; Lf; Vt; Ff; Cr; Esc
 }

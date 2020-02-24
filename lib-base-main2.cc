@@ -14,12 +14,10 @@
 
 
 # include "config.tcc"
-
 # include "mnl-lib-base.hh"
 # include "base.tcc"
 
 # include <deque>
-# include <algorithm>
 # include <exception>
 
 namespace MNL_AUX_UUID { using namespace aux;
@@ -32,10 +30,9 @@ namespace MNL_AUX_UUID { using namespace aux;
 
 namespace aux {
    code optimize(expr_lit<>);
-   code optimize(expr_ifelse<>), optimize(expr_if<>), optimize(expr_and<>), optimize(expr_or<>), optimize(expr_while<>), optimize(expr_on<>);
    code optimize(expr_set<>), optimize(expr_move<>);
+   code optimize(expr_ifelse<>), optimize(expr_if<>), optimize(expr_and<>), optimize(expr_or<>), optimize(expr_while<>), optimize(expr_on<>);
    code optimize(expr_att);
-   //template<typename Expr> inline code optimize(Expr expr) { return expr; }
 } // namespace aux
 
 namespace aux { namespace {
@@ -63,13 +60,17 @@ namespace aux { namespace {
             code arg; loc _loc;
          public:
             MNL_INLINE val execute(bool) const {
-               try { return MNL_SYM("^")(arg.execute()); } catch (...) { trace_execute(_loc); }
+               auto arg = this->arg.execute();
+               try { return MNL_SYM("^")(move(arg)); } catch (...) { trace_execute(_loc); }
             }
             MNL_INLINE void exec_in(val &&value) const {
-               try { MNL_SYM("Set")(args<2>{arg.execute(), move(value)}); } catch (...) { trace_exec_in(_loc); }
+               val argv[]{arg.execute(), move(value)};
+               try { MNL_SYM("Set")(std::extent<decltype(argv)>::value, argv); } catch (...) { trace_exec_in(_loc); }
             }
             MNL_INLINE val exec_out() const {
-               val argv_out[2]; try { MNL_SYM("Set")(args<2>{arg.execute(), {}}, argv_out); } catch (...) { trace_exec_out(_loc); } return move(argv_out[1]);
+               val argv_out[2], argv[2]{arg.execute()};
+               try { MNL_SYM("Set")(std::extent<decltype(argv)>::value, argv, argv_out); } catch (...) { trace_exec_out(_loc); }
+               return move(argv_out[1]);
             }
          };
          return expr{compile_rval(form[1], _loc), _loc};
@@ -229,37 +230,34 @@ namespace aux { namespace {
                      MNL_IF_WITH_MT(auto &tmp_stk = mnl::tmp_stk; auto &sig_state = mnl::sig_state;)
                      if (MNL_UNLIKELY(test<range<>>(iter)))
                      for (auto lo = cast<const range<> &>(iter).lo, hi = cast<const range<> &>(iter).hi;;)
-                        if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() = lo++,
-                           body.execute(fast_sig), sig_state.first )) return {};
+                        if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() =  lo++, body.execute(fast_sig), sig_state.first )) return {};
                      if (MNL_UNLIKELY(test<range<true>>(iter)))
                      for (auto lo = cast<const range<true> &>(iter).lo, hi = cast<const range<true> &>(iter).hi;;)
-                        if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() = --hi,
-                           body.execute(fast_sig), sig_state.first )) return {};
+                        if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() =  --hi, body.execute(fast_sig), sig_state.first )) return {};
                      if (MNL_UNLIKELY(test<vector<val>>(iter)))
                      for (auto lo = cast<const vector<val> &>(iter).begin(), hi = cast<const vector<val> &>(iter).end();;)
-                        if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() = *lo++,
-                           body.execute(fast_sig), sig_state.first )) return {};
+                        if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() = *lo++, body.execute(fast_sig), sig_state.first )) return {};
+                     // else
                      iter = MNL_SYM("Elems")(_loc, move(iter));
                      if (MNL_UNLIKELY(test<vector<val>>(iter)))
                      for (auto lo = cast<const vector<val> &>(iter).begin(), hi = cast<const vector<val> &>(iter).end();;)
-                        if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() = *lo++,
-                           body.execute(fast_sig), sig_state.first )) return {};
+                        if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() = *lo++, body.execute(fast_sig), sig_state.first )) return {};
                      if (MNL_UNLIKELY(test<string>(iter)))
                      for (auto lo = cast<const string &>(iter).begin(), hi = cast<const string &>(iter).end();;)
-                        if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() = *lo++,
-                           body.execute(fast_sig), sig_state.first )) return {};
+                        if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() = *lo++, body.execute(fast_sig), sig_state.first )) return {};
                      if (MNL_UNLIKELY(test<range<>>(iter)))
                      for (auto lo = cast<const range<> &>(iter).lo, hi = cast<const range<> &>(iter).hi;;)
-                        if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() = lo++,
-                           body.execute(fast_sig), sig_state.first )) return {};
+                        if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() =  lo++, body.execute(fast_sig), sig_state.first )) return {};
                      if (MNL_UNLIKELY(test<range<true>>(iter)))
                      for (auto lo = cast<const range<true> &>(iter).lo, hi = cast<const range<true> &>(iter).hi;;)
-                        if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() = --hi,
-                           body.execute(fast_sig), sig_state.first )) return {};
+                        if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() =  --hi, body.execute(fast_sig), sig_state.first )) return {};
                      // else
-                     for (long long lo = 0, hi = safe_cast<long long>(_loc, MNL_SYM("Size")(_loc, iter));;)
-                        if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() = iter(_loc, lo++),
-                           body.execute(fast_sig), sig_state.first )) return {};
+                     for (long long lo = 0, hi = safe_cast<long long>(_loc, MNL_SYM("Size")(_loc, iter)); lo < hi; ++lo) {
+                        try { tmp_stk.back() = iter(_loc, lo); }
+                        catch (decltype(::mnl::sig_state) &sig) { if (sig.first == MNL_SYM("EndOfData")) return {}; throw; }
+                        if (MNL_UNLIKELY( body.execute(fast_sig), sig_state.first )) return {};
+                     }
+                     return {};
                   }
                };
                return expr{move(iter.front()), move(body), _loc};
@@ -276,7 +274,8 @@ namespace aux { namespace {
                      struct _ { MNL_INLINE ~_() { tmp_stk.pop_back(), tmp_stk.pop_back(); } } _;
                      MNL_IF_WITH_MT(auto &tmp_stk = mnl::tmp_stk; auto &sig_state = mnl::sig_state;)
                      for (long long sn = 0; sn < size; ++sn) {
-                        tmp_stk.end()[-2] = iter0(_loc, sn), tmp_stk.end()[-1] = iter1(_loc, sn);
+                        try { tmp_stk.end()[-2] = iter0(_loc, sn), tmp_stk.end()[-1] = iter1(_loc, sn); }
+                        catch (decltype(::mnl::sig_state) &sig) { if (sig.first == MNL_SYM("EndOfData")) return {}; throw; }
                         if (MNL_UNLIKELY( body.execute(fast_sig), sig_state.first )) return {};
                      }
                      return {};
@@ -297,7 +296,8 @@ namespace aux { namespace {
                      struct _ { int sn; MNL_INLINE ~_() { for (; sn; --sn) tmp_stk.pop_back(); } } _{(int)iter.size()};
                      MNL_IF_WITH_MT(auto &tmp_stk = mnl::tmp_stk; auto &sig_state = mnl::sig_state;)
                      for (long long sn1 = 0; sn1 < size; ++sn1) {
-                        for (int sn2 = 0; sn2 < (int)iter.size(); ++sn2) (tmp_stk.end() - iter.size())[sn2] = iter[sn2](_loc, sn1);
+                        try { for (int sn2 = 0; sn2 < (int)iter.size(); ++sn2) (tmp_stk.end() - iter.size())[sn2] = iter[sn2](_loc, sn1); }
+                        catch (decltype(::mnl::sig_state) &sig) { if (sig.first == MNL_SYM("EndOfData")) return {}; throw; }
                         if (MNL_UNLIKELY( body.execute(fast_sig), sig_state.first )) return {};
                      }
                      return {};
@@ -319,7 +319,7 @@ namespace aux { namespace {
             if (form[4] == MNL_SYM("else")); else goto opt2;
             for (auto &&el: form[3]) if (el.is_list() && el.size() == 3 && el[0] == MNL_SYM("=")); else goto opt2;
          }
-         {  if (form[3].size() > lim<unsigned char>::max()) err_compile("too many bindings", _loc);
+         {  if (form[3].size() > lim<unsigned char>::max()) MNL_ERR(MNL_SYM("LimitExceeded"));
          }
          {  auto key = compile_rval(form[1], _loc);
 
@@ -368,7 +368,7 @@ namespace aux { namespace {
             if (form[2] == MNL_SYM("of")); else goto opt3;
             for (auto &&el: form + 3) if (el.is_list() && el.size() == 3 && el[0] == MNL_SYM("=")); else goto opt3;
          }
-         {  if (form.size() - 3 > lim<unsigned char>::max()) err_compile("too many bindings", _loc);
+         {  if (form.size() - 3 > lim<unsigned char>::max()) MNL_ERR(MNL_SYM("LimitExceeded"));
          }
          {  auto key = compile_rval(form[1], _loc);
 
@@ -430,6 +430,8 @@ namespace aux { namespace {
             if (form[2] == MNL_SYM("as")); else goto opt2;
             for (auto &&el: form[1]) if (test<sym>(el)); else goto opt2;
          }
+         {  if (form[1].size() > val::max_argc) MNL_ERR(MNL_SYM("LimitExceeded"));
+         }
          {  sym::tab<bool> tab; for (auto &&el: form[1]) if (!tab[cast<const sym &>(el)])
                tab.update(cast<const sym &>(el), true); else err_compile("ambiguous bindings", _loc);
          }
@@ -449,7 +451,6 @@ namespace aux { namespace {
             tmp_cnt = move(saved_tmp_cnt);
             for (auto &&el: tmp_ids) symtab.update(el, move(saved_tmp_ents.front())), saved_tmp_ents.pop_front();
 
-            if (form[1].size() > val::max_argc) MNL_ERR(MNL_SYM("LimitExceeded"));
             switch (form[1].size()) {
             # define MNL_M1(ARG_COUNT) \
                MNL_INLINE val invoke(val &&self, const sym &op, int argc, val argv[], val *) { \
@@ -464,7 +465,7 @@ namespace aux { namespace {
                   for (_.sn = 0; _.sn < ARG_COUNT; ++_.sn) tmp_stk.push_back(move(argv[_.sn])); \
                   return body.execute(); \
                } \
-            // end
+            // end # define MNL_M1(ARG_COUNT)
                {  struct proc { const int arg_count; code body; MNL_M1(arg_count) };
                default: return optimize(expr_lit<>{proc{(int)form[1].size(), move(body)}});
                }
@@ -472,7 +473,7 @@ namespace aux { namespace {
                {  struct proc { code body; MNL_M1(ARG_COUNT) }; \
                case ARG_COUNT: return optimize(expr_lit<>{proc{move(body)}}); \
                } \
-            // end
+            // end # define MNL_M2(ARG_COUNT)
                MNL_M2(0) MNL_M2(1) MNL_M2(2) MNL_M2(3) MNL_M2(4) MNL_M2(5) MNL_M2(6)
             # undef MNL_M2
             # undef MNL_M1
@@ -484,6 +485,8 @@ namespace aux { namespace {
             if (form[2] == MNL_SYM("as")); else goto opt3;
             for (auto &&el: form[1]) if (test<sym>(el) ||
                el.is_list() && el.size() == 2 && el[0] == MNL_SYM("?") && test<sym>(el[1])); else goto opt3;
+         }
+         {  if (form[1].size() > val::max_argc) MNL_ERR(MNL_SYM("LimitExceeded"));
          }
          {  sym::tab<bool> tab; for (auto &&el: form[1]) if (!tab[cast<const sym &>(test<sym>(el) ? el : el[1])])
                tab.update(cast<const sym &>(test<sym>(el) ? el : el[1]), true); else err_compile("ambiguous bindings", _loc);
@@ -505,7 +508,6 @@ namespace aux { namespace {
             tmp_cnt = move(saved_tmp_cnt);
             for (auto &&el: tmp_ids) symtab.update(el, move(saved_tmp_ents.front())), saved_tmp_ents.pop_front();
 
-            if (form[1].size() > val::max_argc) MNL_ERR(MNL_SYM("LimitExceeded"));
             struct proc {
                vector<unsigned char> mode; code body;
             public:
@@ -577,7 +579,7 @@ namespace aux { namespace {
                   struct _ { int sn; MNL_INLINE ~_() { for (; sn; --sn) tmp_stk.pop_back(); } } _{VAR_COUNT}; \
                   return body.exec_out(); \
                } \
-            // end
+            // end # define MNL_M1(VAR_COUNT)
                {  struct expr { MNL_LVALUE(body.is_lvalue()) const int var_count; code body; MNL_M1(var_count) };
                default: return expr{(int)form[1].size(), move(body)};
                }
@@ -585,7 +587,7 @@ namespace aux { namespace {
                {  struct expr { MNL_LVALUE(body.is_lvalue()) code body; MNL_M1(VAR_COUNT) }; \
                case VAR_COUNT: return expr{move(body)}; \
                } \
-            // end
+            // end # define MNL_M2(VAR_COUNT)
                MNL_M2(1) MNL_M2(2) MNL_M2(3) MNL_M2(4) MNL_M2(5) MNL_M2(6) MNL_M2(7) MNL_M2(8)
             # undef MNL_M2
             # undef MNL_M1
@@ -633,7 +635,7 @@ namespace aux { namespace {
                   for (_.sn = 0; _.sn < VAR_COUNT; ++_.sn) tmp_stk.push_back(init[_.sn].execute()); \
                   return body.exec_out(); \
                } \
-            // end
+            // end # define MNL_M1(VAR_COUNT)
                {  struct expr { MNL_LVALUE(body.is_lvalue()) vector<code> init; code body; MNL_M1((int)init.size()) };
                default: return expr{move(init), move(body)};
                }
@@ -655,7 +657,7 @@ namespace aux { namespace {
 
    class comp_let { MNL_NONVALUE()
       MNL_INLINE static code compile(code &&, const form &form, const loc &_loc) {
-      opt1: // {let {I = E; ...} in E} \| {let {I = E; ...} in B; B; B; ...}
+      opt1: // {let {I = E; ...} in E}, {let {I = E; ...} in B; B; B; ...}
          {  if (form.size() >= 4); else goto opt2;
             if (form[1].is_list()); else goto opt2;
             if (form[2] == MNL_SYM("in")); else goto opt2;
@@ -691,7 +693,7 @@ namespace aux { namespace {
 
             return body;
          }();
-      opt2: // {let rec {I = V; ...} in E} \| {let rec {I = V; ...} in B; B; B; ...}
+      opt2: // {let rec {I = V; ...} in E}, {let rec {I = V; ...} in B; B; B; ...}
          {  if (form.size() >= 5); else goto opt3;
             if (form[1] == MNL_SYM("rec")); else goto opt3;
             if (form[2].is_list()); else goto opt3;
@@ -710,10 +712,11 @@ namespace aux { namespace {
                mutable /*atomic*/ bool defined{}; mutable val value;
             public:
                MNL_INLINE void set(const val &value) const noexcept {
-                  this->value = value, __atomic_store_n(&defined, true, __ATOMIC_RELEASE);
+                  this->value = value, MNL_IF_WITHOUT_MT(defined = true) MNL_IF_WITH_MT(__atomic_store_n(&defined, true, __ATOMIC_RELEASE));
                }
                MNL_INLINE val execute(bool) const {
-                  if (MNL_LIKELY(__atomic_load_n(&defined, __ATOMIC_ACQUIRE))) return value; MNL_ERR(MNL_SYM("LetRecUndefined"));
+                  if (MNL_LIKELY(MNL_IF_WITHOUT_MT(defined) MNL_IF_WITH_MT(__atomic_load_n(&defined, __ATOMIC_ACQUIRE)))) return value;
+                  MNL_ERR(MNL_SYM("LetRecUndefined"));
                }
             };
             deque<code> overriden_ents;
@@ -767,7 +770,7 @@ namespace aux { namespace {
 
    class comp_scope { MNL_NONVALUE()
       MNL_INLINE static code compile(code &&, const form &form, const loc &_loc) {
-      opt1: // {scope {I; ...} in E} \| {scope {I; ...} in B; B; B; ...}
+      opt1: // {scope {I; ...} in E}, {scope {I; ...} in B; B; B; ...}
          {  if (form.size() >= 4); else goto opt2;
             if (form[1].is_list()); else goto opt2;
             if (form[2] == MNL_SYM("in")); else goto opt2;
@@ -777,7 +780,7 @@ namespace aux { namespace {
                tab.update(cast<const sym &>(el), true); else err_compile("ambiguous bindings", _loc);
          }
          return [&]()->code{
-            auto saved_symtab = move(symtab); symtab = {};
+            auto saved_symtab = move(symtab); symtab.clear();
             for (auto &&el: form[1]) symtab.update(cast<const sym &>(el), saved_symtab[cast<const sym &>(el)]);
             auto body = form.size() == 4 ? pub::compile(form[3], _loc) : compile_rval(form + 3, _loc);
             symtab = move(saved_symtab);
@@ -896,7 +899,7 @@ namespace aux { namespace {
          {  if (form.size() >= 3); else goto opt2;
             if (form[1] == MNL_SYM("utils")); else goto opt2;
          }
-         {  if (form.size() - 2 > lim<unsigned char>::max()) err_compile("too many bindings", _loc);
+         {  if (form.size() - 2 > lim<unsigned char>::max()) MNL_ERR(MNL_SYM("LimitExceeded"));
          }
          {  set<sym> descr;
 
@@ -922,7 +925,7 @@ namespace aux { namespace {
                   }; \
                CASE SIZE: return expr_export{{"IsInst", optimize(expr_lit<>{proc{move(descr)}})}}; \
                } \
-            // end
+            // end # define MNL_M(CASE, SIZE)
                MNL_M(default,)
                MNL_M(case, 0x1) MNL_M(case, 0x2) MNL_M(case, 0x3) MNL_M(case, 0x4)
                MNL_M(case, 0x5) MNL_M(case, 0x6) MNL_M(case, 0x7) MNL_M(case, 0x8)
@@ -935,7 +938,7 @@ namespace aux { namespace {
             if (form[1] == MNL_SYM("of")); else goto opt3;
             for (auto &&el: form + 2) if (el.is_list() && el.size() == 3 && el[0] == MNL_SYM("=")); else goto opt3;
          }
-         {  if (form.size() - 2 > lim<unsigned char>::max()) err_compile("too many bindings", _loc);
+         {  if (form.size() - 2 > lim<unsigned char>::max()) MNL_ERR(MNL_SYM("LimitExceeded"));
          }
          {  set<sym> descr; vector<code> items;
 
@@ -1111,7 +1114,7 @@ namespace aux { namespace {
       opt3: // {record K; K; ...}
          {  if (form.size() >= 2); else goto opt4;
          }
-         {  if (form.size() - 1 > lim<unsigned char>::max()) err_compile("too many bindings", _loc);
+         {  if (form.size() - 1 > lim<unsigned char>::max()) MNL_ERR(MNL_SYM("LimitExceeded"));
          }
          {  set<sym> descr;
 
@@ -1164,7 +1167,7 @@ namespace aux { namespace {
          {  if (form.size() >= 3); else goto opt2;
             if (form[1] == MNL_SYM("utils")); else goto opt2;
          }
-         {  if (form.size() - 2 > lim<unsigned char>::max()) err_compile("too many bindings", _loc);
+         {  if (form.size() - 2 > lim<unsigned char>::max()) MNL_ERR(MNL_SYM("LimitExceeded"));
          }
          {  set<sym> descr;
 
@@ -1220,8 +1223,8 @@ namespace aux { namespace {
             for (auto &&el: form[1]) if (el.is_list() && el.size() == 3 && el[0] == MNL_SYM("=")); else goto opt3;
             for (auto &&el: form + 5) if (el.is_list() && el.size() == 3 && el[0] == MNL_SYM("=")); else goto opt3;
          }
-         {  if (form[1].size() > lim<unsigned char>::max()) err_compile("too many bindings for attributes", _loc);
-            if (form.size() - 5 > lim<unsigned char>::max()) err_compile("too many bindings for methods", _loc);
+         {  if (form[1].size() > lim<unsigned char>::max()) MNL_ERR(MNL_SYM("LimitExceeded"));
+            if (form.size() - 5 > lim<unsigned char>::max()) MNL_ERR(MNL_SYM("LimitExceeded"));
          }
          {  set<sym> descr; vector<code> items;
             {  deque<code> saved_tmp_ents;
@@ -1229,7 +1232,7 @@ namespace aux { namespace {
                auto saved_tmp_cnt = move(tmp_cnt); tmp_cnt = 0;
                auto saved_tmp_ids = move(tmp_ids); tmp_ids.clear();
                deque<sym> keys; for (auto &&el: form[1])
-                  if (keys.push_back(eval_sym(el[1], _loc)), !descr.insert(keys.back()).second) err_compile("ambiguous bindings for attributes", _loc);
+                  if (keys.push_back(eval_sym(el[1], _loc)), !descr.insert(keys.back()).second) err_compile("ambiguous bindings", _loc);
                tmp_ids = move(saved_tmp_ids);
                tmp_cnt = move(saved_tmp_cnt);
                for (auto &&el: tmp_ids) symtab.update(el, move(saved_tmp_ents.front())), saved_tmp_ents.pop_front();
@@ -1255,7 +1258,7 @@ namespace aux { namespace {
                auto saved_tmp_ids = move(tmp_ids); tmp_ids.clear();
 
                deque<sym> keys; for (auto &&el: form + 5)
-                  if (keys.push_back(eval_sym(el[1], _loc)), !methods.descr.insert(keys.back()).second) err_compile("ambiguous bindings for methods", _loc);
+                  if (keys.push_back(eval_sym(el[1], _loc)), !methods.descr.insert(keys.back()).second) err_compile("ambiguous bindings", _loc);
                sym::tab<> tab; for (auto &&el: form + 5) tab.update(move(keys.front()), compile_rval(el[2], _loc)), keys.pop_front();
                methods.items.reserve(methods.descr.size()); for (auto &&el: methods.descr) methods.items.push_back(tab[el].execute());
 
@@ -1271,7 +1274,7 @@ namespace aux { namespace {
             if (form[2] == MNL_SYM("cleanup")); else goto opt4;
             for (auto &&el: form[1]) if (el.is_list() && el.size() == 3 && el[0] == MNL_SYM("=")); else goto opt4;
          }
-         {  if (form[1].size() > lim<unsigned char>::max()) err_compile("too many bindings for attributes", _loc);
+         {  if (form[1].size() > lim<unsigned char>::max()) MNL_ERR(MNL_SYM("LimitExceeded"));
          }
          {  set<sym> descr; vector<code> items;
             {  deque<code> saved_tmp_ents;
@@ -1279,7 +1282,7 @@ namespace aux { namespace {
                auto saved_tmp_cnt = move(tmp_cnt); tmp_cnt = 0;
                auto saved_tmp_ids = move(tmp_ids); tmp_ids.clear();
                deque<sym> keys; for (auto &&el: form[1])
-                  if (keys.push_back(eval_sym(el[1], _loc)), !descr.insert(keys.back()).second) err_compile("ambiguous bindings for attributes", _loc);
+                  if (keys.push_back(eval_sym(el[1], _loc)), !descr.insert(keys.back()).second) err_compile("ambiguous bindings", _loc);
                tmp_ids = move(saved_tmp_ids);
                tmp_cnt = move(saved_tmp_cnt);
                for (auto &&el: tmp_ids) symtab.update(el, move(saved_tmp_ents.front())), saved_tmp_ents.pop_front();
@@ -1364,7 +1367,7 @@ namespace aux { namespace {
       }
    };
 
-   class comp_set_2 { MNL_NONVALUE()
+   class comp_set_c { MNL_NONVALUE()
       MNL_INLINE static code compile(code &&, const form &form, const loc &_loc) {
       opt1: // {set}
          {  if (form.size() == 1); else goto opt2;
@@ -1468,12 +1471,11 @@ namespace aux { namespace {
          if (form.size() != 2) err_compile("invalid form", _loc);
          auto res = pub::compile(form[1], _loc);
          if (!res.is_rvalue()) return optimize(expr_lit<>{move(res)});
-         {  struct expr { MNL_RVALUE()
-               code value;
-               MNL_INLINE val execute(bool) const { return optimize(expr_lit<>{value.execute()}); }
-            };
-            return expr{move(res)};
-         }
+         struct expr { MNL_RVALUE()
+            code value;
+            MNL_INLINE val execute(bool) const { return optimize(expr_lit<>{value.execute()}); }
+         };
+         return expr{move(res)};
       }
    };
 
@@ -1501,20 +1503,20 @@ namespace aux { namespace {
       MNL_INLINE static code compile(code &&, const form &form, const loc &_loc) {
          if (form.size() != 2) err_compile("invalid form", _loc);
          struct expr { MNL_LVALUE(true)
-            code form; loc _loc; decltype(symtab) _symtab; decltype(tmp_cnt) _tmp_cnt; decltype(tmp_ids) _tmp_ids;
+            code form; decltype(symtab) _symtab; decltype(tmp_cnt) _tmp_cnt; decltype(tmp_ids) _tmp_ids;
          public:
             MNL_INLINE val execute(bool fast_sig) const {
                return [&]()->code{
                   auto form = this->form.execute();
                   auto saved_tmp_frm = move(tmp_frm); tmp_frm = 0;
                   auto _finally_tmp_frm = finally([&]{ tmp_frm = move(saved_tmp_frm); });
-                  auto saved_symtab = move(symtab); symtab = move(_symtab);
+                  auto saved_symtab = move(symtab); symtab = _symtab;
                   auto _finally_symtab = finally([&]{ symtab = move(saved_symtab); });
-                  auto saved_tmp_cnt = move(tmp_cnt); tmp_cnt = move(_tmp_cnt);
+                  auto saved_tmp_cnt = move(tmp_cnt); tmp_cnt = _tmp_cnt;
                   auto _finally_tmp_cnt = finally([&]{ tmp_cnt = move(saved_tmp_cnt); });
-                  auto saved_tmp_ids = move(tmp_ids); tmp_ids = move(_tmp_ids);
+                  auto saved_tmp_ids = move(tmp_ids); tmp_ids = _tmp_ids;
                   auto _finally_tmp_ids = finally([&]{ tmp_ids = move(saved_tmp_ids); });
-                  return compile_rval(form, _loc);
+                  return compile_rval(form);
                }().execute(fast_sig);
             }
             MNL_INLINE void exec_in(val &&value) const {
@@ -1522,13 +1524,13 @@ namespace aux { namespace {
                   auto form = this->form.execute();
                   auto saved_tmp_frm = move(tmp_frm); tmp_frm = 0;
                   auto _finally_tmp_frm = finally([&]{ tmp_frm = move(saved_tmp_frm); });
-                  auto saved_symtab = move(symtab); symtab = move(_symtab);
+                  auto saved_symtab = move(symtab); symtab = _symtab;
                   auto _finally_symtab = finally([&]{ symtab = move(saved_symtab); });
-                  auto saved_tmp_cnt = move(tmp_cnt); tmp_cnt = move(_tmp_cnt);
+                  auto saved_tmp_cnt = move(tmp_cnt); tmp_cnt = _tmp_cnt;
                   auto _finally_tmp_cnt = finally([&]{ tmp_cnt = move(saved_tmp_cnt); });
-                  auto saved_tmp_ids = move(tmp_ids); tmp_ids = move(_tmp_ids);
+                  auto saved_tmp_ids = move(tmp_ids); tmp_ids = _tmp_ids;
                   auto _finally_tmp_ids = finally([&]{ tmp_ids = move(saved_tmp_ids); });
-                  return compile_lval(form, _loc);
+                  return compile_lval(form);
                }().exec_in(move(value));
             }
             MNL_INLINE val exec_out() const {
@@ -1536,17 +1538,17 @@ namespace aux { namespace {
                   auto form = this->form.execute();
                   auto saved_tmp_frm = move(tmp_frm); tmp_frm = 0;
                   auto _finally_tmp_frm = finally([&]{ tmp_frm = move(saved_tmp_frm); });
-                  auto saved_symtab = move(symtab); symtab = move(_symtab);
+                  auto saved_symtab = move(symtab); symtab = _symtab;
                   auto _finally_symtab = finally([&]{ symtab = move(saved_symtab); });
-                  auto saved_tmp_cnt = move(tmp_cnt); tmp_cnt = move(_tmp_cnt);
+                  auto saved_tmp_cnt = move(tmp_cnt); tmp_cnt = _tmp_cnt;
                   auto _finally_tmp_cnt = finally([&]{ tmp_cnt = move(saved_tmp_cnt); });
-                  auto saved_tmp_ids = move(tmp_ids); tmp_ids = move(_tmp_ids);
+                  auto saved_tmp_ids = move(tmp_ids); tmp_ids = _tmp_ids;
                   auto _finally_tmp_ids = finally([&]{ tmp_ids = move(saved_tmp_ids); });
-                  return compile_lval(form, _loc);
+                  return compile_lval(form);
                }().exec_out();
             }
          };
-         return expr{compile_rval(form[1], _loc), form[1]._loc(_loc), symtab, tmp_cnt, tmp_ids};
+         return expr{compile_rval(form[1], _loc), symtab, tmp_cnt, tmp_ids};
       }
    private:
       template<typename Functor> struct _finally { const Functor _; MNL_INLINE ~_finally() noexcept(noexcept(_())) { _(); } };
@@ -1555,175 +1557,11 @@ namespace aux { namespace {
 
 }} // namespace aux::<unnamed>
 
-// I48 Range Constructors //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Functional Programming Utilities ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 namespace aux { namespace {
-   template<bool Rev> class proc_Range {
-      MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
-         if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-         if (MNL_LIKELY(argc == 1)) {
-            if (MNL_UNLIKELY(!test<long long>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-            if (MNL_UNLIKELY(cast<long long>(argv[0]) < 0)) MNL_ERR(MNL_SYM("ConstraintViolation"));
-            return range<Rev>{0, cast<long long>(argv[0])};
-         }
-         if (MNL_UNLIKELY(argc != 2)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-         if (MNL_UNLIKELY(!test<long long>(argv[0])) || MNL_UNLIKELY(!test<long long>(argv[1]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-         if (MNL_UNLIKELY(cast<long long>(argv[0]) > cast<long long>(argv[1]))) MNL_ERR(MNL_SYM("ConstraintViolation"));
-         return range<Rev>{cast<long long>(argv[0]), cast<long long>(argv[1])};
-      }
-      friend mnl::box<proc_Range>;
-   };
-   template<bool Rev> class proc_RangeExt {
-      MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
-         if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-         if (MNL_UNLIKELY(argc != 2)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-         if (MNL_UNLIKELY(!test<long long>(argv[0])) || MNL_UNLIKELY(!test<long long>(argv[1]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-         return range<Rev>{cast<long long>(argv[0]), _add(cast<long long>(argv[0]), cast<long long>(argv[1]))};
-      }
-      friend mnl::box<proc_RangeExt>;
-   };
-}} // namespace aux::<unnamed>
 
-namespace aux { extern "C" code mnl_aux_base() {
-
-   struct proc_F64 { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
-      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      if (MNL_LIKELY(test<long long>(argv[0]))) return (double)cast<long long>(argv[0]);
-      if (MNL_UNLIKELY(!test<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-      switch (cast<const string &>(argv[0])[0]) {
-      case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': case '.':
-         break;
-      case '+': case '-':
-         if (cast<const string &>(argv[0])[1] >= '0' && cast<const string &>(argv[0])[1] <= '9' || cast<const string &>(argv[0])[1] == '.') break;
-         //[[fallthrough]];
-      default:
-         MNL_ERR(MNL_SYM("SyntaxError"));
-      }
-      char *end; auto res = strtod(cast<const string &>(argv[0]).c_str(), &end);
-      if (MNL_UNLIKELY(*end)) MNL_ERR(MNL_SYM("SyntaxError"));
-      if (MNL_UNLIKELY(isinf(res))) MNL_ERR(MNL_SYM("Overflow"));
-      return res;
-   }};
-   struct proc_F32 { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
-      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      if (MNL_LIKELY(test<long long>(argv[0]))) return (float)cast<long long>(argv[0]);
-      if (MNL_UNLIKELY(!test<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-      switch (cast<const string &>(argv[0])[0]) {
-      case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': case '.':
-         break;
-      case '+': case '-':
-         if (cast<const string &>(argv[0])[1] >= '0' && cast<const string &>(argv[0])[1] <= '9' || cast<const string &>(argv[0])[1] == '.') break;
-         //[[fallthrough]];
-      default:
-         MNL_ERR(MNL_SYM("SyntaxError"));
-      }
-      char *end; auto res = strtof(cast<const string &>(argv[0]).c_str(), &end);
-      if (MNL_UNLIKELY(*end)) MNL_ERR(MNL_SYM("SyntaxError"));
-      if (MNL_UNLIKELY(isinf(res))) MNL_ERR(MNL_SYM("Overflow"));
-      return res;
-   }};
-   struct proc_I48 { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
-      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      if (MNL_LIKELY(test<long long>(argv[0]))) return cast<long long>(argv[0]);
-      if (MNL_UNLIKELY(!test<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-      if (cast<const string &>(argv[0])[0] >= '0' && cast<const string &>(argv[0])[0] <= '9' ||
-          cast<const string &>(argv[0])[0] == '+' || cast<const string &>(argv[0])[0] == '-'); else MNL_ERR(MNL_SYM("SyntaxError"));
-      char *end; auto res = strtoll(cast<const string &>(argv[0]).c_str(), &end, {});
-      if (MNL_UNLIKELY(*end)) MNL_ERR(MNL_SYM("SyntaxError"));
-      if (MNL_UNLIKELY(res < min_i48) || MNL_UNLIKELY(res > max_i48)) MNL_ERR(MNL_SYM("Overflow"));
-      return res;
-   }};
-   struct proc_MakeSym { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
-      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-      if (MNL_UNLIKELY(argc == 0)) return static_cast<sym>(nullptr);
-      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      if (MNL_UNLIKELY(!test<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-      if (MNL_UNLIKELY(cast<const string &>(argv[0])[0] == '`')) MNL_ERR(MNL_SYM("Undefined"));
-      return (sym)cast<const string &>(argv[0]);
-   }};
-   struct proc_S8 { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
-      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      if (MNL_UNLIKELY(!test<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-      return move(argv[0]);
-   }};
-   struct proc_U32 { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
-      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      if (MNL_LIKELY(test<long long>(argv[0]))) return (unsigned)cast<long long>(argv[0]);
-      if (MNL_UNLIKELY(!test<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-      if (cast<const string &>(argv[0])[0] >= '0' && cast<const string &>(argv[0])[0] <= '9'); else MNL_ERR(MNL_SYM("SyntaxError"));
-      char *end; auto res = strtoull(cast<const string &>(argv[0]).c_str(), &end, {});
-      if (MNL_UNLIKELY(*end)) MNL_ERR(MNL_SYM("SyntaxError"));
-      if (MNL_UNLIKELY((unsigned)res != res)) MNL_ERR(MNL_SYM("Overflow"));
-      return (unsigned)res;
-   }};
-
-   struct proc_MakePtr { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
-      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-      switch (argc) {
-      case 0: return pointer{};
-      case 1: return pointer{move(argv[0])};
-      case 2: return pointer{move(argv[0]), move(argv[1])};
-      }
-      MNL_ERR(MNL_SYM("InvalidInvocation"));
-   }};
-
-   // probes
-# define MNL_M(...) \
-   { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) { \
-      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv); \
-      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-      return test<__VA_ARGS__>(argv[0]); \
-   }}; \
-// end
-   struct proc_IsI48      MNL_M(long long)
-   struct proc_IsF64      MNL_M(double)
-   struct proc_IsF32      MNL_M(float)
-   struct proc_IsS8       MNL_M(string)
-   struct proc_IsU32      MNL_M(unsigned)
-   struct proc_IsBool     MNL_M(bool)
-   struct proc_IsNull     MNL_M(decltype(nullptr))
-   struct proc_IsArray    MNL_M(vector<val>)
-   struct proc_IsMap      MNL_M(dict<val, val>)
-   struct proc_IsSet      MNL_M(dict<val>)
-   struct proc_IsSequence MNL_M(list<val>)
-   struct proc_IsSym      MNL_M(sym)
-   struct proc_IsPtr      MNL_M(s_pointer)
-   struct proc_IsWeakPtr  MNL_M(w_pointer)
-# undef MNL_M
-   struct proc_IsList { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
-      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      return argv[0].is_list();
-   }};
-   struct proc_IsForm { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
-      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      return argv[0].is_list() && argv[0].size() || test<sym>(argv[0]) || test<long long>(argv[0]) || test<code>(argv[0]);
-   }};
-   struct proc_IsRange { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
-      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      return test<range<>>(argv[0]);
-   }};
-   struct proc_IsRevRange { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
-      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      return test<range<true>>(argv[0]);
-   }};
-
-   struct proc_Parse { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
-      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      if (MNL_UNLIKELY(!test<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-      return parse(cast<const string &>(argv[0]));
-   }};
-
-   // Functional Programming Utilities /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-   struct proc_VarArg { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+   class proc_VarArg { friend box<proc_VarArg>; MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
       if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
       if (MNL_UNLIKELY(argc != 2)) {
          if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
@@ -1737,16 +1575,16 @@ namespace aux { extern "C" code mnl_aux_base() {
             stk_check();
             if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
             if (MNL_UNLIKELY(argc < min_argc)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            val _argv[min_argc + 1] /*VLA*/;
+            val _argv[min_argc + 1];
             for (int sn = 0; sn < min_argc; ++sn) _argv[sn].swap(argv[sn]);
             if (MNL_LIKELY(argc == min_argc))
-               _argv[min_argc] = []()->const val &{ static const val res = vector<val>{}; return res; }();
+               _argv[min_argc] = []()->const val &{ static MNL_IF_WITH_MT(thread_local) const val _ = vector<val>{}; return _; }();
             else {
                cast<vector<val> &>(_argv[min_argc] = vector<val>{}).reserve(argc - min_argc);
                int sn = min_argc; do cast<vector<val> &>(_argv[min_argc]).push_back(move(argv[sn])); while (++sn < argc);
             }
             return MNL_LIKELY(!argv_out) ? target(min_argc + 1, _argv) : [&]()->val{
-               val _argv_out[min_argc + 1] /*VLA*/, res = target(min_argc + 1, _argv, _argv_out);
+               val _argv_out[min_argc + 1], res = target(min_argc + 1, _argv, _argv_out);
                for (int sn = 0; sn < min_argc; ++sn) argv_out[sn].swap(_argv_out[sn]);
                if (MNL_LIKELY(!_argv_out[min_argc])) return res;
                if (MNL_UNLIKELY(!test<vector<val>>(_argv_out[min_argc]))) MNL_ERR(MNL_SYM("TypeMismatch"));
@@ -1760,12 +1598,13 @@ namespace aux { extern "C" code mnl_aux_base() {
       };
       return proc{move(argv[0]), MNL_UNLIKELY(argc != 2) ? 0 : (int)cast<long long>(argv[1])};
    }};
-   struct proc_VarApply { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) {
+
+   class proc_VarApply { friend box<proc_VarApply>; MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) {
       if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
       if (MNL_UNLIKELY(argc < 2)) MNL_ERR(MNL_SYM("InvalidInvocation"));
       if (MNL_UNLIKELY(!test<vector<val>>(argv[argc - 1]))) MNL_ERR(MNL_SYM("TypeMismatch"));
       if (MNL_UNLIKELY(cast<const vector<val> &>(argv[argc - 1]).size() + argc - 2 > val::max_argc)) MNL_ERR(MNL_SYM("LimitExceeded"));
-      val _argv[cast<const vector<val> &>(argv[argc - 1]).size() + argc - 2] /*VLA*/;
+      val _argv[cast<const vector<val> &>(argv[argc - 1]).size() + argc - 2];
       {  int sn = 0;
          for (; sn < argc - 2; ++sn) _argv[sn].swap(argv[sn + 1]);
          if (MNL_LIKELY(argv[argc - 1].rc() == 1))
@@ -1773,7 +1612,7 @@ namespace aux { extern "C" code mnl_aux_base() {
             for (auto &&el: cast<const vector<val> &>(argv[argc - 1])) _argv[sn++] = el;
       }
       return MNL_LIKELY(!argv_out) ? move(argv[0])(cast<const vector<val> &>(argv[argc - 1]).size() + argc - 2 , _argv) : [&]()->val{
-         val _argv_out[cast<const vector<val> &>(argv[argc - 1]).size() + argc - 2] /*VLA*/,
+         val _argv_out[cast<const vector<val> &>(argv[argc - 1]).size() + argc - 2],
             res = move(argv[0])(cast<const vector<val> &>(argv[argc - 1]).size() + argc - 2, _argv, _argv_out);
          int sn = 0;
          for (; sn < argc - 2; ++sn) argv_out[sn + 1].swap(_argv_out[sn]);
@@ -1783,7 +1622,8 @@ namespace aux { extern "C" code mnl_aux_base() {
          return res;
       }();
    }};
-   struct proc_Bind { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+
+   class proc_Bind { friend box<proc_Bind>; MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
       if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
       if (MNL_UNLIKELY(argc < 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
       switch (argc) {
@@ -1795,7 +1635,7 @@ namespace aux { extern "C" code mnl_aux_base() {
                   stk_check();
                   if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
                   if (MNL_UNLIKELY(argc + args.size() > val::max_argc)) MNL_ERR(MNL_SYM("LimitExceeded"));
-                  val _argv[argc + args.size()] /*VLA*/
+                  val _argv[argc + args.size()]
                # if !__clang__ && !__INTEL_COMPILER // true GCC
                   {args[0], args[1], args[2], args[3], args[4], args[5]}
                # else
@@ -1822,7 +1662,7 @@ namespace aux { extern "C" code mnl_aux_base() {
                   stk_check(); \
                   if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv); \
                   if (MNL_UNLIKELY(argc + argc_bound > val::max_argc)) MNL_ERR(MNL_SYM("LimitExceeded")); \
-                  val _argv[argc + argc_bound] /*VLA*/ \
+                  val _argv[argc + argc_bound] \
                // end # define MNL_M1
                   MNL_M1
                # if !__clang__ && !__INTEL_COMPILER // true GCC
@@ -1919,6 +1759,138 @@ namespace aux { extern "C" code mnl_aux_base() {
       }
    }};
 
+}} // namespace aux::<unnamed>
+
+// I48 Range Constructors //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+namespace aux { namespace {
+   template<bool Rev> class proc_Range {
+      MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+         if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+         if (MNL_LIKELY(argc == 1)) {
+            if (MNL_UNLIKELY(!test<long long>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+            if (MNL_UNLIKELY(cast<long long>(argv[0]) < 0)) MNL_ERR(MNL_SYM("ConstraintViolation"));
+            return range<Rev>{0, cast<long long>(argv[0])};
+         }
+         if (MNL_UNLIKELY(argc != 2)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+         if (MNL_UNLIKELY(!test<long long>(argv[0])) || MNL_UNLIKELY(!test<long long>(argv[1]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+         if (MNL_UNLIKELY(cast<long long>(argv[0]) > cast<long long>(argv[1]))) MNL_ERR(MNL_SYM("ConstraintViolation"));
+         return range<Rev>{cast<long long>(argv[0]), cast<long long>(argv[1])};
+      }
+      friend box<proc_Range>;
+   };
+   template<bool Rev> class proc_RangeExt {
+      MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+         if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+         if (MNL_UNLIKELY(argc != 2)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+         if (MNL_UNLIKELY(!test<long long>(argv[0])) || MNL_UNLIKELY(!test<long long>(argv[1]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+         return range<Rev>{cast<long long>(argv[0]), _add(cast<long long>(argv[0]), cast<long long>(argv[1]))};
+      }
+      friend box<proc_RangeExt>;
+   };
+}} // namespace aux::<unnamed>
+
+namespace aux { extern "C" code mnl_aux_base() {
+
+   struct proc_F64 { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+      if (MNL_LIKELY(test<long long>(argv[0]))) return (double)cast<long long>(argv[0]);
+      if (MNL_UNLIKELY(!test<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+      switch (cast<const string &>(argv[0])[0]) {
+      case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': case '.':
+         break;
+      case '+': case '-':
+         if (cast<const string &>(argv[0])[1] >= '0' && cast<const string &>(argv[0])[1] <= '9' || cast<const string &>(argv[0])[1] == '.') break;
+         //[[fallthrough]];
+      default:
+         MNL_ERR(MNL_SYM("SyntaxError"));
+      }
+      char *end; auto res = strtod(cast<const string &>(argv[0]).c_str(), &end);
+      if (MNL_UNLIKELY(*end)) MNL_ERR(MNL_SYM("SyntaxError"));
+      if (MNL_UNLIKELY(isinf(res))) MNL_ERR(MNL_SYM("Overflow"));
+      return res;
+   }};
+   struct proc_F32 { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+      if (MNL_LIKELY(test<long long>(argv[0]))) return (float)cast<long long>(argv[0]);
+      if (MNL_UNLIKELY(!test<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+      switch (cast<const string &>(argv[0])[0]) {
+      case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': case '.':
+         break;
+      case '+': case '-':
+         if (cast<const string &>(argv[0])[1] >= '0' && cast<const string &>(argv[0])[1] <= '9' || cast<const string &>(argv[0])[1] == '.') break;
+         //[[fallthrough]];
+      default:
+         MNL_ERR(MNL_SYM("SyntaxError"));
+      }
+      char *end; auto res = strtof(cast<const string &>(argv[0]).c_str(), &end);
+      if (MNL_UNLIKELY(*end)) MNL_ERR(MNL_SYM("SyntaxError"));
+      if (MNL_UNLIKELY(isinf(res))) MNL_ERR(MNL_SYM("Overflow"));
+      return res;
+   }};
+   struct proc_I48 { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+      if (MNL_LIKELY(test<long long>(argv[0]))) return cast<long long>(argv[0]);
+      if (MNL_UNLIKELY(!test<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+      if (cast<const string &>(argv[0])[0] >= '0' && cast<const string &>(argv[0])[0] <= '9' ||
+          cast<const string &>(argv[0])[0] == '+' || cast<const string &>(argv[0])[0] == '-'); else MNL_ERR(MNL_SYM("SyntaxError"));
+      char *end; auto res = strtoll(cast<const string &>(argv[0]).c_str(), &end, {});
+      if (MNL_UNLIKELY(*end)) MNL_ERR(MNL_SYM("SyntaxError"));
+      if (MNL_UNLIKELY(res < min_i48) || MNL_UNLIKELY(res > max_i48)) MNL_ERR(MNL_SYM("Overflow"));
+      return res;
+   }};
+   struct proc_MakeSym { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+      if (MNL_UNLIKELY(argc == 0)) return (sym)nullptr;
+      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+      if (MNL_UNLIKELY(!test<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+      if (cast<const string &>(argv[0])[0] != '`'); else MNL_ERR(MNL_SYM("SyntaxError"));
+      return (sym)cast<const string &>(argv[0]);
+   }};
+   // S8 defined in MANOOL
+   struct proc_U32 { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+      if (MNL_LIKELY(test<long long>(argv[0]))) return (unsigned)cast<long long>(argv[0]);
+      if (MNL_UNLIKELY(!test<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+      if (cast<const string &>(argv[0])[0] >= '0' && cast<const string &>(argv[0])[0] <= '9'); else MNL_ERR(MNL_SYM("SyntaxError"));
+      char *end; auto res = strtoull(cast<const string &>(argv[0]).c_str(), &end, {});
+      if (MNL_UNLIKELY(*end)) MNL_ERR(MNL_SYM("SyntaxError"));
+      if (MNL_UNLIKELY((unsigned)res != res)) MNL_ERR(MNL_SYM("ConstraintViolation"));
+      return (unsigned)res;
+   }};
+
+   struct proc_MakePtr { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+      switch (argc) {
+      case 0: return pointer{};
+      case 1: return pointer{move(argv[0])};
+      case 2: return pointer{move(argv[0]), move(argv[1])};
+      }
+      MNL_ERR(MNL_SYM("InvalidInvocation"));
+   }};
+
+   // probes
+   struct proc_IsList { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+      return argv[0].is_list();
+   }};
+   struct proc_IsForm { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+      return argv[0].is_list() && argv[0].size() || test<sym>(argv[0]) || test<long long>(argv[0]) || test<code>(argv[0]);
+   }};
+
+   struct proc_Parse { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+      if (MNL_UNLIKELY(!test<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+      return parse(cast<const string &>(argv[0]));
+   }};
+
    return expr_export{
       {"=",           comp_set{}},
       {"!",           comp_move{}},
@@ -1942,7 +1914,7 @@ namespace aux { extern "C" code mnl_aux_base() {
       {"object",      comp_object{}},
       {"@",           comp_att{}},
       {"map",         comp_map{}},
-      {"set",         comp_set_2{}},
+      {"set",         comp_set_c{}},
       {"sequence",    comp_sequence{}},
       {"macro",       comp_macro{}},
       {"#",           comp_code{}},
@@ -1955,31 +1927,32 @@ namespace aux { extern "C" code mnl_aux_base() {
       {"F32",         make_lit(proc_F32{})},
       {"I48",         make_lit(proc_I48{})},
       {"MakeSym",     make_lit(proc_MakeSym{})},
-      {"S8",          make_lit(proc_S8{})},
+      // S8 defined in MANOOL
       {"U32",         make_lit(proc_U32{})},
       {"MakePtr",     make_lit(proc_MakePtr{})},
       {"Range",       make_lit(proc_Range<false>{})},
       {"RevRange",    make_lit(proc_Range<true>{})},
       {"RangeExt",    make_lit(proc_RangeExt<false>{})},
       {"RevRangeExt", make_lit(proc_RangeExt<true>{})},
-      {"IsI48",       make_lit(proc_IsI48{})},
-      {"IsF64",       make_lit(proc_IsF64{})},
-      {"IsF32",       make_lit(proc_IsF32{})},
-      {"IsS8",        make_lit(proc_IsS8{})},
-      {"IsU32",       make_lit(proc_IsU32{})},
-      {"IsBool",      make_lit(proc_IsBool{})},
-      {"IsNull",      make_lit(proc_IsNull{})},
-      {"IsArray",     make_lit(proc_IsArray{})},
-      {"IsMap",       make_lit(proc_IsMap{})},
-      {"IsSet",       make_lit(proc_IsSet{})},
-      {"IsSequence",  make_lit(proc_IsSequence{})},
-      {"IsSym",       make_lit(proc_IsSym{})},
-      {"IsPtr",       make_lit(proc_IsPtr{})},
-      {"IsWeakPtr",   make_lit(proc_IsWeakPtr{})},
+      {"IsI48",       make_proc_test<long long>()},
+      {"IsF64",       make_proc_test<double>()},
+      {"IsF32",       make_proc_test<float>()},
+      {"IsS8",        make_proc_test<string>()},
+      {"IsU32",       make_proc_test<unsigned>()},
+      {"IsBool",      make_proc_test<bool>()},
+      {"IsNull",      make_proc_test<decltype(nullptr)>()},
+      {"IsArray",     make_proc_test<vector<val>>()},
+      {"IsMap",       make_proc_test<dict<val, val>>()},
+      {"IsSet",       make_proc_test<dict<val>>()},
+      {"IsSequence",  make_proc_test<list<val>>()},
+      {"IsSym",       make_proc_test<sym>()},
+      {"IsPtr",       make_proc_test<pointer>()},
+      {"IsWeakPtr",   make_proc_test<w_pointer>()},
       {"IsList",      make_lit(proc_IsList{})},
       {"IsForm",      make_lit(proc_IsForm{})},
-      {"IsRange",     make_lit(proc_IsRange{})},
-      {"IsRevRange",  make_lit(proc_IsRevRange{})},
+      {"IsRange",     make_proc_test<range<>>()},
+      {"IsRevRange",  make_proc_test<range<true>>()},
+      {"IsCode",      make_proc_test<code>()},
       {"Parse",       make_lit(proc_Parse{})},
       {"VarArg",      make_lit(proc_VarArg{})},
       {"VarApply",    make_lit(proc_VarApply{})},

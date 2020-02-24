@@ -294,10 +294,10 @@ namespace aux {
          if (MNL_UNLIKELY(!test<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
          return (cast<bool>(cond) ? body1 : body2).execute(fast_sig);
       }
-      template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
+      MNL_INLINE void exec_in(val &&value) const {
          auto &&cond = this->cond.execute();
          if (MNL_UNLIKELY(!test<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
-         (cast<bool>(cond) ? body1 : body2).exec_in((move)(value));
+         (cast<bool>(cond) ? body1 : body2).exec_in(move(value));
       }
       MNL_INLINE val exec_out() const {
          auto &&cond = this->cond.execute();
@@ -459,7 +459,7 @@ namespace aux {
       friend box<object>;
    };
 
-   struct expr_att { MNL_LVALUE(obj.is_lvalue()) // TODO: templatize (and check how test/cast work for types distinct from "val")?
+   struct expr_att { MNL_LVALUE(obj.is_lvalue())
       code obj, att; loc _loc;
    public:
       MNL_INLINE val execute(bool) const {
@@ -496,7 +496,7 @@ namespace aux {
       friend bool aux::match<>(const code &, expr_att &);
    };
    struct expr_att_tmp_sym { MNL_LVALUE(true)
-      expr_tmp obj; expr_lit<sym> att; loc _loc;
+      expr_tmp obj; expr_lit<const sym &> att; loc _loc;
    public:
       MNL_INLINE val execute(bool) const {
          auto &obj = tmp_stk[tmp_frm + this->obj.off];

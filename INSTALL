@@ -2,7 +2,7 @@ Try, e.g.:
 
 cd <check-out directory>
 make
-echo $'{{extern "manool.org.18/std/0.3/all"} in Out.WriteLine["Hello, world!"]}' | ./mnl /dev/stdin
+./mnl <(echo $'{{extern "manool.org.18/std/0.3/all"} in Out.WriteLine["Hello, world!"]}')
 
 CONFIRMED BUILDS
 

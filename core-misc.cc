@@ -117,7 +117,7 @@ namespace MNL_AUX_UUID { using namespace aux;
       return static_cast<root *>(rep.dat<void *>())->invoke(move(*this), MNL_SYM("Clone"), 0, {});
    case 6: // Str
       if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      { static const val res = "value/object"; return res; }
+      { static MNL_IF_WITH_MT(thread_local) const val res = "value/object"; return res; }
    case 0:
       MNL_ERR(MNL_SYM("UnrecognizedOperation"));
    }}

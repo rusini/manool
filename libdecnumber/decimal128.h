@@ -1,14 +1,14 @@
 // libdecnumber/decimal128.h
 
-/*    Copyright (C) 2018, 2019 Alexey Protasov (AKA Alex or rusini)
+/*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 
    This file is part of MANOOL.
 
    MANOOL is free software: you can redistribute it and/or modify it under the terms of the version 3 of the GNU General Public License
    as published by the Free Software Foundation (and only version 3).
 
-   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <http://www.gnu.org/licenses/>.  */
 

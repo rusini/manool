@@ -17,6 +17,8 @@
 # include "mnl-lib-base.hh"
 # include "base.tcc"
 
+# include <algorithm> // swap_ranges
+
 namespace MNL_AUX_UUID { using namespace aux;
 
    // Custom ADTs //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -40,7 +42,7 @@ namespace MNL_AUX_UUID { using namespace aux;
       : _record<>(move(attribs)), methods(move(methods)) {}
 
    val object::invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) {
-      switch (!methods->has(op) << 31u | argc << 1u | !!argv_out) {
+      switch (!methods->has(op) << 31u | argc << 1u | !!argv_out) { // bit pattern: HCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCO
       // no output parameters requested
       case 0 << 1 | false: // no arguments
          return (*methods)[op](move(self));
@@ -142,19 +144,18 @@ namespace MNL_AUX_UUID { using namespace aux;
          return self.default_invoke(op, argc, argv);
       // more than 8 arguments
       if (MNL_UNLIKELY(argc + 1 > val::max_argc))
-         MNL_ERR(MNL_SYM("Overflow"));
-      struct _argv: vector<val>
-         { using vector::vector; ~_argv() { while (!empty()) pop_back(); } };
+         MNL_ERR(MNL_SYM("LimitExceeded"));
+      stk_check();
       if (MNL_LIKELY(!argv_out)) {
-         struct _argv _argv; _argv.reserve(argc + 1);
-         _argv.push_back(move(self)); for (int sn = 0; sn < argc; ++sn) _argv.push_back(move(argv[sn]));
-         return (*methods)[op](argc + 1, _argv.data());
+         val _argv[argc + 1];
+         self.swap(_argv[0]); std::swap_ranges(argv, argv + argc, _argv + 1);
+         return (*methods)[op](argc + 1, _argv);
       }
       return [&]()->val{
-         struct _argv _argv_out(argc + 1), _argv; _argv.reserve(argc + 1);
-         _argv.push_back(move(self)); for (int sn = 0; sn < argc; ++sn) _argv.push_back(move(argv[sn]));
-         val res = (*methods)[op](_argv.size(), _argv.data(), _argv_out.data());
-         std::swap_ranges(_argv_out.begin() + 1, _argv_out.end(), argv_out);
+         val _argv_out[argc + 1], _argv[argc + 1];
+         self.swap(_argv[0]); std::swap_ranges(argv, argv + argc, _argv + 1);
+         val res = (*methods)[op](argc + 1, _argv, _argv_out);
+         std::swap_ranges(argv_out, argv_out + argc, _argv_out + 1);
          return res;
       }();
    }

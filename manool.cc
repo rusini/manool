@@ -44,8 +44,7 @@ namespace aux { namespace pub { // Temporary Variables (or Temporaries)
 
    code aux::compile_apply(code &&target, const form &form, const loc &_loc) {
       if (form.size() - 1 > val::max_argc) MNL_ERR(MNL_SYM("LimitExceeded"));
-      struct arg_vector: vector<val> { using vector::vector; ~arg_vector() { while (!empty()) pop_back(); } };
-   opt1: // Application without input-output parameters
+   opt1: // Application without input/output arguments
       for (auto &&el: form + 1)
          if (!el.is_list() || el.empty() || el[0] != MNL_SYM("?")); else goto opt2;
       {  vector<code> args; args.reserve(form.size() - 1);
@@ -112,30 +111,33 @@ namespace aux { namespace pub { // Temporary Variables (or Temporaries)
             code target; vector<code> args; loc _loc; // implementation-defined destruction order for "args"
          public:
             MNL_INLINE val execute(bool) const {
-               arg_vector argv; argv.reserve(args.size());
-               for (auto &&el: args) argv.push_back(el.execute()); val target = this->target.execute();
-               try { return move(target)(argv.size(), argv.data()); } catch (...) { trace_execute(_loc); }
+               int argc = args.size(); auto args = this->args.data();
+               val argv[argc];
+               for (int sn = 0; sn < argc; ++sn) args[sn].execute().swap(argv[sn]); val target = this->target.execute();
+               try { return move(target)(argc, argv); } catch (...) { trace_execute(_loc); }
             }
             MNL_INLINE void exec_in(val &&value) const {
+               int argc = args.size(); auto args = this->args.data();
                target.exec_in([&]()->val{
-                  arg_vector argv; argv.reserve(args.size() + 2); argv.push_back(move(value));
-                  for (auto &&el: args) argv.push_back(el.execute()); argv.push_back(target.exec_out()), argv.front().swap(argv.back());
-                  try { return MNL_SYM("Repl")(argv.size(), argv.data()); } catch (...) { trace_exec_in(_loc); }
+                  val argv[argc + 2];
+                  for (int sn = 0; sn < argc; ++sn) args[sn].execute().swap(argv[sn + 1]); target.exec_out().swap(argv[0]); value.swap(argv[argc + 1]);
+                  try { return MNL_SYM("Repl")(argc, argv); } catch (...) { trace_exec_in(_loc); }
                }());
             }
             MNL_INLINE val exec_out() const {
-               arg_vector argv_out(args.size() + 2);
+               int argc = args.size(); auto args = this->args.data();
+               val argv_out[argc + 2];
                target.exec_in([&]()->val{
-                  arg_vector argv; argv.reserve(args.size() + 2); argv.push_back({});
-                  for (auto &&el: args) argv.push_back(el.execute()); argv.push_back(target.exec_out()), argv.front().swap(argv.back());
-                  try { return MNL_SYM("Repl")(argv.size(), argv.data(), argv_out.data()); } catch (...) { trace_exec_out(_loc); }
+                  val argv[argc + 2];
+                  for (int sn = 0; sn < argc; ++sn) args[sn].execute().swap(argv[sn + 1]); target.exec_out().swap(argv[0]);
+                  try { return MNL_SYM("Repl")(argc, argv, argv_out); } catch (...) { trace_exec_out(_loc); }
                }());
-               return move(argv_out.back());
+               return move(argv_out[argc + 1]);
             }
          };
          return expr_apply{move(target), move(args), _loc};
       }
-   opt2: // Application with at least one input-output parameter
+   opt2: // Application with at least one input/output argument
       for (auto &&el: form + 1)
          if (!el.is_list() || el.empty() || el[0] != MNL_SYM("?") || el.size() == 2); else goto opt3;
       {  vector<pair<code, bool>> args; args.reserve(form.size() - 1);
@@ -346,13 +348,14 @@ namespace aux { namespace pub { // Temporary Variables (or Temporaries)
                code target; vector<pair<code, bool>> args; loc _loc; // implementation-defined destruction order for "args"
             public:
                MNL_INLINE val execute(bool) const {
-                  arg_vector argv_out(args.size()); val res = [&]()->val{
-                     arg_vector argv; argv.reserve(args.size());
-                     for (auto &&el: args) argv.push_back(MNL_UNLIKELY(el.second) ? el.first.exec_out() : el.first.execute()); val target = this->target.execute();
-                     try { return move(target)(argv.size(), argv.data(), argv_out.data()); } catch (...) { trace_execute(_loc); }
+                  int argc = args.size(); auto args = this->args.data();
+                  val argv_out[argc]; val res = [&]()->val{
+                     val argv[argc];
+                     for (int sn = 0; sn < argc; ++sn) (MNL_UNLIKELY(args[sn].second) ? args[sn].first.exec_out() : args[sn].first.execute()).swap(argv[sn]);
+                     val target = this->target.execute();
+                     try { return move(target)(argc, argv, argv_out); } catch (...) { trace_execute(_loc); }
                   }();
-                  auto it1 = args.end(); for (auto it2 = argv_out.rbegin(); it2 != argv_out.rend(); ++it2)
-                     if (MNL_UNLIKELY((--it1)->second)) it1->first.exec_in(move(*it2));
+                  for (int sn = argc; sn--;) if (MNL_UNLIKELY(args[sn].second)) args[sn].first.exec_in(move(argv_out[sn]));
                   return res;
                }
             };
@@ -391,6 +394,7 @@ namespace aux { namespace pub { // Temporary Variables (or Temporaries)
    }
    code expr_export::compile(code &&, const pub::form &form, const loc &_loc) const {
       if (form.size() < 3 || form[1] != MNL_SYM("in")) err_compile("invalid form", _loc);
+      if (form.size() == 3 && test<sym>(form[2])) for (auto &&el: bind) if (MNL_UNLIKELY(el.first == cast<const sym &>(form[2]))) return el.second; // shortcut
       deque<code> overriden_ents;
       for (auto &&el: bind) overriden_ents.push_back(symtab[el.first]), symtab.update(el);
       auto body = form.size() == 3 ? pub::compile(form[2], _loc) : compile_rval(form + 2, _loc);

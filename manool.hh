@@ -66,17 +66,27 @@ namespace aux { namespace pub {
    code compile_rval(const form &, const loc & = MNL_IF_GCC5(loc)MNL_IF_GCC6(loc){}), compile_lval(const form &, const loc & = MNL_IF_GCC5(loc)MNL_IF_GCC6(loc){});
    sym  eval_sym(const form &, const loc & = MNL_IF_GCC5(loc)MNL_IF_GCC6(loc){});
    code compile_rval(form::vci_range, const loc & = MNL_IF_GCC5(loc)MNL_IF_GCC6(loc){});
-   // Convenience Class
-   struct expr_export { MNL_NONVALUE()
+   // Convenience Classes
+   class expr_export { MNL_NONVALUE()
+   public:
       expr_export() = default;
       expr_export(initializer_list<pair<sym, code>> bind): bind(bind) {}
       expr_export(const vector<pair<sym, code>> &bind): bind(bind) {}
-      MNL_INLINE expr_export(vector<pair<sym, code>> &&bind): bind(move(bind)) {}
+      MNL_INLINE expr_export(vector<pair<sym, code>> &&bind) noexcept: bind(move(bind)) {}
    private:
       vector<pair<sym, code>> bind;
       MNL_INLINE inline code compile(code &&, const form &, const loc &) const;
    };
    extern template class code::box<expr_export>;
+
+   template<typename Dat> MNL_INLINE inline code make_proc_test() {
+      struct proc { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+         if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+         if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+         return test<Dat>(argv[0]);
+      }};
+      return make_lit(proc{});
+   }
 }} // namespace aux::pub
 
 namespace aux {
