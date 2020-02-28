@@ -28,7 +28,7 @@
     (') =
     { macro
     : proc { F } as
-    : if Size[F] <> 2 then {array} /*syntax error*/ else
+    : if Size[F] <> 2 then {array} /*invalid form*/ else
       F[1]#
     }
     -- numeric limits ------------------------------------------------------------------------------------------------------------------------------------------
@@ -60,13 +60,13 @@
   { ($) = -- E$
     { macro
     : proc { F } as
-    : if Size[F] <> 2 then {array} /*syntax error*/ else
+    : if Size[F] <> 2 then {array} /*invalid form*/ else
     : array of let# {array of: array of (=)' R' F[1]} in' R'
     }
     (%) = -- V%
     { macro
     : proc { F } as
-    : if Size[F] <> 2 then {array} /*syntax error*/ else
+    : if Size[F] <> 2 then {array} /*invalid form*/ else
     : array of
     : array of macro#
     : array of proc# {array of MakeSym[]} as' F[1]
@@ -321,7 +321,7 @@
     { macro
     : proc { F } as
     : if (Size[F] >= 8) & (F[2] == revert') & (F[4] == do') & (F[6] == after') & F[3].IsList[]
-      then -- {on K revert {V; ...} do B after B; B; ...}
+      then -- {on I revert {V; ...} do B after B; B; ...}
       { var {U = {array for {_ = F[3].Keys[]} of MakeSym[]}} in
       : array of var# {array for {U = U; V = F[3]} of: array of (=)' U V} in'
         { array of on# F[1]
@@ -330,7 +330,7 @@
       }
       else
     : if (Size[F] >= 10) & (F[2] == with') & (F[4] == revert') & (F[6] == do') & (F[8] == after') & F[3].IsSym[] & F[5].IsList[]
-      then -- {on K with I revert {V; ...} do B after B; B; ...}
+      then -- {on I with I revert {V; ...} do B after B; B; ...}
       { var {U = {array for {_ = F[5].Keys[]} of MakeSym[]}} in
       : array of var# {array for {U = U; V = F[5]} of: array of (=)' U V} in'
         { array of on# F[1] with' F[3]
@@ -371,7 +371,7 @@
         {array of var# {array for {U = U; V = F[Range[1; Size[F]]]} of: array of (=)' U V[2]} in'} +
         {array for {U = U; V = F[Range[1; Size[F]]]} of: array of (=)# V[1] U}
       }
-      else -- syntax error
+      else -- invalid form
       {array}
     }
     unless = -- "unless" expression
@@ -384,42 +384,42 @@
     : if (Size[F] >= 6) & (F[2] == signal') & (F[4] == else')
       then -- {unless C signal K else B; B; ...}
       {array of if# {array of (~)# F[1]} then' {array of signal# F[3]} else'} + F[Range[5; Size[F]]]
-      else -- syntax error
+      else -- invalid form
       {array}
     }
     ensure = -- "ensure" expression
     { macro
     : proc { F } as
     : if (Size[F] >= 4) & (F[2] == in')
-      then -- {ensure C in E} \ {ensure C in B; B; B; ...}
+      then -- {ensure C in E} , {ensure C in B; B; B; ...}
       {array of (%)#: array of if# F[1] then' ({array of do#} + F[Range[3; Size[F]]])# else' {array of error# "Test failed"}#}
-      else -- syntax error
+      else -- invalid form
       {array}
     }
     proc = -- "proc" .. "etc" ... "with" ...
     { macro
     : proc { F } as
     : if (Size[F] >= 6) & (F[2] == etc') & (F[4] == as') & F[1].IsList[]
-      then -- {proc {I\I?; ...} etc I\I? as B; B; ...}
+      then -- {proc {I,I?; ...} etc I,I? as B; B; ...}
       {array of ($)# {array of VarArg# {array of proc# F[1; F[1].Keys[]] | F[3] as'} + F[Range[5; Size[F]]]} | Size[F[1]]}
       else
     : if (Size[F] >= 6) & (F[2] == with') & (F[4] == as') & F[1].IsList[] & F[3].IsList[] & {for {E = F[3]} all E.IsSym[]}
-      then -- {proc {I\I?; ...} with {I; ...} as B; B; ...}
+      then -- {proc {I,I?; ...} with {I; ...} as B; B; ...}
       {array of Bind# {array of proc# F[3; F[3].Keys[]] + F[1; F[1].Keys[]] as'} + F[Range[5; Size[F]]]} + F[3; F[3].Keys[]]
       else
     : if (Size[F] >= 6) & (F[2] == with') & (F[4] == as') & F[1].IsList[] & F[3].IsList[] & {for {E = F[3]} all E.IsPair[] & E[1].IsSym[]}
-      then -- {proc {I\I?; ...} with {I = V; ...} as B; B; ...}
+      then -- {proc {I,I?; ...} with {I = V; ...} as B; B; ...}
       {array of Bind# {array of proc# {array for {E = F[3]} of E[1]} + F[1; F[1].Keys[]] as'} + F[Range[5; Size[F]]]} + {array for {E = F[3]} of E[2]}
       else
     : if (Size[F] >= 8) & (F[2] == etc') & (F[4] == with') & (F[6] == as') & F[1].IsList[] & F[5].IsList[] & {for {E = F[5]} all E.IsSym[]}
-      then -- {proc {I\I?; ...} etc I\I? with {I; ...} as B; B; ...}
+      then -- {proc {I,I?; ...} etc I,I? with {I; ...} as B; B; ...}
       { array of Bind#
       : array of ($)#
         {array of VarArg# {array of proc# F[5; F[5].Keys[]] + F[1; F[1].Keys[]] | F[3] as'} + F[Range[7; Size[F]]]} | (Size[F[1]] + Size[F[5]])
       } + F[5; F[5].Keys[]]
       else
     : if (Size[F] >= 8) & (F[2] == etc') & (F[4] == with') & (F[6] == as') & F[1].IsList[] & F[5].IsList[] & {for {E = F[5]} all E.IsPair[] & E[1].IsSym[]}
-      then -- {proc {I\I?; ...} etc I\I? with {I = V; ...} as B; B; ...}
+      then -- {proc {I,I?; ...} etc I,I? with {I = V; ...} as B; B; ...}
       { array of Bind#
       : array of ($)#
         {array of VarArg# {array of proc# {array for {E = F[5]} of E[1]} + F[1; F[1].Keys[]] | F[3] as'} + F[Range[7; Size[F]]]} | (Size[F[1]] + Size[F[5]])

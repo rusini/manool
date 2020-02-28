@@ -479,7 +479,7 @@ namespace aux { namespace {
             # undef MNL_M1
             }
          }
-      opt2: // {proc {I\I?; ...} as B; B; ...}
+      opt2: // {proc {I,I?; ...} as B; B; ...}
          {  if (form.size() >= 4); else goto opt3;
             if (form[1].is_list()); else goto opt3;
             if (form[2] == MNL_SYM("as")); else goto opt3;
