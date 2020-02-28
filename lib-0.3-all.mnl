@@ -61,7 +61,7 @@
     { macro
     : proc { F } as
     : if Size[F] <> 2 then {array} /*invalid form*/ else
-    : array of let# {array of: array of (=)' R' F[1]} in' R'
+    : array of let# {array of: array of (=)' Res F[1]} in' Res
     }
     (%) = -- V%
     { macro
