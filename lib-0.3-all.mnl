@@ -109,7 +109,7 @@
     on = -- the current "on" is actually "broad"
     { macro
     : proc { F } as
-    : if F[1] == broad'
+    : if (Size[F] >= 2) & (F[1] == broad')
       then -- {on broad ...}
       {array of on#} + F[Range[2; Size[F]]]
       else
