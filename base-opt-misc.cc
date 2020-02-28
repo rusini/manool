@@ -49,7 +49,7 @@ namespace MNL_AUX_UUID { namespace aux {
       match<expr_neg< code >>                                              (res) ||
       match<expr_abs< expr_tmp >>                                          (res) ||
       match<expr_abs< code >>                                              (res) ||
-      match<expr_apply1< expr_lit<const sym &>,  code >>                   (res) || // TODO: missing match<expr_apply1< expr_lit<const sym &>, expr_tmp >> ?
+      match<expr_apply1< expr_lit<const sym &>,  code >>                   (res) ||
       match<expr_apply1< expr_lit<>,             expr_lit<const sym &> >>  (res) ||
       match<expr_apply1< expr_lit<>,             expr_tmp >>               (res) ||
       match<expr_apply1< expr_lit<>,             code >>                   (res) ||
