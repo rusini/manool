@@ -20,13 +20,40 @@
 : {extern "_streams"} in
 : {extern "_threads"} in
 : {extern "_misc"} in
-: let -- quotation ---------------------------------------------------------------------------------------------------------------------------------------------
-  { (') =
+: let ----------------------------------------------------------------------------------------------------------------------------------------------------------
+  { True  = 0 == 0
+    False = ~(0 == 0)
+    Nil   = {var {Nil} in Nil}
+    -- quotation -----------------------------------------------------------------------------------------------------------------------------------------------
+    (') =
     { macro
     : proc { F } as
     : if Size[F] <> 2 then {array} /*syntax error*/ else
       F[1]#
     }
+    -- numeric limits ------------------------------------------------------------------------------------------------------------------------------------------
+    MaxI48  = I48 ["0x7FFFFFFFFFFF"]
+    MaxF64  = F64 ["1.7976931348623157e308"]
+    MaxF32  = F32 ["3.40282347e38"]
+    MaxU32  = U32 ["0xFFFFFFFF"]
+    MaxD64  = D64 ["9.999999999999999e384"]
+    MaxC64  = C64 ["9.999999999999999e384"]
+    MaxD128 = D128["9.999999999999999999999999999999999e6144"]
+    MaxC128 = C128["9.999999999999999999999999999999999e6144"]
+    -- mathematical constants ----------------------------------------------------------------------------------------------------------------------------------
+    E  = {proc {T} as Exp[T[1]]}
+    Pi = {proc {T} as Acos[T[(~1)$]]}
+    I  = {proc {T} as Sqrt[T[(~1)$]]}
+    -- ASCII control characters --------------------------------------------------------------------------------------------------------------------------------
+    Nul = "" | U32[ 0]
+    Bel = "" | U32[ 7]
+    Bs  = "" | U32[ 8]
+    Ht  = "" | U32[ 9]
+    Lf  = "" | U32[10]
+    Vt  = "" | U32[11]
+    Ff  = "" | U32[12]
+    Cr  = "" | U32[13]
+    Esc = "" | U32[27]
   }
   in
 : let ----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -100,10 +127,8 @@
       else -- fallback
       {array of on#} + F[Range[1; Size[F]]]
     }
-  }
-  in
-: let -- auxiliary ---------------------------------------------------------------------------------------------------------------------------------------------
-  { IsPair = {proc {V} as V.IsList[] & (Size[V] == 3) & (V[0] == (=)')}
+    IsPair = -- auxiliary
+    {proc {V} as V.IsList[] & (Size[V] == 3) & (V[0] == (=)')}
   }
   in
 : let -- logic quantifications, foldings, and comprehensions ---------------------------------------------------------------------------------------------------
@@ -402,64 +427,29 @@
       else -- fallback
       {array of proc#} + F[Range[1; Size[F]]]
     }
-    ------------------------------------------------------------------------------------------------------------------------------------------------------------
-    E  = {proc {T} as Exp[T[1]]}
-    Pi = {proc {T} as Acos[T[(~1)$]]}
-    I  = {proc {T} as Sqrt[T[(~1)$]]}
-    ------------------------------------------------------------------------------------------------------------------------------------------------------------
-    Delay = {proc {T} as Delay[1000000 * T]}
   }
   in
-: let { S8 = {proc {S} as: unless IsS8[S] signal TypeMispatch else S} } in
-: let
-  { J       = I
-    MaxI48  = I48 ["0x7FFFFFFFFFFF"]
-    MaxF64  = F64 ["1.7976931348623157e308"]
-    MaxF32  = F32 ["3.40282347e38"]
-    MaxU32  = U32 ["0xFFFFFFFF"]
-    MaxD64  = D64 ["9.999999999999999e384"]
-    MaxC64  = C64 ["9.999999999999999e384"]
-    MaxD128 = D128["9.999999999999999999999999999999999e6144"]
-    MaxC128 = C128["9.999999999999999999999999999999999e6144"]
-    Nul     = "" | U32[ 0]
-    Bel     = "" | U32[ 7]
-    Bs      = "" | U32[ 8]
-    Ht      = "" | U32[ 9]
-    Lf      = "" | U32[10]
-    Vt      = "" | U32[11]
-    Ff      = "" | U32[12]
-    Cr      = "" | U32[13]
-    Esc     = "" | U32[27]
+: let -- miscellaneous -----------------------------------------------------------------------------------------------------------------------------------------
+  { S8     = {proc {S} as: unless IsS8[S] signal TypeMismatch else S}
+    IsNull = {proc {V} as Nil == V}
+    J      = I
+    Delay  = {proc {T} as Delay[1000000 * T]}
   }
   in
-----------------------------------------------------------------------------------------------------------------------------------------------------------------
-: export
-  ('); if; (&); (|); while; repeat; do; on; signal
-  for; case
-  (=); (!); (^); assign
-  proc; var; let; ($)
-  array; record; map; set; sequence
-  object; (@)
-  export; scope
-  macro; (#); error; eval; (%)
-  unless; ensure
-  True; False; Nil
-  F64; F32; I48; MakeSym; S8; U32; D64; D128; C64; C128; Z64; Z32
-  MakePtr
-  Range; RevRange; RangeExt; RevRangeExt
-  IsI48; IsF64; IsF32; IsS8; IsU32; IsBool; IsNull
-  IsArray; IsMap; IsSet; IsSequence
-  IsSym; IsPtr; IsWeakPtr
-  IsList; IsForm
-  IsRange; IsRevRange; IsCode
-  IsD64; IsC64; IsD128; IsC128; IsZ64; IsZ32
-  Parse
-  VarArg; VarApply; Bind
-  Min; Max; E; Pi; I; J
-  ProcessArgv; ProcessEnviron; ProcessExit; ReserveStack; ReserveHeap
-  Out; Err; In; OpenFile; OpenPipe; OpenTemp; IsStream
-  StartThread; MakeMutex; MakeCond; IsMutex; IsCond
-  Random; Clock; Delay
-  MaxI48; MaxF64; MaxF32; MaxU32; MaxD64; MaxC64; MaxD128; MaxC128
-  Nul; Bel; Bs; Ht; Lf; Vt; Ff; Cr; Esc
+: export -- 126 standard bindings ------------------------------------------------------------------------------------------------------------------------------
+  True; False; Nil; F64; F32; I48; MakeSym; S8; U32; D64; D128; C64; C128; Z64; Z32; MakePtr; Range; RevRange; RangeExt; RevRangeExt; Parse -- 21
+  IsNull; IsI48; IsF64; IsF32; IsSym; IsS8; IsBool; IsU32; IsD64; IsD128; IsC64; IsC128; IsZ64; IsZ32; IsPtr; IsWeakPtr; IsRange; IsRevRange; IsList -- 19
+  MaxI48; MaxF64; MaxF32; MaxU32; MaxD64; MaxD128; MaxC64; MaxC128 -- 8
+  E; Pi; I; J; Min; Max -- 6
+  Nul; Bel; Bs; Ht; Lf; Vt; Ff; Cr; Esc -- 9
+  (=); (!); (^); assign -- 4
+  if; (&); (|); while; repeat; do; signal; case; unless -- 9
+  proc; var; let; export; scope; VarArg; VarApply; Bind; ($) -- 9
+  on; for; ensure -- 3
+  array; record; map; set; sequence; object; (@); IsArray; IsMap; IsSet; IsSequence -- 11
+  macro; (#); error; eval; ('); (%); IsCode -- 7
+  ProcessArgv; ProcessEnviron; ProcessExit; ReserveStack; ReserveHeap -- 5
+  Out; Err; In; OpenFile; OpenPipe; OpenTemp; IsStream -- 7
+  StartThread; MakeMutex; MakeCond; IsMutex; IsCond -- 5
+  Random; Clock; Delay -- 3
 }
