@@ -19,8 +19,8 @@ CXX      = $(SCL) $(GXX) $(PIPE) -w $(MARCH) -pthread -std=c++11
 CPPFLAGS =
 CFLAGS   = -O3
 CXXFLAGS = $(CFLAGS)
-LDFLAGS  = -s
-LDLIBS   = -Wl,--as-needed -lm -ldl -lrt
+LDFLAGS  = -s -Wl,--as-needed
+LDLIBS   = -lm -ldl -lrt
 
 SCL        =
 GCC        = gcc
