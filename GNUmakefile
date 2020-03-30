@@ -49,12 +49,13 @@ run-valgrind : build/mnlexec
 # Final Stuff ##################################################################################################################################################
 mnl_config = $(patsubst %,-DMNL_%, \
    WITH_OPTIMIZE \
-   WITH_MULTITHREADING \
    WITH_IDENT_OPT \
+   WITH_MULTITHREADING \
    WITH_UUID_NS \
-   USE_INLINE \
    USE_EXPECT \
+   USE_INLINE \
    USE_PURE \
+   USE_NOCLOBBER \
 ) $(MNL_CONFIG) # end
 
 manool-objs = $(patsubst %,build/obj/%.o, \
