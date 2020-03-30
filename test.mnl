@@ -1,3 +1,4 @@
+-- test.mnl
 
 { {extern "manool.org.18/std/0.3/all"} in
 : let
