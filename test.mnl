@@ -1,6 +1,6 @@
 -- test.mnl
 
-{ {extern "manool.org.18/std/0.3/all"} in
+{ {extern "manool.org.18/std/0.5/all"} in
 : let
   { MatrixAdd =
     { proc { A; B } as
