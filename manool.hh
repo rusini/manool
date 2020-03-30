@@ -20,7 +20,7 @@
 
 # include "mnl-aux-core.tcc"
 
-// Macros
+// Macros //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 # define MNL_RVALUE() \
    MNL_INLINE static ::mnl::code compile(::mnl::code &&self, const ::mnl::form &form, const ::mnl::loc &loc) \
       { return ::mnl::aux::compile_apply(::std::move(self), form, loc); } \
@@ -54,19 +54,24 @@
 namespace MNL_AUX_UUID {
 
 namespace aux { namespace pub {
-   // Temporary Variable Accounting
-   extern MNL_IF_WITH_MT(thread_local) int      tmp_cnt; // compile-time accounting
-   extern MNL_IF_WITH_MT(thread_local) set<sym> tmp_ids; // ditto
-   extern MNL_IF_WITH_MT(thread_local) vector<val>                  tmp_stk; // run-time accounting // could gain 5% on each var access
-   extern MNL_IF_WITH_MT(thread_local) decltype(tmp_stk)::size_type tmp_frm; // ditto               // if we turn this into a struct
+   // Temporary Variable Accounting ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+   // Compile-time accounting
+   extern MNL_IF_WITH_MT(thread_local) int      tmp_cnt; // count for current frame layout
+   extern MNL_IF_WITH_MT(thread_local) set<sym> tmp_ids; // all temporaries
+   // Run-time accounting
+   extern MNL_IF_WITH_MT(thread_local) vector<val>                  tmp_stk; // stack
+   extern MNL_IF_WITH_MT(thread_local) decltype(tmp_stk)::size_type tmp_frm; // frame pointer
+
+   // Essential Stuff //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    code make_lit(const val &);
 
-   // Convenience Functions
+   // Convenience Stuff ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
    code compile_rval(const form &, const loc & = MNL_IF_GCC5(loc)MNL_IF_GCC6(loc){}), compile_lval(const form &, const loc & = MNL_IF_GCC5(loc)MNL_IF_GCC6(loc){});
    sym  eval_sym(const form &, const loc & = MNL_IF_GCC5(loc)MNL_IF_GCC6(loc){});
    code compile_rval(form::vci_range, const loc & = MNL_IF_GCC5(loc)MNL_IF_GCC6(loc){});
-   // Convenience Classes
+
    class expr_export { MNL_NONVALUE()
    public:
       expr_export() = default;
@@ -89,7 +94,7 @@ namespace aux { namespace pub {
    }
 }} // namespace aux::pub
 
-namespace aux {
+namespace aux { // Helper Stuff ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    code compile_apply(code &&, const form &, const loc &);
    MNL_NORETURN void panic(const decltype(sig_state) &);
 } // namespace aux

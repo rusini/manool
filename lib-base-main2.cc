@@ -479,7 +479,7 @@ namespace aux { namespace {
             # undef MNL_M1
             }
          }
-      opt2: // {proc {I\I?; ...} as B; B; ...}
+      opt2: // {proc {I,I?; ...} as B; B; ...}
          {  if (form.size() >= 4); else goto opt3;
             if (form[1].is_list()); else goto opt3;
             if (form[2] == MNL_SYM("as")); else goto opt3;
@@ -1789,8 +1789,7 @@ namespace aux { namespace {
    };
 }} // namespace aux::<unnamed>
 
-namespace aux { extern "C" code mnl_aux_base() {
-
+namespace aux { extern "C" code mnl_aux_base() { // main ///////////////////////////////////////////////////////////////////////////////////////////////////////
    struct proc_F64 { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
       if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
       if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
@@ -1849,7 +1848,6 @@ namespace aux { extern "C" code mnl_aux_base() {
       if (cast<const string &>(argv[0])[0] != '`'); else MNL_ERR(MNL_SYM("SyntaxError"));
       return (sym)cast<const string &>(argv[0]);
    }};
-   // S8 defined in MANOOL
    struct proc_U32 { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
       if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
       if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
@@ -1861,7 +1859,6 @@ namespace aux { extern "C" code mnl_aux_base() {
       if (MNL_UNLIKELY((unsigned)res != res)) MNL_ERR(MNL_SYM("ConstraintViolation"));
       return (unsigned)res;
    }};
-
    struct proc_MakePtr { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
       if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
       switch (argc) {
@@ -1871,26 +1868,17 @@ namespace aux { extern "C" code mnl_aux_base() {
       }
       MNL_ERR(MNL_SYM("InvalidInvocation"));
    }};
-
-   // probes
-   struct proc_IsList { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
-      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      return argv[0].is_list();
-   }};
-   struct proc_IsForm { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
-      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
-      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      return argv[0].is_list() && argv[0].size() || test<sym>(argv[0]) || test<long long>(argv[0]) || test<code>(argv[0]);
-   }};
-
    struct proc_Parse { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
       if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
       if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
       if (MNL_UNLIKELY(!test<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
       return parse(cast<const string &>(argv[0]));
    }};
-
+   struct proc_IsList { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+      return argv[0].is_list();
+   }};
    return expr_export{
       {"=",           comp_set{}},
       {"!",           comp_move{}},
@@ -1920,40 +1908,34 @@ namespace aux { extern "C" code mnl_aux_base() {
       {"#",           comp_code{}},
       {"error",       comp_error{}},
       {"eval",        comp_eval{}},
-      {"True",        make_lit(true)},
-      {"False",       make_lit(false)},
-      {"Nil",         make_lit({})},
       {"F64",         make_lit(proc_F64{})},
       {"F32",         make_lit(proc_F32{})},
       {"I48",         make_lit(proc_I48{})},
       {"MakeSym",     make_lit(proc_MakeSym{})},
-      // S8 defined in MANOOL
       {"U32",         make_lit(proc_U32{})},
       {"MakePtr",     make_lit(proc_MakePtr{})},
       {"Range",       make_lit(proc_Range<false>{})},
       {"RevRange",    make_lit(proc_Range<true>{})},
       {"RangeExt",    make_lit(proc_RangeExt<false>{})},
       {"RevRangeExt", make_lit(proc_RangeExt<true>{})},
+      {"Parse",       make_lit(proc_Parse{})},
       {"IsI48",       make_proc_test<long long>()},
       {"IsF64",       make_proc_test<double>()},
       {"IsF32",       make_proc_test<float>()},
+      {"IsSym",       make_proc_test<sym>()},
       {"IsS8",        make_proc_test<string>()},
-      {"IsU32",       make_proc_test<unsigned>()},
       {"IsBool",      make_proc_test<bool>()},
-      {"IsNull",      make_proc_test<decltype(nullptr)>()},
+      {"IsU32",       make_proc_test<unsigned>()},
+      {"IsPtr",       make_proc_test<pointer>()},
+      {"IsWeakPtr",   make_proc_test<w_pointer>()},
+      {"IsRange",     make_proc_test<range<>>()},
+      {"IsRevRange",  make_proc_test<range<true>>()},
       {"IsArray",     make_proc_test<vector<val>>()},
       {"IsMap",       make_proc_test<dict<val, val>>()},
       {"IsSet",       make_proc_test<dict<val>>()},
       {"IsSequence",  make_proc_test<list<val>>()},
-      {"IsSym",       make_proc_test<sym>()},
-      {"IsPtr",       make_proc_test<pointer>()},
-      {"IsWeakPtr",   make_proc_test<w_pointer>()},
       {"IsList",      make_lit(proc_IsList{})},
-      {"IsForm",      make_lit(proc_IsForm{})},
-      {"IsRange",     make_proc_test<range<>>()},
-      {"IsRevRange",  make_proc_test<range<true>>()},
       {"IsCode",      make_proc_test<code>()},
-      {"Parse",       make_lit(proc_Parse{})},
       {"VarArg",      make_lit(proc_VarArg{})},
       {"VarApply",    make_lit(proc_VarApply{})},
       {"Bind",        make_lit(proc_Bind{})},

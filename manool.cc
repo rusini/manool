@@ -26,14 +26,12 @@ namespace MNL_AUX_UUID { using namespace aux;
       using std::deque;
    }
 
-namespace aux { namespace pub { // Temporary Variables (or Temporaries)
-   // Compile-time
-   MNL_IF_WITH_MT(thread_local) decltype(tmp_cnt) tmp_cnt; // count for current frame layout
-   MNL_IF_WITH_MT(thread_local) decltype(tmp_ids) tmp_ids; // all temporaries
-   // Run-time
-   MNL_IF_WITH_MT(thread_local) decltype(tmp_stk) tmp_stk; // stack
-   MNL_IF_WITH_MT(thread_local) decltype(tmp_frm) tmp_frm; // frame pointer
-}} // namespace aux::pub
+   // Compile-time accounting
+   MNL_IF_WITH_MT(thread_local) decltype(tmp_cnt) pub::tmp_cnt; // count for current frame layout
+   MNL_IF_WITH_MT(thread_local) decltype(tmp_ids) pub::tmp_ids; // all temporaries
+   // Run-time accounting
+   MNL_IF_WITH_MT(thread_local) decltype(tmp_stk) pub::tmp_stk; // stack
+   MNL_IF_WITH_MT(thread_local) decltype(tmp_frm) pub::tmp_frm; // frame pointer
 
    namespace aux {
       code optimize(expr_lit<>);
@@ -392,6 +390,7 @@ namespace aux { namespace pub { // Temporary Variables (or Temporaries)
       for (auto &&el: form::vci_range{range.begin() + 1, range.end()}) res = expr_seq{move(res), compile_rval(el, _loc)};
       return res;
    }
+
    code expr_export::compile(code &&, const pub::form &form, const loc &_loc) const {
       if (form.size() < 3 || form[1] != MNL_SYM("in")) err_compile("invalid form", _loc);
       if (form.size() == 3 && test<sym>(form[2])) for (auto &&el: bind) if (MNL_UNLIKELY(el.first == cast<const sym &>(form[2]))) return el.second; // shortcut

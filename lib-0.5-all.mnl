@@ -1,4 +1,4 @@
--- lib-0.3-all.mnl
+-- lib-0.5-all.mnl -- MANOOL standard library module
 
 /*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 
@@ -20,26 +20,53 @@
 : {extern "_streams"} in
 : {extern "_threads"} in
 : {extern "_misc"} in
-: let -- quotation ---------------------------------------------------------------------------------------------------------------------------------------------
-  { (') =
+: let ----------------------------------------------------------------------------------------------------------------------------------------------------------
+  { True  = 0 == 0
+    False = ~(0 == 0)
+    Nil   = {var {Nil} in Nil}
+    -- quotation -----------------------------------------------------------------------------------------------------------------------------------------------
+    (') =
     { macro
     : proc { F } as
-    : if Size[F] <> 2 then {array} /*syntax error*/ else
+    : if Size[F] <> 2 then {array} /*invalid form*/ else
       F[1]#
     }
+    -- numeric limits ------------------------------------------------------------------------------------------------------------------------------------------
+    MaxI48  = I48 ["0x7FFFFFFFFFFF"]
+    MaxF64  = F64 ["0x1.FFFFFFFFFFFFFp+1023"]
+    MaxF32  = F32 ["0x1.FFFFFEp127"]
+    MaxU32  = U32 ["0xFFFFFFFF"]
+    MaxD64  = D64 ["9.999999999999999e384"]
+    MaxC64  = C64 ["9.999999999999999e384"]
+    MaxD128 = D128["9.999999999999999999999999999999999e6144"]
+    MaxC128 = C128["9.999999999999999999999999999999999e6144"]
+    -- mathematical constants ----------------------------------------------------------------------------------------------------------------------------------
+    E  = {proc {T} as Exp[T[1]]}
+    Pi = {proc {T} as Acos[T[(~1)$]]}
+    I  = {proc {T} as Sqrt[T[(~1)$]]}
+    -- ASCII control characters --------------------------------------------------------------------------------------------------------------------------------
+    Nul = "" | U32[ 0]
+    Bel = "" | U32[ 7]
+    Bs  = "" | U32[ 8]
+    Ht  = "" | U32[ 9]
+    Lf  = "" | U32[10]
+    Vt  = "" | U32[11]
+    Ff  = "" | U32[12]
+    Cr  = "" | U32[13]
+    Esc = "" | U32[27]
   }
   in
 : let ----------------------------------------------------------------------------------------------------------------------------------------------------------
   { ($) = -- E$
     { macro
     : proc { F } as
-    : if Size[F] <> 2 then {array} /*syntax error*/ else
-    : array of let# {array of: array of (=)' R' F[1]} in' R'
+    : if Size[F] <> 2 then {array} /*invalid form*/ else
+    : array of let# {array of: array of (=)' Res F[1]} in' Res
     }
     (%) = -- V%
     { macro
     : proc { F } as
-    : if Size[F] <> 2 then {array} /*syntax error*/ else
+    : if Size[F] <> 2 then {array} /*invalid form*/ else
     : array of
     : array of macro#
     : array of proc# {array of MakeSym[]} as' F[1]
@@ -82,7 +109,7 @@
     on = -- the current "on" is actually "broad"
     { macro
     : proc { F } as
-    : if F[1] == broad'
+    : if (Size[F] >= 2) & (F[1] == broad')
       then -- {on broad ...}
       {array of on#} + F[Range[2; Size[F]]]
       else
@@ -100,10 +127,8 @@
       else -- fallback
       {array of on#} + F[Range[1; Size[F]]]
     }
-  }
-  in
-: let -- auxiliary ---------------------------------------------------------------------------------------------------------------------------------------------
-  { IsPair = {proc {V} as V.IsList[] & (Size[V] == 3) & (V[0] == (=)')}
+    IsPair = -- auxiliary
+    {proc {V} as V.IsList[] & (Size[V] == 3) & (V[0] == (=)')}
   }
   in
 : let -- logic quantifications, foldings, and comprehensions ---------------------------------------------------------------------------------------------------
@@ -296,7 +321,7 @@
     { macro
     : proc { F } as
     : if (Size[F] >= 8) & (F[2] == revert') & (F[4] == do') & (F[6] == after') & F[3].IsList[]
-      then -- {on K revert {V; ...} do B after B; B; ...}
+      then -- {on I revert {V; ...} do B after B; B; ...}
       { var {U = {array for {_ = F[3].Keys[]} of MakeSym[]}} in
       : array of var# {array for {U = U; V = F[3]} of: array of (=)' U V} in'
         { array of on# F[1]
@@ -305,7 +330,7 @@
       }
       else
     : if (Size[F] >= 10) & (F[2] == with') & (F[4] == revert') & (F[6] == do') & (F[8] == after') & F[3].IsSym[] & F[5].IsList[]
-      then -- {on K with I revert {V; ...} do B after B; B; ...}
+      then -- {on I with I revert {V; ...} do B after B; B; ...}
       { var {U = {array for {_ = F[5].Keys[]} of MakeSym[]}} in
       : array of var# {array for {U = U; V = F[5]} of: array of (=)' U V} in'
         { array of on# F[1] with' F[3]
@@ -346,7 +371,7 @@
         {array of var# {array for {U = U; V = F[Range[1; Size[F]]]} of: array of (=)' U V[2]} in'} +
         {array for {U = U; V = F[Range[1; Size[F]]]} of: array of (=)# V[1] U}
       }
-      else -- syntax error
+      else -- invalid form
       {array}
     }
     unless = -- "unless" expression
@@ -359,42 +384,42 @@
     : if (Size[F] >= 6) & (F[2] == signal') & (F[4] == else')
       then -- {unless C signal K else B; B; ...}
       {array of if# {array of (~)# F[1]} then' {array of signal# F[3]} else'} + F[Range[5; Size[F]]]
-      else -- syntax error
+      else -- invalid form
       {array}
     }
     ensure = -- "ensure" expression
     { macro
     : proc { F } as
     : if (Size[F] >= 4) & (F[2] == in')
-      then -- {ensure C in E} \ {ensure C in B; B; B; ...}
+      then -- {ensure C in E} , {ensure C in B; B; B; ...}
       {array of (%)#: array of if# F[1] then' ({array of do#} + F[Range[3; Size[F]]])# else' {array of error# "Test failed"}#}
-      else -- syntax error
+      else -- invalid form
       {array}
     }
     proc = -- "proc" .. "etc" ... "with" ...
     { macro
     : proc { F } as
     : if (Size[F] >= 6) & (F[2] == etc') & (F[4] == as') & F[1].IsList[]
-      then -- {proc {I\I?; ...} etc I\I? as B; B; ...}
+      then -- {proc {I,I?; ...} etc I,I? as B; B; ...}
       {array of ($)# {array of VarArg# {array of proc# F[1; F[1].Keys[]] | F[3] as'} + F[Range[5; Size[F]]]} | Size[F[1]]}
       else
     : if (Size[F] >= 6) & (F[2] == with') & (F[4] == as') & F[1].IsList[] & F[3].IsList[] & {for {E = F[3]} all E.IsSym[]}
-      then -- {proc {I\I?; ...} with {I; ...} as B; B; ...}
+      then -- {proc {I,I?; ...} with {I; ...} as B; B; ...}
       {array of Bind# {array of proc# F[3; F[3].Keys[]] + F[1; F[1].Keys[]] as'} + F[Range[5; Size[F]]]} + F[3; F[3].Keys[]]
       else
     : if (Size[F] >= 6) & (F[2] == with') & (F[4] == as') & F[1].IsList[] & F[3].IsList[] & {for {E = F[3]} all E.IsPair[] & E[1].IsSym[]}
-      then -- {proc {I\I?; ...} with {I = V; ...} as B; B; ...}
+      then -- {proc {I,I?; ...} with {I = V; ...} as B; B; ...}
       {array of Bind# {array of proc# {array for {E = F[3]} of E[1]} + F[1; F[1].Keys[]] as'} + F[Range[5; Size[F]]]} + {array for {E = F[3]} of E[2]}
       else
     : if (Size[F] >= 8) & (F[2] == etc') & (F[4] == with') & (F[6] == as') & F[1].IsList[] & F[5].IsList[] & {for {E = F[5]} all E.IsSym[]}
-      then -- {proc {I\I?; ...} etc I\I? with {I; ...} as B; B; ...}
+      then -- {proc {I,I?; ...} etc I,I? with {I; ...} as B; B; ...}
       { array of Bind#
       : array of ($)#
         {array of VarArg# {array of proc# F[5; F[5].Keys[]] + F[1; F[1].Keys[]] | F[3] as'} + F[Range[7; Size[F]]]} | (Size[F[1]] + Size[F[5]])
       } + F[5; F[5].Keys[]]
       else
     : if (Size[F] >= 8) & (F[2] == etc') & (F[4] == with') & (F[6] == as') & F[1].IsList[] & F[5].IsList[] & {for {E = F[5]} all E.IsPair[] & E[1].IsSym[]}
-      then -- {proc {I\I?; ...} etc I\I? with {I = V; ...} as B; B; ...}
+      then -- {proc {I,I?; ...} etc I,I? with {I = V; ...} as B; B; ...}
       { array of Bind#
       : array of ($)#
         {array of VarArg# {array of proc# {array for {E = F[5]} of E[1]} + F[1; F[1].Keys[]] | F[3] as'} + F[Range[7; Size[F]]]} | (Size[F[1]] + Size[F[5]])
@@ -402,64 +427,29 @@
       else -- fallback
       {array of proc#} + F[Range[1; Size[F]]]
     }
-    ------------------------------------------------------------------------------------------------------------------------------------------------------------
-    E  = {proc {T} as Exp[T[1]]}
-    Pi = {proc {T} as Acos[T[(~1)$]]}
-    I  = {proc {T} as Sqrt[T[(~1)$]]}
-    ------------------------------------------------------------------------------------------------------------------------------------------------------------
-    Delay = {proc {T} as Delay[1000000 * T]}
   }
   in
-: let { S8 = {proc {S} as: unless IsS8[S] signal TypeMispatch else S} } in
-: let
-  { J       = I
-    MaxI48  = I48 ["0x7FFFFFFFFFFF"]
-    MaxF64  = F64 ["1.7976931348623157e308"]
-    MaxF32  = F32 ["3.40282347e38"]
-    MaxU32  = U32 ["0xFFFFFFFF"]
-    MaxD64  = D64 ["9.999999999999999e384"]
-    MaxC64  = C64 ["9.999999999999999e384"]
-    MaxD128 = D128["9.999999999999999999999999999999999e6144"]
-    MaxC128 = C128["9.999999999999999999999999999999999e6144"]
-    Nul     = "" | U32[ 0]
-    Bel     = "" | U32[ 7]
-    Bs      = "" | U32[ 8]
-    Ht      = "" | U32[ 9]
-    Lf      = "" | U32[10]
-    Vt      = "" | U32[11]
-    Ff      = "" | U32[12]
-    Cr      = "" | U32[13]
-    Esc     = "" | U32[27]
+: let -- miscellaneous -----------------------------------------------------------------------------------------------------------------------------------------
+  { S8     = {proc {S} as: unless IsS8[S] signal TypeMismatch else S}
+    IsNull = {proc {V} as Nil == V}
+    J      = I
+    Delay  = {proc {T} as Delay[1000000 * T]}
   }
   in
-----------------------------------------------------------------------------------------------------------------------------------------------------------------
-: export
-  ('); if; (&); (|); while; repeat; do; on; signal
-  for; case
-  (=); (!); (^); assign
-  proc; var; let; ($)
-  array; record; map; set; sequence
-  object; (@)
-  export; scope
-  macro; (#); error; eval; (%)
-  unless; ensure
-  True; False; Nil
-  F64; F32; I48; MakeSym; S8; U32; D64; D128; C64; C128; Z64; Z32
-  MakePtr
-  Range; RevRange; RangeExt; RevRangeExt
-  IsI48; IsF64; IsF32; IsS8; IsU32; IsBool; IsNull
-  IsArray; IsMap; IsSet; IsSequence
-  IsSym; IsPtr; IsWeakPtr
-  IsList; IsForm
-  IsRange; IsRevRange; IsCode
-  IsD64; IsC64; IsD128; IsC128; IsZ64; IsZ32
-  Parse
-  VarArg; VarApply; Bind
-  Min; Max; E; Pi; I; J
-  ProcessArgv; ProcessEnviron; ProcessExit; ReserveStack; ReserveHeap
-  Out; Err; In; OpenFile; OpenPipe; OpenTemp; IsStream
-  StartThread; MakeMutex; MakeCond; IsMutex; IsCond
-  Random; Clock; Delay
-  MaxI48; MaxF64; MaxF32; MaxU32; MaxD64; MaxC64; MaxD128; MaxC128
-  Nul; Bel; Bs; Ht; Lf; Vt; Ff; Cr; Esc
+: export -- 126 standard bindings ------------------------------------------------------------------------------------------------------------------------------
+  True; False; Nil; F64; F32; I48; MakeSym; S8; U32; D64; D128; C64; C128; Z64; Z32; MakePtr; Range; RevRange; RangeExt; RevRangeExt; Parse -- 21
+  IsNull; IsI48; IsF64; IsF32; IsSym; IsS8; IsBool; IsU32; IsD64; IsD128; IsC64; IsC128; IsZ64; IsZ32; IsPtr; IsWeakPtr; IsRange; IsRevRange; IsList -- 19
+  MaxI48; MaxF64; MaxF32; MaxU32; MaxD64; MaxD128; MaxC64; MaxC128 -- 8
+  E; Pi; I; J; Min; Max -- 6
+  Nul; Bel; Bs; Ht; Lf; Vt; Ff; Cr; Esc -- 9
+  (=); (!); (^); assign -- 4
+  if; (&); (|); while; repeat; do; signal; case; unless -- 9
+  proc; var; let; export; scope; VarArg; VarApply; Bind; ($) -- 9
+  on; for; ensure -- 3
+  array; record; map; set; sequence; object; (@); IsArray; IsMap; IsSet; IsSequence -- 11
+  macro; (#); error; eval; ('); (%); IsCode -- 7
+  ProcessArgv; ProcessEnviron; ProcessExit; ReserveStack; ReserveHeap -- 5
+  Out; Err; In; OpenFile; OpenPipe; OpenTemp; IsStream -- 7
+  StartThread; MakeMutex; MakeCond; IsMutex; IsCond -- 5
+  Random; Clock; Delay -- 3
 }

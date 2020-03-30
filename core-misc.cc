@@ -35,7 +35,7 @@ namespace MNL_AUX_UUID { using namespace aux;
       test<sym>(form) && ((const string &)cast<const sym &>(form))[0] >= 'a' && ((const string &)cast<const sym &>(form))[0] <= 'z' ?
          (err_compile("unbound keyword (nested in this context)", form._loc(_loc)), code{}) :
       test<long long>(form) || test<string>(form) || test<sym>(form) ?
-         [&]()->code{ code make_lit(const val &); return make_lit(form); }() : // actually from Base
+         [&]()->code{ code make_lit(const val &); return make_lit(form); }() : // actually from MANOOL API
       form.is_list() && !form.empty() ?
          compile(form.front(), form._loc(_loc)).compile(form, form._loc(_loc)) :
       test<code>(form) ?
