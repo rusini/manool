@@ -1,4 +1,4 @@
-<img alt="MANOOL Logo" src="https://manool.org/MANOOL-Logo.png" width="64" height="64"> MANOOL v0.5.0
+<img alt="MANOOL Logo" src="https://manool.org/MANOOL-Logo.png" width="64" height="64"> MANOOL v0.5.1
 =====================================================================================================
 
 MANOOL is a programming language with the same purpose as Python, Ruby, PHP, Common Lisp, or Scheme, but it is designed with one central idea in mind:
