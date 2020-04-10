@@ -1,0 +1,25 @@
+defaults:
+  - scope: {path: ""}
+    values:
+      layout: "default"
+  - scope: {path: "_posts"}
+    values:
+      permalink: "/blog/:categories/:year-:month-:day/:title"
+  - scope: {path: "_drafts"}
+    values:
+      permalink: "/blog-drafts/:categories/:title"
+
+kramdown:
+  syntax_highlighter_opts: {disable: true}
+  smart_quotes: ["apos", "apos", "ldquo", "rdquo"]
+  typographic_symbols: {ndash: "\u2014", laquo: "<<", raquo: ">>", laquo_space: "<< ", raquo_space: ">> "}
+  auto_id_prefix: "h:"
+  footnote_backlink: ""
+
+plugins:
+  - jekyll-feed
+
+exclude:
+  - CNAME
+  - README.md
+  - bin

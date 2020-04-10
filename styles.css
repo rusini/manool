@@ -1,0 +1,552 @@
+---
+# styles.css
+layout: null
+---
+
+/* Reset (some) browser defaults */
+
+@media all {
+  body {
+    margin:                   0;
+    background-color:         white;
+    color:                    black;
+    text-size-adjust:         none; /* braindamage! */
+    -webkit-text-size-adjust: none; /* just in case */
+    -moz-text-size-adjust:    none;
+    -ms-text-size-adjust:     none;
+    -o-text-size-adjust:      none;
+    line-height:              1.3333;
+  }
+  h4 {
+    margin-top:    1em;
+    margin-bottom: 1em;
+  }
+  sub,
+  sup {
+    vertical-align: baseline;
+    position:       relative;
+  }
+  sub {
+    top: +0.4em;
+  }
+  sup {
+    top: -0.4em;
+  }
+  ul,
+  ol {
+    padding-left: 32px;
+  }
+  blockquote {
+    margin-left:       28px;
+    margin-right:      0;
+    border-left-style: solid;
+    border-left-width: 2px;
+    padding-left:      2px;
+  }
+  textarea,
+  iframe {
+    box-sizing: border-box;
+  }
+}
+
+/* Font families */
+
+@media all {
+  body {
+    font-family: "Source Sans Pro", "Calibri", sans-serif;
+  }
+  h1 {
+    font-family: "Signika", "Calibri", sans-serif;
+  }
+  code {
+    font-family: "Inconsolata", "Consolas", monospace;
+  }
+}
+
+/* General layout */
+
+@media all {
+  body {
+    min-width: 320px;
+  }
+  body > main {
+    z-index: 0;
+  }
+  body > * {
+    overflow: hidden;
+    position: relative;
+    z-index:  1;
+  }
+
+  body > header .flex {
+    display: flex;
+    display: -webkit-flex;
+  }
+  body > header .flex.center {
+    align-items:         center;
+    -webkit-align-items: center;
+  }
+  body > header .flex > .resizable {
+    flex-grow:         1;
+    -webkit-flex-grow: 1;
+    -moz-flex-grow:    1;
+  }
+  body > header .center,
+  body > footer {
+    text-align: center;
+  }
+  main .right:not(aside) {
+    text-align: right;
+  }
+  body > header .gutter {
+    border-bottom-style: solid;
+    border-bottom-width: thin;
+  }
+
+  aside,
+  main > * > pre {
+    clear: both;
+  }
+  aside > :first-child {
+    margin-top: 0;
+  }
+  aside > :last-child {
+    margin-bottom: 0;
+  }
+  pre {
+    overflow: auto;
+  }
+  figure img {
+    width: auto;
+  }
+  figure {
+    text-align:   center;
+    font-size:    0;
+    margin-left:  0;
+    margin-right: 0;
+  }
+  figure figcaption {
+    font-size: 14.1774px;
+  }
+  body > header ul {
+    list-style-type: none;
+    padding-left:    0;
+  }
+  body > footer {
+    vertical-align: middle;
+    white-space:    nowrap; /* just in case */
+  }
+  body > footer > * {
+    margin-top:    2em;
+    margin-bottom: 1.5em;
+  }
+  body > footer img {
+    width:  auto;
+    height: 1.3333em;
+  }
+}
+
+/* Viewport-dependent properties */
+
+@media all { /* the most compact layout */
+  body,
+  small {
+    font-size: 12px;
+  }
+  main,
+  body > header figure + * {
+    font-size: 14.1774px; /* ignore completely browser's "font size" settings */
+  }
+  code {
+    font-size: 14px;
+  }
+
+  body > * > * {
+    margin: 2px;
+  }
+  aside {
+    padding: 8px;
+    margin:  16px 8px;
+  }
+  main header {
+    margin-top: 2.5em;
+  }
+  main footer {
+    margin-bottom: 1.5em;
+  }
+  body > header img {
+    height: 48px;
+  }
+  body > header ul {
+    margin-top:    0;
+    margin-bottom: 0;
+  }
+  body > header li {
+    margin-left:  8px;
+    margin-right: 8px;
+  }
+  body > header li.dynamic {
+    display: none;
+  }
+}
+@media (min-width: 480px) {
+  body > header .big {
+    font-size: 14.1774px;
+  }
+
+  body > * > * {
+    margin-left:  8px;
+    margin-right: 8px;
+  }
+  body > header li.dynamic {
+    display: list-item;
+  }
+}
+@media (min-width: 640px) {
+  body,
+  aside,
+  small,
+  main .footnotes {
+    font-size: 14.1774px;
+  }
+  main,
+  body > header figure + *,
+  body > header .big {
+    font-size: 16.75px;
+  }
+  aside code,
+  main .footnotes code {
+    font-size: 14px;
+  }
+  code {
+    font-size: 16px;
+  }
+
+  body > * > * {
+    margin: 8px 16px;
+  }
+  aside.right {
+    float:    right;
+    width:    252px;
+    margin:   8px 0 8px 16px;
+    position: relative;
+    left:     8px;
+  }
+  aside {
+    margin-left:  16px;
+    margin-right: 16px;
+  }
+  main header {
+    margin-top: 4.5em;
+  }
+  main footer {
+    margin-bottom: 3.5em;
+  }
+  body > header img {
+    height: 64px;
+  }
+  body > header li {
+    margin-left:  16px;
+    margin-right: 16px;
+  }
+}
+@media (min-width: 840px) {
+  body > * > * {
+    margin-left:  auto;
+    margin-right: auto;
+    width:        768px;
+  }
+  aside.right {
+    left: 16px;
+  }
+  body > header .big {
+    letter-spacing: .6667px;
+  }
+}
+@media (min-width: 918px) {
+  body > * > * {
+    width: 846px;
+  }
+}
+@media (min-width: 996px) {
+  body > * > * {
+    width: 924px;
+  }
+}
+@media (min-width: 1074px) {
+  body > * > * {
+    width: 1002px;
+  }
+}
+@media (min-width: 1152px) {
+  body > * > * {
+    width: 1080px;
+  }
+}
+@media (min-width: 1230px) {
+  body > * > * {
+    width: 1158px;
+  }
+  body > header .big {
+    word-spacing: .25em;
+  }
+  body > header ul {
+    margin-top:    9.5px;
+    margin-bottom: 9.5px;
+  }
+  body > header li {
+    margin-left:  12px;
+    margin-right: 12px;
+  }
+  body > header li a {
+    padding-left:  4px;
+    padding-right: 4px;
+  }
+}
+
+/* Decorations */
+
+@media all {
+  body > :not(main),
+  aside {
+    background-color: white;
+    box-shadow:       0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); /* from https://www.w3schools.com/css/css3_shadows.asp */
+  }
+  main {
+    line-height: 1.4329;
+  }
+  pre {
+    line-height: 1.3333;
+  }
+  h1,
+  h2 {
+    border-bottom-style: solid;
+    border-bottom-width: thin;
+    overflow:            hidden;
+    padding-left:        1em;
+    text-indent:         -1em;
+  }
+  hr {
+    border-style:        none;
+    border-bottom-style: dashed;
+    border-bottom-width: thin;
+    overflow:            hidden;
+  }
+  h1,
+  h2,
+  hr,
+  body > header .gutter {
+    border-bottom-color: #B0B0B0;
+  }
+  pre,
+  p > code,
+  li > code {
+    background-color: #F0F0F0;
+  }
+  small {
+    color: #808080;
+  }
+  blockquote {
+    border-left-color: #808080;
+  }
+  a {
+    color:         #25405D;
+    border-radius: .3em;
+    transition:    background-color 1.33s;
+  }
+  body > header a,
+  a.footnote {
+    text-decoration: none;
+  }
+  a.footnote {
+    padding-left:  .1em;
+    padding-right: .1em;
+  }
+  a:hover {
+    text-decoration:  none;
+    background-color: rgba(0, 80, 112, .75);
+    color:            white;
+  }
+  figure figcaption {
+    font-style: italic;
+  }
+
+  :focus {
+    outline: 1px solid #800000;
+  }
+}
+
+/* Viewport-dependent properties */
+
+@media all { /* the most compact layout */
+  aside,
+  pre,
+  p > code,
+  li > code,
+  main img {
+    border-radius: 3px;
+  }
+  pre {
+    padding-top:    .1em;
+    padding-bottom: .1em;
+  }
+}
+@media (min-width: 480px) {
+  aside p,
+  main .footnotes p {
+    text-align: inherit;
+  }
+  p {
+    text-align: justify;
+  }
+}
+@media (min-width: 640px) {
+  ul,
+  ol {
+    padding-left: 39px;
+  }
+  blockquote {
+    margin-left:       32px;
+    border-left-width: 3px;
+    padding-left:      4px;
+  }
+  aside,
+  pre,
+  p > code,
+  li > code,
+  main img {
+    border-radius: 4px;
+  }
+}
+@media (min-width: 840px) {
+  p > code,
+  li > code {
+    white-space: nowrap;
+  }
+}
+@media (min-width: 1074px) {
+  main > * > pre {
+    padding-top:    8px;
+    padding-bottom: 8px;
+  }
+  pre {
+    padding-left:  .1em;
+    padding-right: .1em;
+  }
+}
+@media (min-width: 1152px) {
+  main > * > ul > li,
+  main > * > ol > li,
+  pre {
+    margin-right: 39px;
+  }
+  pre {
+    margin-left: 39px;
+  }
+}
+@media (min-width: 1230px) {
+  main > * > p,
+  main > * > hr {
+    margin-right: 78px;
+  }
+  main > * > ul > li,
+  main > * > ol > li,
+  main > * > pre {
+    margin-right: 117px;
+  }
+}
+
+/* Eval forms */
+
+@media all {
+  textarea,
+  iframe {
+    border:           thin solid #B0B0B0;
+    resize:           vertical;
+    min-height:       100px;
+    background-color: white;
+    padding:          2px 2px;
+  }
+  textarea {
+    color:       black;
+    font-family: "Inconsolata", "Consolas", monospace;
+    font-size:   15.5px;
+  }
+  textarea:focus {
+    outline-style: none;
+    border-color:  #800000;
+  }
+
+  input[type=submit],
+  input[type=reset] {
+    border-style:     none;
+    border-radius:    10px;
+    background-color: #F6F6F6;
+    transition:       background-color 1.33s;
+    color:            #25405D;
+    font-family:      inherit;
+    font-size:        14.1774px;
+    line-height:      1.3333;
+    text-shadow:      0 2px 3px rgba(0, 0, 0, .5);
+    vertical-align:   middle;
+    padding:          1px 8px;
+  }
+  input[type=submit]::-moz-focus-inner,
+  input[type=reset]::-moz-focus-inner {
+    border-style: none;
+  }
+  input[type=submit]:hover,
+  input[type=submit]:active,
+  input[type=reset]:hover,
+  input[type=reset]:active {
+    background-color: rgba(0, 80, 112, .75);
+    color:            white;
+    text-shadow:      0 2px 3px rgba(255, 255, 255, .75);
+  }
+  input[type=submit]:active:hover,
+  input[type=reset]:active:hover {
+    text-shadow:    none;
+    padding-top:    2px;
+    padding-bottom: 0px;
+  }
+}
+@media (min-width: 1230px) {
+  textarea,
+  iframe {
+    padding-left:  8px;
+    padding-right: 8px;
+  }
+}
+
+/* For printing */
+
+@media print {
+  body > :not(main) {
+    display: none;
+  }
+  aside {
+    box-shadow: none;
+  }
+  a {
+    color:           inherit;
+    text-decoration: none;
+  }
+  pre code {
+    font-size: 12px;
+  }
+
+  textarea,
+  iframe {
+    resize: none;
+  }
+  input[type=submit],
+  input[type=reset] {
+    color:       inherit;
+    text-shadow: none;
+  }
+}
+@media print and (min-width: 640px) {
+  pre code {
+    font-size: 14px;
+  }
+}
