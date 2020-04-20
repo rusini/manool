@@ -372,7 +372,7 @@ layout: null
   }
 
   :focus {
-    outline: 1px solid #800000;
+    outline: thin solid #800000;
   }
 }
 
