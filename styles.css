@@ -23,14 +23,13 @@ layout: null
   }
   sub,
   sup {
-    vertical-align: baseline;
-    position:       relative;
+    font-size: .8464em;
   }
   sub {
-    top: +0.4em;
+    vertical-align: -.1814em;
   }
   sup {
-    top: -0.4em;
+    vertical-align: +.1814em;
   }
   ul,
   ol {
