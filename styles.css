@@ -17,10 +17,6 @@ layout: null
     -o-text-size-adjust:      none;
     line-height:              1.3333;
   }
-  h4 {
-    margin-top:    1em;
-    margin-bottom: 1em;
-  }
   sub,
   sup {
     font-size: .8464em;
@@ -30,6 +26,10 @@ layout: null
   }
   sup {
     vertical-align: +.1814em;
+  }
+  h4 {
+    margin-top:    1em;
+    margin-bottom: 1em;
   }
   ul,
   ol {
@@ -41,6 +41,10 @@ layout: null
     border-left-style: solid;
     border-left-width: 2px;
     padding-left:      2px;
+  }
+  figure {
+    margin-left:  0;
+    margin-right: 0;
   }
   textarea,
   iframe {
@@ -76,6 +80,9 @@ layout: null
     position: relative;
     z-index:  1;
   }
+  aside {
+    overflow: hidden;
+  }
 
   body > header .flex {
     display: flex;
@@ -91,7 +98,8 @@ layout: null
     -moz-flex-grow:    1;
   }
   body > header .center,
-  body > footer {
+  body > footer,
+  figure {
     text-align: center;
   }
   main .right:not(aside) {
@@ -103,7 +111,8 @@ layout: null
   }
 
   aside,
-  main > * > pre {
+  main > * > pre,
+  main > * > blockquote pre {
     clear: both;
   }
   aside > :first-child {
@@ -115,17 +124,15 @@ layout: null
   pre {
     overflow: auto;
   }
-  figure img {
-    width: auto;
-  }
   figure {
-    text-align:   center;
-    font-size:    0;
-    margin-left:  0;
-    margin-right: 0;
+    font-size: 0;
   }
   figure figcaption {
     font-size: 14.1774px;
+  }
+  body > header img,
+  body > footer img {
+    width: auto;
   }
   body > header ul {
     list-style-type: none;
@@ -140,7 +147,6 @@ layout: null
     margin-bottom: 1.5em;
   }
   body > footer img {
-    width:  auto;
     height: 1.3333em;
   }
 }
@@ -309,7 +315,7 @@ layout: null
   body > :not(main),
   aside {
     background-color: white;
-    box-shadow:       0 4px 8px 0 rgba(0, 0, 0, .2), 0 6px 20px 0 rgba(0, 0, 0, .19); /* from https://www.w3schools.com/css/css3_shadows.asp */
+    box-shadow:       0 4px 8px rgba(0, 0, 0, .2), 0 6px 20px rgba(0, 0, 0, .19); /* from https://www.w3schools.com/css/css3_shadows.asp */
   }
   main {
     line-height: 1.4329;
@@ -354,7 +360,8 @@ layout: null
     transition:    background-color 1.33s;
   }
   body > header a,
-  a.footnote {
+  a.footnote,
+  a:hover {
     text-decoration: none;
   }
   a.footnote {
@@ -362,7 +369,6 @@ layout: null
     padding-right: .1em;
   }
   a:hover {
-    text-decoration:  none;
     background-color: rgba(0, 80, 112, .75);
     color:            white;
   }
@@ -400,11 +406,20 @@ layout: null
   }
 }
 @media (min-width: 640px) {
-  ul,
-  ol {
+  main > * > ul,
+  main > * > ul ul,
+  main > * > ol ul,
+  main > * > blockquote ul,
+  main > * > ol,
+  main > * > ul ol,
+  main > * > ol ol,
+  main > * > blockquote ol {
     padding-left: 39px;
   }
-  blockquote {
+  main > * > blockquote,
+  main > * > ul blockquote,
+  main > * > ol blockquote,
+  main > * > blockquote blockquote {
     margin-left:       32px;
     border-left-width: 3px;
     padding-left:      4px;
@@ -428,7 +443,8 @@ layout: null
     padding-top:    8px;
     padding-bottom: 8px;
   }
-  pre {
+  main > * > pre,
+  main > * > blockquote pre {
     padding-left:  .1em;
     padding-right: .1em;
   }
@@ -436,10 +452,12 @@ layout: null
 @media (min-width: 1152px) {
   main > * > ul > li,
   main > * > ol > li,
-  pre {
+  main > * > pre {
     margin-right: 39px;
   }
-  pre {
+  main > * > pre,
+  main > * > blockquote > pre,
+  main > * > blockquote > blockquote > pre {
     margin-left: 39px;
   }
 }
@@ -452,6 +470,20 @@ layout: null
   main > * > ol > li,
   main > * > pre {
     margin-right: 117px;
+  }
+  main > * > blockquote,
+  main #markdown-toc,
+  main .footnotes,
+  h3,
+  h4,
+  main > * > blockquote > pre,
+  main > * > blockquote > ul > li,
+  main > * > blockquote > ol > li {
+    margin-right: 39px;
+  }
+  aside:not(.right) {
+    padding-left:  19.5px;
+    padding-right: 19.5px;
   }
 }
 
@@ -524,7 +556,8 @@ layout: null
     display: none;
   }
   aside {
-    box-shadow: none;
+    border:     thin solid black;
+    box-shadow: 2px 2px #808080;
   }
   a {
     color:           inherit;
@@ -545,7 +578,8 @@ layout: null
   }
 }
 @media print and (min-width: 640px) {
-  pre code {
+  main > * > pre code,
+  main > * > blockquote pre code {
     font-size: 14px;
   }
 }
