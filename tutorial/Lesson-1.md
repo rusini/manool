@@ -1,39 +1,111 @@
 ---
 title:   Lesson 1
-updated: 2019-10-16
+updated: 2020-04-24
 ---
 
 {%include page_header.md%}{%raw%}
 
-## Hello World
-~~~
--- in "applicative" notation
-{{extern "manool.org.18/std/0.5/all"} in WriteLine[Out; "Hello, world!"]}
-~~~
-~~~
--- OOPish notation (equivalent to the above, up to Abstract Syntax Tree)
-{{extern "manool.org.18/std/0.5/all"} in Out.WriteLine["Hello, world!"]}
-~~~
-~~~
--- LISPish notation (ditto)
-{{extern "manool.org.18/std/0.5/all"} in {WriteLine Out "Hello, world!"}}
-~~~
-Output:
-~~~
-Hello, world!
-~~~
-### Code Formatting
-~~~
--- most recommended formatting for multi-line expressions
-{ {extern "manool.org.18/std/0.5/all"} in
-  WriteLine[Out; "Hello, world!"]
-}
-~~~
-### Comments
-~~~
--- this is a comment
-{{extern "manool.org.18/std/0.5/all"} in Out.WriteLine[/* Out; */ "Hello, world!"]}
-~~~
+
+Hello World
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+The following is a traditional "Hello World" program in MANOOL:
+
+    -- in "applicative" notation
+    {{extern "manool.org.18/std/0.5/all"} in WriteLine[Out; "Hello, world!"]}
+
+To play with MANOOL examples, you can use the [online evaluator] or run them from the command line according to the [instructions]. Here is just a couple of
+ideas about how to run MANOOL programs from the command line:
+
+    mnlexec hello.mnl
+
+  (assuming you have placed your source code into `hello.mnl`) or, for short scripts:
+
+    mnlexec <(echo $'{{extern "manool.org.18/std/0.5/all"} in WriteLine[Out; "Hello, world!"]}')
+
+  (we use `$'...'` with a leading `$` here just to be sure we can more easily escape `'` characters in Bash in the future).
+
+[online evaluator]: /eval     "MANOOL Online Evaluator"
+[instructions]:     /download "How to Download and Install MANOOL"
+
+The expected output is unsurprisingly
+
+    Hello, world!
+
+Using the online evaluator is convenient but limits you to just one source file. Anyway, consult [How to Download and Install MANOOL][instructions] for more
+tips.
+
+#### How does it work?
+
+1. The construct `WriteLine[Out; "..."]` resembles a *function call* in many languages where the construct `WriteLine` would specify a function, and `Out` and
+   `"Hello, world!"` would be the arguments.[^a1] Here, as a side effect of an evaluation of this expression, the phrase `Hello, world!` specified by a string
+   literal eventually appears on the standard output specified by the argument `Out`.
+
+2. During compilation of the whole expression `{{extern "..."} in ...}`, all identifier definitions[^a2] (including, in particular, the one for `Out`) from the
+   standard library module specified by the string literal `"manool.org.18/..."` are *imported* into the scope that follows the keyword `in`.
+
+[^a1]: In MANOOL ordinary functions are called _procedures_, and the construct `WriteLine[Out; "..."]` is more generally called an _applicative expression_
+       (more on this later).
+
+[^a2]: ...or rather their analogs in MANOOL called _bindings_...
+
+<aside markdown="1">
+This has nothing special by now and is quite a norm for a lot of languages nowadays, and I promise all of this is going to become more interesting later.
+However, you may note that the main difference is in the (surface) syntax and the unusual choice of brackets and delimiters. Please bear in mind for now that
+this is not an arbitrary choice nor a matter of personal preference but rather a result of many design trade-offs in the language.
+</aside>
+
+### Alternative notations ##############################################################################################
+
+The following two alternative "Hello World" implementations are equivalent to the above one, up to an internal representation called Abstract Syntax Tree:
+
+    -- OOPish notation (equivalent to the above, up to Abstract Syntax Tree)
+    {{extern "manool.org.18/std/0.5/all"} in Out.WriteLine["Hello, world!"]}
+
+  (note how the first argument now corresponds to a receiver, in OOP parlance),
+
+    -- LISPish notation (ditto)
+    {{extern "manool.org.18/std/0.5/all"} in {WriteLine Out "Hello, world!"}}
+
+  (note how `WriteLine`, the target of an applicative expression, is the first element of a Lisp-inspired syntactic list).
+
+<aside markdown="1">
+The ability to express essentially the same program (or a part thereof) in different notations may be either extremely useful or completely useless depending on
+your situation. In any case, this is allowed not due to a specific design goal but is rather as an artifact of the overall language design.
+
+Some benefits of the "Object-Oriented" notation:
+  * You might want to mark the first argument specially, for whatever reason.
+  * You might want to use a kind of universal infix notation or pipeline multiple applications while avoiding a lot of nested parentheses, e.g.:
+    `X.Map1[].Map2[]`.
+
+Some benefits of the "S-expression" notation:
+  * It is already strongly preferred for so-called non-applicative, special expressions.
+  * It works better when you want to format some complex applicative expression uniformly.
+</aside>
+
+### Code formatting recommendations ####################################################################################
+
+The most basic principles of MANOOL code formatting are depicted in the following example (you are invited to see more principles in action further in this
+tutorial):
+
+    -- most recommended formatting for multi-line expressions
+    { {extern "manool.org.18/std/0.5/all"} in
+      WriteLine[Out; "Hello, world!"]
+    }
+
+### Commenting code in MANOOL ##########################################################################################
+
+MANOOL supports two kinds of comments (please see [Comments] for a complete reference):
+
+    {{extern "manool.org.18/std/0.5/all"} in Out.WriteLine[/*Out;*/ "Hello, world!"]} -- this is a comment
+
+[comments]: /specification/core-language/syntax#h:comments "Comments"
+
+---
+
+**Caution!!! Work in progress!!! No more prose below this line!!!**
+
+---
 
 ## Assembling Phrases from Fragments
 Example:
@@ -166,5 +238,6 @@ Hello, world!
 Nil Nil Nil Nil Nil
 value/object WriteLine + ~ Foo Bar
 ~~~
+
 
 {%endraw%}{%include page_footer.md%}
