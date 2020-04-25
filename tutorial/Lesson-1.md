@@ -3,6 +3,13 @@ title:   Lesson 1
 updated: 2020-04-24
 ---
 
+<aside markdown="1" class="right">
+After completing this tutorial, you will be able to
+  * develop MANOOL programs of moderate complexity,
+  * use a variety of MANOOL composite data types to deal conveniently with structured data, and
+  * freely navigate through the MANOOL specification (which is much more formal).
+</aside>
+
 {%include page_header.md%}{%raw%}
 
 
@@ -14,7 +21,7 @@ The following is a traditional "Hello World" program in MANOOL:
     -- in "applicative" notation
     {{extern "manool.org.18/std/0.5/all"} in WriteLine[Out; "Hello, world!"]}
 
-To play with MANOOL examples, you can use the [online evaluator] or run them from the command line according to the [instructions]. Here is just a couple of
+To play with MANOOL examples, you can use the [online evaluator] or run them from the command line according to the [instructions]. Here are just a couple of
 ideas about how to run MANOOL programs from the command line:
 
     mnlexec hello.mnl
@@ -25,15 +32,15 @@ ideas about how to run MANOOL programs from the command line:
 
   (we use `$'...'` with a leading `$` here just to be sure we can more easily escape `'` characters in Bash in the future).
 
-[online evaluator]: /eval     "MANOOL Online Evaluator"
-[instructions]:     /download "How to Download and Install MANOOL"
-
 The expected output is unsurprisingly
 
     Hello, world!
 
 Using the online evaluator is convenient but limits you to just one source file. Anyway, consult [How to Download and Install MANOOL][instructions] for more
 tips.
+
+[online evaluator]: /eval     "MANOOL Online Evaluator"
+[instructions]:     /download "How to Download and Install MANOOL"
 
 #### How does it work?
 
@@ -42,12 +49,14 @@ tips.
    literal eventually appears on the standard output specified by the argument `Out`.
 
 2. During compilation of the whole expression `{{extern "..."} in ...}`, all identifier definitions[^a2] (including, in particular, the one for `Out`) from the
-   standard library module specified by the string literal `"manool.org.18/..."` are *imported* into the scope that follows the keyword `in`.
+   standard library module specified by the string literal `"manool.org.18/..."` are *imported* into the scope that follows the keyword `in`.[^a3]
 
 [^a1]: In MANOOL ordinary functions are called _procedures_, and the construct `WriteLine[Out; "..."]` is more generally called an _applicative expression_
-       (more on this later).
+       (more on this later). MANOOL is a multiparadigm language with a functional core.
 
 [^a2]: ...or rather their analogs in MANOOL called _bindings_...
+
+[^a3]: `{extern "..."}` actually has its own meaning here (more on this later). For now you can safely ignore this fact.
 
 <aside markdown="1">
 This has nothing special by now and is quite a norm for a lot of languages nowadays, and I promise all of this is going to become more interesting later.
@@ -67,11 +76,11 @@ The following two alternative "Hello World" implementations are equivalent to th
     -- LISPish notation (ditto)
     {{extern "manool.org.18/std/0.5/all"} in {WriteLine Out "Hello, world!"}}
 
-  (note how `WriteLine`, the target of an applicative expression, is the first element of a Lisp-inspired syntactic list).
+  (note how `WriteLine`, the _target_ of an applicative expression, is the first element of a Lisp-inspired syntactic list).
 
 <aside markdown="1">
 The ability to express essentially the same program (or a part thereof) in different notations may be either extremely useful or completely useless depending on
-your situation. In any case, this is allowed not due to a specific design goal but is rather as an artifact of the overall language design.
+your situation. In any case, this is allowed not due to a specific design goal but rather as an artifact of the overall language design.
 
 Some benefits of the "Object-Oriented" notation:
   * You might want to mark the first argument specially, for whatever reason.
@@ -79,19 +88,21 @@ Some benefits of the "Object-Oriented" notation:
     `X.Map1[].Map2[]`.
 
 Some benefits of the "S-expression" notation:
-  * It is already strongly preferred for so-called non-applicative, special expressions.
+  * It is already strongly preferred for so-called non-applicative, _special_ expressions.
   * It works better when you want to format some complex applicative expression uniformly.
 </aside>
 
 ### Code formatting recommendations ####################################################################################
 
-The most basic principles of MANOOL code formatting are depicted in the following example (you are invited to see more principles in action further in this
-tutorial):
+The most basic principles of MANOOL code formatting are illustrated in the following example[^a4] (you are invited to see more principles in action further in
+this tutorial):
 
     -- most recommended formatting for multi-line expressions
     { {extern "manool.org.18/std/0.5/all"} in
       WriteLine[Out; "Hello, world!"]
     }
+
+[^a4]: ...although this particular example might fit better on a single line as we've already seen...
 
 ### Commenting code in MANOOL ##########################################################################################
 
