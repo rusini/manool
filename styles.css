@@ -379,6 +379,9 @@ layout: null
   :focus {
     outline: thin solid #800000;
   }
+  main .footnotes li:target {
+    color: #E80000;
+  }
 }
 
 /* Viewport-dependent properties */
@@ -565,6 +568,9 @@ layout: null
   }
   pre code {
     font-size: 12px;
+  }
+  main .footnotes li:target {
+    color: inherit;
   }
 
   textarea,
