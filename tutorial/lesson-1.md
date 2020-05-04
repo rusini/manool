@@ -86,7 +86,7 @@ The following two alternative "Hello World" implementations are equivalent to th
 <aside markdown="1">
 The ability to express essentially the same program (or a part thereof) in different notations may be either extremely useful or completely useless depending on
 your situation. In any case, this is allowed not due to a specific design goal but rather as an artifact of the overall language design, which features a simple
-and uniform grammar called a *universal* grammar.
+and uniform syntax called a *universal* syntax.
 
 Some benefits of the "Object-Oriented" notation:
   * You might want to mark the first argument specially, for whatever reason.
