@@ -1,6 +1,6 @@
 ---
 title:   Lesson 1 &mdash; Tutorial
-updated: 2020-05-03
+updated: 2020-05-04
 ---
 
 <aside markdown="1" class="right">
@@ -36,7 +36,8 @@ The expected output is unsurprisingly
 
     Hello, world!
 
-Using the online evaluator is convenient but has certain limitations. Anyway, consult [How to Download and Install MANOOL][instructions] for more tips.
+Using the online evaluator is convenient but has certain limitations. Whatever approach you choose, first consult [How to Download and Install
+MANOOL][instructions] for more tips.
 
 [online evaluator]: /eval     "MANOOL Online Evaluator"
 [instructions]:     /download "How to Download and Install MANOOL"
