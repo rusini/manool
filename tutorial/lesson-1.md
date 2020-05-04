@@ -295,19 +295,19 @@ Try to figure out what is going on here (you should have acquired all the clues 
 
     { {extern "manool.org.18/std/0.5/all"} in
       { (WriteLine) Out -- What do Write/WriteLine return?
-        Out.Write["Hello"]; " "; Out.Write[", "]; " "; Out.Write["world"]; " "; Out.Write["!"]; " "
+        Out.Write["Hello"]; ", "; Out.Write[", "]; ", "; Out.Write["world"]; ", "; Out.Write["!"]; ", "
         Out.WriteLine[]
       }
       { (WriteLine) Out -- What are Out, WriteLine, (+)?.. Or can we print "unprintable" stuff?
-        Out; " "; WriteLine; " "; (+); " "; (~); " "; Foo; " "; Bar
+        Out; ", "; WriteLine; ", "; (+); ", "; (~); ", "; Foo; ", "; Bar
       }
     }
 
 Output:
 
     Hello, world!
-    Nil Nil Nil Nil Nil
-    value/object WriteLine + ~ Foo Bar
+    Nil, Nil, Nil, Nil, Nil
+    value/object, WriteLine, +, ~, Foo, Bar
 
 ---
 
