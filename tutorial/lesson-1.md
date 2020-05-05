@@ -164,7 +164,7 @@ Output:
 Or, you can apply the conventional infix operator `+` to several string values to produce a concatenation of them and output the result as usual:
 
     { {extern "manool.org.18/std/0.5/all"} in -- String concatenation
-      Out.WriteLine["Hello" + "," + " " + "world!"] -- (true) infix notation
+      Out.WriteLine["Hello" + ", " + "world" + "!"] -- (true) infix notation
     }
 
 Output:
