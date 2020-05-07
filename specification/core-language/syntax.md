@@ -158,7 +158,7 @@ In this section the following helper definitions hold:
     <digit>  ->  "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
     <any char except '"' and LF> -> ...
 
-#### Integer literals ##########################################################
+#### Integer literals
 [integer literals]: #h:integer-literals                                        "Below: Integer literals"
 [integer]:          /specification/standard-library/basic-data-types#h:integer "Integer Type"
 
@@ -170,7 +170,7 @@ Examples:
 
     0   1   2   5   10   123   2018   140737488355327
 
-#### String literals ###########################################################
+#### String literals
 [string literals]: #h:string-literals                                        "Below: String literals"
 [string]:          /specification/standard-library/basic-data-types#h:string "String Type"
 
@@ -191,12 +191,12 @@ Alternatively, `\}` and `\{` may be used instead of double quotes.[^b2] In this 
 
 is equivalent to
 
-    (LF + Sp + Sp + "<p>This is a paragraph.</p>" + LF)$
+    (Lf + Sp + Sp + "<p>This is a paragraph.</p>" + Lf)$
 
 [^b2]: That's right --- a closing brace is used to start a literal and an opening brace to end it. This notation is convenient for "embedding" MANOOL in text
        documents as a "macro" language in the spirit of PHP, JSP, ASP, etc.
 
-#### Symbol literals ###########################################################
+#### Symbol literals
 [symbol literals]: #h:symbol-literals                                        "Below: Symbol literals"
 [symbol]:          /specification/standard-library/basic-data-types#h:symbol "Symbol Type"
 
@@ -268,14 +268,14 @@ associativity.
 
 MANOOL syntax allows for two kinds of comments: _line comments_ and _block comments_.
 
-#### Line comments #############################################################
+#### Line comments
 
 A line comment starts with two adjacent `-` (ASCII hyphen-minus or dash) characters and extends up to the nearest end of line. Here is an example of a line
 comment:
 
     -- This is a line comment
 
-#### Block comments ############################################################
+#### Block comments
 
 Block comments may be recursively nested inside one another. A block comment starts with a combination of `/*` (ASCII solidus or slash plus asterisk) characters
 and extends up through the matching combination `*/`, which shall not immediately precede an asterisk. Inside a block comment, combinations `/*` and `*/` do not

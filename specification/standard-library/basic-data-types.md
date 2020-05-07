@@ -6,6 +6,7 @@ updated: 2019-11-05
 
 {%include spec_header.md%}{%raw%}
 
+
 This section describes the most fundamental non-composite data types provided by the MANOOL standard library.
 
 Metanotation
@@ -26,19 +27,24 @@ parameters). The result name (if present) precedes the result type and a `:` cha
 
 Integer
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+[integer literals]: /specification/core-language/syntax#h:integer-literals "Integer literals"
 
 The type `Integer` corresponds to the (finite) set of integral numbers in the range -(2<sup>47</sup>-1) thru +(2<sup>47</sup>-1) (i.e., -140737488355327 thru
-+140737488355327), inclusive.[^1] Objects of type `Integer` are often referred to simply as _integers_, and like most abstract mathematical entities, integers
-are [immutable]. Non-negative integers can have [literal representation] in MANOOL programs.
++140737488355327), inclusive.[^1] Objects of type `Integer` (and values they represent) are often referred to simply as _integers_, and like most abstract
+mathematical entities, integers are [immutable]. Non-negative integers can have [integer literals] in MANOOL programs.
 
 [^1]: The value -2<sup>47</sup>, typical for two's complement binary representations, is excluded from this range.
+
+All arithmetic and comparison operations on integers shall have constant asymptotic time complexity.
 
 ### Constructors #######################################################################################################
 
   ******************************************************************************
-    I48[s:String] => Integer
+    I48[S::String] => Integer
 
-  --- evaluates to an integer that represents the value specified by the argument in the conventional[^2]
+  -- evaluates to an integer that represents the value specified by the argument in the conventional[^2]
+
+  [^2]: This notation is also stipulated by [C] and [POSIX] specifications.
 
   * decimal notation:
 
@@ -58,39 +64,37 @@ are [immutable]. Non-negative integers can have [literal representation] in MANO
     <hex digit>     ->  "0" | "1" | "2" | ... | "9" | "A" | "B" | "C" | ... | "F" | "a" | "b" | "c" | ... | "f"
     <octal digit>   ->  "0" | "1" | "2" | ... | "7"
 
+  **time complexity**: unspecified; **example**: `I48["123"] => 123`
+
   ******************************************************************************
-    I48[i:Integer] => just-i:Integer
+    I48[I::Integer] => JustI
 
-  --- evaluates to the argument itself
+  -- evaluates to the argument itself (this constructor is provided merely for completeness)
 
-[^2]: This notation is also stipulated by [C] and [POSIX] specifications.
-
-### Type predicates ############################################################
-    IsI48[object] => Boolean
+### Type predicate #############################################################
+    IsI48[Object] => Boolean
 
 ### Polymorphic operations #############################################################################################
 
   ******************************************************************************
-    x + y:Integer => Integer
+    X + Y::Integer => Integer
 
-  --- addition
-
-  ******************************************************************************
-    x - y:Integer => Integer
-
-  --- subtraction
+  -- addition
 
   ******************************************************************************
-    x * y:Integer => Integer
+    X - Y::Integer => Integer
 
-  --- multiplication
+  -- subtraction
 
   ******************************************************************************
-    x / y:Integer => Integer
+    X * Y::Integer => Integer
 
-  --- integer division --- the fractional part of the real result is truncated, e.g.:
+  -- multiplication
 
-    (8 / 3 == 2) & (8 / ~3 == ~2)
+  ******************************************************************************
+    X / Y::Integer => Integer
+
+  -- integer division -- the fractional part of the real result is truncated, e.g. `8 / 3 => 2`, `8 / ~3 => ~2`
 
   ******************************************************************************
     x.Rem[y:Integer] => Integer
@@ -114,12 +118,12 @@ are [immutable]. Non-negative integers can have [literal representation] in MANO
     {unless 0 <> y signal Undefined else x - x.Div[y] * y}
 
   ******************************************************************************
-    Neg[x] => Integer, ~x => minus-x:Integer
+    Neg[X] => Integer, ~X => MinusX::Integer
 
-  --- negation (unary minus)
+  -- negation (unary minus)
 
   ******************************************************************************
-    x == y => Boolean
+    X == Y => Boolean
 
   --- comparison for equality
 
@@ -178,7 +182,7 @@ are [immutable]. Non-negative integers can have [literal representation] in MANO
   ******************************************************************************
     Clone[x] => just-x:Integer, DeepClone[x] => just-x:Integer
 
-  --- evaluates to the argument itself
+  -- evaluate to the argument itself
 
 ### Exceptions #################################################################
 * `Overflow` --- no object of type `Integer` can represent the mathematical result of the operation (e.g., when calculating the product of 2147483648 by
@@ -196,138 +200,178 @@ are [immutable]. Non-negative integers can have [literal representation] in MANO
 
 String
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+[string literals]: /specification/core-language/syntax#h:string-literals "String literals"
 
 The type `String` corresponds to the (infinite) set of (finite) sequences of 0 or more elements (octets)[^3] drawn from a (finite) alphabet of 2<sup>8</sup>
 (i.e., 256) elements. Objects of type `String` are often referred to simply as _strings_ (or more accurately, _raw strings_), and like most abstract
-mathematical entities, strings are [immutable]. Strings can have [literal representation] in MANOOL programs in most practically interesting cases.
+mathematical entities, strings are [immutable]. Strings can have [literal representation][string literals] in MANOOL programs in most practically interesting
+cases.
 
 [^3]: In practice, however, there will be always some dynamic limit imposed on the maximum size of strings representable in computer memory at any given moment.
 
-Typically, strings are not directly interpreted in accordance with the above definition. Instead, raw strings will contain actual character strings encoded
+Typically, strings are not directly interpreted in accordance with the above definition. Instead, raw strings should contain actual character strings encoded
 using some specific character encoding, like ASCII, UTF-8, ISO-8859-1, or even UCS-32. However, by themselves and when considered outside of any additional
 context, raw strings are otherwise character-encoding agnostic and even might be used to manipulate non-character data, such as the contents of arbitrary binary
 files.
 
-String octets are indexed starting from zero and are accessible as [Unsigned](#h:unsigned "Below: Unsigned") values from `U32[0]` to `U32["0xFF"]`, inclusive.
+String octets are indexed starting from zero and are accessible as [Unsigned] values from `U32[0]` to `U32["0xFF"]`, inclusive.
 
 ### Constructors #######################################################################################################
 
   ******************************************************************************
-    S8[s:String] => just-s:String
+    S8[S::String] => JustS::String
 
-  --- evaluates to the argument itself (this constructor is provided merely for completeness)
+  -- evaluates to the argument itself (this constructor is provided merely for completeness)
 
 ### Named constants ####################################################################################################
     Nul == "" | U32[ 0]
-    Esc == "" | U32[27]
     Bel == "" | U32[ 7]
-    BS  == "" | U32[ 8]
-    HT  == "" | U32[ 9]
-    LF  == "" | U32[10]
-    VT  == "" | U32[11]
-    FF  == "" | U32[12]
-    CR  == "" | U32[13]
+    Bs  == "" | U32[ 8]
+    Ht  == "" | U32[ 9]
+    Lf  == "" | U32[10]
+    Vt  == "" | U32[11]
+    Ff  == "" | U32[12]
+    Cr  == "" | U32[13]
+    Esc == "" | U32[27]
     Sp  == "" | U32[32] -- equivalent to " "
+    Qq  == "" | U32[34] -- double quote
 
-### Type predicates ############################################################
-    IsS8[object] => Boolean
+### Type predicate #############################################################
+    IsS8[Object] => Boolean
 
 ### Polymorphic operations #############################################################################################
 
   ******************************************************************************
-    s[index:Integer] => octet:Unsigned
+    S[Index::Integer] => Octet::Unsigned
 
-  --- octet at the specified position
+  -- octet at the specified position;
+  **time complexity**: O(1); **example**:
 
-  ******************************************************************************
-    s[indexes:(Rev)Range] => substring:String
-
-  --- substring of octets in the specified range of positions
+    "Hello, world!"[7] => U32[119]
 
   ******************************************************************************
-    s.Repl[index:Integer; octet:Unsigned] => mod-s:String
+    S[Indexes::Range] => Substring::String, S[Indexes::RevRange] => Substring::String
 
-  --- evaluates to a string that represents the original string value with the specified octet replaced by the specified new value
+  -- substring of octets in the specified range of positions (reversed for `RevRange`);
+  **time complexity**: O(`Size[Indexes]`); **examples**:
 
-  ******************************************************************************
-    s.Repl[indexes:(Rev)Range; substring:String] => mod-s:String
-
-  --- equivalent to
-
-    s[Range[Lo[indexes]] + substring + s[Range[Hi[indexes]; Size[s]]
+    "Hello, world!"[Range[7; 12]] => "world", "Hello, world!"[RevRange[7; 12]] => "dlrow"
 
   ******************************************************************************
-    Size[s] => Integer
+    S.Repl[Index::Integer; Octet::Unsigned] => ModS::String
 
-  --- string size (length, number of elements)
+  -- evaluates to a string that represents the original string value with the specified octet replaced by the specified new value;
+  **time complexity**: O(1) for an unshared object `S`, O(`Size[S]`) otherwise; **example**:
 
-  ******************************************************************************
-    x + y => concat:String
-
-  --- concatenation
+    "Hello, world!".Repl[7; "W"[0]] => "Hello, World!"
 
   ******************************************************************************
-    s | octet:Unsigned => concat:String
+    S.Repl[Indexes::Range; Substring::String] => ModS::String, S.Repl[Indexes::RevRange; Substring::String] => ModS::String
 
-  --- concatenation with a single element
+  -- equivalent to
 
-  ******************************************************************************
-    Elems[s] => just-s:String
+    S[Range[Lo[Indexes]] + Substring + S[Range[Hi[Indexes]; Size[S]]
 
-  --- evaluates to the argument itself
+  or (respectively)
 
-  ******************************************************************************
-    s.Elems[indexes:(Rev)Range] => slice:Iterator
-
-  --- evaluates to a slice iterator that represents the lazily evaluated substring of octets in the specified range of positions
+    S[Range[Lo[Indexes]] + Substring[RevRange[Size[Substring]]] + S[Range[Hi[Indexes]; Size[S]]
 
   ******************************************************************************
-    Keys[s] => indexes:Range
+    Size[S] => Integer
 
-  --- evaluates to a (forward) range that represents element indexes
+  -- string size (length, number of elements);
+  **time complexity**: O(1); **example**:
 
-  ******************************************************************************
-    s.Keys[indexes:(Rev)Range] => just-indexes:(Rev)Range
-
-  --- evaluates to the specified range of element indexes
+    Size["Hello, world!"] => 13
 
   ******************************************************************************
-    s^ => just-s:String
+    X + Y::String => Concat::String
 
-  --- evaluates to the argument itself
+  -- concatenation;
+  **time complexity**: amortized O(`Size[Y]`) for an unshared object `X`, O(`Size[X]` + `Size[Y]`) otherwise; **example**:
 
-  ******************************************************************************
-    x == y => Boolean
-
-  --- comparison for equality
+    "Hello, " + "world!" => "Hello, world!"
 
   ******************************************************************************
-    x <> y => Boolean
+    S | Octet::Unsigned => Concat::String
 
-  --- comparison for inequality
+  -- concatenation with a single element;
+  **time complexity**: amortized O(1) for an unshared object `S`, O(`Size[S]`) otherwise; **example**:
 
-  ******************************************************************************
-    Order[x; y] => Integer
-
-  --- total order/equivalence relation --- `~1` iff `x` lexicographically precedes `y`, `1` iff `y` lexicographically precedes `x`, and `0` otherwise
+    "Hello, world" | "!"[0] => "Hello, world!"
 
   ******************************************************************************
-    Str[s] => just-s:String
+    Elems[S] => JustS
 
-  evaluates to the argument itself
-
-  ******************************************************************************
-    Str[s; format:String] => String
-
-  --- argument string representation formatted according to a [C]/[POSIX] `printf` [format specifier] for the `const char *` type, with the leading `%`
-  character stripped, e.g.:
-
-    Str["Hi"; "3s"] == " Hi", Str["Hi"; "-3s"] == "Hi "
+  -- evaluates to the argument itself
 
   ******************************************************************************
-    Clone[s] => String, DeepClone[s] => String
+    S.Elems[Indexes::Range] => Slice::Iterator, S.Elems[Indexes::Range] => Slice::Iterator
 
-  --- evaluates to an (initially) unshared string that represents the same value as the argument
+  -- evaluates to a slice iterator that represents a lazily evaluated substring of octets in the specified range of positions (reversed for `RevRange`);
+  **time complexity**: O(1); **see** [slice iterators](#)
+
+  ******************************************************************************
+    Keys[S] => Indexes::Range
+
+  -- evaluates to a (forward) range that represents element indexes
+  **time complexity**: O(1)
+
+  ******************************************************************************
+    S.Keys[Indexes::Range] => JustIndexes, S.Keys[Indexes::RevRange] => JustIndexes
+
+  -- evaluates to the specified range of element indexes
+
+  ******************************************************************************
+    S^ => JustS
+
+  -- evaluates to the argument itself
+
+  ******************************************************************************
+    X == Y => Boolean
+
+  -- comparison for equality;
+  **time complexity**: O(`Size[X]` + `Size[Y]`) if `Y` is a string, O(1) otherwise; **example**:
+
+    "Hello, world!" == "Hello, world!" => True, "123" == 123 => False
+
+  ******************************************************************************
+    X <> Y => Boolean
+
+  -- comparison for inequality;
+  **time complexity**: O(`Size[X]` + `Size[Y]`) if `Y` is a string, O(1) otherwise; **example**:
+
+    "Hello, world!" <> "Hello, world!" => False, "123" <> 123 => True
+
+  ******************************************************************************
+    Order[X; Y] => Integer
+
+  -- total order/equivalence relation --- `~1` iff `X` lexicographically precedes `Y`, `1` iff `Y` lexicographically precedes `X`, and `0` otherwise
+  **time complexity**: O(`Size[X]` + `Size[Y]`); **examples**:
+
+    Order["Hello"; "Hello"] => 0, Order["Hello"; "world"] => ~1, Order["world", "Hello"] => 1
+
+  ******************************************************************************
+    Str[S] => JustS
+
+  -- evaluates to the argument itself
+
+  ******************************************************************************
+    Str[S; Format::String] => String
+
+  -- argument string representation formatted according to a [C]/[POSIX] `printf` [format specifier] for the `const char *` type, with the leading `%` character
+  stripped;
+  **time complexity**: unspecified; **examples**:
+
+    Str["Hello"; "6s"] => " Hello", Str["Hello"; "-6s"] => "Hello "
+
+  ******************************************************************************
+    Clone[S] => String, DeepClone[S] => String
+
+  -- evaluates to an (initially) unshared string that represents the same value as the argument
+  **time complexity**: O(1) for an unshared object `S`, O(`Size[S]`) otherwise; **examples**:
+
+    Clone["Hello"] => "Hello", DeepClone["Hello"] => "Hello"
 
 ### Exceptions #################################################################
 * `IndexOutOfRange`
@@ -1124,6 +1168,7 @@ In the following chart `Decimal` refers to the underlying Decimal Floating-Point
 
 Unsigned
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+[Unsigned]: #h:unsigned "Below: Unsigned"
 
 The type `Unsigned` corresponds to the (finite) set of integral numbers in the range 0 thru 2<sup>32</sup>-1 (i.e., 0 thru 4294967295), inclusive. However, in
 comparison to the case of integers, all basic arithmetic operations on `Unsigned` values are performed by modulo 2<sup>32</sup>, and the standard library also
@@ -1554,8 +1599,7 @@ floating-point format, and `t` stands for the corresponding constructor (i.e., e
 * `LimitExceeded`
 
 
-[immutable]:              CoreSemantics.html#h:immutabilitymutability-of-objects "Immutability/mutability of objects"
-[literal representation]: Syntax.html#h:literals                                 "Literals"
+[immutable]: /specification/core-language/semantic-concepts#h:immutabilitymutability-of-objects "Immutability/mutability of objects"
 
 [C]:                //en.wikipedia.org/wiki/C_(programming_language "Wikipedia: C"
 [POSIX]:            //en.wikipedia.org/wiki/POSIX                   "Wikipedia: POSIX"

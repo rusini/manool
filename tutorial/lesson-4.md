@@ -5,24 +5,49 @@ updated: 2019-10-16
 
 {%include page_header.md%}{%raw%}
 
-## Aggregates
-Example:
-~~~
-{ {extern "manool.org.18/std/0.5/all"} in
-: for { E = {array of "Red" "Orange" "Yellow" "Green" "Blue" "Indigo" "Violet"} } do
-  Out.WriteLine[E]
-}
-~~~
+
+Aggregates
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+MANOOL provides a comprehensive set of composite data types, which differ in basic operations and internal data structure.
+
+You can always iterate over elements of a composite in an easy way by using a `for` loop:
+
+    { {extern "manool.org.18/std/0.5/all"} in
+    : for { E = {array of "Red" "Orange" "Yellow" "Green" "Blue" "Indigo" "Violet"} } do
+      Out.WriteLine[E]
+    }
+
+  (here we are constructing an _array_ out of elements by using the construct `{array of ...}`).
+
 Output:
-~~~
-Red
-Orange
-Yellow
-Green
-Blue
-Indigo
-Violet
-~~~
+
+    Red
+    Orange
+    Yellow
+    Green
+    Blue
+    Indigo
+    Violet
+
+
+
+In MANOOL an aggregate value (or object, depending on your point of view) incorporate other values (or objects, respectively). This normally happens
+irrespective of aggregate element types and without placing restrictions on the number of elements on behalf of the aggregate type itself. Thus, for instance,
+complex numbers are *not* aggregates, at least for the purposes of this section.
+
+In MANOOL aggregate elements shall have some default order within that aggregate, and each aggregate element shall be associated with its key, which is either a
+value of arbitrary type or an integer in the range 0 thru the number of elements minus 1 (called in this case an _index_). All aggregate types should allow for
+partial updates in some way in an asymptotically efficient way.
+
+Elements of an aggregate are sometimes also referred to as aggregate members. Note that in MANOOL it is impossible to construct an aggregate that incorporates
+itself (due to non-referential semantics).
+
+An aggregate view is an object (or value, depending on your point of view) that provides access to (real or imaginary) elements of an aggregate as though the
+view were an indexed aggregate itself, that is by providing the Size (number of elements) and Apply (access-by-index) polymorphic operations. No other
+requirements are placed on aggregate views (existence of update or non-trivial comparison operations is not required), and a proper indexed aggregate can be
+considered an aggergate view as well, providing access the their own elements.
+
 
 ### Concatenation and Slicing
 Examples:
@@ -263,5 +288,6 @@ Red -> Vermelho
 Violet -> Violeta
 Yellow -> Amarelo
 ~~~
+
 
 {%endraw%}{%include page_footer.md%}

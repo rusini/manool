@@ -5,7 +5,19 @@ updated: 2019-10-16
 
 {%include page_header.md%}{%raw%}
 
-## Symbol (Data-Type)
+Symbol (Data-Type)
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Symbol is one of the most fundamental data types in MANOOL. In MANOOL A symbol literal like `Foo` denotes itself unless it is bound to some other entity in the
+current scope, and a symbol can also be constructed from a string by using the constructor `MakeSym` and converted back to String by using the operation `Str`,
+so the symbol `Foo` and the string `"Foo"` are distinct values. The data type Symbol exists as a data type separate from String mainly due to performance
+considerations.
+
+Symbols are versatile and can be used:
+  * To denote other entities directly
+  * To denote polymorphic operations
+  * To denote record members and object attributes
+
 Example:
 ~~~
 { {extern "manool.org.18/std/0.5/all"} in
