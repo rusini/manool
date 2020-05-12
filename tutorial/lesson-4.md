@@ -51,11 +51,12 @@ Output:
     Indigo
     Violet
 
-You can apply the operation `Size` to any iterable composite value to obtain the number of elements in the argument.
+You can apply the operation `Size` to any iterable composite value to obtain the number of elements in the argument. Actually, you always iterate over elements
+of a _view_ (some composite values are views onto themselves).
 
 <aside markdown="1">
 
-Actually, you always iterate over elements of a _view_. One such kind of view is the range (of integral values):
+One kind of view, which is not a full-blown composite data type, is the range (of integral values):
 
     {{extern "manool.org.18/std/0.5/all"} in: for { E = Range[7] } do Out.WriteLine[E]}
 
@@ -219,17 +220,17 @@ Output:
 
 ### Nested composites ##################################################################################################
 
-A composite value may contain other composites as components/elements. Let's construct a funny matrix or table 9 x 7 of color names out of nested arrays:
+A composite value may contain other composite values as components/elements. Let's construct a funny table or matrix 9 x 7 of color names out of nested arrays:
 
     { {extern "manool.org.18/std/0.5/all"} in
     : var { Tab = {array 9 of: array 7}$ } in -- 9 x 7 matrix filled with Nil value
       Tab[0] = {array of "Red" "Orange" "Yellow" "Green" "Blue" "Indigo" "Violet"}$
-      { for { I = Range[1; Size[Tab]] } do -- fill out the table
-      : for { J = Range[7]$ } do
+      { for { I = Range[1; Size[Tab]] } do -- Fill out the table
+      : for { J = Range[Size[Tab[0]]] } do
         Tab[I; J] = Tab[I - 1; (J - 1).Mod[7]] /*amortized O(1)*/       -- shorthand for:
         /* Tab[I][J] = Tab[I - 1][(J - 1).Mod[7]] /*amortized O(1)*/ */ -- (but faster)
       }
-    : for { I = Tab.Keys[] } do -- print the table
+    : for { I = Tab.Keys[] } do -- Print the table
     : for { J = Tab[I].Keys[] } do
       Out.Write[Tab[I; J] /*O(1)*/] -- shorthand for:
       /* Out.Write[Tab[I][J]] */    -- (but faster)
@@ -238,6 +239,8 @@ A composite value may contain other composites as components/elements. Let's con
       else
       Out.WriteLine[]
     }
+
+  (note that in MANOOL instead of writing `T[I][J]` you can write just `T[I; J]`, which is actually recommended due to performance reasons).
 
 Output:
 
@@ -255,9 +258,9 @@ Output:
 ### Records ############################################################################################################
 
 Records are composite values whose individual components are always identified by keys of type Symbol. A record component is accessible in constant time, but
-there are certain limitations as to how you can manipulate records.
+there are more limitations as to how you can manipulate records (compared to maps).
 
-Let's use records to construct a table of set operations and their descriptions and iterate over that table:
+Let's use records to construct a table of set operations and their descriptions and then iterate over that table:
 
     { {extern "manool.org.18/std/0.5/all"} in
     : for
@@ -278,8 +281,8 @@ Let's use records to construct a table of set operations and their descriptions 
       }
       in
       Out.WriteLine["===== " E[Description] /*O(1)*/ ":"]
-    : do Out.WriteLine[S.Elems[RangeExt[Size[S] - 1; 1]][0] /*O(1)*/] after -- last elem
-    : for { E = S.Elems[Range[Size[S] - 1]] /*O(1)*/ } do                   -- all but the last elem
+    : do Out.WriteLine[S.Elems[][Size[S] - 1] /*O(1)*/] after -- last elem
+    : for { E = S.Elems[Range[Size[S] - 1]] /*O(1)*/ } do     -- all but the last elem
       Out.Write[E; ", "]
     }
 
@@ -301,10 +304,9 @@ Output:
 
 ### Maps ###############################################################################################################
 
-Unlike records maps are composite values whose individual components can be addressed using keys of any type. Let's construct a kind of dictionary for color
-names.
+Unlike records maps are composite values whose individual elements can be addressed using keys of any type.
 
-Example:
+Let's construct a dictionary to translate color names from English to Spanish and then another one to translate from English to Portuguese:[^a5]
 
     { {extern "manool.org.18/std/0.5/all"} in
     : var
@@ -320,10 +322,10 @@ Example:
         }
       }
       in
-    : var { Pt = Es } in        -- O(1)
-      Pt["Red"]    = "Vermelho" -- O(N)
-      Pt["Orange"] = "Laranja"  -- O(log N)
-      Pt["Yellow"] = "Amarelo"  -- O(log N)
+    : var { Pt = Es /*O(1)*/ } in            -- make a "virtual" copy (sharing map resources)
+      Pt["Red"]    = "Vermelho" /*O(n)*/     -- copy-on-write (automatically unsharing map resources here)
+      Pt["Orange"] = "Laranja"  /*O(log n)*/ -- reading and updating of map elements always takes logarithmic time
+      Pt["Yellow"] = "Amarelo"  /*O(log n)*/
     : let
       { WriteMap =
         { proc { S; M } as
@@ -335,6 +337,10 @@ Example:
       Out.WriteLine["=== In Spanish ==="];    Out.WriteMap[Es]
       Out.WriteLine["=== In Portuguese ==="]; Out.WriteMap[Pt]
     }
+
+  (in MANOOL you can iterate over more than one view using more than one loop variable in each step, which is demonstrated above).
+
+[^a5]: This example also demonstrates the non-referential semantics in action.
 
 Output:
 

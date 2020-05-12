@@ -3,6 +3,15 @@ title:   Lesson 2 &mdash; Tutorial
 updated: 2020-05-04
 ---
 
+<aside markdown="1" class="right">
+Lesson 2 of 5 &mdash; Tutorial
+=========================
++ [Previous Lesson](lesson-1)
++ [Next Lesson](lesson-3)
++ [Lesson 4](lesson-4)
++ [Lesson 5](lesson-5)
+</aside>
+
 {%include page_header.md%}{%raw%}
 
 
