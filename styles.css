@@ -124,7 +124,8 @@ layout: null
   pre {
     overflow: auto;
   }
-  figure {
+  figure,
+  body > header .logo {
     font-size: 0;
   }
   figure figcaption {
@@ -159,7 +160,7 @@ layout: null
     font-size: 12px;
   }
   main,
-  body > header figure + * {
+  body > header .logo + * {
     font-size: 14.1774px; /* ignore completely browser's "font size" settings */
   }
   code {
@@ -215,7 +216,7 @@ layout: null
     font-size: 14.1774px;
   }
   main,
-  body > header figure + *,
+  body > header .logo + *,
   body > header .big {
     font-size: 16.75px;
   }
