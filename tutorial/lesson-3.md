@@ -20,12 +20,12 @@ Symbol Data Type
 Symbol is one of the most fundamental and versatile data types in MANOOL. `extern`, `in`, `WriteLine`, `Out`, `+`, etc. are all symbols.
 
 <aside markdown="1">
-Although symbols resemble strings (with a few limitations), they constitute a disjoint data type due to performance considerations -- converting values from
-String to Symbol may be slow, whereas comparing symbols and looking up entries in tables using symbols as keys is always fast (and is guaranteed to be completed
-in constant time).
+Although symbols resemble strings (with a few limitations), they differ in basic operations and internal data structure and constitute a disjoint data type due
+to performance considerations. Converting values from String to Symbol may be slow, whereas comparing symbols and looking up entries in tables using symbols as
+keys is always fast (and is guaranteed to complete in constant time).
 </aside>
 
-If an expression in MANOOL consists of a literal symbol, by default that symbol denotes itself (e.g. `WriteLine`, `(+)`, `Foo`), unless it starts with a
+If an expression in MANOOL consists of a literal symbol, by default that symbol denotes itself (e.g. `WriteLine`, `(+)`, `Foo`) unless it starts with a
 lowercase letter (e.g. `then`, `do`) or is bound to some other entity in the current scope (e.g. `Out`, `extern`, `if`, `(&)`). In the later case, the symbol
 denotes that entity.
 
@@ -40,9 +40,24 @@ Output:
 Values of type Symbol can identify
   * polymorphic operations (e.g. `WriteLine`, `(+)`, `(~)`, `Div`),[^a1]
   * record components and object attributes, and
-  * any states, modes, options, tags, etc. you want to represent by a simple identifier.
+  * any states, modes, options, tags, etc. you would like to represent by a simple identifier.
 
 [^a1]: Moreover, symbols *are* polymorphic operations, which are directly applied to arguments.
+
+To force literal interpretation of a syntactic construct in MANOOL, use the postfix operator `'` (single quote):
+
+    { {extern "manool.org.18/std/0.5/all"} in
+      Out.WriteLine[Foo' ", " Out' ", " extern' ", " if' ", " (&)' ", " then']
+      Out.WriteLine[Out.WriteLine["Hello, world!"]']
+    }
+
+Output:[^a2]
+
+    Foo, Out, extern, if, &, then
+    value/object
+
+[^a2]: The second expression tries to display a _syntactic list_ object (more on this later), and the operation `Str` returns a generic `"value/object"` for
+       most data types in MANOOL.
 
 A symbol can also be dynamically constructed from a string by using the constructor `MakeSym` and converted back to String with the operation `Str`:
 
@@ -51,95 +66,6 @@ A symbol can also be dynamically constructed from a string by using the construc
 Output:
 
     Foo, True
-
-To force literal interpretation of any syntactic construct in MANOOL, use the postfix operator `'` (single quote):
-
-    { {extern "manool.org.18/std/0.5/all"} in
-      Out.WriteLine[Foo' ", " Out' ", " if' ", " extern' ", " (&)' ", " then']
-      Out.WriteLine[Out.WriteLine["Hello, world!"]']
-    }
-
-Output:[^a2]
-
-    Foo, Out, if, extern, &, then
-    value/object
-
-[^a2]: The second expression tries to display a _syntactic list_ object, and for most data types in MANOOL the operation `Str` returns a generic
-       `"value/object"`.
-
-
----
-
-Symbol is one of the most fundamental and versatile data types in MANOOL. Symbols can denote
-  * other entities directly (e.g. `Out`, `extern`, `if`, `(&)`),
-  * polymorphic operations (e.g. `WriteLine`, `(+)`, `(~)`, `Div`),
-  * record components and object attributes, and
-  * any states, modes, options, tags, etc. you want to represent by a simple identifier.
-
-Although symbols are similar to strings, with a few limitations, they form a disjoint data type due to performance considerations -- converting from String to
-Symbol may be slow, whereas comparing symbols and addressing record components and object attributes with symbols is always fast.
-
-If a MANOOL expression consists of a symbol literal (like `WriteLine`, `(+)`, or `Foo`), by default that symbol denotes itself, unless it is bound to some other
-entity in the current scope or starts with a lowercase letter (like `extern`, `if`, or `then`):
-
-    { {extern "manool.org.18/std/0.5/all"} in
-      Out.WriteLine[Foo ", " Foo == "Foo" ", " Foo.IsSym[]]
-    }
-
-Output:
-
-    Foo, False, True
-
-To force literal interpretation of any syntactic construct in
-MANOOL, use the postfix operator `'` (single quote).
-
-
-A symbol can also be dynamically constructed from a string by
-using the constructor `MakeSym` and converted back to String by applying the operation `Str`.
-
-Here is a simple test:
-
-    { {extern "manool.org.18/std/0.5/all"} in
-      Out.WriteLine[Foo ", " Foo == "Foo" ", " Foo == MakeSym["Foo"] ", " Foo.IsSym[]]
-    }
-
-Output:
-
-    Foo, False, True, True
-
-To force literal interpretation of any syntactic construct in MANOOL, use the postfix operator `'` (single quote):
-
-    { {extern "manool.org.18/std/0.5/all"} in
-      Out.WriteLine[Foo' ", " (&)' ", " then'] -- (') is a postfix operator
-    }
-
-Output:
-
-    Foo, &, then
-
----
-
-Symbol is one of the most fundamental and versatile data types in MANOOL. In MANOOL A symbol literal like `Foo` denotes itself unless it is bound to some other entity in the
-current scope, and a symbol can also be constructed from a string by using the constructor `MakeSym` and converted back to String by using the operation `Str`,
-so the symbol `Foo` and the string `"Foo"` are distinct values. The data type Symbol exists as a data type separate from String mainly due to performance
-considerations.
-
-Symbols are versatile and can be used:
-  * To denote other entities directly
-  * To denote polymorphic operations
-  * To denote record members and object attributes
-
-Example:
-~~~
-{ {extern "manool.org.18/std/0.5/all"} in
-  Out.WriteLine[Foo; " "; Foo == "Foo"; " "; Foo == MakeSym["Foo"]; " "; Foo.IsSym[]]
-}
-~~~
-Output:
-~~~
-Foo False True True
-~~~
-
 
 
 Working with Fractions
