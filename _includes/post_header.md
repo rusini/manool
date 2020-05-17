@@ -20,7 +20,7 @@ Found issues? Got questions? Have ideas?
 </aside>
 
 <header>
-  <h1 id="start">{{page.title|smartify|escape_once}}</h1>
+  <h1 id="start">{{page.title|smartify}}</h1>
   <div class="right"><small>Published: <time datetime="{{page.date|date:'%F'}}">{{page.date|date:'%B %-d, %Y'}}</time></small></div>
   <div class="right"><small>Updated: <time datetime="{{page.updated|date:'%F'}}">{{page.updated|date:'%B %-d, %Y'|default:'never'}}</time></small></div>
 </header>

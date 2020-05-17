@@ -3,7 +3,7 @@
 <!-- begin spec header -->
 <header markdown="1">
 
-  <h1 id="start">{{page.title|smartify|escape_once}}</h1>
+  <h1 id="start">{{page.title|smartify}}</h1>
 
   * TOC
   {:toc}
