@@ -1,6 +1,6 @@
 ---
 # specification/standard-library.md
-title:   Standard Library &mdash; Specification
+title:   Standard Library -- Specification
 updated: 2019-11-7
 ---
 

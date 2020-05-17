@@ -1,6 +1,6 @@
 ---
 # about.md
-title:   Hello Everyone! &mdash; Eh, Quiai?
+title:   Hello Everyone! -- Eh, Quiai?
 updated: 2020-01-07
 ---
 

@@ -1,6 +1,6 @@
 ---
 # specification/standard-library/dynamic-variables-pointers.md
-title:   Dynamic Variables (Pointers) &mdash; Specification
+title:   Dynamic Variables (Pointers) -- Specification
 updated: 2019-12-22
 ---
 

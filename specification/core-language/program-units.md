@@ -1,6 +1,6 @@
 ---
 # specification/core-language/program-units.md
-title:   Program Units &mdash; Specification
+title:   Program Units -- Specification
 updated: 2019-12-22
 ---
 

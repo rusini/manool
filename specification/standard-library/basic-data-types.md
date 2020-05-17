@@ -1,6 +1,6 @@
 ---
 # specification/standard-library/basic-data-types.md
-title:   Basic Data Types &mdash; Specification
+title:   Basic Data Types -- Specification
 updated: 2019-11-05
 ---
 

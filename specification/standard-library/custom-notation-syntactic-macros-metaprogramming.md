@@ -1,6 +1,6 @@
 ---
 # specification/standard-library/custom-notation-syntactic-macros-metaprogramming.md
-title:   Custom Notation (Syntactic Macros), Metaprogramming &mdash; Specification
+title:   Custom Notation (Syntactic Macros), Metaprogramming -- Specification
 updated: 2019-12-22
 ---
 

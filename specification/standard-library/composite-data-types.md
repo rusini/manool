@@ -1,6 +1,6 @@
 ---
 # specification/standard-library/composite-data-types.md
-title:   Composite Data Types &mdash; Specification
+title:   Composite Data Types -- Specification
 updated: 2019-12-22
 ---
 

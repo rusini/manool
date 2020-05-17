@@ -1,6 +1,6 @@
 ---
 # specification/standard-library/concurrency-thread-level-parallelism.md
-title:   Concurrency (Thread-Level Parallelism) &mdash; Specification
+title:   Concurrency (Thread-Level Parallelism) -- Specification
 updated: 2019-12-22
 ---
 

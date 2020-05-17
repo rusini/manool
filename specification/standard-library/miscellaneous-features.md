@@ -1,6 +1,6 @@
 ---
 # specification/standard-library/miscellaneous-features.md
-title:   Miscellaneous Features &mdash; Specification
+title:   Miscellaneous Features -- Specification
 updated: 2019-12-22
 ---
 

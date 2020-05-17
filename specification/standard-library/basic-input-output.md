@@ -1,6 +1,6 @@
 ---
 # specification/standard-library/basic-input-output.md
-title:   Basic Input/Output &mdash; Specification
+title:   Basic Input/Output -- Specification
 updated: 2019-12-22
 ---
 

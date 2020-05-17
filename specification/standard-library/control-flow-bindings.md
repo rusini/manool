@@ -1,6 +1,6 @@
 ---
 # specification/standard-library/control-flow-bindings.md
-title:   Control Flow, Bindings &mdash; Specification
+title:   Control Flow, Bindings -- Specification
 updated: 2019-12-22
 ---
 

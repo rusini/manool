@@ -1,6 +1,6 @@
 ---
 # specification/core-language/compiler-dispatcher.md
-title:   Compiler Dispatcher &mdash; Specification
+title:   Compiler Dispatcher -- Specification
 updated: 2019-12-21
 ---
 

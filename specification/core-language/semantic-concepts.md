@@ -1,6 +1,6 @@
 ---
 # specification/core-language/semantic-concepts.md
-title:   Semantic Concepts &mdash; Specification
+title:   Semantic Concepts -- Specification
 updated: 2019-12-21
 ---
 

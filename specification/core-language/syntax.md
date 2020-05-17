@@ -1,6 +1,6 @@
 ---
 # specification/core-language/syntax.md
-title:   Syntax &mdash; Specification
+title:   Syntax -- Specification
 updated: 2019-12-22
 ---
 

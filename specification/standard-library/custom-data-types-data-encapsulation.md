@@ -1,6 +1,6 @@
 ---
 # specification/standard-library/custom-data-types-data-encapsulation.md
-title:   Custom Data Types, Data Encapsulation &mdash; Specification
+title:   Custom Data Types, Data Encapsulation -- Specification
 updated: 2019-12-22
 ---
 

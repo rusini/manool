@@ -1,6 +1,6 @@
 ---
 # specification/standard-library/assignments-explicit-sequencing.md
-title:   Assignments, Explicit Sequencing &mdash; Specification
+title:   Assignments, Explicit Sequencing -- Specification
 updated: 2019-12-22
 ---
 

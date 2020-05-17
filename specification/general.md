@@ -1,6 +1,6 @@
 ---
 # specification/general.md
-title:   General &mdash; Specification
+title:   General -- Specification
 updated: 2019-12-21
 ---
 
