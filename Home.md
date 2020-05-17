@@ -5,7 +5,6 @@ title:     Welcome!
 updated:   2019-10-02
 ---
 
-
 <aside markdown="1" class="right">
 
 *My name is Alex Protasov (AKA [rusini](about "About @rusini")) and I have designed and implemented a brand-new programming language called MANOOL.*
@@ -22,7 +21,6 @@ hype of the past. "MANOOL" should be pronounced as "manul" ([the Pallas's cat]).
 
 </aside>
 
-
 {%include page_header.md%}{%raw%}
 
 
@@ -36,16 +34,15 @@ The author's implementation fits in only 10 KLOC in C++, yet it exhibits competi
 Contents
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-* [Tutorial](tutorial/lesson-1) --- Get Started by Examples
-* [Specification](specification/) --- Complete Language Specification, Reference Guide
-* [Blog](blog/) --- News, Random Topics: Examples, Rationale, Hacking...
-* [Try Online!](eval) --- Evaluate MANOOL Expressions Without Installation
-* [Download](download) --- How to Download and Install MANOOL
-* [About](about) --- About @rusini
++ [Tutorial](tutorial/lesson-1) -- Get Started by Examples
++ [Specification](specification/) -- Complete Language Specification, Reference Guide
++ [Blog](blog/) -- News, Random Topics: Examples, Rationale, Hacking...
++ [Try Online!](eval) -- Evaluate MANOOL Expressions Without Installation
++ [Download](download) -- How to Download and Install MANOOL
++ [About](about) -- About @rusini
 
 
 {%endraw%}{%include page_footer.md%}
-
 
 <aside markdown="1">
 
