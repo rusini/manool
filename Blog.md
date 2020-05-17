@@ -7,6 +7,8 @@ title:     MANOOL Blog
   <h1>{{page.title|smartify}}</h1>
 </header>
 
+News, Random Topics: Examples, Rationale, Hacking...
+
 {%for post in site.posts%}<section>
   <h2>{{post.title|smartify}}</h2>
   <p markdown="1">{{post.excerpt}} ...</p>
