@@ -196,7 +196,7 @@ layout: null
   }
 }
 @media (min-width: 480px) {
-  body > header .big {
+  body > header .slogan {
     font-size: 14.1774px;
   }
 
@@ -217,7 +217,7 @@ layout: null
   }
   main,
   body > header .logo + *,
-  body > header .big {
+  body > header .slogan {
     font-size: 16.75px;
   }
   aside code,
@@ -265,7 +265,7 @@ layout: null
   aside.right {
     left: 16px;
   }
-  body > header .big {
+  body > header .slogan {
     letter-spacing: .6667px;
   }
 }
@@ -293,7 +293,7 @@ layout: null
   body > * > * {
     width: 1158px;
   }
-  body > header .big {
+  body > header .slogan {
     word-spacing: .25em;
   }
   body > header ul {
