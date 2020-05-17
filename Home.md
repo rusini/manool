@@ -36,7 +36,7 @@ The author's implementation fits in only 10 KLOC in C++, yet it exhibits competi
 Contents
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-* [Tutorial](tutorial/) --- Get Started by Examples
+* [Tutorial](tutorial/lesson-1) --- Get Started by Examples
 * [Specification](specification/) --- Complete Language Specification, Reference Guide
 * [Blog](blog/) --- News, Random Topics: Examples, Rationale, Hacking...
 * [Try Online!](eval) --- Evaluate MANOOL Expressions Without Installation

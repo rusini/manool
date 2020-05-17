@@ -3,7 +3,7 @@
 <html lang="en-US">
 <head>
   <meta charset="UTF-8">
-  <title>{{page.title | smartify | escape_once}} &mdash; MANOOL (manool.org)</title>
+  <title>{{page.title|append:" -- MANOOL (manool.org)"|smartify}}</title>
 <!-- begin Google Analytics code -->
 <!-- Global site tag (gtag.js) - Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-150215747-1"></script>
@@ -15,12 +15,14 @@
   gtag('config', 'UA-150215747-1');
 </script>
 <!-- end Google Analytics code -->
-  <meta name="description" content="{{""
-  }}MANOOL is a practical, homoiconic, dynamic, multiparadigm general-purpose programming language with a functional core. {{""
-  }}It has the same purpose as Python, Ruby, PHP, Common Lisp, or Scheme but is designed with one central idea in mind: {{""
-  }}to maximize expressive power / implementation complexity ratio. {{""
-  }}The reference compiler/interpreter fits in only 10 KLOC in C++, yet it exhibits competitive run-time performance. {{""
-  }}MANOOL is a free and open-source software development tool. &mdash; &ldquo;MAnool is Not an Object-Oriented Language!&rdquo;">
+  <meta name="description" content="{{'
+    MANOOL is a practical, homoiconic, dynamic, multiparadigm general-purpose programming language with a functional core.
+    It has the same purpose as Python, Ruby, PHP, Common Lisp, or Scheme but is designed with one central idea in mind:
+    to maximize expressive power / implementation complexity ratio.
+    The reference compiler/interpreter fits in only 10 KLOC in C++, yet it exhibits competitive run-time performance.
+    MANOOL is a free and open-source software development tool.
+    -- "MAnool is Not an Object-Oriented Language!"
+  '|normalize_whitespace|smartify|escape_once}}">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Signika:600|Source+Sans+Pro:400,400i,600,600i&display=swap">
   <link rel="stylesheet" href="/styles.css">
@@ -34,17 +36,17 @@
   <header>
      <div class="flex center gutter">
        <div>
-         <div class="logo"><a href="/">{{""
-         }}<img src="/MANOOL-Logo.png" height="64" width="64" alt="MANOOL Logo" title="MANOOL Logo &mdash; to manool.org home"></a></div>
+         <div class="logo"><a href="/" title="MANOOL Logo &mdash; to manool.org home">{{""
+           }}<img src="/MANOOL-Logo.png" height="64" width="64" alt="MANOOL Logo"></a></div>
          <div>MANOOL</div>
        </div>
        <div class="resizable big">
-         <span>&ldquo;<strong>MA</strong>NOOL is <em>Not</em> an Object-Oriented Language!&rdquo;</span>
+         <span>{{"&ldquo;"|smartify}}<strong>MA</strong>NOOL is <em>Not</em> an Object-Oriented Language!{{"&rdquo;"|smartify}}</span>
        </div>
      </div>
      <nav>
        <ul class="flex">
-         <li><a href="/tutorial/" title="Get Started by Examples">Tutorial</a></li>
+         <li><a href="/tutorial/lesson-1" title="Get Started by Examples">Tutorial</a></li>
          <li><a href="/specification/" title="Complete Language Specification, Reference Guide">Specification</a></li>
          <li><a href="/blog/" title="News, Random Topics: Examples, Rationale, Hacking...">Blog</a></li>
          <li class="resizable"><a href="/eval" title="Evaluate MANOOL Expressions Without Installation">Try Online!</a></li>
@@ -63,16 +65,16 @@
   </main>
   <footer>
     <div>
+      {%assign bar = "&ensp;|&ensp;"|smartify%}{{""
+        }}<a href="/tutorial/lesson-1" title="Get Started by Examples">Tutorial</a>{{bar
+        }}<a href="/specification/" title="Complete Language Specification, Reference Guide">Specification</a>{{bar
+        }}<a href="/blog/" title="News, Random Topics: Examples, Rationale, Hacking...">Blog</a>{{bar
+        }}<a href="/eval" title="Evaluate MANOOL Expressions Without Installation">Try Online!</a><br>
       {{""
-      }}<a href="/tutorial/" title="Get Started by Examples">Tutorial</a>&ensp;|&ensp;{{""
-      }}<a href="/specification/" title="Complete Language Specification, Reference Guide">Specification</a>&ensp;|&ensp;{{""
-      }}<a href="/blog/" title="News, Random Topics: Examples, Rationale, Hacking...">Blog</a>&ensp;|&ensp;{{""
-      }}<a href="/eval" title="Evaluate MANOOL Expressions Without Installation">Try Online!</a><br>
-      {{""
-      }}<a href="/download" title="How to Download and Install MANOOL">Download</a>&ensp;|&ensp;{{""
-      }}<a href="/about" title="About @rusini">About</a>&ensp;|&ensp;{{""
-      }}<a href="/" title="manool.org home">Home</a><br><br>
-      Copyright &copy; 2019, 2020 <a href="/about" title="About @rusini">Alexey Protasov</a> and
+        }}<a href="/download" title="How to Download and Install MANOOL">Download</a>{{bar
+        }}<a href="/about" title="About @rusini">About</a>{{bar
+        }}<a href="/" title="manool.org home">Home</a><br><br>
+      Copyright {{"&copy;"|smartify}} 2019, 2020 <a href="/about" title="About @rusini">Alexey Protasov</a> and
       <a href="https://github.com/rusini/manool/graphs/contributors" title="GitHub: MANOOL Contributors">contributors</a><br>
       Except where <a href="/copynotice" title="Full Copyright Notice">noted otherwise</a>, content on this site is published<br>
       under a <a href="https://creativecommons.org/licenses/by/4.0/" title="creativecommons.org: Terms of the License">Creative Commons
@@ -83,12 +85,12 @@
       Made in pure {{""
         }}<a href="https://en.wikipedia.org/wiki/Markdown" title="Wikipedia: Markdown">Markdown</a>/{{""
         }}<a href="https://en.wikipedia.org/wiki/HTML5" title="Wikipedia: HTML5">HTML5</a>/{{""
-        }}<a href="https://en.wikipedia.org/wiki/CSS3" title="Wikipedia: CSS3">CSS3</a>&ensp;|&ensp;{{""
-      }}Powered by {{""
+        }}<a href="https://en.wikipedia.org/wiki/CSS3" title="Wikipedia: CSS3">CSS3</a>{{bar
+        }}Powered by {{""
         }}<a href="https://en.wikipedia.org/wiki/Jekyll_(software)" title="Wikipedia: Jekyll">Jekyll</a><br><br>
       {{""
-      }}<a href="https://github.com/rusini/manool">MANOOL on GitHub</a>&ensp;|&ensp;{{""
-      }}Contact email: <a href="mailto:info@manool.org">info@manool.org</a>
+        }}<a href="https://github.com/rusini/manool">MANOOL on GitHub</a>{{bar
+        }}Contact email: <a href="mailto:info@manool.org">info@manool.org</a>
     </div>
   </footer>
 </body>

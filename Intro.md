@@ -315,8 +315,8 @@ The following programming languages have driven major inspiration for MANOOL (in
 
 See Also
 ========
-* [Examples](/tutorial.html) --- tutorial
-* [Online Evaluator](/eval.html) --- to execute short programs in MANOOL and examine results without actually installing or compiling anything yourself
+* [Examples](/tutorial/lesson-1) --- tutorial
+* [Online Evaluator](/eval) --- to execute short programs in MANOOL and examine results without actually installing or compiling anything yourself
 * [Source Code Repository](//github.com/rusini/manool "to GitHub&hellip;") --- browse, download, clone, or fork
 * [Releases](//github.com/rusini/manool/releases "to GitHub&hellip;") --- to download pre-compiled binaries
 * <info@manool.org> --- contact email address
