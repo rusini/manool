@@ -1,15 +1,15 @@
 ---
-title:   Lesson 4 &mdash; Tutorial
-updated: 2020-05-08
+title:   Lesson 4 -- Tutorial
+updated: 2020-05-16
 ---
 
 <aside markdown="1" class="right">
-Lesson 4 of 5 &mdash; Tutorial
+Lesson 4 of 5 -- Tutorial
 =========================
-+ [Lesson 1](lesson-1)
-+ [Lesson 2](lesson-2)
-+ [Previous Lesson](lesson-3)
-+ [Next Lesson](lesson-5)
++ [Lesson 1](lesson-1#start)
++ [Lesson 2](lesson-2#start)
++ **[Previous Lesson](lesson-3#start)**
++ **[Next Lesson](lesson-5#start)**
 </aside>
 
 {%include page_header.md%}{%raw%}
@@ -363,12 +363,12 @@ Output:
 
 
 <aside markdown="1" class="right">
-Lesson 4 of 5 &mdash; Tutorial
+Lesson 4 of 5 -- Tutorial
 =========================
-+ [Lesson 1](lesson-1)
-+ [Lesson 2](lesson-2)
-+ [Previous Lesson](lesson-3)
-+ [Next Lesson](lesson-5)
++ [Lesson 1](lesson-1#start)
++ [Lesson 2](lesson-2#start)
++ **[Previous Lesson](lesson-3#start)**
++ **[Next Lesson](lesson-5#start)**
 </aside>
 
 {%endraw%}{%include page_footer.md%}

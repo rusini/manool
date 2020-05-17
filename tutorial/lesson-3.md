@@ -1,18 +1,19 @@
 ---
-title:   Lesson 3 &mdash; Tutorial
-updated: 2020-05-10
+title:   Lesson 3 -- Tutorial
+updated: 2020-05-16
 ---
 
 <aside markdown="1" class="right">
-Lesson 3 of 5 &mdash; Tutorial
+Lesson 3 of 5 -- Tutorial
 =========================
-+ [Lesson 1](lesson-1)
-+ [Previous Lesson](lesson-2)
-+ [Next Lesson](lesson-4)
-+ [Lesson 5](lesson-5)
++ [Lesson 1](lesson-1#start)
++ **[Previous Lesson](lesson-2#start)**
++ **[Next Lesson](lesson-4#start)**
++ [Lesson 5](lesson-5#start)
 </aside>
 
 {%include page_header.md%}{%raw%}
+
 
 Symbol Data Type
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -67,8 +68,14 @@ Output:
 
     Foo, True
 
+---
 
-Working with Fractions
+**Caution!!! Work in progress!!!**
+
+---
+
+
+Numbers Beyond Integers
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 You have full control over precise semantics of arithmetic operations in MANOOL. To cover a variety of practical needs and situations, the language provides
@@ -169,26 +176,13 @@ Output:
     0, 0
 
 
------
-
-Try to figure out what is going on here:
-~~~
-{ {extern "manool.org.18/std/0.5/all"} in
-  Out.WriteLine[Out.WriteLine["Hello, world!"]']
-}
-~~~
-Output:
-~~~
-value/object
-~~~
-
 <aside markdown="1" class="right">
-Lesson 3 of 5 &mdash; Tutorial
+Lesson 3 of 5 -- Tutorial
 =========================
-+ [Lesson 1](lesson-1)
-+ [Previous Lesson](lesson-2)
-+ [Next Lesson](lesson-4)
-+ [Lesson 5](lesson-5)
++ [Lesson 1](lesson-1#start)
++ **[Previous Lesson](lesson-2#start)**
++ **[Next Lesson](lesson-4#start)**
++ [Lesson 5](lesson-5#start)
 </aside>
 
 {%endraw%}{%include page_footer.md%}

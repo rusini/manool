@@ -1,7 +1,15 @@
 ---
-title:   Lesson 1 &mdash; Tutorial
-updated: 2020-05-04
+title:   Lesson 1 -- Tutorial
+updated: 2020-05-16
 ---
+
+Go to Lesson:&ensp;[1]&ensp;\|&ensp;[2]&ensp;\|&ensp;[3]&ensp;\|&ensp;[4]&ensp;\|&ensp;[5]
+
+[1]: #start
+[2]: lesson-2#start
+[3]: lesson-3#start
+[4]: lesson-4#start
+[5]: lesson-5#start
 
 <aside markdown="1" class="right">
 After completing this tutorial, you will be able to
@@ -18,7 +26,7 @@ Hello World
 
 The following is a traditional "Hello World" program in MANOOL:
 
-    -- In "applicative" notation
+    -- Hello World program -- in "applicative" notation
     {{extern "manool.org.18/std/0.5/all"} in WriteLine[Out; "Hello, world!"]}
 
 You can play with MANOOL examples by using the [online evaluator] or running them from the command line according to the [instructions]. Here are just a couple
@@ -70,12 +78,12 @@ this is not an arbitrary choice nor a matter of personal preference but rather a
 
 The following two alternative "Hello World" implementations are equivalent to the above one, up to an internal representation called Abstract Syntax Tree:
 
-    -- OOP-ish notation (equivalent to the above, up to Abstract Syntax Tree)
+    -- Hello World program -- OOP-ish notation (equivalent to the above, up to Abstract Syntax Tree)
     {{extern "manool.org.18/std/0.5/all"} in Out.WriteLine["Hello, world!"]}
 
   (note how the first argument now corresponds to a receiver, in OOP parlance),
 
-    -- LISP-ish notation (ditto)
+    -- Hello World program -- LISP-ish notation (ditto)
     {{extern "manool.org.18/std/0.5/all"} in {WriteLine Out "Hello, world!"}}
 
   (note how `WriteLine`, the _target_ of an applicative expression, is now the first element of a Lisp-inspired syntactic list)[^a4].
@@ -100,8 +108,8 @@ Some benefits of the "S-expression" notation:
 
 ### Code formatting recommendations ####################################################################################
 
-The most basic principles of MANOOL code formatting are illustrated in the following example (you are invited to see for yourself more principles in action
-further in this tutorial):[^a5]
+MANOOL is a free-form and case-sensitive language. The most basic principles of MANOOL code formatting are illustrated in the following example (you are invited
+to see for yourself more principles in action further in this tutorial):[^a5]
 
     -- Most recommended formatting for multi-line expressions
     { {extern "manool.org.18/std/0.5/all"} in
@@ -292,15 +300,15 @@ Output:
 Quiz
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Try to figure out what is going on here (you should have acquired all the clues after completing the [Lesson 3](Lesson-3)):
+Try to figure out what is going on here (you should have acquired all the clues after completing the [Lesson 3](Lesson-3#start)):
 
     { {extern "manool.org.18/std/0.5/all"} in
       { (WriteLine) Out -- What do Write/WriteLine return?
-        Out.Write["Hello"]; ", "; Out.Write[", "]; ", "; Out.Write["world"]; ", "; Out.Write["!"]; ", "
+        Out.Write["Hello"] ", " Out.Write[", "] ", " Out.Write["world"] ", " Out.Write["!"] ", "
         Out.WriteLine[]
       }
       { (WriteLine) Out -- What are Out, WriteLine, (+)?.. Or can we print "unprintable" stuff?
-        Out; ", "; WriteLine; ", "; (+); ", "; (~); ", "; Foo; ", "; Bar
+        Out ", " WriteLine ", " (+) ", " (~) ", " Foo ", " Bar
       }
     }
 
@@ -310,20 +318,14 @@ Output:
     Nil, Nil, Nil, Nil, Nil
     value/object, WriteLine, +, ~, Foo, Bar
 
----
-
-**Caution!!! Work in progress!!! No more prose below this line!!!**
-
----
-
 
 <aside markdown="1" class="right">
-Lesson 1 of 5 &mdash; Tutorial
+Lesson 1 of 5 -- Tutorial
 =========================
-+ [Next Lesson](lesson-2)
-+ [Lesson 3](lesson-3)
-+ [Lesson 4](lesson-4)
-+ [Lesson 5](lesson-5)
++ **[Next Lesson](lesson-2#start)**
++ [Lesson 3](lesson-3#start)
++ [Lesson 4](lesson-4#start)
++ [Lesson 5](lesson-5#start)
 </aside>
 
 {%endraw%}{%include page_footer.md%}

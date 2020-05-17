@@ -1,15 +1,15 @@
 ---
-title:   Lesson 2 &mdash; Tutorial
-updated: 2020-05-04
+title:   Lesson 2 -- Tutorial
+updated: 2020-05-16
 ---
 
 <aside markdown="1" class="right">
-Lesson 2 of 5 &mdash; Tutorial
+Lesson 2 of 5 -- Tutorial
 =========================
-+ [Previous Lesson](lesson-1)
-+ [Next Lesson](lesson-3)
-+ [Lesson 4](lesson-4)
-+ [Lesson 5](lesson-5)
++ **[Previous Lesson](lesson-1#start)**
++ **[Next Lesson](lesson-3#start)**
++ [Lesson 4](lesson-4#start)
++ [Lesson 5](lesson-5#start)
 </aside>
 
 {%include page_header.md%}{%raw%}
@@ -147,33 +147,35 @@ Output:
 For many data types in MANOOL, there exists a type predicate, a Boolean-valued procedure that determines whether its argument belongs to the underlying type:
 
     { {extern "manool.org.18/std/0.5/all"} in
-      Out.WriteLine[2.IsI48[] " " "2".IsI48[]] -- is "2" an integer?
-      Out.WriteLine[2.IsS8[]  " " "2".IsS8[]]  -- is "2" a string?
+      Out.WriteLine[2.IsI48[] ", " "2".IsI48[]] -- is "2" an integer?
+      Out.WriteLine[2.IsS8[]  ", " "2".IsS8[]]  -- is "2" a string?
     }
 
 Output:
 
-    True False
-    False True
+    True, False
+    False, True
 
 ---
 
-**Caution!!! Work in progress!!! No more prose below this line!!!**
+**Caution!!! Work in progress!!!**
 
 ---
 
 
-## Compound Conditions
+Compound Conditions
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 Example:
-~~~
-{ {extern "manool.org.18/std/0.5/all"} in
-  Out.WriteLine["2".IsI48[] & "2" < 3; " "; ~"2".IsI48[] | "2" < 3]
-}
-~~~
+
+    { {extern "manool.org.18/std/0.5/all"} in
+      Out.WriteLine["2".IsI48[] & "2" < 3 ", " ~"2".IsI48[] | "2" < 3]
+    }
+
 Output:
-~~~
-False True
-~~~
+
+    False, True
+
 
 More Exceptions
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -194,22 +196,20 @@ Overflows during arithmetic operations are reported:
 
 Signals: `Overflow`
 
-~~~
-{{extern "manool.org.18/std/0.5/all"} in 1 / 0}
-~~~
+    {{extern "manool.org.18/std/0.5/all"} in 1 / 0}
+
 Signals: `DivisionByZero`
-~~~
-{{extern "manool.org.18/std/0.5/all"} in 0 / 0}
-~~~
-~~~
-{{extern "manool.org.18/std/0.5/all"} in 1.Rem[0]}
-~~~
+
+    {{extern "manool.org.18/std/0.5/all"} in 0 / 0}
+^
+    {{extern "manool.org.18/std/0.5/all"} in 1.Rem[0]}
+
 Signals: `Undefined`
 
 Quiz
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Try to figure out what is going on here (you should have acquired all the clues after completing the [Lesson 3](Lesson-3)):
+Try to figure out what is going on here (you should have acquired all the clues after completing the [Lesson 3](Lesson-3#start)):
 
     {{extern "manool.org.18/std/0.5/all"} in Out.WriteLine[(&)]}
 
@@ -227,12 +227,12 @@ Compilation error:
 
 
 <aside markdown="1" class="right">
-Lesson 2 of 5 &mdash; Tutorial
+Lesson 2 of 5 -- Tutorial
 =========================
-+ [Previous Lesson](lesson-1)
-+ [Next Lesson](lesson-3)
-+ [Lesson 4](lesson-4)
-+ [Lesson 5](lesson-5)
++ **[Previous Lesson](lesson-1#start)**
++ **[Next Lesson](lesson-3#start)**
++ [Lesson 4](lesson-4#start)
++ [Lesson 5](lesson-5#start)
 </aside>
 
 {%endraw%}{%include page_footer.md%}

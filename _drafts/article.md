@@ -6,8 +6,15 @@ excerpt: Blog article test.
 
 {%include post_header.md%}{%raw%}
 
+## foo &quot; bar'& "jioj"
 
 Blog article test.
+
+'"<>&quot;&
+
+"[aaa -- "bbb](#&mdash; "aaa &mdash; & <> bbb'&quot;")
+
+[foo](# "&quot;")
 
 * aaa
 
