@@ -163,37 +163,37 @@ When needed, MANOOL programs can be instructed to recover even from [dynamic mem
 [dynamic memory]: //en.wikipedia.org/wiki/Dynamic_memory "Wikipedia: Dynamic memory"
 
 ### Other features
-* Very compact (or even [minimalist][]) core language (up to a point where a [meta-circular specification][] might be appropriate)
-* Convenient standard library (but completely *optional* to use)
-* Computational primitives based on [Church's][] [&lambda;-calculus][] (in the spirit of [Landin's][] [ISWIM] prototype language/[ML]-like languages)
++ Very compact (or even [minimalist][]) core language (up to a point where a [meta-circular specification][] might be appropriate)
++ Convenient standard library (but completely *optional* to use)
++ Computational primitives based on [Church's][] [&lambda;-calculus][] (in the spirit of [Landin's][] [ISWIM] prototype language/[ML]-like languages)
     - [Name bindings][] with [static (lexical) scope][]
     - *Explicit* [variable capture][] and classification of name bindings into [compile][compile-time]- and run-time
     - Mainly [eager][] (strict) [evaluation strategy][] (from the perspective of &lambda;-calculus) with possible [side effects][]
-* [Compile-time evaluation][]
-* [Metaprogramming][]:
++ [Compile-time evaluation][]
++ [Metaprogramming][]:
     - [Lisp]-like [syntactic macros][] with optional [macro hygiene][]
     - (optionally) [self-modifying code][]
-* [Block-structured][] and [expression-oriented][] (from the perspective of [procedural][] [imperative programming][])
-* [Dynamic][dynamic typing] (latent) but [strong][strong typing] [data typing][] [discipline][typing discipline]
-* [Ad-hoc][ad-hoc polymorphism] [polymorphism][]:
++ [Block-structured][] and [expression-oriented][] (from the perspective of [procedural][] [imperative programming][])
++ [Dynamic][dynamic typing] (latent) but [strong][strong typing] [data typing][] [discipline][typing discipline]
++ [Ad-hoc][ad-hoc polymorphism] [polymorphism][]:
     - run-time [function][function overload]/[operator][operator overload] overload resolution (via [dynamic single-dispatch][])
-* *Observably* (modulo timings) [non-referential][] (by-value) data model encouraging (but not requiring) to use (observably) [immutable][] [objects][] using
++ *Observably* (modulo timings) [non-referential][] (by-value) data model encouraging (but not requiring) to use (observably) [immutable][] [objects][] using
   [automatic reference counting][] (ARC) and [transparent copy-on-write][] (COW) implementation techniques
-* [Move semantics][] and [syntactic sugar][] that *emulates* [in-place][in-place updates] partial [updates][]
-* [Very high-level][] [composite][composite types] [abstract data types][] (ADTs):
++ [Move semantics][] and [syntactic sugar][] that *emulates* [in-place][in-place updates] partial [updates][]
++ [Very high-level][] [composite][composite types] [abstract data types][] (ADTs):
     - [set-theoretic operations][], [comprehensions][], and [logic quantifications][] inspired by the [math notation][] and [SETL]
     - values of *any* types (as long as the former are [totally ordered][]) can be used as set elements and map keys
     - [iterators][] with elements of [lazy evaluation strategy][]
-* [Modular programming][]:
++ [Modular programming][]:
     - [namespaces][]
     - name binding visibility control
     - multiple [source files][] (plus support for [Ada]-like private program units)
-* User-defined abstract data types:
++ User-defined abstract data types:
     - [data encapsulation][] (with visibility control)
-* [Exception handling][] (with stack unwinding)
-* [Decimal][] [floating-point arithmetic][] ([out-of-the-box][])
-* [Multithreading-aware][] implementation, free from [global interpreter lock][] (GIL)
-* Simple [plug-in][] [application programming interface][] (API)
++ [Exception handling][] (with stack unwinding)
++ [Decimal][] [floating-point arithmetic][] ([out-of-the-box][])
++ [Multithreading-aware][] implementation, free from [global interpreter lock][] (GIL)
++ Simple [plug-in][] [application programming interface][] (API)
 
 [minimalist]:                        //en.wikipedia.org/wiki/Minimalism_(computing)                   "Wikipedia: Minimalism"
 [meta-circular specification]:       //en.wikipedia.org/wiki/Meta-circular_evaluator                  "Wikipedia: Meta-circular evaluator"
