@@ -59,7 +59,7 @@ MANOOL][instructions] for more tips.
    world!`, specified by a string literal, eventually appears on the standard output, specified by the argument `Out`.
 
 3. During compilation of the whole expression `{{extern "..."} in ...}`, all identifier definitions (particularly the one for `Out`)[^a2] from the standard
-   library module specified by the string literal `"manool.org.18/..."` are *imported* into the scope that follows the keyword `in`.[^a3]
+   library module specified by the string literal `"manool.org.18/..."` are *imported* (injected) into the scope that follows the keyword `in`.[^a3]
 
 [^a1]: In MANOOL ordinary functions are called _procedures_, and the construct `WriteLine[Out; "..."]` is more generally called an _applicative expression_
        (more on this later). In overall, MANOOL is a multiparadigm language with a functional core.

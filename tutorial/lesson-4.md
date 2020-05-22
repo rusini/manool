@@ -18,10 +18,10 @@ Lesson 4 of 5 -- Tutorial
 Composite Data Types, For-Loops and Views
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-MANOOL provides a comprehensive set of composite data types, which differ in basic operations and internal data structure (and thus in asymptotic complexity of
+MANOOL provides a comprehensive set of composite data types, which vary in basic operations and internal data structure (and thus in asymptotic complexity of
 basic operations with composite values).[^a1]
 
-[^a1]: A composite value in MANOOL (or object, depending on your point of view) incorporate other values (or objects, respectively). This happens irrespective
+[^a1]: A composite value in MANOOL (or object, depending on your point of view) incorporates other values (or objects, respectively). This happens irrespective
        of component types and without placing restrictions on the number of components on behalf of the composite type itself. Thus, complex numbers, for
        instance, are not composite values according to this definition.
 
@@ -37,7 +37,7 @@ Normally, you can iterate over elements of a composite value in an easy way by u
       Out.WriteLine[E]
     }
 
-  (here we are constructing an _array_ out of elements by using the construct `{array of ...}` and declare the variable `E` as a `for`-loop variable).
+  (here we construct an _array_ out of elements by using the expression `{array of ...}` and declare the variable `E` as a `for`-loop variable).
 
 [^a3]: Components of an iterable composite value are also referred to as _elements_ of that value.
 
@@ -52,7 +52,7 @@ Output:
     Violet
 
 You can apply the operation `Size` to any iterable composite value to obtain the number of elements in the argument. Actually, you always iterate over elements
-of a _view_ (some composite values are views onto themselves).
+of a _view_ (some composite values are views onto their own elements).
 
 <aside markdown="1">
 

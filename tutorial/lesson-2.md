@@ -18,14 +18,14 @@ Lesson 2 of 5 -- Tutorial
 Factorial
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-The traditional analog of the "Hello World" program for functional languages consists of a recursive function definition to calculate the factorial of a number.
-The following variation for MANOOL incorporates also some test code:
+The usual "Hello World" analog for functional languages consists of a recursive function definition for calculating factorial of a number. The following
+variation for MANOOL incorporates in addition some test code:
 
     -- Factorial -- recursive version in MANOOL-ish ("cascading") notation
     { {extern "manool.org.18/std/0.5/all"} in
     : let rec
       { Fact = -- compile-time constant binding
-        { proc { N } as -- precondition: N.IsI48[] & (N >= 0)
+        { proc { N } as -- precondition: 0 <= N
         : if N == 0 then 1 else
           N * Fact[N - 1]
         }
@@ -40,7 +40,7 @@ And the following equivalent program (up to AST) is intended to make the syntact
     { {extern "manool.org.18/std/0.5/all"} in
       { let rec
         { Fact = -- compile-time constant binding
-          { proc { N } as -- precondition: N.IsI48[] & (N >= 0)
+          { proc { N } as -- precondition: 0 <= N
             { if N == 0 then 1 else
               N * Fact[N - 1]
             }
@@ -51,15 +51,36 @@ And the following equivalent program (up to AST) is intended to make the syntact
       }
     }
 
-As you may note, here we are using another piece of syntactic sugar -- any construct in the form  
-`{`_a_<sub>0</sub> _a_<sub>1</sub> ... _a_<sub>n</sub> `{`_b_<sub>0</sub> _b_<sub>1</sub> ... _b_<sub>m</sub>`}``}` can be written as
-`{`_a_<sub>0</sub> _a_<sub>1</sub> ... _a_<sub>n</sub>`:` _b_<sub>0</sub> _b_<sub>1</sub> ... _b_<sub>m</sub>`}`.
+  (here another piece of syntactic sugar is demonstrated -- any two constructs
+`{`_a_<sub>0</sub> _a_<sub>1</sub> ... _a_<sub>_m_-1</sub> `{`_b_<sub>0</sub> _b_<sub>1</sub> ... _b_<sub>_n_-1</sub>`}``}` and
+`{`_a_<sub>0</sub> _a_<sub>1</sub> ... _a_<sub>_m_-1</sub>`:` _b_<sub>0</sub> _b_<sub>1</sub> ... _b_<sub>_n_-1</sub>`}` are always equivalent one to another).
+
+Output:
+
+    Factorial of 10 = 3628800
+
+#### How it works
+
+1. The expression `{proc {N} as ...}` resembles a lambda-expression in many languages, where `N` would specify a parameter and the expression that follows `as`
+   would be the body. The whole expression evaluates to a procedure, which returns the result of evaluation of its body.
+
+2. During compilation of the expression `{let rec {Fact = ...} in ...}`, a binding between `Fact` and the entity specified on the right of the infix operator
+   `=` is injected into the scope that follows the keyword `in`. Note that that entity is obtained in full at compile-time.
+
+
+3. The construct `{if ... then ... else ...}` is a conditional expression here. During its evaluation either of the two branches is evaluated depending on
+   whether the condition specified between `if` and `then` holds.
+
+### Iterative version ##################################################################################################
+
+Although MANOOL has a functional core, it is a multiparadigm language, for which an iterative version of the factorial function using a familiar `while`-loops
+may be more appropriate:[^a1]
 
     -- Factorial -- iterative version (in MANOOL, this is probably more appropriate for factorial)
     { {extern "manool.org.18/std/0.5/all"} in
     : let
       { Fact = -- compile-time constant binding
-        { proc { N } as -- precondition: N.IsI48[] & (N >= 0)
+        { proc { N } as -- precondition: 0 <= N
         : var { Res = 1 } in -- variable binding
         : do Res after -- return result
         : while N <> 0 do -- loop while N not equals zero
@@ -70,9 +91,30 @@ As you may note, here we are using another piece of syntactic sugar -- any const
       Out.WriteLine["Factorial of 10 is "; Fact[10]]
     }
 
-Output:
+  (the output is the same as above).
 
-    Factorial of 10 is 3628800
+[^a1]: The MANOOL specification does not require tail-call optimizations, but this is not the only reason.
+
+#### How it works
+
+1. During compilation of the expression `{var {Res = 1} in ...}`, the body expression, which follows `in`, is considered in a binding environment with a
+   temporary variable named `Res` injected. The variable is initialized to `1` just before evaluating the body expression.
+
+2. The expression `{do Res after ...}` is equivalent to `{do ...; Res}`, which is evaluated by evaluating its constituents one by one, and thus this expression
+   evaluates to `Res`.
+
+2. An expression `{``do` _a_<sub>_n_-1</sub> `after` _a_<sub>0</sub> _a_<sub>1</sub> ... _a_<sub>_n_-2</sub>`}` is equivalent to `{``do` _a_<sub>0</sub>
+   _a_<sub>1</sub> _a_<sub>2</sub> ... _a_<sub>_n_-1</sub>`}`, which is evaluated by evaluating its constituents _a_<sub>_i_</sub> one by one, and thus this
+   expression evaluates to `Res`.
+
+3. The expression `{while ... do ...}` is a `while-loop`. During its evaluation, the expression that follows `do` is evaluated repetitively while the condition
+   specified between `while` and `do` holds.
+
+4. The expressions `Res = N * Res` and `N = N - 1` are assignment expressions, which alter the current value stored in a location as a side effect of
+   evaluation.
+
+4. The expressions `Res = N * Res` and `N = N - 1` are assignment expressions. As a side effect of an evaluation of such expression, the current value of the
+   location specified on the left-hand side of the `=` operator is updated with the value specified on the right-hand side of that operator.
 
 
 Value Comparisons, Data Typing Issues
@@ -156,21 +198,14 @@ Output:
     True, False
     False, True
 
----
-
-**Caution!!! Work in progress!!!**
-
----
-
 
 Compound Conditions
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Example:
+You can express complex conditions by using operators `&` (conjunction for Booleans), `|` (disjunction for Booleans), and `~` (negation for Booleans). `&` and
+`|` are short-circuiting (the right-hand side is unevaluated unless strictly necessary).
 
-    { {extern "manool.org.18/std/0.5/all"} in
-      Out.WriteLine["2".IsI48[] & "2" < 3 ", " ~"2".IsI48[] | "2" < 3]
-    }
+    {{extern "manool.org.18/std/0.5/all"} in Out.WriteLine["2".IsI48[] & "2" < 3 ", " ~"2".IsI48[] | "2" < 3]}
 
 Output:
 
