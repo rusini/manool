@@ -62,19 +62,24 @@ Output:
 #### How it works
 
 1. The expression `{proc {N} as ...}` resembles a lambda-expression in many languages, where `N` would specify a parameter and the expression that follows `as`
-   would be the body. The whole expression evaluates to a procedure, which returns the result of evaluation of its body.
+   would be the body. The whole expression evaluates to a procedure, which returns the result of evaluation of the body.[^a1]
 
-2. During compilation of the expression `{let rec {Fact = ...} in ...}`, a binding between `Fact` and the entity specified on the right of the infix operator
-   `=` is injected into the scope that follows the keyword `in`. Note that that entity is obtained in full at compile-time.
-
+2. During compilation of the expression `{let rec {Fact = ...} in ...}`, a binding between `Fact` and the entity specified on the right-hand side of the infix
+   operator `=` is injected into the scope that follows `in`.[^a2] Since we use `let rec` and not just `let` here, the right-hand side expression is also
+   included in the scope of `Fact`, so we can refer to it recursively.
 
 3. The construct `{if ... then ... else ...}` is a conditional expression here. During its evaluation either of the two branches is evaluated depending on
-   whether the condition specified between `if` and `then` holds.
+   whether the condition specified between `if` and `then` holds and producing the result for the whole expression.
+
+[^a1]: In MANOOL, a `proc`-expression does not implicitly capture temporary variables from its initial binding environment (by default, the body of
+       `proc`-expression is simply excluded from the scope of such variables). This is due to a deliberate language design decision.
+
+[^a2]: That entity is obtained in full at compile-time.
 
 ### Iterative version ##################################################################################################
 
-Although MANOOL has a functional core, it is a multiparadigm language, for which an iterative version of the factorial function using a familiar `while`-loops
-may be more appropriate:[^a1]
+Although MANOOL has a functional core, it is a multiparadigm language, for which an iterative version of the factorial function, which uses a `while`-loop (or
+`for`-loop), may be more appropriate:[^a3]
 
     -- Factorial -- iterative version (in MANOOL, this is probably more appropriate for factorial)
     { {extern "manool.org.18/std/0.5/all"} in
@@ -93,28 +98,23 @@ may be more appropriate:[^a1]
 
   (the output is the same as above).
 
-[^a1]: The MANOOL specification does not require tail-call optimizations, but this is not the only reason.
+[^a3]: The MANOOL specification does not require tail-call optimizations, though this is not the only reason.
 
 #### How it works
 
-1. During compilation of the expression `{var {Res = 1} in ...}`, the body expression, which follows `in`, is considered in a binding environment with a
-   temporary variable named `Res` injected. The variable is initialized to `1` just before evaluating the body expression.
+1. During compilation of the expression `{var {Res = 1} in ...}`, the body expression(s), which follow `in`, are considered in a binding environment with a
+   temporary variable named `Res` injected.[^a4] The variable is initialized to `1` just before evaluating the body expressions.
 
 2. The expression `{do Res after ...}` is equivalent to `{do ...; Res}`, which is evaluated by evaluating its constituents one by one, and thus this expression
    evaluates to `Res`.
 
-2. An expression `{``do` _a_<sub>_n_-1</sub> `after` _a_<sub>0</sub> _a_<sub>1</sub> ... _a_<sub>_n_-2</sub>`}` is equivalent to `{``do` _a_<sub>0</sub>
-   _a_<sub>1</sub> _a_<sub>2</sub> ... _a_<sub>_n_-1</sub>`}`, which is evaluated by evaluating its constituents _a_<sub>_i_</sub> one by one, and thus this
-   expression evaluates to `Res`.
+3. The expression `{while ... do ...}` is a traditional `while`-loop. During its evaluation, the body expression(s), which follow `do`, are evaluated
+   repetitively, one by one, while the pre-condition specified between `while` and `do` holds.
 
-3. The expression `{while ... do ...}` is a `while-loop`. During its evaluation, the expression that follows `do` is evaluated repetitively while the condition
-   specified between `while` and `do` holds.
+4. `Res = N * Res` and `N = N - 1` are assignment expressions. As a side effect of an evaluation of such expression, the current value of the location specified
+   on the left-hand side of the `=` operator is replaced with the value specified on the right-hand side of the `=` operator.
 
-4. The expressions `Res = N * Res` and `N = N - 1` are assignment expressions, which alter the current value stored in a location as a side effect of
-   evaluation.
-
-4. The expressions `Res = N * Res` and `N = N - 1` are assignment expressions. As a side effect of an evaluation of such expression, the current value of the
-   location specified on the left-hand side of the `=` operator is updated with the value specified on the right-hand side of that operator.
+[^a4]: Temporary variables in MANOOL (including procedure parameters) are statically scoped.
 
 
 Value Comparisons, Data Typing Issues
@@ -202,8 +202,8 @@ Output:
 Compound Conditions
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-You can express complex conditions by using operators `&` (conjunction for Booleans), `|` (disjunction for Booleans), and `~` (negation for Booleans). `&` and
-`|` are short-circuiting (the right-hand side is unevaluated unless strictly necessary).
+You can express complex conditions by using operators `&` (conjunction for Booleans), `|` (disjunction for Booleans), and `~` (negation for Booleans). The
+operators `&` and `|` are short-circuiting (the right-hand side is unevaluated unless strictly necessary):
 
     {{extern "manool.org.18/std/0.5/all"} in Out.WriteLine["2".IsI48[] & "2" < 3 ", " ~"2".IsI48[] | "2" < 3]}
 
@@ -216,24 +216,29 @@ More Exceptions
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 The MANOOL specification is precise about which exception is signaled in each particular erroneous case. We are already familiar with two of them:
-`TypeMismatch` and `UnrecognizedOperation`. Let's look at other basic signals, but first note that your program in MANOOL can catch and react on any signal, and
-they are also used as a general control-flow mechanism.
+`TypeMismatch` and `UnrecognizedOperation`. Let's look at other basic signals:[^a5]
 
 First, an inappropriate number of arguments is reported by signaling `InvalidInvocation` as in
 
     {{extern "manool.org.18/std/0.5/all"} in Neg[2; 3]}
 
+[^a5]: Your program in MANOOL can catch and react on any signal, and they are also used as a general control-flow mechanism.
+
 ### Arithmetic Exceptions ##############################################################################################
 
-Overflows during arithmetic operations are reported:
+Overflows during arithmetic operations are reported by signals:
 
     {{extern "manool.org.18/std/0.5/all"} in 140737488355327/*max integer*/ + 1}
 
 Signals: `Overflow`
 
+As well as division by zero (and other operations near a pole of the argument):
+
     {{extern "manool.org.18/std/0.5/all"} in 1 / 0}
 
 Signals: `DivisionByZero`
+
+In other cases:
 
     {{extern "manool.org.18/std/0.5/all"} in 0 / 0}
 ^
