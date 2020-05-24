@@ -76,9 +76,9 @@ this is not an arbitrary choice nor a matter of personal preference but rather a
 
 ### Alternative notations ##############################################################################################
 
-The following two alternative "Hello World" implementations are equivalent to the above one, up to an internal representation called Abstract Syntax Tree:
+The following two alternative "Hello World" implementations are equivalent to the above one, up to an internal representation called abstract syntax tree:
 
-    -- Hello World program -- OOP-ish notation (equivalent to the above, up to Abstract Syntax Tree)
+    -- Hello World program -- OOP-ish notation (equivalent to the above, up to abstract syntax tree)
     {{extern "manool.org.18/std/0.5/all"} in Out.WriteLine["Hello, world!"]}
 
   (note how the first argument now corresponds to a receiver, in OOP parlance),
@@ -88,7 +88,7 @@ The following two alternative "Hello World" implementations are equivalent to th
 
   (note how `WriteLine`, the _target_ of an applicative expression, is now the first element of a Lisp-inspired syntactic list)[^a4].
 
-[^a4]: The later example uses the notation that reflects Abstract Syntax Trees (ASTs) for all syntactic constructs in MANOOL in the most straightforward way
+[^a4]: The later example uses the notation that reflects abstract syntax trees (ASTs) for all syntactic constructs in MANOOL in the most straightforward way
        (like S-expressions in Lisps).
 
 <aside markdown="1">
