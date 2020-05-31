@@ -1,6 +1,6 @@
 ---
 title:   Lesson 2 -- Tutorial
-updated: 2020-05-16
+updated: 2020-05-31
 ---
 
 <aside markdown="1" class="right">
@@ -141,11 +141,11 @@ Output:
 
 ### Other operations ###################################################################################################
 
-Any pair of integral values can be also compared for less-then as well as less-then-or-equal, greater-than, and greater-then-or-equal:
+Any pair of integral values can be also compared for less-than as well as less-than-or-equal, greater-than, and greater-then-or-equal:
 
     { {extern "manool.org.18/std/0.5/all"} in
-      Out.WriteLine[2 <  3 ", " 3 < 2 ", " 2 <  2] -- less-then
-      Out.WriteLine[2 <= 3 ", " 2 > 3 ", " 2 >= 3] -- less-then-or-equal, greater-than, greater-then-or-equal
+      Out.WriteLine[2 <  3 ", " 3 < 2 ", " 2 <  2] -- less-than
+      Out.WriteLine[2 <= 3 ", " 2 > 3 ", " 2 >= 3] -- less-than-or-equal, greater-than, greater-then-or-equal
     }
 
 Output:
@@ -153,7 +153,7 @@ Output:
     True, False, False
     True, False, False
 
-On the other hand, two values of different types cannot be compared for less-then, etc.; also, the `+` operator cannot be applied to an integer and a string and
+On the other hand, two values of different types cannot be compared for less-than, etc.; also, the `+` operator cannot be applied to an integer and a string and
 vice versa:
 
     {{extern "manool.org.18/std/0.5/all"} in Out.WriteLine[2 < "3"]} -- run-time error
@@ -224,21 +224,21 @@ First, an inappropriate number of arguments is reported by signaling `InvalidInv
 
 [^a5]: Your program in MANOOL can catch and react on any signal, and they are also used as a general control-flow mechanism.
 
-### Arithmetic Exceptions ##############################################################################################
+### Arithmetic exceptions ##############################################################################################
 
-Overflows during arithmetic operations are reported by signals:
+Overflows during arithmetic operations are reported using signals:
 
-    {{extern "manool.org.18/std/0.5/all"} in 140737488355327/*max integer*/ + 1}
+    {{extern "manool.org.18/std/0.5/all"} in MaxI48 + 1}
 
 Signals: `Overflow`
 
-As well as division by zero (and other operations near a pole of the argument):
+The same applies to division by zero and other operations near a pole of the argument (e.g. near zero for logarithms):
 
     {{extern "manool.org.18/std/0.5/all"} in 1 / 0}
 
 Signals: `DivisionByZero`
 
-In other cases:
+In other cases `Undefined` may be signaled:
 
     {{extern "manool.org.18/std/0.5/all"} in 0 / 0}
 ^
@@ -249,7 +249,7 @@ Signals: `Undefined`
 Quiz
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Try to figure out what is going on here (you should have acquired all the clues after completing the [Lesson 3](Lesson-3#start)):
+Try to figure out what is going on here (you should have acquired all the clues after completing [Lesson 3](Lesson-3#start)):
 
     {{extern "manool.org.18/std/0.5/all"} in Out.WriteLine[(&)]}
 
@@ -266,6 +266,8 @@ Compilation error:
     (<anonymous>) 1:42-1:58 Error: unbound keyword (nested in this context)
 
 
+* * * * *
+**[Continue](lesson-3 "Next Lesson")**
 <aside markdown="1" class="right">
 Lesson 2 of 5 -- Tutorial
 =========================

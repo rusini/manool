@@ -1,6 +1,6 @@
 ---
 title:   Lesson 4 -- Tutorial
-updated: 2020-05-16
+updated: 2020-05-31
 ---
 
 <aside markdown="1" class="right">
@@ -362,6 +362,8 @@ Output:
     Yellow -> Amarelo
 
 
+* * * * *
+**[Continue](lesson-5 "Next Lesson")**
 <aside markdown="1" class="right">
 Lesson 4 of 5 -- Tutorial
 =========================

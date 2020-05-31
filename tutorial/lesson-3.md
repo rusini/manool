@@ -1,6 +1,6 @@
 ---
 title:   Lesson 3 -- Tutorial
-updated: 2020-05-16
+updated: 2020-05-31
 ---
 
 <aside markdown="1" class="right">
@@ -155,14 +155,14 @@ MANOOL supports signed zeros in accordance with the specification IEEE-754 (only
 
     { {extern "manool.org.18/std/0.5/all"} in
       -- Signed zeros supported
-      Out.WriteLine[F64["1e-300"]$ / F64["1e300"]$; ", "; ~F64["1e-300"]$ / F64["1e300"]$]
-      Out.WriteLine[F64["+0"]$; ", "; F64["-0"]$]
+      Out.WriteLine[F64["1e-300"]$ / F64["1e300"]$ ", " ~F64["1e-300"]$ / F64["1e300"]$]
+      Out.WriteLine[F64["+0"]$ ", " F64["-0"]$]
       Out.WriteLine[F64["+0"]$ == F64["-0"]$]
       Out.WriteLine[Atan[F64[0]$; F64["+0"]$]]
       Out.WriteLine[Atan[F64[0]$; F64["-0"]$]]
       -- Signed zeros unsupported
-      Out.WriteLine[D64["1e-300"]$ / D64["1e300"]$; ", "; ~D64["1e-300"]$ / D64["1e300"]$]
-      Out.WriteLine[D64["+0"]$; ", "; D64["-0"]$]
+      Out.WriteLine[D64["1e-300"]$ / D64["1e300"]$ ", " ~D64["1e-300"]$ / D64["1e300"]$]
+      Out.WriteLine[D64["+0"]$ ", " D64["-0"]$]
     }
 
 Output:
@@ -176,6 +176,8 @@ Output:
     0, 0
 
 
+* * * * *
+**[Continue](lesson-4 "Next Lesson")**
 <aside markdown="1" class="right">
 Lesson 3 of 5 -- Tutorial
 =========================

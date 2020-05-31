@@ -1,6 +1,6 @@
 ---
 title:   Lesson 1 -- Tutorial
-updated: 2020-05-16
+updated: 2020-05-31
 ---
 
 Go to Lesson:&ensp;[1]&ensp;\|&ensp;[2]&ensp;\|&ensp;[3]&ensp;\|&ensp;[4]&ensp;\|&ensp;[5]
@@ -69,9 +69,9 @@ MANOOL][instructions] for more tips.
 [^a3]: `{extern "..."}` actually has its own meaning here (more on this later), but for now you can safely ignore this fact.
 
 <aside markdown="1">
-This has nothing special by now and is quite a norm for a lot of languages nowadays, and I promise all of this is going to become more interesting later.
-However, you may note that the main difference is in the (surface) syntax and the unusual choice of brackets and delimiters. Please bear in mind for now that
-this is not an arbitrary choice nor a matter of personal preference but rather a result of many design trade-offs in the language.
+This has nothing special by now and is quite a norm for a lot of languages nowadays, and I promise all of this is going to make more sense later. However, you
+may note that the main difference is in the (surface) syntax and the unusual choice of brackets and delimiters. Please bear in mind for now that this is not an
+arbitrary choice nor a matter of personal preference but rather a result of many design trade-offs in the language.
 </aside>
 
 ### Alternative notations ##############################################################################################
@@ -300,7 +300,7 @@ Output:
 Quiz
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Try to figure out what is going on here (you should have acquired all the clues after completing the [Lesson 3](Lesson-3#start)):
+Try to figure out what is going on here (you should have acquired all the clues after completing [Lesson 3](Lesson-3#start)):
 
     { {extern "manool.org.18/std/0.5/all"} in
       { (WriteLine) Out -- What do Write/WriteLine return?
@@ -319,6 +319,8 @@ Output:
     value/object, WriteLine, +, ~, Foo, Bar
 
 
+* * * * *
+**[Continue](lesson-2 "Next Lesson")**
 <aside markdown="1" class="right">
 Lesson 1 of 5 -- Tutorial
 =========================
