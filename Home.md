@@ -2,7 +2,7 @@
 # Home.md
 permalink: /
 title:     Welcome!
-updated:   2019-10-02
+updated:   2020-05-31
 ---
 
 <aside markdown="1" class="right">
@@ -29,7 +29,8 @@ MANOOL is a programming language with the same purpose as Python, Ruby, PHP, Com
 
 The author's implementation fits in only 10 KLOC in C++, yet it exhibits competitive run-time performance.
 
-**For a complete project overview**, please refer to [Introduction to MANOOL](specification/introduction-to-manool).
+You can find some **conceptual insights** in [Blog](blog). For a complete project overview, refer to
+  [Introduction to MANOOL](specification/introduction-to-manool).
 
 Contents
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -45,10 +46,6 @@ Contents
 {%endraw%}{%include page_footer.md%}
 
 <aside markdown="1">
-
-**MANOOL is a personal project** with no external funding or endorsement whatsoever, but it includes a solid, open implementation.
-
-If you ever happen to have a general data processing problem with _no_ dependency on existing code and/or third-party libraries, please [give MANOOL a
-try](download "How to Download and Install MANOOL") --- **you might benefit from a more recent and careful programming language design!**
-
+MANOOL is a personal project with **no external funding or endorsement** whatsoever -- you can **help** me by
+  [giving it a try](download "How to Download and Install MANOOL").
 </aside>
