@@ -2,8 +2,8 @@
 
 <!-- begin post footer -->
 
------
-**The End** --- Questions? --- Email me: <info@manool.org>
+* * * * *
+**The end** --- Questions? --- Email me: <info@manool.org>
 
 <footer markdown="1">
 
