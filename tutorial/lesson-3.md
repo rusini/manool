@@ -1,6 +1,6 @@
 ---
 title:   Lesson 3 -- Tutorial
-updated: 2020-05-31
+updated: 2020-06-01
 ---
 
 <aside markdown="1" class="right">
@@ -68,24 +68,24 @@ Output:
 
     Foo, True
 
+
+Numbers Beyond Integers
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 ---
 
 **Caution!!! Work in progress!!!**
 
 ---
 
-
-Numbers Beyond Integers
-----------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 You have full control over precise semantics of arithmetic operations in MANOOL. To cover a variety of practical needs and situations, the language provides
 several numeric data types to choose from, such as Integer, several kinds of Floating Point with binary and decimal base, Complex, and Unsigned. In most cases,
 you can expect MANOOL programs to give you reproducible numeric results regardless of peculiarities of your language implementation.
 
-{:comment}
+{%endraw%}{%comment%}
 The MANOOL specification places explicit requirements on precise semantics of arithmetic operations in the language; thus, MANOOL should have in most cases a
 completely reproducible behavior in this respect regardless of the implementation details.
-{:/comment}
+{%endcomment%}{%raw%}
 
 In the following examples we are going to learn about how to perform operations on fractional numbers, but first let's learn one minor but important feature:
 

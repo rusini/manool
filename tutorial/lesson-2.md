@@ -1,6 +1,6 @@
 ---
 title:   Lesson 2 -- Tutorial
-updated: 2020-05-31
+updated: 2020-06-01
 ---
 
 <aside markdown="1" class="right">
@@ -103,7 +103,7 @@ Although MANOOL has a functional core, it is a multiparadigm language, for which
 #### How it works
 
 1. During compilation of the expression `{var {Res = 1} in ...}`, the body expression(s), which follow `in`, are considered in a binding environment with a
-   temporary variable named `Res` injected.[^a4] The variable is initialized to `1` just before evaluating the body expressions.
+   temporary variable named `Res` injected.[^a4] The variable is initialized to `1` just before evaluating the body expression(s).
 
 2. The expression `{do Res after ...}` is equivalent to `{do ...; Res}`, which is evaluated by evaluating its constituents one by one, and thus this expression
    evaluates to `Res`.

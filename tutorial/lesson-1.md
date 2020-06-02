@@ -1,6 +1,6 @@
 ---
 title:   Lesson 1 -- Tutorial
-updated: 2020-05-31
+updated: 2020-06-01
 ---
 
 Go to Lesson:&ensp;[1]&ensp;\|&ensp;[2]&ensp;\|&ensp;[3]&ensp;\|&ensp;[4]&ensp;\|&ensp;[5]
@@ -69,8 +69,8 @@ MANOOL][instructions] for more tips.
 [^a3]: `{extern "..."}` actually has its own meaning here (more on this later), but for now you can safely ignore this fact.
 
 <aside markdown="1">
-This has nothing special by now and is quite a norm for a lot of languages nowadays, and I promise all of this is going to make more sense later. However, you
-may note that the main difference is in the (surface) syntax and the unusual choice of brackets and delimiters. Please bear in mind for now that this is not an
+This has nothing special so far and is quite a norm for a lot of languages nowadays, and I promise all of this is going to make more sense later. However, you
+may note that one difference is in the (surface) syntax and the unusual choice of brackets and delimiters. Please bear in mind for now that this is not an
 arbitrary choice nor a matter of personal preference but rather a result of many design trade-offs in the language.
 </aside>
 
@@ -92,6 +92,7 @@ The following two alternative "Hello World" implementations are equivalent to th
        (like S-expressions in Lisps).
 
 <aside markdown="1">
+
 The ability to express essentially the same program (or a part thereof) in different notations may be either extremely useful or completely useless depending on
 your situation. In any case, this is allowed not due to a specific design goal but rather as an artifact of the overall language design, which features a simple
 and uniform syntax called a *universal* syntax.
@@ -104,6 +105,7 @@ Some benefits of the "Object-Oriented" notation:
 Some benefits of the "S-expression" notation:
   * It is already strongly preferred for so-called _special_ (non-applicative) expressions.
   * It works better when you want to format some complex applicative expression uniformly, which is demonstrated at the end of this lesson.
+
 </aside>
 
 ### Code formatting recommendations ####################################################################################

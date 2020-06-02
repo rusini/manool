@@ -1,6 +1,6 @@
 ---
 title:   Lesson 4 -- Tutorial
-updated: 2020-05-31
+updated: 2020-06-01
 ---
 
 <aside markdown="1" class="right">
@@ -25,15 +25,15 @@ basic operations with composite values).[^a1]
        of component types and without placing restrictions on the number of components on behalf of the composite type itself. Thus, complex numbers, for
        instance, are not composite values according to this definition.
 
-The following examples should allow you to master composite types of MANOOL and deal easily and efficiently with elaborate data sets. Pay a special attention to
+The following examples should allow you to master composite types of MANOOL and deal easily and efficiently with elaborate data sets. Pay special attention to
 comments embedded in these examples about asymptotic complexity of certain expressions (such as `/*O(1)*/` or `/*O(log n)*/`).[^a2]
 
 [^a2]: Complete control over time complexity of operations with composite values may be the whole point of using MANOOL in the first place.
 
-Normally, you can iterate over elements of a composite value in an easy way by using a `for`-loop:[^a3]
+Normally, you can iterate over elements of a composite value in a straightforward way by using a `for`-loop:[^a3]
 
     { {extern "manool.org.18/std/0.5/all"} in
-    : for { E = {array of "Red" "Orange" "Yellow" "Green" "Blue" "Indigo" "Violet"} } do
+    : for { E = {array of "Red" "Orange" "Yellow" "Green" "Blue" "Indigo" "Violet"}$ } do
       Out.WriteLine[E]
     }
 
@@ -52,13 +52,16 @@ Output:
     Violet
 
 You can apply the operation `Size` to any iterable composite value to obtain the number of elements in the argument. Actually, you always iterate over elements
-of a _view_ (some composite values are views onto their own elements).
+of a _view_ (some composite values are views onto their own elements).[^a4]
+
+[^a4]: `{for {E = C} in ...}` is actually equivalent to `{for {E = C.Elems[]} in ...}`, and `Elems` for a view shall return that view again. Other operations
+       exist that return views, like `Keys`, which returns a view onto access keys for a composite value.
 
 <aside markdown="1">
 
 One kind of view, which is not a full-blown composite data type, is the range (of integral values):
 
-    {{extern "manool.org.18/std/0.5/all"} in: for { E = Range[7] } do Out.WriteLine[E]}
+    {{extern "manool.org.18/std/0.5/all"} in: for { E = Range[7]$ } do Out.WriteLine[E]}
 
 Output:
 
@@ -70,10 +73,10 @@ Output:
     5
     6
 
-A range always consists of integers between its _low_ bound and up to but not including its _high_ bound, both passed to a `Range` constructor (`Range[7]`
-actually means `Range[0; 7]`). You can even construct reversed ranges if you use `RevRange` instead of `Range` (with the same bounds):
+A range consists of all integers between its _low_ bound and up to but not including its _high_ bound, both passed to a `Range` constructor (`Range[7]` is a
+shorthand for `Range[0; 7]`). You can even construct reversed ranges by using `RevRange` instead of `Range` (with the same arguments):
 
-    {{extern "manool.org.18/std/0.5/all"} in: for { E = RevRange[7] } do Out.WriteLine[E]}
+    {{extern "manool.org.18/std/0.5/all"} in: for { E = RevRange[7]$ } do Out.WriteLine[E]}
 
 Output:
 
@@ -89,16 +92,18 @@ Output:
 
 #### Concatenation and slicing of arrays and sequences, move operations
 
-You can concatenate arrays and get subarrays (slices), even in reverse order if you like, by idexing (subscribing) using ranges:
+You can concatenate arrays and get subarrays (_slices_ in more general terms), even in reverse order if you like, by indexing (subscripting) using ranges:[^a5]
 
     { {extern "manool.org.18/std/0.5/all"} in
-    : var { A = {array of "Red" "Orange" "Yellow" "Green" "Blue" "Indigo" "Violet"} } in
+    : var { A = {array of "Red" "Orange" "Yellow" "Green" "Blue" "Indigo" "Violet"}$ } in
     : for { E = A[Range[2; Size[A]]] + A[RevRange[Size[A] - 1]] } do
       Out.WriteLine[E]
     }
 
-Compared to arrays, sequences (another composite data type) may be more efficient for concatenation and adding or removing a few elements from any end. In turn,
-arrays are more efficient that sequences for accessing individual elements in the middle. Otherwise, they are similar:
+[^a5]: You can also access individual array elements (by index), which is demonstrated later.
+
+Compared to arrays, sequences (another composite data type) may be more efficient for concatenation and removing a few elements from either end. In turn, arrays
+are more efficient than sequences for accessing individual elements in the middle. Otherwise, they are similar:
 
     { {extern "manool.org.18/std/0.5/all"} in
     : var { S = {sequence of "Red" "Orange" "Yellow" "Green" "Blue" "Indigo" "Violet"} } in
@@ -107,10 +112,10 @@ arrays are more efficient that sequences for accessing individual elements in th
       Out.WriteLine[E]
     }
 
-The constructs `S!` and `R!` above refer to _move_ operations. By using a move operation you roughly tell the MANOOL translator: "I declare that I won't need
-the value stored in this variable anymore. Please feel free to reuse any associated resources as you wish.".[^a4]
+The constructs `S!` and `R!` above refer to _move_ operations. By using a move operation, you roughly tell the MANOOL translator: "I declare that I won't need
+the value stored in this location anymore. Please feel free to reuse any associated resources as you wish.".[^a6]
 
-[^a4]: If you in fact hold your promise, such move operation is semantically a non-op, but it may be crucial for efficiency. Arguably, relying on move
+[^a6]: If you in fact hold your promise, such move operation is semantically a non-op, but it may be crucial for efficiency. Arguably, relying on move
        operations instead of referential semantics constitutes a better software engineering practice.
 
 Output of both examples:
@@ -127,12 +132,36 @@ Output of both examples:
     Orange
     Red
 
+<aside markdown="1">
+
+---
+
+**Caution!!! Work in progress!!!**
+
+---
+
+    { {extern "manool.org.18/std/0.5/all"} in
+    : var { S = {sequence of "Red" "Orange" "Yellow" "Green" "Blue" "Indigo" "Violet"}$ } in
+    : var { R = S[RevRange[Size[S]]] } in
+    : for { E = S![Range[2; Size[S]]] + R![Range[1; Size[R]]] /*amortized O(1)*/ } do
+      Out.WriteLine[E]
+    }
+^
+    { {extern "manool.org.18/std/0.5/all"} in
+    : var { S = {sequence of "Red" "Orange" "Yellow" "Green" "Blue" "Indigo" "Violet"}$.Clone[] } in
+    : var { R = S[RevRange[Size[S]]] } in
+    : for { E = S![Range[2; Size[S]]] + R![Range[1; Size[R]]] /*O(1)*/ } do
+      Out.WriteLine[E]
+    }
+
+</aside>
+
 ### Sets ###############################################################################################################
 
 You can also easily operate with _sets_ and even perform set-theoretic operations using infix operators:
 
     { {extern "manool.org.18/std/0.5/all"} in
-    : for { E = {set of "Red" "Green" "Blue" "Indigo" "Violet"} + {set of "Red" "Yellow" "Orange" "Green" "Blue"} } do
+    : for { E = {set of "Red" "Green" "Blue" "Indigo" "Violet"}$ + {set of "Red" "Yellow" "Orange" "Green" "Blue"}$ } do
       Out.WriteLine[E]
     }
 
@@ -306,7 +335,7 @@ Output:
 
 Unlike records maps are composite values whose individual elements can be addressed using keys of any type.
 
-Let's construct a dictionary to translate color names from English to Spanish and then another one to translate from English to Portuguese:[^a5]
+Let's construct a dictionary to translate color names from English to Spanish and then another one to translate from English to Portuguese:[^a7]
 
     { {extern "manool.org.18/std/0.5/all"} in
     : var
@@ -340,7 +369,7 @@ Let's construct a dictionary to translate color names from English to Spanish an
 
   (in MANOOL you can iterate over more than one view using more than one loop variable in each step, which is demonstrated above).
 
-[^a5]: This example also demonstrates the non-referential semantics in action.
+[^a7]: This example also demonstrates the non-referential semantics in action.
 
 Output:
 
