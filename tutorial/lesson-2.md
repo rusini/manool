@@ -205,7 +205,7 @@ Compound Conditions
 You can express complex conditions by using operators `&` (conjunction for Booleans), `|` (disjunction for Booleans), and `~` (negation for Booleans). The
 operators `&` and `|` are short-circuiting (the right-hand side is unevaluated unless strictly necessary):
 
-    {{extern "manool.org.18/std/0.5/all"} in Out.WriteLine["2".IsI48[] & "2" < 3 ", " ~"2".IsI48[] | "2" < 3]}
+    {{extern "manool.org.18/std/0.5/all"} in Out.WriteLine["2".IsI48[] & ("2" < 3 "), " ~"2".IsI48[] | ("2" < 3)]}
 
 Output:
 

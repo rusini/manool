@@ -140,7 +140,7 @@ simply write down the expressions one after another, optionally delimiting them 
 
     { {extern "manool.org.18/std/0.5/all"} in -- Evaluation of multiple expressions in a row
       Out.Write["Hello"]; Out.Write[", "]; Out.Write["world"]; Out.Write["!"]
-      Out.WriteLine[]
+      Out.WriteLine[] -- produce a newline without any other output
     }
 
   (you can replace `WriteLine` with just `Write` to avoid producing newlines).
