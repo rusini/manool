@@ -103,7 +103,7 @@ Some benefits of the "Object-Oriented" notation:
     `X.Map1[].Map2[].Map3[]`.
 
 Some benefits of the "S-expression" notation:
-  * It is already strongly preferred for so-called _special_ (non-applicative) expressions.
+  * It is already strongly preferred for so-called _special_ (non-applicative) expressions in most cases.
   * It works better when you want to format some complex applicative expression uniformly, which is demonstrated at the end of this lesson.
 
 </aside>
