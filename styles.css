@@ -121,7 +121,8 @@ layout: null
   aside > :last-child {
     margin-bottom: 0;
   }
-  pre {
+  pre,
+  main .scroll {
     overflow: auto;
   }
   figure,
@@ -346,7 +347,8 @@ layout: null
   }
   pre,
   p > code,
-  li > code {
+  li > code,
+  table {
     background-color: #F0F0F0;
   }
   small {
@@ -383,6 +385,30 @@ layout: null
   main .footnotes li:target {
     color: #E80000;
   }
+
+  table {
+    border-collapse: collapse;
+    margin-left:     auto;
+    margin-right:    auto;
+  }
+  td,
+  th {
+    border-bottom: thin solid white;
+    border-right:  .3em solid white;
+    padding-left:  0;
+    padding-right: 0;
+  }
+  th {
+    font-weight:         inherit;
+    border-bottom-width: .3em;
+    padding-top:         .3em;
+    padding-bottom:      .3em;
+    text-align:          center !important;
+  }
+  td:last-child,
+  th:last-child {
+    border-right-style: none;
+  }
 }
 
 /* Viewport-dependent properties */
@@ -392,7 +418,8 @@ layout: null
   pre,
   p > code,
   li > code,
-  main img {
+  main img,
+  table {
     border-radius: 3px;
   }
   pre {
@@ -407,6 +434,11 @@ layout: null
   }
   p {
     text-align: justify;
+  }
+  td,
+  th {
+    padding-left:  1px;
+    padding-right: 1px;
   }
 }
 @media (min-width: 640px) {
@@ -432,7 +464,8 @@ layout: null
   pre,
   p > code,
   li > code,
-  main img {
+  main img,
+  table {
     border-radius: 4px;
   }
 }
@@ -567,7 +600,8 @@ layout: null
     color:           inherit;
     text-decoration: none;
   }
-  pre code {
+  pre code,
+  table {
     font-size: 12px;
   }
   main .footnotes li:target {
@@ -586,7 +620,8 @@ layout: null
 }
 @media print and (min-width: 640px) {
   main > * > pre code,
-  main > * > blockquote pre code {
+  main > * > blockquote pre code,
+  table {
     font-size: 14px;
   }
 }
