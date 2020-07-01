@@ -107,8 +107,12 @@ namespace MNL_AUX_UUID { using namespace aux;
       return !MNL_LIKELY(argv[0].rep.tag() == 0x7FF8u) || argv[0].rep.dat<void *>() != rep.dat<void *>();
    case 3: // Order
       if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      if (MNL_UNLIKELY(argv[0].rep.tag() != 0x7FF8u) || MNL_UNLIKELY(argv[0].rep.dat<void *>() != rep.dat<void *>())) MNL_ERR(MNL_SYM("TypeMismatch"));
-      return 0;
+      { auto mask = MNL_AUX_RAND(uintptr_t);
+        int res = default_order(argv[0]);
+        return MNL_UNLIKELY(res) ? res :
+           ((reinterpret_cast<uintptr_t>(rep.dat<void *>()) ^ mask) < (reinterpret_cast<uintptr_t>(argv[0].rep.dat<void *>()) ^ mask)) -
+           ((reinterpret_cast<uintptr_t>(argv[0].rep.dat<void *>()) ^ mask) < (reinterpret_cast<uintptr_t>(rep.dat<void *>()) ^ mask));
+      }
    case 4: // Clone
       if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
       return move(*this);
@@ -162,6 +166,12 @@ namespace MNL_AUX_UUID { using namespace aux;
    record_descr::record_descr(initializer_list<const char *> il): record_descr([=]()->set<sym>{
       set<sym> res; for (auto el: il) res.insert(el); return res;
    }()) {}
+   int pub::order(const record_descr &lhs, const record_descr &rhs) noexcept {
+      auto mask = MNL_AUX_RAND(uintptr_t);
+      return
+         ((reinterpret_cast<uintptr_t>(&*lhs.rep) ^ mask) < (reinterpret_cast<uintptr_t>(&*rhs.rep) ^ mask)) -
+         ((reinterpret_cast<uintptr_t>(&*rhs.rep) ^ mask) < (reinterpret_cast<uintptr_t>(&*lhs.rep) ^ mask));
+   }
 
    decltype(record_descr::store) record_descr::store;
    MNL_IF_WITH_MT(decltype(record_descr::mutex) record_descr::mutex;)

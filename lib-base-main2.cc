@@ -1879,6 +1879,12 @@ namespace aux { extern "C" code mnl_aux_base() { // main ///////////////////////
       if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
       return argv[0].is_list();
    }};
+   struct proc_OrderEx { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+      if (MNL_UNLIKELY(argc != 2)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+      int res = argv[0].default_order(argv[1]);
+      return MNL_LIKELY(res) ? res : MNL_SYM("Order")(2, argv);
+   }};
    return expr_export{
       {"=",           comp_set{}},
       {"!",           comp_move{}},
@@ -1941,6 +1947,7 @@ namespace aux { extern "C" code mnl_aux_base() { // main ///////////////////////
       {"Bind",        make_lit(proc_Bind{})},
       {"Min",         make_lit(proc_Min{})},
       {"Max",         make_lit(proc_Max{})},
+      {"OrderEx",     make_lit(proc_OrderEx{})},
    };
 }}
 

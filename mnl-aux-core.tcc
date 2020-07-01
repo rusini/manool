@@ -217,6 +217,7 @@ namespace aux { namespace pub {
       val operator()(int argc, val argv[], val *argv_out = {}) &&; // functional application - !argc => !argv && !argv_out
       val default_invoke(const sym &op, int argc, val argv[]);
       long rc /*reference counter*/() const noexcept;
+      int default_order(const val &) const noexcept; // actually from MANOOL API
    private: // Concrete representation
       static_assert(sizeof(double) == 8, "sizeof(double) == 8");
       class MNL_ALIGN(8) rep { // bit-layout management - IEEE 754 FP representation and uniform FP endianness are assumed (and NOT checked)
@@ -835,6 +836,7 @@ namespace aux { namespace pub {
       MNL_INLINE int operator[](const sym &id) const noexcept { return tab()[id]; }
       MNL_INLINE bool has(const sym &id) const noexcept { return (*this)[id] != (unsigned char)-1; }
       MNL_INLINE friend bool operator==(const record_descr &lhs, const record_descr &rhs) noexcept { return lhs.rep == rhs.rep; }
+      friend int order(const record_descr &, const record_descr &) noexcept;
    private: // Concrete representation and implementation helpers
       static map<set<sym>, pair<const sym::tab<unsigned char>, /*atomic*/ long>> store;
       decltype(store)::iterator rep;
@@ -843,6 +845,7 @@ namespace aux { namespace pub {
    };
    MNL_INLINE inline void swap(record_descr &lhs, record_descr &rhs) noexcept { lhs.swap(rhs); }
    bool operator==(const record_descr &, const record_descr &) noexcept;
+   int  order     (const record_descr &, const record_descr &) noexcept;
    MNL_INLINE inline bool operator!=(const record_descr &lhs, const record_descr &rhs) noexcept { return std::rel_ops::operator!=(lhs, rhs); }
 }} // namespace aux::pub
    # define MNL_RECORD_DESCR(...) MNL_AUX_INIT(::mnl::record_descr({__VA_ARGS__}))

@@ -452,4 +452,5 @@
   Out; Err; In; OpenFile; OpenPipe; OpenTemp; IsStream -- 7
   StartThread; MakeMutex; MakeCond; IsMutex; IsCond -- 5
   Random; Clock; Delay -- 3
+  OrderEx
 }

@@ -195,7 +195,7 @@ namespace aux { namespace {
          }
       case 10: // Order
          if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-         if (MNL_UNLIKELY(!test<dict<val, val>>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+         if (MNL_UNLIKELY(!test<dict<val, val>>(argv[0]))) return self.default_order(argv[0]);
          MNL_IF_WITH_IDENT_OPT(if (&dat == &cast<const dict<val, val> &>(argv[0])) return 0;)
          for (auto lhs = dat.cbegin(), rhs = cast<const dict<val, val> &>(argv[0]).begin();; ++lhs, ++rhs) {
             if (MNL_UNLIKELY(lhs == dat.cend())) return -(rhs != cast<const dict<val, val> &>(argv[0]).end());
@@ -359,7 +359,7 @@ namespace aux { namespace {
          }
       case 15: // Order
          if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-         if (MNL_UNLIKELY(!test<dict<val>>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+         if (MNL_UNLIKELY(!test<dict<val>>(argv[0]))) return self.default_order(argv[0]);
          MNL_IF_WITH_IDENT_OPT(if (&dat == &cast<const dict<val> &>(argv[0])) return 0;)
          for (auto lhs = dat.cbegin(), rhs = cast<const dict<val> &>(argv[0]).begin();; ++lhs, ++rhs) {
             if (MNL_UNLIKELY(lhs == dat.cend())) return -(rhs != cast<const dict<val> &>(argv[0]).end());
@@ -566,7 +566,7 @@ namespace aux { namespace {
          }
       case 10: // Order
          if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-         if (MNL_UNLIKELY(!test<list<val>>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+         if (MNL_UNLIKELY(!test<list<val>>(argv[0]))) return self.default_order(argv[0]);
          MNL_IF_WITH_IDENT_OPT(if (&dat == &cast<const list<val> &>(argv[0])) return 0;)
          for (auto lhs = dat.cbegin(), rhs = cast<const list<val> &>(argv[0]).begin();; ++lhs, ++rhs) {
             if (MNL_UNLIKELY(lhs == dat.cend())) return -(rhs != cast<const list<val> &>(argv[0]).end());

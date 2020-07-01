@@ -391,6 +391,23 @@ namespace MNL_AUX_UUID { using namespace aux;
       return res;
    }
 
+   int val::default_order(const val &rhs) const noexcept {
+      auto mask1 = MNL_AUX_RAND(unsigned);
+      auto mask2 = MNL_AUX_RAND(size_t);
+      bool mask3 = MNL_AUX_RAND(unsigned) & 1;
+      return
+      MNL_LIKELY(rep.tag() != 0x7FF8u) || MNL_LIKELY(rhs.rep.tag() != 0x7FF8u) ?
+         (((~rep.tag() & 0x7FF0u ? 0 : rep.tag()) ^ mask1) < ((~rhs.rep.tag() & 0x7FF0u ? 0 : rhs.rep.tag()) ^ mask1)) -
+         (((~rhs.rep.tag() & 0x7FF0u ? 0 : rhs.rep.tag()) ^ mask1) < ((~rep.tag() & 0x7FF0u ? 0 : rep.tag()) ^ mask1)) :
+      MNL_LIKELY(!test<object>()) || MNL_LIKELY(!rhs.test<object>()) ?
+         (typeid(*static_cast<root *>(rep.dat<void *>())).hash_code() ^ mask2) < (typeid(*static_cast<root *>(rhs.rep.dat<void *>())).hash_code() ^ mask2) ? -1 :
+         (typeid(*static_cast<root *>(rhs.rep.dat<void *>())).hash_code() ^ mask2) < (typeid(*static_cast<root *>(rep.dat<void *>())).hash_code() ^ mask2) ? +1 :
+         typeid(*static_cast<root *>(rep.dat<void *>())).before(typeid(*static_cast<root *>(rhs.rep.dat<void *>()))) ? mask3 ? -1 : +1 :
+         typeid(*static_cast<root *>(rhs.rep.dat<void *>())).before(typeid(*static_cast<root *>(rep.dat<void *>()))) ? mask3 ? +1 : -1 : 0 :
+      // else
+         order(cast<const object &>().descr, rhs.cast<const object &>().descr);
+   }
+
    code expr_export::compile(code &&, const pub::form &form, const loc &_loc) const {
       if (form.size() < 3 || form[1] != MNL_SYM("in")) err_compile("invalid form", _loc);
       if (form.size() == 3 && test<sym>(form[2])) for (auto &&el: bind) if (MNL_UNLIKELY(el.first == cast<const sym &>(form[2]))) return el.second; // shortcut
