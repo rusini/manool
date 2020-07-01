@@ -16,14 +16,13 @@
 # include "config.tcc"
 # include "mnl-aux-core.tcc"
 
+# include <time.h> // clock_gettime
 # include <cstdio> // sprintf, stderr, fprintf, fputs, fflush
-# include <ctime>  // time
 
 namespace MNL_AUX_UUID { using namespace aux;
    namespace aux {
-      using std::_Exit; // <cstdlib>
+      using std::_Exit; using std::srand; // <cstdlib>
       using std::sprintf; using std::fprintf; using std::fputs; using std::fflush; // <cstdio>
-      using std::time; // <time>
    }
 
 // Translation Infrastructure //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -177,6 +176,8 @@ namespace MNL_AUX_UUID { using namespace aux;
    MNL_IF_WITH_MT(decltype(record_descr::mutex) record_descr::mutex;)
 
 // Seed Legacy Random Number Generator /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-namespace aux { namespace { MNL_PRIORITY(1000) struct { int _ = (srand(time({})), 0); } _srand; }}
+namespace aux { namespace { MNL_PRIORITY(1000) class { int _ = []()->int{
+   struct ::timespec ts; ::clock_gettime(CLOCK_REALTIME, &ts); return srand(ts.tv_sec ^ (unsigned)ts.tv_nsec / 1000), 0;
+}(); } _srand; }}
 
 } // namespace MNL_AUX_UUID

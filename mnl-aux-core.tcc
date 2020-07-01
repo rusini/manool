@@ -59,8 +59,8 @@ namespace aux {
 } // namespace aux
    # define MNL_AUX_RAND(VAL) MNL_AUX_INIT(::mnl::aux::_rand<VAL>())
 namespace aux {
-   template<typename Val> MNL_NOINLINE Val _rand() noexcept
-      { static_assert(std::is_unsigned<Val>::value, "std::is_unsigned<Val>::value"); return (unsigned)rand() * (unsigned)rand(); }
+   template<typename Val> MNL_NOINLINE Val _rand() noexcept // TODO: conv to bool is problematic
+      { static_assert(std::is_unsigned<Val>::value, "std::is_unsigned<Val>::value"); return (unsigned long)rand() * rand() * rand() * rand(); } // 60 bits
 } // namespace aux
 
 // Preliminary Declarations ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
