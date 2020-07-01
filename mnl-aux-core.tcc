@@ -820,7 +820,7 @@ namespace aux { namespace pub {
 
 // Record Composite ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace aux { namespace pub {
-   class record_descr/*iptor*/ {
+   class record_descr/*iptor*/ { // TODO: record_sign/*ature*/
    public: // Standard operations
       MNL_INLINE record_descr() noexcept: rep(store.end()) {}
       record_descr(const record_descr &) noexcept;
