@@ -252,7 +252,9 @@ namespace aux { namespace {
                      for (auto lo = cast<const range<true> &>(iter).lo, hi = cast<const range<true> &>(iter).hi;;)
                         if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() =  --hi, body.execute(fast_sig), sig_state.first )) return {};
                      // else
-                     for (long long lo = 0, hi = safe_cast<long long>(_loc, MNL_SYM("Size")(_loc, iter)); lo < hi; ++lo) {
+                     auto hi = safe_cast<long long>(_loc, MNL_SYM("Size")(_loc, iter));
+                     if (MNL_UNLIKELY(hi < 0)) MNL_ERR_LOC(_loc, MNL_SYM("ConstraintViolation"));
+                     for (long long lo = 0; lo < hi; ++lo) {
                         try { tmp_stk.back() = iter(_loc, lo); }
                         catch (decltype(::mnl::sig_state) &sig) { if (sig.first == MNL_SYM("EndOfData")) return {}; throw; }
                         if (MNL_UNLIKELY( body.execute(fast_sig), sig_state.first )) return {};
@@ -268,8 +270,11 @@ namespace aux { namespace {
                   MNL_INLINE val execute(bool fast_sig) const {
                      auto iter0 = MNL_SYM("Elems")(_loc, this->iter0.execute()), iter1 = MNL_SYM("Elems")(_loc, this->iter1.execute());
                      auto size = safe_cast<long long>(_loc, MNL_SYM("Size")(_loc, iter0));
-                     if (MNL_UNLIKELY(safe_cast<long long>(_loc, MNL_SYM("Size")(_loc, iter1)) != size))
-                        MNL_ERR_LOC(_loc, MNL_SYM("ConstraintViolation"));
+                     if (MNL_UNLIKELY(size < 0)) MNL_ERR_LOC(_loc, MNL_SYM("ConstraintViolation"));
+                     {  auto _size = safe_cast<long long>(_loc, MNL_SYM("Size")(_loc, iter1));
+                        if (MNL_UNLIKELY(_size < 0)) MNL_ERR_LOC(_loc, MNL_SYM("ConstraintViolation"));
+                        if (MNL_UNLIKELY(_size < size)) size = _size;
+                     }
                      tmp_stk.resize(tmp_stk.size() + 2);
                      struct _ { MNL_INLINE ~_() { tmp_stk.pop_back(), tmp_stk.pop_back(); } } _;
                      MNL_IF_WITH_MT(auto &tmp_stk = mnl::tmp_stk; auto &sig_state = mnl::sig_state;)
@@ -289,9 +294,12 @@ namespace aux { namespace {
                      struct iter: vector<val> { MNL_INLINE ~iter() { while (!empty()) pop_back(); } } iter;
                      iter.reserve(this->iter.size()); for (auto &&el: this->iter) iter.push_back(MNL_SYM("Elems")(_loc, el.execute()));
                      auto size = safe_cast<long long>(_loc, MNL_SYM("Size")(_loc, iter.front()));
+                     if (MNL_UNLIKELY(size < 0)) MNL_ERR_LOC(_loc, MNL_SYM("ConstraintViolation"));
                      for (auto it = iter.begin() + 1; it != iter.end(); ++it)
-                     if (MNL_UNLIKELY(safe_cast<long long>(_loc, MNL_SYM("Size")(_loc, *it)) != size))
-                        MNL_ERR_LOC(_loc, MNL_SYM("ConstraintViolation"));
+                     {  auto _size = safe_cast<long long>(_loc, MNL_SYM("Size")(_loc, *it));
+                        if (MNL_UNLIKELY(_size < 0)) MNL_ERR_LOC(_loc, MNL_SYM("ConstraintViolation"));
+                        if (MNL_UNLIKELY(_size < size)) size = _size;
+                     }
                      tmp_stk.resize(tmp_stk.size() + iter.size());
                      struct _ { int sn; MNL_INLINE ~_() { for (; sn; --sn) tmp_stk.pop_back(); } } _{(int)iter.size()};
                      MNL_IF_WITH_MT(auto &tmp_stk = mnl::tmp_stk; auto &sig_state = mnl::sig_state;)
