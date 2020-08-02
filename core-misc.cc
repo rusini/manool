@@ -28,11 +28,20 @@ namespace MNL_AUX_UUID { using namespace aux;
 // Translation Infrastructure //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    MNL_IF_WITH_MT(thread_local) decltype(symtab) pub::symtab;
 
+   namespace aux { namespace { struct stub {
+      MNL_INLINE static val  execute(bool)   { MNL_UNREACHABLE(); }
+      MNL_INLINE static void exec_in(val &&) { MNL_UNREACHABLE(); }
+      MNL_INLINE static val  exec_out()      { MNL_UNREACHABLE(); }
+      MNL_INLINE static bool is_rvalue() { return false; }
+      MNL_INLINE static bool is_lvalue() { return false; }
+      MNL_INLINE static code compile(code &&, const form &, const loc &_loc) { err_compile("invalid form", _loc); }
+   }; }}
    code pub::compile(const form &form, const loc &_loc) { return // *** The Compiler Core Dispatcher! ***
       test<sym>(form) && symtab[cast<const sym &>(form)] ?
          symtab[cast<const sym &>(form)] :
-      test<sym>(form) && ((const string &)cast<const sym &>(form))[0] >= 'a' && ((const string &)cast<const sym &>(form))[0] <= 'z' ?
-         (err_compile("unbound keyword (nested in this context)", form._loc(_loc)), code{}) :
+      test<sym>(form) && (((const string &)cast<const sym &>(form))[0] >= 'a' && ((const string &)cast<const sym &>(form))[0] <= 'z' ||
+      ((const string &)cast<const sym &>(form))[0] == '_' || ((const string &)cast<const sym &>(form))[0] == '`') ?
+         MNL_AUX_INIT((code)stub{}) :
       test<long long>(form) || test<string>(form) || test<sym>(form) ?
          [&]()->code{ code make_lit(const val &); return make_lit(form); }() : // actually from MANOOL API
       form.is_list() && !form.empty() ?
