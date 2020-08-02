@@ -436,7 +436,7 @@
     Delay  = {proc {T} as Delay[1000000 * T]}
   }
   in
-: export -- 126 standard bindings ------------------------------------------------------------------------------------------------------------------------------
+: export -- 127 standard bindings ------------------------------------------------------------------------------------------------------------------------------
   True; False; Nil; F64; F32; I48; MakeSym; S8; U32; D64; D128; C64; C128; Z64; Z32; MakePtr; Range; RevRange; RangeExt; RevRangeExt; Parse -- 21
   IsNull; IsI48; IsF64; IsF32; IsSym; IsS8; IsBool; IsU32; IsD64; IsD128; IsC64; IsC128; IsZ64; IsZ32; IsPtr; IsWeakPtr; IsRange; IsRevRange; IsList -- 19
   MaxI48; MaxF64; MaxF32; MaxU32; MaxD64; MaxD128; MaxC64; MaxC128 -- 8
@@ -446,11 +446,10 @@
   if; (&); (|); while; repeat; do; signal; case; unless -- 9
   proc; var; let; export; scope; VarArg; VarApply; Bind; ($) -- 9
   on; for; ensure -- 3
-  array; record; map; set; sequence; object; (@); IsArray; IsMap; IsSet; IsSequence -- 11
+  array; record; map; set; sequence; object; (@); OrderEx; IsArray; IsMap; IsSet; IsSequence -- 12
   macro; (#); error; eval; ('); (%); IsCode -- 7
   ProcessArgv; ProcessEnviron; ProcessExit; ReserveStack; ReserveHeap -- 5
   Out; Err; In; OpenFile; OpenPipe; OpenTemp; IsStream -- 7
   StartThread; MakeMutex; MakeCond; IsMutex; IsCond -- 5
   Random; Clock; Delay -- 3
-  OrderEx
 }
