@@ -1,6 +1,6 @@
 -- test.mnl
 
-{ {extern "manool.org.18/std/0.5/all"} in
+{ {extern "manool.org.18/std/0.6/all"} in
 : let { AllocOpt = False } in
 : let { N = 40; M = 80 } in
 : let { G = 2 } in
