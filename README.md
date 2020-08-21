@@ -1,4 +1,4 @@
-<img alt="MANOOL Logo" src="https://manool.org/MANOOL-Logo.png" width="64" height="64"> MANOOL v0.6.0
+<img alt="MANOOL Logo" src="https://manool.org/MANOOL-Logo.png" width="64" height="64"> MANOOL v0.6.1
 =====================================================================================================
 
 **MANOOL is meant to make exploratory programming safer and faster.**
