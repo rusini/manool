@@ -181,7 +181,7 @@ Confirmed Builds
 
 ***
 
-+ openSUSE Leap 15.1, x86-64, x86-64/lp64, g++
++ openSUSE Leap 15.2, x86-64, x86-64/lp64, g++
 
       sudo zypper install gcc-c++ make
       make
@@ -198,15 +198,15 @@ Confirmed Builds
 
 + CentOS 6, x86-64, x86-64/lp64, g++
 
-      sudo yum install centos-release-scl && sudo yum install devtoolset-8-gcc-c++
-      make SCL='scl enable devtoolset-8 --'
+      sudo yum install centos-release-scl && sudo yum install devtoolset-9-gcc-c++
+      make SCL='scl enable devtoolset-9 --'
 
 ***
 
 + CentOS 7, x86-64, x86-64/lp64, g++
 
-      sudo yum install centos-release-scl && sudo yum install devtoolset-8-gcc-c++
-      make SCL='scl enable devtoolset-8 --'
+      sudo yum install centos-release-scl && sudo yum install devtoolset-9-gcc-c++
+      make SCL='scl enable devtoolset-9 --'
 
 + CentOS 7, x86-64, x86-64/lp64, clang++
 
