@@ -206,7 +206,7 @@ namespace aux { namespace {
          {  sym::tab<bool> tab; for (auto &&el: form[1]) if (!tab[cast<const sym &>(el[1])])
                tab.update(cast<const sym &>(el[1]), true); else err_compile("ambiguous bindings", _loc);
          }
-         {  vector<code> iter; iter.reserve(form[1].size()); for (auto &&el: form[1]) iter.push_back(compile_rval(el[2], _loc));
+         {  vector<code> view; view.reserve(form[1].size()); for (auto &&el: form[1]) view.push_back(compile_rval(el[2], _loc));
 
             deque<code> overriden_ents;
             for (auto &&el: form[1]) overriden_ents.push_back(symtab[cast<const sym &>(el[1])]),
@@ -220,90 +220,98 @@ namespace aux { namespace {
             tmp_cnt -= form[1].size();
             for (auto &&el: form[1]) symtab.update(cast<const sym &>(el[1]), move(overriden_ents.front())), overriden_ents.pop_front();
 
-            if (iter.size() == 1) {
+            if (view.size() == 1) {
                struct expr { MNL_RVALUE()
-                  code iter, body; loc _loc;
+                  code view, body; loc _loc;
                   MNL_INLINE val execute(bool fast_sig) const {
-                     auto iter = this->iter.execute();
+                     auto view = this->view.execute();
                      tmp_stk.push_back({});
                      struct _ { MNL_INLINE ~_() { tmp_stk.pop_back(); } } _;
                      MNL_IF_WITH_MT(auto &tmp_stk = mnl::tmp_stk; auto &sig_state = mnl::sig_state;)
-                     if (MNL_UNLIKELY(test<range<>>(iter)))
-                     for (auto lo = cast<const range<> &>(iter).lo, hi = cast<const range<> &>(iter).hi;;)
+                     if (MNL_UNLIKELY(test<range<>>(view)))
+                     for (auto lo = cast<const range<> &>(view).lo, hi = cast<const range<> &>(view).hi;;)
                         if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() =  lo++, body.execute(fast_sig), sig_state.first )) return {};
-                     if (MNL_UNLIKELY(test<range<true>>(iter)))
-                     for (auto lo = cast<const range<true> &>(iter).lo, hi = cast<const range<true> &>(iter).hi;;)
+                     if (MNL_UNLIKELY(test<range<true>>(view)))
+                     for (auto lo = cast<const range<true> &>(view).lo, hi = cast<const range<true> &>(view).hi;;)
                         if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() =  --hi, body.execute(fast_sig), sig_state.first )) return {};
-                     if (MNL_UNLIKELY(test<vector<val>>(iter)))
-                     for (auto lo = cast<const vector<val> &>(iter).begin(), hi = cast<const vector<val> &>(iter).end();;)
+                     if (MNL_UNLIKELY(test<vector<val>>(view)))
+                     for (auto lo = cast<const vector<val> &>(view).begin(), hi = cast<const vector<val> &>(view).end();;)
                         if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() = *lo++, body.execute(fast_sig), sig_state.first )) return {};
                      // else
-                     iter = MNL_SYM("Elems")(_loc, move(iter));
-                     if (MNL_UNLIKELY(test<vector<val>>(iter)))
-                     for (auto lo = cast<const vector<val> &>(iter).begin(), hi = cast<const vector<val> &>(iter).end();;)
+                     view = MNL_SYM("Elems")(_loc, move(view));
+                     if (MNL_UNLIKELY(test<vector<val>>(view)))
+                     for (auto lo = cast<const vector<val> &>(view).begin(), hi = cast<const vector<val> &>(view).end();;)
                         if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() = *lo++, body.execute(fast_sig), sig_state.first )) return {};
-                     if (MNL_UNLIKELY(test<string>(iter)))
-                     for (auto lo = cast<const string &>(iter).begin(), hi = cast<const string &>(iter).end();;)
+                     if (MNL_UNLIKELY(test<string>(view)))
+                     for (auto lo = cast<const string &>(view).begin(), hi = cast<const string &>(view).end();;)
                         if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() = *lo++, body.execute(fast_sig), sig_state.first )) return {};
-                     if (MNL_UNLIKELY(test<range<>>(iter)))
-                     for (auto lo = cast<const range<> &>(iter).lo, hi = cast<const range<> &>(iter).hi;;)
+                     if (MNL_UNLIKELY(test<range<>>(view)))
+                     for (auto lo = cast<const range<> &>(view).lo, hi = cast<const range<> &>(view).hi;;)
                         if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() =  lo++, body.execute(fast_sig), sig_state.first )) return {};
-                     if (MNL_UNLIKELY(test<range<true>>(iter)))
-                     for (auto lo = cast<const range<true> &>(iter).lo, hi = cast<const range<true> &>(iter).hi;;)
+                     if (MNL_UNLIKELY(test<range<true>>(view)))
+                     for (auto lo = cast<const range<true> &>(view).lo, hi = cast<const range<true> &>(view).hi;;)
                         if (!MNL_LIKELY(lo != hi) || MNL_UNLIKELY( tmp_stk.back() =  --hi, body.execute(fast_sig), sig_state.first )) return {};
                      // else
-                     for (long long lo = 0, hi = safe_cast<long long>(_loc, MNL_SYM("Size")(_loc, iter)); lo < hi; ++lo) {
-                        try { tmp_stk.back() = iter(_loc, lo); }
+                     auto hi = safe_cast<long long>(_loc, MNL_SYM("Size")(_loc, view));
+                     if (MNL_UNLIKELY(hi < 0)) MNL_ERR_LOC(_loc, MNL_SYM("ConstraintViolation"));
+                     for (long long lo = 0; lo < hi; ++lo) {
+                        try { tmp_stk.back() = view(_loc, lo); }
                         catch (decltype(::mnl::sig_state) &sig) { if (sig.first == MNL_SYM("EndOfData")) return {}; throw; }
                         if (MNL_UNLIKELY( body.execute(fast_sig), sig_state.first )) return {};
                      }
                      return {};
                   }
                };
-               return expr{move(iter.front()), move(body), _loc};
+               return expr{move(view.front()), move(body), _loc};
             }
-            if (iter.size() == 2) {
+            if (view.size() == 2) {
                struct expr { MNL_RVALUE()
-                  code iter0, iter1, body; loc _loc;
+                  code view0, view1, body; loc _loc;
                   MNL_INLINE val execute(bool fast_sig) const {
-                     auto iter0 = MNL_SYM("Elems")(_loc, this->iter0.execute()), iter1 = MNL_SYM("Elems")(_loc, this->iter1.execute());
-                     auto size = safe_cast<long long>(_loc, MNL_SYM("Size")(_loc, iter0));
-                     if (MNL_UNLIKELY(safe_cast<long long>(_loc, MNL_SYM("Size")(_loc, iter1)) != size))
-                        MNL_ERR_LOC(_loc, MNL_SYM("ConstraintViolation"));
+                     auto view0 = MNL_SYM("Elems")(_loc, this->view0.execute()), view1 = MNL_SYM("Elems")(_loc, this->view1.execute());
+                     auto size = safe_cast<long long>(_loc, MNL_SYM("Size")(_loc, view0));
+                     if (MNL_UNLIKELY(size < 0)) MNL_ERR_LOC(_loc, MNL_SYM("ConstraintViolation"));
+                     {  auto _size = safe_cast<long long>(_loc, MNL_SYM("Size")(_loc, view1));
+                        if (MNL_UNLIKELY(_size < 0)) MNL_ERR_LOC(_loc, MNL_SYM("ConstraintViolation"));
+                        if (MNL_UNLIKELY(_size < size)) size = _size;
+                     }
                      tmp_stk.resize(tmp_stk.size() + 2);
                      struct _ { MNL_INLINE ~_() { tmp_stk.pop_back(), tmp_stk.pop_back(); } } _;
                      MNL_IF_WITH_MT(auto &tmp_stk = mnl::tmp_stk; auto &sig_state = mnl::sig_state;)
                      for (long long sn = 0; sn < size; ++sn) {
-                        try { tmp_stk.end()[-2] = iter0(_loc, sn), tmp_stk.end()[-1] = iter1(_loc, sn); }
+                        try { tmp_stk.end()[-2] = view0(_loc, sn), tmp_stk.end()[-1] = view1(_loc, sn); }
                         catch (decltype(::mnl::sig_state) &sig) { if (sig.first == MNL_SYM("EndOfData")) return {}; throw; }
                         if (MNL_UNLIKELY( body.execute(fast_sig), sig_state.first )) return {};
                      }
                      return {};
                   }
                };
-               return expr{move(iter[0]), move(iter[1]), move(body), _loc};
+               return expr{move(view[0]), move(view[1]), move(body), _loc};
             }
             {  struct expr { MNL_RVALUE()
-                  vector<code> iter; code body; loc _loc;
+                  vector<code> view; code body; loc _loc;
                   MNL_INLINE val execute(bool fast_sig) const {
-                     struct iter: vector<val> { MNL_INLINE ~iter() { while (!empty()) pop_back(); } } iter;
-                     iter.reserve(this->iter.size()); for (auto &&el: this->iter) iter.push_back(MNL_SYM("Elems")(_loc, el.execute()));
-                     auto size = safe_cast<long long>(_loc, MNL_SYM("Size")(_loc, iter.front()));
-                     for (auto it = iter.begin() + 1; it != iter.end(); ++it)
-                     if (MNL_UNLIKELY(safe_cast<long long>(_loc, MNL_SYM("Size")(_loc, *it)) != size))
-                        MNL_ERR_LOC(_loc, MNL_SYM("ConstraintViolation"));
-                     tmp_stk.resize(tmp_stk.size() + iter.size());
-                     struct _ { int sn; MNL_INLINE ~_() { for (; sn; --sn) tmp_stk.pop_back(); } } _{(int)iter.size()};
+                     struct view: vector<val> { MNL_INLINE ~view() { while (!empty()) pop_back(); } } view;
+                     view.reserve(this->view.size()); for (auto &&el: this->view) view.push_back(MNL_SYM("Elems")(_loc, el.execute()));
+                     auto size = safe_cast<long long>(_loc, MNL_SYM("Size")(_loc, view.front()));
+                     if (MNL_UNLIKELY(size < 0)) MNL_ERR_LOC(_loc, MNL_SYM("ConstraintViolation"));
+                     for (auto it = view.begin() + 1; it != view.end(); ++it)
+                     {  auto _size = safe_cast<long long>(_loc, MNL_SYM("Size")(_loc, *it));
+                        if (MNL_UNLIKELY(_size < 0)) MNL_ERR_LOC(_loc, MNL_SYM("ConstraintViolation"));
+                        if (MNL_UNLIKELY(_size < size)) size = _size;
+                     }
+                     tmp_stk.resize(tmp_stk.size() + view.size());
+                     struct _ { int sn; MNL_INLINE ~_() { for (; sn; --sn) tmp_stk.pop_back(); } } _{(int)view.size()};
                      MNL_IF_WITH_MT(auto &tmp_stk = mnl::tmp_stk; auto &sig_state = mnl::sig_state;)
                      for (long long sn1 = 0; sn1 < size; ++sn1) {
-                        try { for (int sn2 = 0; sn2 < (int)iter.size(); ++sn2) (tmp_stk.end() - iter.size())[sn2] = iter[sn2](_loc, sn1); }
+                        try { for (int sn2 = 0; sn2 < (int)view.size(); ++sn2) (tmp_stk.end() - view.size())[sn2] = view[sn2](_loc, sn1); }
                         catch (decltype(::mnl::sig_state) &sig) { if (sig.first == MNL_SYM("EndOfData")) return {}; throw; }
                         if (MNL_UNLIKELY( body.execute(fast_sig), sig_state.first )) return {};
                      }
                      return {};
                   }
                };
-               return expr{move(iter), move(body), _loc};
+               return expr{move(view), move(body), _loc};
             }
          }
       opt2:
@@ -1879,6 +1887,12 @@ namespace aux { extern "C" code mnl_aux_base() { // main ///////////////////////
       if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
       return argv[0].is_list();
    }};
+   struct proc_OrderEx { MNL_INLINE static val invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+      if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+      if (MNL_UNLIKELY(argc != 2)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+      int res = argv[0].default_order(argv[1]);
+      return MNL_LIKELY(res) ? res : MNL_SYM("Order")(2, argv);
+   }};
    return expr_export{
       {"=",           comp_set{}},
       {"!",           comp_move{}},
@@ -1941,6 +1955,7 @@ namespace aux { extern "C" code mnl_aux_base() { // main ///////////////////////
       {"Bind",        make_lit(proc_Bind{})},
       {"Min",         make_lit(proc_Min{})},
       {"Max",         make_lit(proc_Max{})},
+      {"OrderEx",     make_lit(proc_OrderEx{})},
    };
 }}
 

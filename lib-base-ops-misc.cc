@@ -203,11 +203,11 @@ namespace MNL_AUX_UUID { using namespace aux;
          return move(self);
       case 4: // Order
          if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-         if (MNL_UNLIKELY(!test<w_pointer>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+         if (MNL_UNLIKELY(!test<w_pointer>(argv[0]))) return self.default_order(argv[0]);
          {  auto mask = MNL_AUX_RAND(uintptr_t);
             return
-               ((reinterpret_cast<uintptr_t>(this) ^ mask) > (reinterpret_cast<uintptr_t>(&cast<const w_pointer &>(argv[0])) ^ mask)) -
-               ((reinterpret_cast<uintptr_t>(this) ^ mask) < (reinterpret_cast<uintptr_t>(&cast<const w_pointer &>(argv[0])) ^ mask));
+               ((reinterpret_cast<uintptr_t>(this) ^ mask) < (reinterpret_cast<uintptr_t>(&cast<const w_pointer &>(argv[0])) ^ mask)) -
+               ((reinterpret_cast<uintptr_t>(&cast<const w_pointer &>(argv[0])) ^ mask) < (reinterpret_cast<uintptr_t>(this) ^ mask));
          }
       case 5: // Str
          if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
@@ -237,11 +237,11 @@ namespace MNL_AUX_UUID { using namespace aux;
          return weak;
       case 5: // Order
          if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-         if (MNL_UNLIKELY(!test<s_pointer>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+         if (MNL_UNLIKELY(!test<s_pointer>(argv[0]))) return self.default_order(argv[0]);
          {  auto mask = MNL_AUX_RAND(uintptr_t);
             return
-               ((reinterpret_cast<uintptr_t>(this) ^ mask) > (reinterpret_cast<uintptr_t>(&cast<const s_pointer &>(argv[0])) ^ mask)) -
-               ((reinterpret_cast<uintptr_t>(this) ^ mask) < (reinterpret_cast<uintptr_t>(&cast<const s_pointer &>(argv[0])) ^ mask));
+               ((reinterpret_cast<uintptr_t>(this) ^ mask) < (reinterpret_cast<uintptr_t>(&cast<const s_pointer &>(argv[0])) ^ mask)) -
+               ((reinterpret_cast<uintptr_t>(&cast<const s_pointer &>(argv[0])) ^ mask) < (reinterpret_cast<uintptr_t>(this) ^ mask));
          }
       case 6: // Str
          if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));

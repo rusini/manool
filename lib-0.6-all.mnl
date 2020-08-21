@@ -1,4 +1,4 @@
--- lib-0.5-all.mnl -- MANOOL standard library module
+-- lib-0.6-all.mnl -- MANOOL standard library module
 
 /*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
 
@@ -115,13 +115,13 @@
       else
     : if (Size[F] >= 8) & (F[2] == with') & (F[4] == do') & (F[6] == after') & F[1].IsSym[]
       then -- {on I with I do B after B; B; ...}
-      { var { U = {if Str[F[1]][0] <> "_"[0]$ then F[1]# else MakeSym[]} } in
+      { var { U = {if Str[F[1]][0] <> "_"[0]$ then F[1] else MakeSym[]}# } in
       : array of on# U with' F[3] do' F[5] after' {array of let# {array of: array of (=)' F[1] U} in'} + F[Range[7; Size[F]]]
       }
       else
     : if (Size[F] >= 6) & (F[2] == do') & (F[4] == after') & F[1].IsSym[]
       then -- {on I do B after B; B; ...}
-      { var { U = {if Str[F[1]][0] <> "_"[0]$ then F[1]# else MakeSym[]} } in
+      { var { U = {if Str[F[1]][0] <> "_"[0]$ then F[1] else MakeSym[]}# } in
       : array of on# U do' F[3] after' {array of let# {array of: array of (=)' F[1] U} in'} + F[Range[5; Size[F]]]
       }
       else -- fallback
@@ -137,7 +137,7 @@
     : proc { F } as
     : if (Size[F] == 4) & (F[2] == all')
       then -- {for {I = V; I = V; ...} all C}
-      { let { X = MakeSym[] } in
+      { let { X = MakeSym[]# } in
       : array of on# broad' X do' False# after'
       : array of do# True# after'
       : array of for# F[1] do'
@@ -147,7 +147,7 @@
       else
     : if (Size[F] == 4) & (F[2] == some')
       then -- {for {I = V; I = V; ...} some C}
-      { let { X = MakeSym[] } in
+      { let { X = MakeSym[]# } in
       : array of on# broad' X do' True# after'
       : array of do# False# after'
       : array of for# F[1] do'
@@ -282,7 +282,7 @@
     : proc { F } as
     : if (Size[F] >= 4) & (F[2] == in') & F[1].IsList[] & {for {E = F[1]} all E.IsSym[]}
       then -- {let {I; ...} in B; ...}
-      {array of let# {array for {E = F[1]} of: array of (=)' E: if Str[E][0] <> "_"[0]$ then E# else MakeSym[]} in'} + F[Range[3; Size[F]]]
+      {array of let# {array for {E = F[1]} of: array of (=)' E: if Str[E][0] <> "_"[0]$ then E# else MakeSym[]#} in'} + F[Range[3; Size[F]]]
       else -- fallback
       {array of let#} + F[Range[1; Size[F]]]
     }
@@ -436,7 +436,7 @@
     Delay  = {proc {T} as Delay[1000000 * T]}
   }
   in
-: export -- 126 standard bindings ------------------------------------------------------------------------------------------------------------------------------
+: export -- 127 standard bindings ------------------------------------------------------------------------------------------------------------------------------
   True; False; Nil; F64; F32; I48; MakeSym; S8; U32; D64; D128; C64; C128; Z64; Z32; MakePtr; Range; RevRange; RangeExt; RevRangeExt; Parse -- 21
   IsNull; IsI48; IsF64; IsF32; IsSym; IsS8; IsBool; IsU32; IsD64; IsD128; IsC64; IsC128; IsZ64; IsZ32; IsPtr; IsWeakPtr; IsRange; IsRevRange; IsList -- 19
   MaxI48; MaxF64; MaxF32; MaxU32; MaxD64; MaxD128; MaxC64; MaxC128 -- 8
@@ -446,7 +446,7 @@
   if; (&); (|); while; repeat; do; signal; case; unless -- 9
   proc; var; let; export; scope; VarArg; VarApply; Bind; ($) -- 9
   on; for; ensure -- 3
-  array; record; map; set; sequence; object; (@); IsArray; IsMap; IsSet; IsSequence -- 11
+  array; record; map; set; sequence; object; (@); OrderEx; IsArray; IsMap; IsSet; IsSequence -- 12
   macro; (#); error; eval; ('); (%); IsCode -- 7
   ProcessArgv; ProcessEnviron; ProcessExit; ReserveStack; ReserveHeap -- 5
   Out; Err; In; OpenFile; OpenPipe; OpenTemp; IsStream -- 7

@@ -7,7 +7,7 @@ General Instructions
 Try, e.g.:
 
     make
-    ./mnl <(echo $'{{extern "manool.org.18/std/0.5/all"} in Out.WriteLine["Hello, world!"]}')
+    ./mnl <(echo $'{{extern "manool.org.18/std/0.6/all"} in Out.WriteLine["Hello, world!"]}')
 
 Note that there is no need to run `./configure` (though, it's harmless), since the set of supported host/target platforms is more homogeneous than it used to be
 for GNU tools, and thus all platform-specific tuning can be done in a simpler way (that is, during actual building). In theory, the source file `config.tcc` is
@@ -17,7 +17,7 @@ To run MANOOL from within a different directory, point the environment variable 
 `mnlexec` as in the following example:
 
     MNL_PATH=<working-tree directory>/build/lib <working-tree directory>/build/mnlexec \
-    <(echo $'{{extern "manool.org.18/std/0.5/all"} in Out.WriteLine["Hello, world!"]}')
+    <(echo $'{{extern "manool.org.18/std/0.6/all"} in Out.WriteLine["Hello, world!"]}')
 
 The section Confirmed Builds provides more specific instructions together with recommended compilation options for 23 combinations of OSes/ISAs/ABIs/compilers.
 
@@ -94,7 +94,7 @@ To install MANOOL after building, try, e.g. (also read about the `PREFIX` makefi
 To run installed MANOOL, point the environment variable `MNL_PATH` to the installed-library directory, e.g.:
 
     MNL_PATH=/usr/local/lib/manool mnlexec \
-    <(echo $'{{extern "manool.org.18/std/0.5/all"} in Out.WriteLine["Hello, world!"]}')
+    <(echo $'{{extern "manool.org.18/std/0.6/all"} in Out.WriteLine["Hello, world!"]}')
 
 To get the `mnlexec` invocation synopsis and a short description of all recognized environment variables, just run it without arguments: `mnlexec`.
 
@@ -104,7 +104,7 @@ environment):
 
     cat >hello && chmod +x hello
     #!/usr/bin/env mnlexec
-    {{extern "manool.org.18/std/0.5/all"} in Out.WriteLine["Hello, world!"]}
+    {{extern "manool.org.18/std/0.6/all"} in Out.WriteLine["Hello, world!"]}
     <Control-D>
     ./hello
 
@@ -181,7 +181,7 @@ Confirmed Builds
 
 ***
 
-+ openSUSE Leap 15.1, x86-64, x86-64/lp64, g++
++ openSUSE Leap 15.2, x86-64, x86-64/lp64, g++
 
       sudo zypper install gcc-c++ make
       make
@@ -198,15 +198,15 @@ Confirmed Builds
 
 + CentOS 6, x86-64, x86-64/lp64, g++
 
-      sudo yum install centos-release-scl && sudo yum install devtoolset-8-gcc-c++
-      make SCL='scl enable devtoolset-8 --'
+      sudo yum install centos-release-scl && sudo yum install devtoolset-9-gcc-c++
+      make SCL='scl enable devtoolset-9 --'
 
 ***
 
 + CentOS 7, x86-64, x86-64/lp64, g++
 
-      sudo yum install centos-release-scl && sudo yum install devtoolset-8-gcc-c++
-      make SCL='scl enable devtoolset-8 --'
+      sudo yum install centos-release-scl && sudo yum install devtoolset-9-gcc-c++
+      make SCL='scl enable devtoolset-9 --'
 
 + CentOS 7, x86-64, x86-64/lp64, clang++
 

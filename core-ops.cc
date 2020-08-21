@@ -436,7 +436,7 @@ namespace aux {
             return !test<>(argv[1]);
          case sym::op_order:
             if (MNL_UNLIKELY(argc != 2)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            if (MNL_UNLIKELY(!test<>(argv[1]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+            if (MNL_UNLIKELY(!test<>(argv[1]))) return argv[0].default_order(argv[1]);
             return 0;
          case sym::op_clone: case sym::op_deep_clone:
             if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
@@ -512,7 +512,7 @@ namespace aux {
             return cast<long long>(argv[0]) >= cast<long long>(argv[1]);
          case sym::op_order:
             if (MNL_UNLIKELY(argc != 2)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            if (MNL_UNLIKELY(!test<long long>(argv[1]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+            if (MNL_UNLIKELY(!test<long long>(argv[1]))) return argv[0].default_order(argv[1]);
             return (cast<long long>(argv[0]) > cast<long long>(argv[1])) - (cast<long long>(argv[0]) < cast<long long>(argv[1]));
          case sym::op_abs:
             if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
@@ -580,7 +580,7 @@ namespace aux {
             return cast<DAT>(argv[0]) >= cast<DAT>(argv[1]); \
          case sym::op_order: \
             if (MNL_UNLIKELY(argc != 2)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            if (MNL_UNLIKELY(!test<DAT>(argv[1]))) MNL_ERR(MNL_SYM("TypeMismatch")); \
+            if (MNL_UNLIKELY(!test<DAT>(argv[1]))) return argv[0].default_order(argv[1]); \
             return signbit(cast<DAT>(argv[0])) ^ signbit(cast<DAT>(argv[1])) ? signbit(cast<DAT>(argv[1])) - signbit(cast<DAT>(argv[0])) : \
                cast<DAT>(argv[0]) < cast<DAT>(argv[1]) ? -1 : cast<DAT>(argv[0]) != cast<DAT>(argv[1]); \
          case sym::op_abs: \
@@ -724,7 +724,7 @@ namespace aux {
             return !MNL_LIKELY(test<sym>(argv[1])) || cast<const sym &>(argv[0]) != cast<const sym &>(argv[1]);
          case sym::op_order:
             if (MNL_UNLIKELY(argc != 2)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            if (MNL_UNLIKELY(!test<sym>(argv[1]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+            if (MNL_UNLIKELY(!test<sym>(argv[1]))) return argv[0].default_order(argv[1]);
             return (cast<sym>(argv[0]) > cast<sym>(argv[1])) - (cast<sym>(argv[0]) < cast<sym>(argv[1]));
          case sym::op_apply:
             return cast<const sym &>(argv[0])(argc - 1, argv + 1, argv_out + !!argv_out);
@@ -746,7 +746,7 @@ namespace aux {
             return argv[1].rep.tag() != 0x7FFEu;
          case sym::op_order:
             if (MNL_UNLIKELY(argc != 2)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            if (MNL_UNLIKELY(!test<bool>(argv[1]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+            if (MNL_UNLIKELY(!test<bool>(argv[1]))) return argv[0].default_order(argv[1]);
             return +-cast<bool>(argv[1]);
          case sym::op_or:
          case sym::op_xor:
@@ -778,7 +778,7 @@ namespace aux {
             return argv[1].rep.tag() != 0x7FFFu;
          case sym::op_order:
             if (MNL_UNLIKELY(argc != 2)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            if (MNL_UNLIKELY(!test<bool>(argv[1]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+            if (MNL_UNLIKELY(!test<bool>(argv[1]))) return argv[0].default_order(argv[1]);
             return +!cast<bool>(argv[1]);
          case sym::op_and:
             if (MNL_UNLIKELY(argc != 2)) MNL_ERR(MNL_SYM("InvalidInvocation"));
@@ -854,7 +854,7 @@ namespace aux {
             return cast<unsigned>(argv[0]) >= cast<unsigned>(argv[1]);
          case sym::op_order:
             if (MNL_UNLIKELY(argc != 2)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            if (MNL_UNLIKELY(!test<unsigned>(argv[1]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+            if (MNL_UNLIKELY(!test<unsigned>(argv[1]))) return argv[0].default_order(argv[1]);
             return (cast<unsigned>(argv[0]) > cast<unsigned>(argv[1])) - (cast<unsigned>(argv[0]) < cast<unsigned>(argv[1]));
          case sym::op_abs:
             if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
@@ -1225,7 +1225,7 @@ namespace aux {
          return !MNL_LIKELY(test<string>(argv[0])) || (MNL_IF_WITH_IDENT_OPT(&dat != &cast<const string &>(argv[0]) &&) dat != cast<const string &>(argv[0]));
       case sym::op_order:
          if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-         if (MNL_UNLIKELY(!test<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+         if (MNL_UNLIKELY(!test<string>(argv[0]))) return self.default_order(argv[0]);
          MNL_IF_WITH_IDENT_OPT(if (&dat == &cast<const string &>(argv[0])) return 0;)
          for (auto lhs = dat.cbegin(), rhs = cast<const string &>(argv[0]).begin();; ++lhs, ++rhs) {
             if (MNL_UNLIKELY(lhs == dat.cend())) return -(rhs != cast<const string &>(argv[0]).end());
@@ -1416,7 +1416,7 @@ namespace aux {
          }
       case sym::op_order:
          if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-         if (MNL_UNLIKELY(!test<vector<val>>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+         if (MNL_UNLIKELY(!test<vector<val>>(argv[0]))) return self.default_order(argv[0]);
          MNL_IF_WITH_IDENT_OPT(if (&dat == &cast<const vector<val> &>(argv[0])) return 0;)
          for (auto lhs = dat.cbegin(), rhs = cast<const vector<val> &>(argv[0]).begin();; ++lhs, ++rhs) {
             if (MNL_UNLIKELY(lhs == dat.cend())) return -(rhs != cast<const vector<val> &>(argv[0]).end());
@@ -1554,8 +1554,9 @@ namespace aux {
          return false;
       case sym::op_order:
          if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-         if (MNL_UNLIKELY(!test<_record>(argv[0])) || MNL_UNLIKELY(descr != cast<const _record &>(argv[0]).descr)) MNL_ERR(MNL_SYM("TypeMismatch"));
+         if (MNL_UNLIKELY(!test<_record>(argv[0]))) return self.default_order(argv[0]);
          MNL_IF_WITH_IDENT_OPT(if (this == &cast<const _record &>(argv[0])) return 0;)
+         { int res = order(descr, cast<const _record &>(argv[0]).descr); if (MNL_UNLIKELY(res)) return res; }
          for (auto lhs = begin(const_cast<const _record *>(this)->items), rhs = begin(cast<const _record &>(argv[0]).items); lhs != end(items); ++lhs, ++rhs)
             { auto res = safe_cast<long long>(op(args<2>{*lhs, *rhs})); if (MNL_UNLIKELY(res)) return res; }
          return 0;

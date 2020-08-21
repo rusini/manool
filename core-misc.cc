@@ -16,24 +16,32 @@
 # include "config.tcc"
 # include "mnl-aux-core.tcc"
 
+# include <time.h> // clock_gettime
 # include <cstdio> // sprintf, stderr, fprintf, fputs, fflush
-# include <ctime>  // time
 
 namespace MNL_AUX_UUID { using namespace aux;
    namespace aux {
-      using std::_Exit; // <cstdlib>
+      using std::_Exit; using std::srand; // <cstdlib>
       using std::sprintf; using std::fprintf; using std::fputs; using std::fflush; // <cstdio>
-      using std::time; // <time>
    }
 
 // Translation Infrastructure //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    MNL_IF_WITH_MT(thread_local) decltype(symtab) pub::symtab;
 
+   namespace aux { namespace { struct stub {
+      MNL_INLINE static val  execute(bool)   { MNL_UNREACHABLE(); }
+      MNL_INLINE static void exec_in(val &&) { MNL_UNREACHABLE(); }
+      MNL_INLINE static val  exec_out()      { MNL_UNREACHABLE(); }
+      MNL_INLINE static bool is_rvalue() { return false; }
+      MNL_INLINE static bool is_lvalue() { return false; }
+      MNL_INLINE static code compile(code &&, const form &, const loc &_loc) { err_compile("invalid form", _loc); }
+   }; }}
    code pub::compile(const form &form, const loc &_loc) { return // *** The Compiler Core Dispatcher! ***
       test<sym>(form) && symtab[cast<const sym &>(form)] ?
          symtab[cast<const sym &>(form)] :
-      test<sym>(form) && ((const string &)cast<const sym &>(form))[0] >= 'a' && ((const string &)cast<const sym &>(form))[0] <= 'z' ?
-         (err_compile("unbound keyword (nested in this context)", form._loc(_loc)), code{}) :
+      test<sym>(form) && (((const string &)cast<const sym &>(form))[0] >= 'a' && ((const string &)cast<const sym &>(form))[0] <= 'z' ||
+      ((const string &)cast<const sym &>(form))[0] == '_' || ((const string &)cast<const sym &>(form))[0] == '`') ?
+         MNL_AUX_INIT((code)stub{}) :
       test<long long>(form) || test<string>(form) || test<sym>(form) ?
          [&]()->code{ code make_lit(const val &); return make_lit(form); }() : // actually from MANOOL API
       form.is_list() && !form.empty() ?
@@ -107,8 +115,12 @@ namespace MNL_AUX_UUID { using namespace aux;
       return !MNL_LIKELY(argv[0].rep.tag() == 0x7FF8u) || argv[0].rep.dat<void *>() != rep.dat<void *>();
    case 3: // Order
       if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      if (MNL_UNLIKELY(argv[0].rep.tag() != 0x7FF8u) || MNL_UNLIKELY(argv[0].rep.dat<void *>() != rep.dat<void *>())) MNL_ERR(MNL_SYM("TypeMismatch"));
-      return 0;
+      { auto mask = MNL_AUX_RAND(uintptr_t);
+        int res = default_order(argv[0]);
+        return MNL_UNLIKELY(res) ? res :
+           ((reinterpret_cast<uintptr_t>(rep.dat<void *>()) ^ mask) < (reinterpret_cast<uintptr_t>(argv[0].rep.dat<void *>()) ^ mask)) -
+           ((reinterpret_cast<uintptr_t>(argv[0].rep.dat<void *>()) ^ mask) < (reinterpret_cast<uintptr_t>(rep.dat<void *>()) ^ mask));
+      }
    case 4: // Clone
       if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
       return move(*this);
@@ -162,11 +174,19 @@ namespace MNL_AUX_UUID { using namespace aux;
    record_descr::record_descr(initializer_list<const char *> il): record_descr([=]()->set<sym>{
       set<sym> res; for (auto el: il) res.insert(el); return res;
    }()) {}
+   int pub::order(const record_descr &lhs, const record_descr &rhs) noexcept {
+      auto mask = MNL_AUX_RAND(uintptr_t);
+      return
+         ((reinterpret_cast<uintptr_t>(&*lhs.rep) ^ mask) < (reinterpret_cast<uintptr_t>(&*rhs.rep) ^ mask)) -
+         ((reinterpret_cast<uintptr_t>(&*rhs.rep) ^ mask) < (reinterpret_cast<uintptr_t>(&*lhs.rep) ^ mask));
+   }
 
    decltype(record_descr::store) record_descr::store;
    MNL_IF_WITH_MT(decltype(record_descr::mutex) record_descr::mutex;)
 
 // Seed Legacy Random Number Generator /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-namespace aux { namespace { MNL_PRIORITY(1000) struct { int _ = (srand(time({})), 0); } _srand; }}
+namespace aux { namespace { MNL_PRIORITY(1000) class { int _ = []()->int{
+   struct ::timespec ts; ::clock_gettime(CLOCK_REALTIME, &ts); return srand(ts.tv_sec ^ (unsigned)ts.tv_nsec / 1000), 0;
+}(); } _srand; }}
 
 } // namespace MNL_AUX_UUID

@@ -89,7 +89,7 @@ libdecnumber-objs = $(patsubst %,build/obj/libdecnumber/%.o, \
    decimal128 \
 ) # end
 
-build/mnlexec : $(manool-objs) $(libdecnumber-objs) | build/lib/manool.org.18/std/0.5/all.mnl ; @mkdir -p $(dir $@)
+build/mnlexec : $(manool-objs) $(libdecnumber-objs) | build/lib/manool.org.18/std/0.6/all.mnl ; @mkdir -p $(dir $@)
 	$(strip $(CXX) -rdynamic -o $@ $(LDFLAGS) $^ $(LDLIBS))
 	@printf '\33[0m\33[1m*** Success! To run MANOOL try: ./mnl \33[4mmanool-source-file\33[24m [\33[4margument\33[24m...] ***\33[0m\n'
 
@@ -102,7 +102,7 @@ plugins = $(patsubst %,build/lib/manool.org.18/std/_%.mnl-plugin, \
    threads \
    misc \
 ) # end
-build/lib/manool.org.18/std/0.5/all.mnl : lib-0.5-all.mnl | $(plugins) ; @mkdir -p $(dir $@)
+build/lib/manool.org.18/std/0.6/all.mnl : lib-0.6-all.mnl | $(plugins) ; @mkdir -p $(dir $@)
 	cp $< $@
 $(plugins) : build/lib/manool.org.18/std/_%.mnl-plugin : lib-%-main.cc ; @mkdir -p $(dir $@)
 	$(strip $(CXX) -shared $(LDFLAGS_SO) -o $@ -MMD -MP $(CXXFLAGS) $(CPPFLAGS) $(mnl_config) $(LDFLAGS) $< $(LDLIBS))
@@ -129,9 +129,9 @@ includes = \
 # end
 install : all
 	rm -rf $(PREFIX)/bin/mnlexec $(PREFIX)/lib/manool $(PREFIX)/include/manool
-	mkdir -p $(PREFIX)/bin $(PREFIX)/lib/manool/manool.org.18/std/0.5 $(PREFIX)/include/manool
+	mkdir -p $(PREFIX)/bin $(PREFIX)/lib/manool/manool.org.18/std/0.6 $(PREFIX)/include/manool
 	cp build/mnlexec $(PREFIX)/bin
-	cp build/lib/manool.org.18/std/0.5/all.mnl $(PREFIX)/lib/manool/manool.org.18/std/0.5
+	cp build/lib/manool.org.18/std/0.6/all.mnl $(PREFIX)/lib/manool/manool.org.18/std/0.6
 	cp $(plugins) $(PREFIX)/lib/manool/manool.org.18/std
 	cp $(includes) $(PREFIX)/include/manool
 .PHONY : install
