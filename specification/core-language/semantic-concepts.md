@@ -166,7 +166,7 @@ program or even the programmer's intent. For example, for a program unit consist
 the following constituents are expressions:
   * `{extern "manool.org:18/std/0.2/all"}`,
   * `extern`,
-  * `"manool.org.18/std/0.5/all"`,
+  * `"manool.org.18/std/0.6/all"`,
   * `proc {X; Y; Z} as X + Y + Z`,
   * `proc`,
 
@@ -200,7 +200,7 @@ Unlike an r-value expression, a _non-value expression_ is an expression that ins
 special entity (hence the term "non-value"), for example:
 
     if
-    {{extern "manool.org.18/std/0.5/all"} in if}
+    {{extern "manool.org.18/std/0.6/all"} in if}
     {macro: proc {F} as: if Size[F] <> 2 then {array} else F[1]#}
 
 A form or expression that consists only of a literal or operator (when considering its AST representation) is called _primitive_ and _compound_ otherwise.

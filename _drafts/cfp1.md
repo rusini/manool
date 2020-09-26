@@ -72,7 +72,7 @@ considering some basic constraints such as a limited source character set).
 
 As a crude illustration, a "Hello, world!" program in MANOOL might look like
 
-    {{extern "manool.org.18/std/0.5/all"} in WriteLine[Out; "Hello, world!"]}
+    {{extern "manool.org.18/std/0.6/all"} in WriteLine[Out; "Hello, world!"]}
 
   and an expression that evaluates to a recursive factorial function might look like
 

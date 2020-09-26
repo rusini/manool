@@ -184,7 +184,7 @@ of feature composition (see also [Background theory]).
 Almost every working example from the MANOOL [tutorial](/tutorial/ "MANOOL Tutorial") contains near its beginning an instance of the `extern` construct (i.e.,
 `{extern "..."}`), e.g.:[^b7]
 
-    {{extern "manool.org.18/std/0.5/all"} in Out.WriteLine["Hello, world!"]}
+    {{extern "manool.org.18/std/0.6/all"} in Out.WriteLine["Hello, world!"]}
 
   where the standard library module is identified by a special external entity _path_ specified as a compile-time expression that evaluates to a string (i.e.,
 `"manool.org.18/..."`). As you may note, a global name hierarchy is proposed based on the global Internet domain name system, which is a convention for some
@@ -297,7 +297,7 @@ Compared to the "Hello, world!" example presented above, the following example u
   * more polymorphic operations (namely, `(==)`, `(*)`, `(-)`, and `WriteLine`), and
   * more _syntactic sugar_ (i.e., _syntactic features_):
 ^
-    { {extern "manool.org.18/std/0.5/all"} in
+    { {extern "manool.org.18/std/0.6/all"} in
     : let rec
       { Fact =
         { proc { N } as
@@ -318,7 +318,7 @@ name-meaning associations syntactically (i.e., _a_ `=` _b_).
 When translating the above code into an internal run-time representation, the MANOOL _syntactic analyzer_ (also known as the _parser_) first transforms the code
 into an intermediate representation (that is, an AST), which incidentally, corresponds to the following equivalent code in MANOOL:
 
-    { {extern "manool.org.18/std/0.5/all"} in
+    { {extern "manool.org.18/std/0.6/all"} in
       { let rec
         { { (=) Fact
             { proc { N } as
@@ -399,7 +399,7 @@ In MANOOL, instead, a number of *separate* and mutually *orthogonal* features ar
 Let's replace in the first factorial example the usual `extern` expression with a module constructor `{... in: export ...}` that describes our own module
 exporting only four features:
 
-    { { {extern "manool.org.18/std/0.5/all"} in -- my local module
+    { { {extern "manool.org.18/std/0.6/all"} in -- my local module
       : export let; proc; if; Out
       } -- end of local module
       in
@@ -436,13 +436,13 @@ Now, to illustrate the idea of a fully-replaceable standard library proposed abo
 
 * and `_my-lib.mnl`:
 
-      {{extern "manool.org.18/std/0.5/all"} in: export let; proc; if; Out}
+      {{extern "manool.org.18/std/0.6/all"} in: export let; proc; if; Out}
 
 Although non-value entities are second-class entities, they are quite flexible otherwise --- they can be denoted by complex non-value expressions and bound to
 names (aliased), statically (that is, at compile-time), for example:[^c7]
 
-    { {{extern "manool.org.18/std/0.5/all"} in let}
-      { myLib = {{extern "manool.org.18/std/0.5/all"} in: export let; proc; if; Out} } in
+    { {{extern "manool.org.18/std/0.6/all"} in let}
+      { myLib = {{extern "manool.org.18/std/0.6/all"} in: export let; proc; if; Out} } in
     : {myLib in let} { lambda = {myLib in proc} } in
     : {myLib in let} rec
       { Fact =
@@ -470,7 +470,7 @@ As you may note, under certain circumstances the notation of MANOOL closely rese
 where instead of parentheses (`()`) braces (`{}`) are used and on the other hand some symbols (namely, non-alphanumeric ones) appear enclosed in parentheses.
 With "proper" indentation the S-expression equivalent of both factorial examples presented above looks like:
 
-    ((extern "manool.org.18/std/0.5/all")
+    ((extern "manool.org.18/std/0.6/all")
        in
        (let rec ((= Fact
                     (proc (N)
@@ -517,7 +517,7 @@ functions metacircularly specified as code in MANOOL).
 This simple but a bit contrived example in MANOOL demonstrates that we can translate `if ... then` and `if ... then ... else` into, say, Spanish by defining a
 syntactic macro (but making it available in a limited region only):
 
-    { {extern "manool.org.18/std/0.5/all"} in
+    { {extern "manool.org.18/std/0.6/all"} in
     : let
       { si =
         { macro

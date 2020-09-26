@@ -181,7 +181,7 @@ stripped off, a string literal denotes a lexical value of type [String], as is:
 
 Examples:
 
-    ""   "foo"   "This is a string"   "manool.org.18/std/0.5/all"
+    ""   "foo"   "This is a string"   "manool.org.18/std/0.6/all"
 
 Alternatively, `\}` and `\{` may be used instead of double quotes.[^b2] In this case the lexical value may contain anything except `\{`. Thus,
 

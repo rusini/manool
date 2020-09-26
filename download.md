@@ -11,7 +11,7 @@ To browse the source code of MANOOL on GitHub, please refer to <https://github.c
 You can find precompiled binaries for 14 combinations of OSes/ISAs/ABIs at <https://github.com/rusini/manool/releases>.
 Unpack the corresponding .tar archive manually into the installation root directory, e.g. (for Ubuntu 18.04 LTS, x86-64/lp64):
 
-    wget -O- -q https://github.com/rusini/manool/releases/download/v0.5/manool-0.5-ubuntu-18.04-x86_64-lp64.tar.xz |
+    wget -O- -q https://github.com/rusini/manool/releases/download/v0.6/manool-0.6-ubuntu-18.04-x86_64-lp64.tar.xz |
     sudo tar xJv -C /usr/local
 
 Alternatively, you can first build the MANOOL binaries yourself.
@@ -24,7 +24,7 @@ Try, e.g.:
 
     git clone https://github.com/rusini/manool && cd manool
     make
-    ./mnl <(echo $'{{extern "manool.org.18/std/0.5/all"} in Out.WriteLine["Hello, world!"]}')
+    ./mnl <(echo $'{{extern "manool.org.18/std/0.6/all"} in Out.WriteLine["Hello, world!"]}')
 
 Note that there is no need to run `./configure` (though, it's harmless), since the set of supported host/target platforms is more homogeneous than it used to be
 for GNU tools, and thus all platform-specific tuning can be done in a simpler way (that is, during actual building).
@@ -34,7 +34,7 @@ To run MANOOL from within a different directory, point the environment variable 
 `mnlexec` as in the following example:
 
     MNL_PATH=<working-tree directory>/build/lib <working-tree directory>/build/mnlexec \
-    <(echo $'{{extern "manool.org.18/std/0.5/all"} in Out.WriteLine["Hello, world!"]}')
+    <(echo $'{{extern "manool.org.18/std/0.6/all"} in Out.WriteLine["Hello, world!"]}')
 
 The section Confirmed Builds provides more specific instructions together with recommended compilation options for 23 combinations of OSes/ISAs/ABIs/compilers.
 
@@ -109,7 +109,7 @@ To install MANOOL after building, try, e.g. (also read about the `PREFIX` makefi
 To run installed MANOOL, point the environment variable `MNL_PATH` to the installed-library directory, e.g.:
 
     MNL_PATH=/usr/local/lib/manool mnlexec \
-    <(echo $'{{extern "manool.org.18/std/0.5/all"} in Out.WriteLine["Hello, world!"]}')
+    <(echo $'{{extern "manool.org.18/std/0.6/all"} in Out.WriteLine["Hello, world!"]}')
 
 To get the `mnlexec` invocation synopsis and a short description of all recognized environment variables, just run it without arguments: `mnlexec`.
 
@@ -119,7 +119,7 @@ environment):
 
     cat >hello && chmod +x hello
     #!/usr/bin/env mnlexec
-    {{extern "manool.org.18/std/0.5/all"} in Out.WriteLine["Hello, world!"]}
+    {{extern "manool.org.18/std/0.6/all"} in Out.WriteLine["Hello, world!"]}
     <Control-D>
     ./hello
 

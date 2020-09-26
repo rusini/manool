@@ -27,7 +27,7 @@ Hello World
 The following is a traditional "Hello World" program in MANOOL:
 
     -- Hello World program -- in "applicative" notation
-    {{extern "manool.org.18/std/0.5/all"} in WriteLine[Out; "Hello, world!"]}
+    {{extern "manool.org.18/std/0.6/all"} in WriteLine[Out; "Hello, world!"]}
 
 You can play with MANOOL examples by using the [online evaluator] or running them from the command line according to the [instructions]. Here are just a couple
 of ideas about how to run MANOOL programs from the command line:
@@ -36,7 +36,7 @@ of ideas about how to run MANOOL programs from the command line:
 
   (assuming you have placed your source code into `hello.mnl`) or, for short scripts:
 
-    mnlexec <(echo $'{{extern "manool.org.18/std/0.5/all"} in WriteLine[Out; "Hello, world!"]}')
+    mnlexec <(echo $'{{extern "manool.org.18/std/0.6/all"} in WriteLine[Out; "Hello, world!"]}')
 
   (we use `$'...'` with a leading `$` here just to be sure we can more easily escape `'` characters in Bash in the future).
 
@@ -79,12 +79,12 @@ arbitrary choice nor a matter of personal preference but rather a result of many
 The following two alternative "Hello World" implementations are equivalent to the above one, up to an internal representation called abstract syntax tree:
 
     -- Hello World program -- OOP-ish notation (equivalent to the above, up to abstract syntax tree)
-    {{extern "manool.org.18/std/0.5/all"} in Out.WriteLine["Hello, world!"]}
+    {{extern "manool.org.18/std/0.6/all"} in Out.WriteLine["Hello, world!"]}
 
   (note how the first argument now corresponds to a receiver, in OOP parlance),
 
     -- Hello World program -- LISP-ish notation (ditto)
-    {{extern "manool.org.18/std/0.5/all"} in {WriteLine Out "Hello, world!"}}
+    {{extern "manool.org.18/std/0.6/all"} in {WriteLine Out "Hello, world!"}}
 
   (note how `WriteLine`, the _target_ of an applicative expression, is now the first element of a Lisp-inspired syntactic list)[^a4].
 
@@ -114,7 +114,7 @@ MANOOL is a free-form and case-sensitive language. The most basic principles of 
 to see for yourself more principles in action further in this tutorial):[^a5]
 
     -- Most recommended formatting for multi-line expressions
-    { {extern "manool.org.18/std/0.5/all"} in
+    { {extern "manool.org.18/std/0.6/all"} in
       WriteLine[Out; "Hello, world!"]
     }
 
@@ -124,7 +124,7 @@ to see for yourself more principles in action further in this tutorial):[^a5]
 
 MANOOL supports two kinds of comments (please see [Comments] for a complete reference):
 
-    {{extern "manool.org.18/std/0.5/all"} in Out.WriteLine[/*Out;*/ "Hello, world!"]} -- this is a comment
+    {{extern "manool.org.18/std/0.6/all"} in Out.WriteLine[/*Out;*/ "Hello, world!"]} -- this is a comment
 
 [comments]: /specification/core-language/syntax#h:comments "Comments"
 
@@ -138,7 +138,7 @@ multiple applicative expressions together.
 First, to stipulate their sequential evaluation (one after another), just for the purposes of side effects (i.e., ignoring any results they return), you can
 simply write down the expressions one after another, optionally delimiting them by semicolons (`;`):[^b1]
 
-    { {extern "manool.org.18/std/0.5/all"} in -- Evaluation of multiple expressions in a row
+    { {extern "manool.org.18/std/0.6/all"} in -- Evaluation of multiple expressions in a row
       Out.Write["Hello"]; Out.Write[", "]; Out.Write["world"]; Out.Write["!"]
       Out.WriteLine[] -- produce a newline without any other output
     }
@@ -155,7 +155,7 @@ Output:
 
 You can instead specify more than two arguments to `WriteLine` (or `Write`) to achieve the same net effect:
 
-    { {extern "manool.org.18/std/0.5/all"} in -- Several arguments to WriteLine
+    { {extern "manool.org.18/std/0.6/all"} in -- Several arguments to WriteLine
       Out.WriteLine["Hello"; ", "; "world"; "!"]; -- semicolon delimiters are optional
       Out.WriteLine["Hello" ", "; "world" "!"]    -- everywhere where they are allowed at all
     }
@@ -173,7 +173,7 @@ Output:
 
 Or, you can apply the conventional infix operator `+` to several string values to produce a concatenation of them and output the result as usual:
 
-    { {extern "manool.org.18/std/0.5/all"} in -- String concatenation
+    { {extern "manool.org.18/std/0.6/all"} in -- String concatenation
       Out.WriteLine["Hello" + ", " + "world" + "!"] -- (true) infix notation
     }
 
@@ -186,7 +186,7 @@ the MANOOL parser. To suppress such special treatment, enclose an operator in pa
 
 To illustrate how alternative notations would work and what the properly infix notation actually maps to (preserving the original AST):[^b3]
 
-    { {extern "manool.org.18/std/0.5/all"} in -- String concatenation -- alternative notations
+    { {extern "manool.org.18/std/0.6/all"} in -- String concatenation -- alternative notations
       Out.WriteLine[(+)[(+)[(+)["Hello"; ", "]; "world"]; "!"]] -- applicative (prefix) notation (equivalent up to AST)
       Out.WriteLine[{(+) {(+) {(+) "Hello" ", "} "world"} "!"}] -- LISPish (prefix) notation (ditto)
       Out.WriteLine["Hello".(+)[", "].(+)["world"].(+)["!"]]    -- OOPish (infix) notation (ditto)
@@ -212,7 +212,7 @@ Let's perform some simple arithmetic operations on integral numbers.
 To display results, you can directly pass the values to `WriteLine` (or `Write`), or you can first explicitly convert the values to a string representation by
 applying the `Str` operation:[^b5]
 
-    { {extern "manool.org.18/std/0.5/all"} in -- Performing Integer arithmetic operations and displaying results
+    { {extern "manool.org.18/std/0.6/all"} in -- Performing Integer arithmetic operations and displaying results
       Out.WriteLine["2 + 3 = " 2 + 3; ", "; "5 - 2 = " 5 - 2]                 -- outputting piece-wise
       Out.WriteLine["2 + 3 = " + Str[2 + 3] + ", " + "5 - 2 = " + Str[5 - 2]] -- explicit conversion to String and concatenation
     }
@@ -228,7 +228,7 @@ Output:
 
 You can also use more complex expressions involving multiple operators, which follow nearly conventional precedence and associativity rules:
 
-    { {extern "manool.org.18/std/0.5/all"} in -- Demonstrating operator precedence (binding strength) and associativity
+    { {extern "manool.org.18/std/0.6/all"} in -- Demonstrating operator precedence (binding strength) and associativity
       Out.WriteLine["2 + 3 * 4 - 5 = " 2 + 3 * 4 - 5; ", "; "(2 + (3 * 4)) - 5 = " (2 + (3 * 4)) - 5]
       Out.WriteLine["(2 + 3) * (4 - 5) = " (2 + 3) * (4 - 5)] -- overriding with explicit grouping of operands
     }
@@ -252,7 +252,7 @@ Output:
 In MANOOL an arithmetic negation (or unary minus) operation on a number can be always performed by applying the symbol `Neg` to the argument. Alternatively, the
 prefix operator `~` works the same way for most (but not all) types of numbers.[^b7] Here is a short example:
 
-    {{extern "manool.org.18/std/0.5/all"} in Out.WriteLine["Neg[2] = " Neg[2]; ", "; "5 + ~2 = " 5 + ~2]}
+    {{extern "manool.org.18/std/0.6/all"} in Out.WriteLine["Neg[2] = " Neg[2]; ", "; "5 + ~2 = " 5 + ~2]}
 
 [^b7]: One disadvantage of the `~` operator is that it is also overloaded to mean Boolean/bitwise negation/complement for some data types, and one advantage is
        that it resembles more the traditional notation `-` (which cannot be used as-is in MANOOL because of grammar ambiguity introduction in such case).
@@ -272,7 +272,7 @@ From a number-theoretic as well as practical standpoint, MANOOL provides a fairl
 Without going into much detail about Integer division, which is beyond the scope of this tutorial, let's construct a simple program that displays on the
 standard output a table that illustrates how these operations work (please see [Integer operations] for a complete reference):
 
-    { {extern "manool.org.18/std/0.5/all"} in -- Integer division and related operations
+    { {extern "manool.org.18/std/0.6/all"} in -- Integer division and related operations
       -- Heading
       Out.WriteLine["     +8,+3 -8,+3 +8,-3 -8,-3"]
       -- Integer division (truncating)
@@ -304,7 +304,7 @@ Quiz
 
 Try to figure out what is going on here (you should have acquired all the clues after completing [Lesson 3](Lesson-3#start)):
 
-    { {extern "manool.org.18/std/0.5/all"} in
+    { {extern "manool.org.18/std/0.6/all"} in
       { (WriteLine) Out -- What do Write/WriteLine return?
         Out.Write["Hello"] ", " Out.Write[", "] ", " Out.Write["world"] ", " Out.Write["!"] ", "
         Out.WriteLine[]

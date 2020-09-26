@@ -22,7 +22,7 @@ The usual "Hello World" analog for functional languages consists of a recursive 
 variation for MANOOL incorporates in addition some test code:
 
     -- Factorial -- recursive version in MANOOL-ish ("cascading") notation
-    { {extern "manool.org.18/std/0.5/all"} in
+    { {extern "manool.org.18/std/0.6/all"} in
     : let rec
       { Fact = -- compile-time constant binding
         { proc { N } as -- precondition: 0 <= N
@@ -37,7 +37,7 @@ variation for MANOOL incorporates in addition some test code:
 And the following equivalent program (up to AST) is intended to make the syntactic structure of the above program a bit more apparent:
 
     -- Factorial -- recursive version in conventional notation (equivalent to the above code, up to AST)
-    { {extern "manool.org.18/std/0.5/all"} in
+    { {extern "manool.org.18/std/0.6/all"} in
       { let rec
         { Fact = -- compile-time constant binding
           { proc { N } as -- precondition: 0 <= N
@@ -82,7 +82,7 @@ Although MANOOL has a functional core, it is a multiparadigm language, for which
 `for`-loop), may be more appropriate:[^a3]
 
     -- Factorial -- iterative version (in MANOOL, this is probably more appropriate for factorial)
-    { {extern "manool.org.18/std/0.5/all"} in
+    { {extern "manool.org.18/std/0.6/all"} in
     : let
       { Fact = -- compile-time constant binding
         { proc { N } as -- precondition: 0 <= N
@@ -127,7 +127,7 @@ Let's see how comparison operations work in MANOOL and how the principle of stro
 First, any pair of values in MANOOL (even of different types) can be always compared for equality/inequality, two values of different types simply being deemed
 unequal (even if they "look" similar):
 
-    { {extern "manool.org.18/std/0.5/all"} in
+    { {extern "manool.org.18/std/0.6/all"} in
       Out.WriteLine[2 == 2 ", " 2 <> 2 ", " "2" == "2" ", " "2" <> "2"]
       Out.WriteLine[2 == "2" ", " 2 <> "2" ", " "2" == 2 ", " "2" <> 2]
     }
@@ -143,7 +143,7 @@ Output:
 
 Any pair of integral values can be also compared for less-than as well as less-than-or-equal, greater-than, and greater-then-or-equal:
 
-    { {extern "manool.org.18/std/0.5/all"} in
+    { {extern "manool.org.18/std/0.6/all"} in
       Out.WriteLine[2 <  3 ", " 3 < 2 ", " 2 <  2] -- less-than
       Out.WriteLine[2 <= 3 ", " 2 > 3 ", " 2 >= 3] -- less-than-or-equal, greater-than, greater-then-or-equal
     }
@@ -156,11 +156,11 @@ Output:
 On the other hand, two values of different types cannot be compared for less-than, etc.; also, the `+` operator cannot be applied to an integer and a string and
 vice versa:
 
-    {{extern "manool.org.18/std/0.5/all"} in Out.WriteLine[2 < "3"]} -- run-time error
+    {{extern "manool.org.18/std/0.6/all"} in Out.WriteLine[2 < "3"]} -- run-time error
 ^
-    {{extern "manool.org.18/std/0.5/all"} in Out.WriteLine[2 + "3"]} -- run-time error
+    {{extern "manool.org.18/std/0.6/all"} in Out.WriteLine[2 + "3"]} -- run-time error
 ^
-    {{extern "manool.org.18/std/0.5/all"} in Out.WriteLine["2" + 3]} -- run-time error
+    {{extern "manool.org.18/std/0.6/all"} in Out.WriteLine["2" + 3]} -- run-time error
 
 Output:
 
@@ -173,9 +173,9 @@ Output:
 
 And in the following example, the string `"2"` does not even "know" how to compare itself for less-than with another value, even with another string:
 
-    {{extern "manool.org.18/std/0.5/all"} in Out.WriteLine["2" < "3"]} -- run-time error
+    {{extern "manool.org.18/std/0.6/all"} in Out.WriteLine["2" < "3"]} -- run-time error
 ^
-    {{extern "manool.org.18/std/0.5/all"} in Out.WriteLine["2" < 3]} -- run-time error
+    {{extern "manool.org.18/std/0.6/all"} in Out.WriteLine["2" < 3]} -- run-time error
 
 Output:
 
@@ -188,7 +188,7 @@ Output:
 
 For many data types in MANOOL, there exists a type predicate, a Boolean-valued procedure that determines whether its argument belongs to the underlying type:
 
-    { {extern "manool.org.18/std/0.5/all"} in
+    { {extern "manool.org.18/std/0.6/all"} in
       Out.WriteLine[2.IsI48[] ", " "2".IsI48[]] -- is "2" an integer?
       Out.WriteLine[2.IsS8[]  ", " "2".IsS8[]]  -- is "2" a string?
     }
@@ -205,7 +205,7 @@ Compound Conditions
 You can express complex conditions by using operators `&` (conjunction for Booleans), `|` (disjunction for Booleans), and `~` (negation for Booleans). The
 operators `&` and `|` are short-circuiting (the right-hand side is unevaluated unless strictly necessary):
 
-    {{extern "manool.org.18/std/0.5/all"} in Out.WriteLine["2".IsI48[] & ("2" < 3 "), " ~"2".IsI48[] | ("2" < 3)]}
+    {{extern "manool.org.18/std/0.6/all"} in Out.WriteLine["2".IsI48[] & ("2" < 3 "), " ~"2".IsI48[] | ("2" < 3)]}
 
 Output:
 
@@ -220,7 +220,7 @@ The MANOOL specification is precise about which exception is signaled in each pa
 
 First, an inappropriate number of arguments is reported by signaling `InvalidInvocation` as in
 
-    {{extern "manool.org.18/std/0.5/all"} in Neg[2; 3]}
+    {{extern "manool.org.18/std/0.6/all"} in Neg[2; 3]}
 
 [^a5]: Your program in MANOOL can catch and react on any signal, and they are also used as a general control-flow mechanism.
 
@@ -228,21 +228,21 @@ First, an inappropriate number of arguments is reported by signaling `InvalidInv
 
 Overflows during arithmetic operations are reported using signals:
 
-    {{extern "manool.org.18/std/0.5/all"} in MaxI48 + 1}
+    {{extern "manool.org.18/std/0.6/all"} in MaxI48 + 1}
 
 Signals: `Overflow`
 
 The same applies to division by zero and other operations near a pole of the argument (e.g. near zero for logarithms):
 
-    {{extern "manool.org.18/std/0.5/all"} in 1 / 0}
+    {{extern "manool.org.18/std/0.6/all"} in 1 / 0}
 
 Signals: `DivisionByZero`
 
 In other cases `Undefined` may be signaled:
 
-    {{extern "manool.org.18/std/0.5/all"} in 0 / 0}
+    {{extern "manool.org.18/std/0.6/all"} in 0 / 0}
 ^
-    {{extern "manool.org.18/std/0.5/all"} in 1.Rem[0]}
+    {{extern "manool.org.18/std/0.6/all"} in 1.Rem[0]}
 
 Signals: `Undefined`
 
@@ -251,7 +251,7 @@ Quiz
 
 Try to figure out what is going on here (you should have acquired all the clues after completing [Lesson 3](Lesson-3#start)):
 
-    {{extern "manool.org.18/std/0.5/all"} in Out.WriteLine[(&)]}
+    {{extern "manool.org.18/std/0.6/all"} in Out.WriteLine[(&)]}
 
 Compilation error:
 
@@ -259,7 +259,7 @@ Compilation error:
 
 And here:
 
-    {{extern "manool.org.18/std/0.5/all"} in Out.WriteLine[then]}
+    {{extern "manool.org.18/std/0.6/all"} in Out.WriteLine[then]}
 
 Compilation error:
 

@@ -32,7 +32,7 @@ denotes that entity.
 
 Here's a quick test code:
 
-    {{extern "manool.org.18/std/0.5/all"} in Out.WriteLine[Foo ", " Foo == "Foo" ", " Foo.IsSym[]]}
+    {{extern "manool.org.18/std/0.6/all"} in Out.WriteLine[Foo ", " Foo == "Foo" ", " Foo.IsSym[]]}
 
 Output:
 
@@ -47,7 +47,7 @@ Values of type Symbol can identify
 
 To force literal interpretation of a syntactic construct in MANOOL, use the postfix operator `'` (single quote):
 
-    { {extern "manool.org.18/std/0.5/all"} in
+    { {extern "manool.org.18/std/0.6/all"} in
       Out.WriteLine[Foo' ", " Out' ", " extern' ", " if' ", " (&)' ", " then']
       Out.WriteLine[Out.WriteLine["Hello, world!"]']
     }
@@ -62,7 +62,7 @@ Output:[^a2]
 
 A symbol can also be dynamically constructed from a string by using the constructor `MakeSym` and converted back to String with the operation `Str`:
 
-    {{extern "manool.org.18/std/0.5/all"} in Out.WriteLine[MakeSym["Foo"] ", " MakeSym["Foo"] == Foo]}
+    {{extern "manool.org.18/std/0.6/all"} in Out.WriteLine[MakeSym["Foo"] ", " MakeSym["Foo"] == Foo]}
 
 Output:
 
@@ -89,7 +89,7 @@ completely reproducible behavior in this respect regardless of the implementatio
 
 In the following examples we are going to learn about how to perform operations on fractional numbers, but first let's learn one minor but important feature:
 
-    { {extern "manool.org.18/std/0.5/all"} in
+    { {extern "manool.org.18/std/0.6/all"} in
       Out.WriteLine[{do Out.WriteLine["One"]; 2 + 3}]  -- do - explicit sequencing
       Out.WriteLine[{do Out.WriteLine["Two"]; 5 - 2}$] -- $  - compile-time evaluation
     }
@@ -103,7 +103,7 @@ Output:
 
 Example:
 
-    { {extern "manool.org.18/std/0.5/all"} in
+    { {extern "manool.org.18/std/0.6/all"} in
       -- Scientific-oriented arithmetic (base-2 internal representation)
       Out.WriteLine["one quarter (F64)  = " F64[".25"]$  " = " (F64[1] / F64[4])$]  -- precise representation
       Out.WriteLine["one tenth   (F64)  = " F64["1e-1"]$ " = " (F64[1] / F64[10])$] -- approximate representation
@@ -137,7 +137,7 @@ wide-spread in many cultures.
 MANOOL provides two groups of decimal floating-point data types, one for performing arithmetic using the Bankers' rounding mode and another for using
 commercial rounding:
 
-    { {extern "manool.org.18/std/0.5/all"} in
+    { {extern "manool.org.18/std/0.6/all"} in
       Out.WriteLine["Banker's rounding: " D64["2.000000000000021"]$ / D64[2]$ ", " D64["2.000000000000031"]$ / D64[2]$
       ", " D64[".25"]$.Quantize[D64[".0"]$] ", " D64[".35"]$.Quantize[D64[".0"]$]]
       Out.WriteLine["Common rounding:   " C64["2.000000000000021"]$ / C64[2]$ ", " C64["2.000000000000031"]$ / C64[2]$
@@ -153,7 +153,7 @@ Output:
 
 MANOOL supports signed zeros in accordance with the specification IEEE-754 (only for binary floating-point arithmetic):
 
-    { {extern "manool.org.18/std/0.5/all"} in
+    { {extern "manool.org.18/std/0.6/all"} in
       -- Signed zeros supported
       Out.WriteLine[F64["1e-300"]$ / F64["1e300"]$ ", " ~F64["1e-300"]$ / F64["1e300"]$]
       Out.WriteLine[F64["+0"]$ ", " F64["-0"]$]

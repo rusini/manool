@@ -58,7 +58,7 @@ on-the-fly without any special boiler-plate code.
 The following example constitutes a working program with a complete "rational number" data type definition and some test code (for ease of reference, line
 numbers are added as valid comments to the listing):
 
-    /*001*/  { {extern "manool.org.18/std/0.5/all"} in
+    /*001*/  { {extern "manool.org.18/std/0.6/all"} in
     /*002*/  : do
     /*003*/    { Rationals in -- Test code
     /*004*/    : var { A; B } in
@@ -72,7 +72,7 @@ numbers are added as valid comments to the listing):
     /*012*/    where
     /*013*/    Rationals =
     /*014*/    { scope { extern } in
-    /*015*/    : {extern "manool.org.18/std/0.5/all"} in
+    /*015*/    : {extern "manool.org.18/std/0.6/all"} in
     /*016*/    : let { _Num; _Den } in
     /*017*/    : let { IsRat = {{object utils _Num; _Den} in IsInst} } in -- classification
     /*018*/    : let

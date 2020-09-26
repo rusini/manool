@@ -68,7 +68,7 @@ Examples
 
 The following ["Hello, world!" program][] provides a basic idea of what [programs][] in MANOOL may look like:
 
-    {{extern "manool.org.18/std/0.5/all"} in WriteLine[Out; "Hello, world!"]}
+    {{extern "manool.org.18/std/0.6/all"} in WriteLine[Out; "Hello, world!"]}
 
 And the following MANOOL [expression][] evaluates to a ([recursive][]) MANOOL [procedure][] (a function in more conventional terminology) used to calculate the
 [factorial][] of an [integral][] [argument][]:

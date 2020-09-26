@@ -32,7 +32,7 @@ comments embedded in these examples about asymptotic complexity of certain expre
 
 Normally, you can iterate over elements of a composite value in a straightforward way by using a `for`-loop:[^a3]
 
-    { {extern "manool.org.18/std/0.5/all"} in
+    { {extern "manool.org.18/std/0.6/all"} in
     : for { E = {array of "Red" "Orange" "Yellow" "Green" "Blue" "Indigo" "Violet"}$ } do
       Out.WriteLine[E]
     }
@@ -61,7 +61,7 @@ of a _view_ (some composite values are views onto their own elements).[^a4]
 
 One kind of view, which is not a full-blown composite data type, is the range (of integral values):
 
-    {{extern "manool.org.18/std/0.5/all"} in: for { E = Range[7]$ } do Out.WriteLine[E]}
+    {{extern "manool.org.18/std/0.6/all"} in: for { E = Range[7]$ } do Out.WriteLine[E]}
 
 Output:
 
@@ -76,7 +76,7 @@ Output:
 A range consists of all integers between its _low_ bound and up to but not including its _high_ bound, both passed to a `Range` constructor (`Range[7]` is a
 shorthand for `Range[0; 7]`). You can even construct reversed ranges by using `RevRange` instead of `Range` (with the same arguments):
 
-    {{extern "manool.org.18/std/0.5/all"} in: for { E = RevRange[7]$ } do Out.WriteLine[E]}
+    {{extern "manool.org.18/std/0.6/all"} in: for { E = RevRange[7]$ } do Out.WriteLine[E]}
 
 Output:
 
@@ -94,7 +94,7 @@ Output:
 
 You can concatenate arrays and get subarrays (_slices_ in more general terms), even in reverse order if you like, by indexing (subscripting) using ranges:[^a5]
 
-    { {extern "manool.org.18/std/0.5/all"} in
+    { {extern "manool.org.18/std/0.6/all"} in
     : var { A = {array of "Red" "Orange" "Yellow" "Green" "Blue" "Indigo" "Violet"}$ } in
     : for { E = A[Range[2; Size[A]]] + A[RevRange[Size[A] - 1]] } do
       Out.WriteLine[E]
@@ -105,7 +105,7 @@ You can concatenate arrays and get subarrays (_slices_ in more general terms), e
 Compared to arrays, sequences (another composite data type) may be more efficient for concatenation and removing a few elements from either end. In turn, arrays
 are more efficient than sequences for accessing individual elements in the middle. Otherwise, they are similar:
 
-    { {extern "manool.org.18/std/0.5/all"} in
+    { {extern "manool.org.18/std/0.6/all"} in
     : var { S = {sequence of "Red" "Orange" "Yellow" "Green" "Blue" "Indigo" "Violet"} } in
     : var { R = S[RevRange[Size[S]]] } in
     : for { E = S![Range[2; Size[S]]] + R![Range[1; Size[R]]] /*O(1)*/ } do
@@ -140,14 +140,14 @@ Output of both examples:
 
 ---
 
-    { {extern "manool.org.18/std/0.5/all"} in
+    { {extern "manool.org.18/std/0.6/all"} in
     : var { S = {sequence of "Red" "Orange" "Yellow" "Green" "Blue" "Indigo" "Violet"}$ } in
     : var { R = S[RevRange[Size[S]]] } in
     : for { E = S![Range[2; Size[S]]] + R![Range[1; Size[R]]] /*amortized O(1)*/ } do
       Out.WriteLine[E]
     }
 ^
-    { {extern "manool.org.18/std/0.5/all"} in
+    { {extern "manool.org.18/std/0.6/all"} in
     : var { S = {sequence of "Red" "Orange" "Yellow" "Green" "Blue" "Indigo" "Violet"}$.Clone[] } in
     : var { R = S[RevRange[Size[S]]] } in
     : for { E = S![Range[2; Size[S]]] + R![Range[1; Size[R]]] /*O(1)*/ } do
@@ -160,7 +160,7 @@ Output of both examples:
 
 You can also easily operate with _sets_ and even perform set-theoretic operations using infix operators:
 
-    { {extern "manool.org.18/std/0.5/all"} in
+    { {extern "manool.org.18/std/0.6/all"} in
     : for { E = {set of "Red" "Green" "Blue" "Indigo" "Violet"}$ + {set of "Red" "Yellow" "Orange" "Green" "Blue"}$ } do
       Out.WriteLine[E]
     }
@@ -183,7 +183,7 @@ elements in a set is always implicitly induced by the operation `Order`).
 For any value there always exists at least one group of values (including that value) on which  the operation `Order` induces a total order relation. For
 instance:
 
-    { {extern "manool.org.18/std/0.5/all"} in
+    { {extern "manool.org.18/std/0.6/all"} in
       Out.WriteLine[Order["abc123"; "abcdef"] ", " Order["abcd"; "abc"] ", " Order["abc"; "abc"]]
     }
 
@@ -200,7 +200,7 @@ Strictly speaking, the nature of such ordering is usually unimportant as long as
 Small, step-wise modifications of composites can be constructed in constant or logarithmic time; slices can be evaluated on-demand (by using first `Elems` to
 construct a _view_):
 
-    { {extern "manool.org.18/std/0.5/all"} in
+    { {extern "manool.org.18/std/0.6/all"} in
     : var { A = {array of "Red" "Orange" "Yellow" "Green" "Blue" "Indigo"} } in
       /* A = {array of "Violet"}$ + A! /*O(n)*/ */ -- may be slow in case of arrays
       A = A! | "Violet" | "Red" /*amortized O(1)*/ -- append violet and red
@@ -217,7 +217,7 @@ Output:
 
 And now using sequences:
 
-    { {extern "manool.org.18/std/0.5/all"} in
+    { {extern "manool.org.18/std/0.6/all"} in
     : var { S = {sequence of "Red" "Orange" "Yellow" "Green" "Blue" "Indigo"} } in
       S = {sequence of "Violet"}$ + S! | "Violet" /*O(1)*/ -- prepend and append violet
       /* A[3] = "Amarillo" /*O(n)*/ */                     -- may be slow in case of sequences
@@ -232,7 +232,7 @@ Output:
 
 And sets:
 
-    { {extern "manool.org.18/std/0.5/all"} in
+    { {extern "manool.org.18/std/0.6/all"} in
     : var { S = {set of "Red" "Orange" "Yellow" "Green" "Blue" "Indigo"} } in
       S = S! | "Violet" | "Red" /*O(log n)*/ -- include violet and red (if not present)
       S["Orange"] = False /*O(log n)*/       -- exclude orange (if present); shorthand for:
@@ -251,7 +251,7 @@ Output:
 
 A composite value may contain other composite values as components/elements. Let's construct a funny table or matrix 9 x 7 of color names out of nested arrays:
 
-    { {extern "manool.org.18/std/0.5/all"} in
+    { {extern "manool.org.18/std/0.6/all"} in
     : var { Tab = {array 9 of: array 7}$ } in -- 9 x 7 matrix filled with Nil value
       Tab[0] = {array of "Red" "Orange" "Yellow" "Green" "Blue" "Indigo" "Violet"}$
       { for { I = Range[1; Size[Tab]] } do -- Fill out the table
@@ -291,7 +291,7 @@ there are more limitations as to how you can manipulate records (compared to map
 
 Let's use records to construct a table of set operations and their descriptions and then iterate over that table:
 
-    { {extern "manool.org.18/std/0.5/all"} in
+    { {extern "manool.org.18/std/0.6/all"} in
     : for
       { E =
         { array of
@@ -337,7 +337,7 @@ Unlike records maps are composite values whose individual elements can be addres
 
 Let's construct a dictionary to translate color names from English to Spanish and then another one to translate from English to Portuguese:[^a7]
 
-    { {extern "manool.org.18/std/0.5/all"} in
+    { {extern "manool.org.18/std/0.6/all"} in
     : var
       { Es =
         { map of
