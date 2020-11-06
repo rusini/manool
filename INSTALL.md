@@ -53,7 +53,7 @@ The section Confirmed Builds provides more specific instructions together with r
 + `PIPE`       - by default `-pipe` to enable using pipes (see `CC`/`CXX`, may lead to build issues in some rare cases on some platforms)
 + `MARCH`      - to specify a target machine architecture (ISA/ABI) if needed; by default: `-msse2` `-mfpmath=sse` (relevant for the i386 ISA)
 + `LDFLAGS_SO` - additional linking options to use when building shared (.so) libraries; by default `-fPIC`
-+ `RUN_ARGS`   - to specify command line arguments for running the test; by default just `test.mnl`
++ `RUN_ARGS`   - to specify command-line arguments for running the test; by default just `test.mnl`
 + `VALGRIND`   - command prefix to test under Valgrind; by default: `$(SCL)` `valgrind`
 + `PREFIX`     - destination root directory for the `install` target; by default `/usr/local`
 + `MNL_CONFIG` - to enable/disable various features via conditional compilation flags (refer to Conditional compilation below)
