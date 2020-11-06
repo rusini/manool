@@ -4,7 +4,7 @@
 **MANOOL is meant to make exploratory programming safer and faster.**
 
 Some programming tasks are common and predictable from the project management perspective, but often, even enterprise information systems (especially in the
-area of startups) involve some innovation and exploratory programming. Imagine you have such task at hand. Whenever this happens you have two options:
+area of startups) involve some innovation and exploratory programming. Imagine you have such a task at hand. Whenever this happens you have two options:
   1. use an *implementation-level* programming language, such as C, C++, Java, or maybe Rust (if you want to try a more recent approach) or
   2. use a language more suitable for *throw-away* programming, such as PHP, Python, Ruby, JavaScript, or even Scheme.
 
@@ -21,7 +21,7 @@ Then disaster falls on you; after some time of production use, it turns out that
   * your code has mysterious and hard to localize bugs, and of course
   * the program logic itself still looks confusing and complex.
 
-  This happens because paying attention to those details would imply undue cognitive burden at the early stage of development. And unlike your managers you
+  This happens because paying attention to those details would imply an undue cognitive burden at the early stage of development. And unlike your managers you
 already knew that: a major rewrite is unavoidable, now in a "real" implementation-level language -- does this sound familiar?
 
 While MANOOL is a general-purpose programming language, it is specifically designed to solve the above problem. It may also help you to come to a working
