@@ -9,7 +9,7 @@ title:     MANOOL Blog
 
 News, Random Topics: Examples, Rationale, Hacking...
 
-{%for post in site.posts%}{%unless post.hidden%}<section>
+{%for post in site.posts%}{%unless post.unlisted%}<section>
   <h2>{{post.title|smartify}}</h2>
   <p markdown="1">&hellip;{{post.excerpt}}&hellip;</p>
   <p><a href="{{post.url}}">Complete article</a></p>
