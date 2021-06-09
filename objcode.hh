@@ -47,14 +47,15 @@ namespace rsn::mnl {
          const unsigned char *base = {}; // start of buffer
          int res = 0, alloc = 0;         // requested and actual buffer size (up to 1 << max_size_p2)
          int align = 1;                  // alignment requirements accumulated so far (up to 1 << cacheline_size_p2)
-      public: // standard operations
-         _sect() = default;
+         bool is_rodata;                 // whether the section contains text (code) or read-only data
+      public: // construction and standard operations
+         RSN_INLINE _sect(bool is_rodata) noexcept: is_rodata(is_rodata) {}
          RSN_INLINE _sect(_sect &&rhs) noexcept: base(rhs.base), pc(rhs.pc), res(rhs.res), alloc(rhs.alloc), align(rhs.align) { rhs.base = {}; }
          RSN_INLINE ~_sect() { if (RSN_UNLIKELY(base))) std::free(const_cast<unsigned char *>(base)); } // own fast/slow path split
       public: // temporary member variables
          mutable void *load_base; // target virtual address after section loading
       public: // helper stuff
-         struct fixup { // specific to x86 and x86-64 ISAs (suitable for both 32- and 64-bit ABIs)
+         struct fixup { // AKA relocation records - specific to x86 and x86-64 ISAs (suitable for both 32- and 64-bit ABIs)
             enum { plus_label_quad, plus_label_long, plus_label_minus_next_addr_long, plus_label_minus_next_addr_byte, minus_next_addr_long } kind;
             const std::vector<_sect> &sects;
             int sect/*s/n*/, offset;
@@ -169,32 +170,12 @@ namespace rsn::mnl {
       RSN_INLINE sect rodata(int size) { auto res = rodata(); res.reserve(size); return res; }
       class segm; segm load() const;
    public:
-      RSN_NOINLINE int size() const noexcept {
-         int pc = 0;
-         for (const auto &sect: sects[0]) {
-            if (RSN_UNLIKELY((unsigned)(pc = pc + sect.align - 1 & -sect.align) +
-               (int)(sect.pc - sect.base) > 1 << max_segm_size_p2)) return -1;
-            pc += (int)(sect.pc - sect.base);
-         }
-         {  bool flag = false;
-            for (const auto &sect: sects[1])
-               if (RSN_LIKELY(sect.pc != sect.base)) { flag = true; break; }
-            if (RSN_LIKELY(!flag)) return pc;
-         }
-         pc = pc + ((1 << cacheline_size_p2) - 1) & -(1 << cacheline_size_p2);
-         for (const auto &sect: sects[1]) {
-            if (RSN_UNLIKELY((unsigned)(pc = pc + sect.align - 1 & -sect.align) +
-               (int)(sect.pc - sect.base) > 1 << max_segm_size_p2)) return -1;
-            pc += (int)(sect.pc - sect.base);
-         }
-         return pc;
-      }
+      int size() const noexcept;
+      void load(unsigned char *) const noexcept;
    private: // internal representation
-      std::vector<_sect> sects[2];      // text and data section groups
-      std::vector<_label> labels;       // labels
-      std::vector<_sect::fixup> fixups; // AKA relocation records
-   private: // implementation helpers
-      inline void relocate() noexcept;
+      std::vector<_sect> sects;
+      std::vector<_sect::fixup> fixups;
+      std::vector<_label> labels;
    };
 
 } // namespace rsn::mnl
@@ -233,6 +214,8 @@ private:
    static inline std::mutex mutex;
    static inline decltype(base) free[std::numeric_limits<long>::digits - 1 - min_size_p2] = {};
    struct meta { decltype(base) next; };
+public:
+   segm(const objcode &);
 };
 namespace rsn { RSN_INLINE inline void swap(segm &lhs, segm &rhs) noexcept { lhs.swap(rhs); } }
 
