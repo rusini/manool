@@ -47,7 +47,7 @@ namespace rsn::mnl {
          const unsigned char *base = {}; // start of buffer
          int res = 0, alloc = 0;         // requested and actual buffer size (up to 1 << max_size_p2)
          int align = 1;                  // alignment requirements accumulated so far (up to 1 << cacheline_size_p2)
-         bool is_rodata;                 // whether the section contains text (code) or read-only data
+         const bool is_rodata;           // whether the section contains text (code) or read-only data
       public: // construction and standard operations
          RSN_INLINE _sect(bool is_rodata) noexcept: is_rodata(is_rodata) {}
          RSN_INLINE _sect(_sect &&rhs) noexcept: base(rhs.base), pc(rhs.pc), res(rhs.res), alloc(rhs.alloc), align(rhs.align) { rhs.base = {}; }
@@ -55,7 +55,7 @@ namespace rsn::mnl {
       public: // temporary member variables
          mutable void *load_base; // target virtual address after section loading
       public: // helper stuff
-         struct fixup { // AKA relocation records - specific to x86 and x86-64 ISAs (suitable for both 32- and 64-bit ABIs)
+         struct fixup { // AKA relocation records - specific to x86 and x86-64 ISAs (suitable for x86 and all data and code models for x86-64)
             enum { plus_label_quad, plus_label_long, plus_label_minus_next_addr_long, plus_label_minus_next_addr_byte, minus_next_addr_long } kind;
             const std::vector<_sect> &sects;
             int sect/*s/n*/, offset;
@@ -187,17 +187,39 @@ private:
       page_size_p2      = 12 /*4 KiB*/,                // for MMU paging
       max_segm_size_p2  = page_size_p2 + 18 /*1 GiB*/, // half of positive numbers space (actual maximum for ::mmap w/MAP_32BIT under Linux)
       mmap_threshold_p2 = page_size_p2 + 10 /*4 MiB*/; // if size is above, delegate to ::mmap/::munmap directly (time vs space tradeoff)
+
+      threshold_1_p2    = page_size_p2 +  4 /*64 KiB*/,
+      threshold_1_p2    = page_size_p2 + 12 /*16 MiB*/,
+
 public:
-   RSN_INLINE segm() noexcept: base{}, size(-1) {}
-   RSN_INLINE explicit segm(int size);
+   RSN_INLINE segm() noexcept
+      : base{}, size(0) {}
+   RSN_INLINE explicit segm(int size) {
+      if (RSN_LIKELY(!size)) { base = {}, size_p2 = -1; return; } // trivial path - zero size is acceptable but results in zero address (and special size_p2)
+      if (RSN_UNLIKELY(_size > 1 << threshold_2_p2 - 1)) alloc_slow(); else {
+         if (RSN_LIKELY(free[size_p2 - min_size_p2]))
+            free[size_p2 - min_size_p2] = static_cast<const struct free *>(base = free[size_p2 - min_size_p2])->next, this->size_p2 = size_p2;
+         else
+      }
+
+
+
+if (RSN_UNLIKELY(size > 1u << max_segm_size_p2)) throw std::bad_alloc{}; // redundant sanity check "not above nor negative"
+      size_p2 = std::numeric_limits<decltype(size)>::digits + 1 - __builtin_clz(std::max(size, 1 << min_size_p2) - 1);
+      if (RSN_LIKELY(free[size_p2 - min_size_p2])) // fast path
+         free[size_p2 - min_size_p2] = static_cast<const struct free *>(base = free[size_p2 - min_size_p2])->next, this->size_p2 = size_p2;
+   }
    RSN_INLINE explicit segm(int size);
    RSN_INLINE segm(segm &&rhs) noexcept: _base(rhs._base), _size(rhs._size) {
       rhs._base = {}; // after moving out, valid for destruction but not consistent enough for other operations
    }
    RSN_INLINE ~segm() {
-      if (RSN_LIKELY(!_base)) return;
-      reinterpret_cast<meta *>(_base)->next = free[size_p2 - min_size_p2], free[size_p2 - min_size_p2] = _base;
-      if (RSN_UNLIKELY(size_p2 > page_size_p2)) ::madvise(_base + (1 << page_size_p2), (1l << size_p2) - (1 << page_size_p2), MADV_DONTNEED);
+      if (RSN_UNLIKELY(_size)) if (RSN_UNLIKELY(_size > 1 << threshold_1_p2 - 1)) free_slow(); else {
+         auto size_p2 = std::numeric_limits<decltype(_size)>::digits + 1 - __builtin_clz(std::max(_size, 1 << min_size_p2) - 1);
+         RSN_IF_WITH_MT((void)std::lock_guard(mutex),)
+            reinterpret_cast<struct free *>(_base)->next = free[size_p2 - min_size_p2], free[size_p2 - min_size_p2] = _base,
+            total_used -= 1 << size_p2;
+      }
    }
    RSN_INLINE &operator=(segm &&rhs) noexcept {
       swap(rhs);
@@ -206,14 +228,17 @@ public:
       std::swap(_base, rhs._base), std::swap(_size, rhs._size);
    }
 public: // access to contents
-   template<typename T> RSN_INLINE explicit operator T *() const noexcept { return reinterpret_cast<T *>(base); }
-   RSN_INLINE int size() const noexcept { return size_p2 >= 0 ? 1l << size_p2 : 0; }
+   template<typename T> RSN_INLINE explicit operator T *() const noexcept { return reinterpret_cast<T *>(_base); }
+   RSN_INLINE int size() const noexcept { return _size; }
 private: // internal representation
-   unsigned char *base; int size_p2;
+   unsigned char *_base; int _size;
 private:
    static inline std::mutex mutex;
-   static inline decltype(base) free[std::numeric_limits<long>::digits - 1 - min_size_p2] = {};
-   struct meta { decltype(base) next; };
+   static inline decltype(base) free[threshold_2_p2 - 1 - min_size_p2] = {};
+   struct free { decltype(base) next; };
+private:
+   static inline long total_used, total_phys;
+   static inline long max_total_used = 512 * 1024 * 1024, max_total_phys = 768 * 1024 * 1024;
 public:
    segm(const objcode &);
 };
