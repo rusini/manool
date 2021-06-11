@@ -188,8 +188,8 @@ private:
       max_segm_size_p2  = page_size_p2 + 18 /*1 GiB*/, // half of positive numbers space (actual maximum for ::mmap w/MAP_32BIT under Linux)
       mmap_threshold_p2 = page_size_p2 + 10 /*4 MiB*/; // if size is above, delegate to ::mmap/::munmap directly (time vs space tradeoff)
 
-      threshold_1_p2    = page_size_p2 +  4 /*64 KiB*/,
-      threshold_1_p2    = page_size_p2 + 12 /*16 MiB*/,
+      threshold_1_p2    = page_size_p2 + 4 /*64 KiB*/, // if size is equal or above, use ::madvise to release unneeded physical storage
+      threshold_2_p2    = page_size_p2 + 8 /* 1 MiB*/; // if size is equal or above, delegate to ::mmap/::munmap directly
 
 public:
    RSN_INLINE segm() noexcept
