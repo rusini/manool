@@ -186,10 +186,10 @@ private:
       cacheline_size_p2 =  6 /*64 B*/,                 // for CPU memory cache
       page_size_p2      = 12 /*4 KiB*/,                // for MMU paging
       max_segm_size_p2  = page_size_p2 + 18 /*1 GiB*/, // half of positive numbers space (actual maximum for ::mmap w/MAP_32BIT under Linux)
-      mmap_threshold_p2 = page_size_p2 + 10 /*4 MiB*/; // if size is above, delegate to ::mmap/::munmap directly (time vs space tradeoff)
 
-      threshold_1_p2    = page_size_p2 + 4 /*64 KiB*/, // if size is equal or above, use ::madvise to release unneeded physical storage
-      threshold_2_p2    = page_size_p2 + 8 /* 1 MiB*/; // if size is equal or above, delegate to ::mmap/::munmap directly
+      min_size_p2       = 7                /*128 B - two cache lines      */
+      threshold_1_p2    = page_size_p2 + 1 /*  8 KiB - up to 14x overhead */, // if size is above, use ::madvise to release unneeded physical storage
+      threshold_2_p2    = page_size_p2 + 6 /*256 MiB - up to 16 Ki mmaps  */; // if size is above, delegate to ::mmap/::munmap directly
 
 public:
    RSN_INLINE segm() noexcept
@@ -214,10 +214,10 @@ if (RSN_UNLIKELY(size > 1u << max_segm_size_p2)) throw std::bad_alloc{}; // redu
       rhs._base = {}; // after moving out, valid for destruction but not consistent enough for other operations
    }
    RSN_INLINE ~segm() {
-      if (RSN_UNLIKELY(_size)) if (RSN_UNLIKELY(_size > 1 << threshold_1_p2 - 1)) free_slow(); else {
+      if (RSN_UNLIKELY(_size)) if (RSN_UNLIKELY(_size > 1 << threshold_1_p2)) free_slow(); else {
          auto size_p2 = std::numeric_limits<decltype(_size)>::digits + 1 - __builtin_clz(std::max(_size, 1 << min_size_p2) - 1);
          RSN_IF_WITH_MT((void)std::lock_guard(mutex),)
-            reinterpret_cast<struct free *>(_base)->next = free[size_p2 - min_size_p2], free[size_p2 - min_size_p2] = _base,
+            (struct free *)(_base)->next = free[size_p2 - min_size_p2], free[size_p2 - min_size_p2] = _base,
             total_used -= 1 << size_p2;
       }
    }
@@ -234,11 +234,11 @@ private: // internal representation
    unsigned char *_base; int _size;
 private:
    static inline std::mutex mutex;
-   static inline decltype(base) free[threshold_2_p2 - 1 - min_size_p2] = {};
+   static inline decltype(base) free[threshold_2_p2 - min_size_p2 + 1] = {};
    struct free { decltype(base) next; };
 private:
    static inline long total_used, total_phys;
-   static inline long max_total_used = 512 * 1024 * 1024, max_total_phys = 768 * 1024 * 1024;
+   static inline long max_total_used = 256 * 1024 * 1024, max_total_phys = 768 * 1024 * 1024;
 public:
    segm(const objcode &);
 };
