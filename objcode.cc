@@ -91,23 +91,22 @@ namespace rsn {
 
 rsn::objcode::segm::_alloc(int size) {
    static constexpr auto mmap = [](int size) RSN_INLINE{
-      static unsigned char *mmap_base; // starting address of the current ::mmap-ed block (aligned to page size)
-      static long          mmap_size;  // size of the current ::mmap-ed block, in bytes (multiple of page size)
+      static unsigned char *mmap_base;
+      static long mmap_size;
       if (RSN_LIKELY(size <= mmap_size))
          { auto base = mmap_base; mmap_base += size, mmap_size -= size; return base; } // fast path
       return [](auto size) RSN_NOINLINE{
-         static long total_mmap_pag; // cumulative number of ::mmap-ed pages - normally grows by a factor (e.g., 3 / 2) with each succesful request
-         static long munmap_size;    // size of the last ::munmap-ed block, in bytes (multiple of page size)
+         static long munmap_size, total_mmap;
          if (RSN_UNLIKELY(mmap_size)) ::munmap(mmap_base, munmap_size = mmap_size);
-         auto total = total_mmap < 1 << page_size_p2 ? total_mmap : 1 << page_size_p2;
-         while (total <= (std::numeric_limits<decltype(total_pag)>::max() >> page_size_p2) / 3 << 1 << page_size_p2 && total - total_mmap + munmap_size < size)
-            total = ((total >> page_size_p2) + (total_pag + (2 - 1) >> 1)) << page_size_p2 /*ceiling division by 2*/;
+         auto total = std::max(total_mmap, 1 << page_size_p2);
+         while (total - total_mmap + munmap_size < size && total <= (std::numeric_limits<decltype(total_pag)>::max() >> page_size_p2) / 3 << 1 << page_size_p2)
+            total = (total >> page_size_p2) + ((total >> page_size_p2) + (2 - 1) >> 1) << page_size_p2;
          if (RSN_UNLIKELY((mmap_size = total - total_mmap + munmap_size) < size)) mmap_size = 0, throw std::bad_alloc{};
-         unsigned char *base = ::mmap(mmap_base, mmap_size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, {});
+         auto base = (unsigned char *)::mmap(mmap_base, mmap_size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, {});
          if (RSN_UNLIKELY(base == MAP_FAILED)) mmap_size = 0, throw std::bad_alloc{};
          total_mmap = total, mmap_base = base + size, mmap_size -= size, munmap_size = 0;
          return base;
-      }(size);
+      }(size); // slow path
    };
    if (RSN_UNLIKELY(size > 1u << max_segm_size_p2)) // redundant sanity check "not above nor negative"
       throw std::bad_alloc{};
