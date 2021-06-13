@@ -78,11 +78,10 @@ void rsn::objcode::load(unsigned char *RSN_RESTRICT base) const noexcept {
 
 namespace rsn {
    namespace {
-   static constexpr auto
-      min_size_p2    = 1 << cacheline_size_p2 + 1 /*128 B                        */,
-      threshold_1_p2 = page_size_p2 + 1           /*  8 KiB - up to 14x overhead */, // if size is above, use ::madvise to release unneeded physical storage
-      threshold_2_p2 = page_size_p2 + 6           /*256 MiB - up to 16 Ki mmaps  */; // if size is above, delegate to ::mmap/::munmap directly
-
+      static constexpr auto
+         min_size_p2    = 1 + 6         /*128 B - two cache lines       */,
+         threshold_1_p2 = 1 + 2 + 10    /*  8 KiB - up to ~14x overhead */, // if size is above, use ::madvise to release unneeded physical storage
+         threshold_2_p2 = 256 + 10 + 10 /*256 MiB - up to ~16 Ki mmaps  */; // if size is above, delegate to ::mmap/::munmap directly
       unsigned char *free[threshold_2_p2 - min_size_p2 + 1];
       free { unsigned char *next; };
       long total_used, total_phys;
@@ -90,36 +89,33 @@ namespace rsn {
    }
 }
 
-rsn::objcode::segm::alloc(int size) {
+rsn::objcode::segm::_alloc(int size) {
    static constexpr auto mmap = [](int size) RSN_INLINE{
-      assert(size > 0), assert(size <= 1 << mmap_threshold_p2);
-      assert(size % (1 << page_size_p2) == 0);
-      ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-      static constexpr auto max_total_mmap_req = 54 /*slightly above 3 GiB*/;
-      static int           total_mmap_req = 0; // cumulative number of ::mmap requests
-      static int           total_mmap_pag = 0; // cumulative number of ::mmap-ed pages - normally grows by a factor (e.g., 3 / 2) with each succesful request
-      static unsigned char *mmap_base     = 0; // starting address of the current ::mmap-ed block (aligned to page size)
-      static long          mmap_size      = 0; // size of the current ::mmap-ed block, in bytes (multiple of page size)
-      static long          munmap_size    = 0; // size of the last ::munmap-ed block; ditto
-      ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-      if (RSN_LIKELY(size <= mmap_size)) { auto base = mmap_base; mmap_base += size, mmap_size -= size; return base; } // fast path
-      if (RSN_UNLIKELY(mmap_size)) ::munmap(mmap_base, munmap_size = mmap_size);
-      auto total_req = total_mmap_req;
-      auto total_pag = RSN_UNLIKELY(!mmap_total_pag) ? 1 : mmap_total_pag + (mmap_total_pag + (2 - 1) >> 1) /*ceiling division by 2*/;
-      while (total_req < max_total_mmap_req && ((long)total_pag - mmap_total_pag << page_size_p2) + munmap_size < size)
-         ++total_req, total_pag = total_pag + (total_pag + (2 - 1) >> 1) /*ceiling division by 2*/;
-      if (RSN_UNLIKELY((mmap_size = (long)total_pag - mmap_total_pag << page_size_p2) + munmap_size) < size)) mmap_size = 0, throw std::bad_alloc{};
-      unsigned char *base = ::mmap(mmap_base, mmap_size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, {});
-      if (RSN_UNLIKELY(base == MAP_FAILED)) mmap_size = 0, throw std::bad_alloc{};
-      mmap_total_req = total_req, mmap_total_pag = total_pag, mmap_base = base + size, mmap_size -= size, munmap_size = 0;
-      return base;
+      static unsigned char *mmap_base; // starting address of the current ::mmap-ed block (aligned to page size)
+      static long          mmap_size;  // size of the current ::mmap-ed block, in bytes (multiple of page size)
+      if (RSN_LIKELY(size <= mmap_size))
+         { auto base = mmap_base; mmap_base += size, mmap_size -= size; return base; } // fast path
+      return [](auto size) RSN_NOINLINE{
+         static long total_mmap_pag; // cumulative number of ::mmap-ed pages - normally grows by a factor (e.g., 3 / 2) with each succesful request
+         static long munmap_size;    // size of the last ::munmap-ed block, in bytes (multiple of page size)
+         if (RSN_UNLIKELY(mmap_size)) ::munmap(mmap_base, munmap_size = mmap_size);
+         auto total = total_mmap < 1 << page_size_p2 ? total_mmap : 1 << page_size_p2;
+         while (total <= (std::numeric_limits<decltype(total_pag)>::max() >> page_size_p2) / 3 << 1 << page_size_p2 && total - total_mmap + munmap_size < size)
+            total = ((total >> page_size_p2) + (total_pag + (2 - 1) >> 1)) << page_size_p2 /*ceiling division by 2*/;
+         if (RSN_UNLIKELY((mmap_size = total - total_mmap + munmap_size) < size)) mmap_size = 0, throw std::bad_alloc{};
+         unsigned char *base = ::mmap(mmap_base, mmap_size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, {});
+         if (RSN_UNLIKELY(base == MAP_FAILED)) mmap_size = 0, throw std::bad_alloc{};
+         total_mmap = total, mmap_base = base + size, mmap_size -= size, munmap_size = 0;
+         return base;
+      }(size);
    };
-   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    if (RSN_UNLIKELY(size > 1u << max_segm_size_p2)) // redundant sanity check "not above nor negative"
       throw std::bad_alloc{};
    if (RSN_LIKELY(size <= 1 << threshold_1_p2)) {
+      static_assert(threshold_1_p2 >= page_size_p2);
       int populate_size;
       auto size_p2 = std::numeric_limits<int>::digits + 1 - __builtin_clz(std::max(size, 1 << min_size_p2) - 1);
+      static_assert(min_size_p2 >= cacheline_size_p2);
       RSN_IF_WITH_MT([&](auto) RSN_INLINE){
          if (RSN_UNLIKELY(total_used + size > max_total_used))
             throw std::bad_alloc{};
@@ -143,8 +139,10 @@ rsn::objcode::segm::alloc(int size) {
       if (RSN_UNLIKELY(populate_size > 1 << page_size_p2)) ::madvise(_base, size, MADV_WILLNEED);
    } else
    if (RSN_LIKELY(size <= 1 << threshold_2_p2)) {
+      static_assert(threshold_2_p2 >= page_size_p2);
       int populate_size;
       auto size_p2 = std::numeric_limits<int>::digits + 1 - __builtin_clz(std::max(size, 1 << min_size_p2) - 1);
+      static_assert(min_size_p2 >= cacheline_size_p2);
       RSN_IF_WITH_MT([&](auto) RSN_INLINE){
          if (RSN_UNLIKELY(total_used + size > max_total_used))
             throw std::bad_alloc{};
@@ -168,7 +166,7 @@ rsn::objcode::segm::alloc(int size) {
    }RSN_IF_WITH_MT((std::lock_guard(mutex)));
 }
 
-rsn::objcode::segm::free() noexcept {
+rsn::objcode::segm::_free() noexcept {
    if (RSN_LIKELY(size <= 1 << threshold_1_p2)) {
       auto size_p2 = std::numeric_limits<int>::digits + 1 - __builtin_clz(std::max(_size, 1 << min_size_p2) - 1);
       RSN_IF_WITH_MT((void)std::lock_guard(mutex),)
@@ -186,20 +184,7 @@ rsn::objcode::segm::free() noexcept {
       RSN_IF_WITH_MT((void)std::lock_guard(mutex),)
          ::munmap(_base, _size), total_used -= size, total_phys -= size;
    }
-}
-
-
-rsn::objcode::segm::free_slow() noexcept {
-   if (RSN_UNLIKELY(_size > 1 << threshold_2_p2)) {
-      auto size = _size + (1 << page_size_p2) - 1 & -(1 << page_size_p2);
-      RSN_IF_WITH_MT((void)std::lock_guard(mutex),)
-         ::munmap(_base, _size),
-         total_used -= size, total_phys -= size;
-   } else {
-      auto size_p2 = std::numeric_limits<decltype(_size)>::digits + 1 - __builtin_clz(std::max(_size, 1 << min_size_p2) - 1);
-      RSN_IF_WITH_MT((void)std::lock_guard(mutex),)
-         ::madvise(_base + (1 << page_size_p2), (1 << size_p2) - (1 << page_size_p2), MADV_DONTNEED),
-         (struct free *)(_base)->next = free[size_p2 - min_size_p2], free[size_p2 - min_size_p2] = _base,
-         total_used -= 1 << size_p2, total_phys -= (1 << size_p2) - (1 << page_size_p2);
-   }
+   static_assert(min_size_p2    >= cacheline_size_p2);
+   static_assert(threshold_1_p2 >= page_size_p2);
+   static_assert(threshold_2_p2 >= page_size_p2);
 }
