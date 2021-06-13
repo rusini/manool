@@ -93,20 +93,19 @@ rsn::objcode::segm::_alloc(int size) {
    static constexpr auto mmap = [](int size) RSN_INLINE{
       static unsigned char *mmap_base;
       static long mmap_size;
-      if (RSN_LIKELY(size <= mmap_size))
-         { auto base = mmap_base; mmap_base += size, mmap_size -= size; return base; } // fast path
-      return [](auto size) RSN_NOINLINE{
+      if (RSN_UNLIKELY(size > mmap_size)) [](auto size) RSN_NOINLINE{
          static long munmap_size, total_mmap;
          if (RSN_UNLIKELY(mmap_size)) ::munmap(mmap_base, munmap_size = mmap_size);
-         auto total = std::max(total_mmap, 1 << page_size_p2);
-         while (total - total_mmap + munmap_size < size && total <= (std::numeric_limits<decltype(total_pag)>::max() >> page_size_p2) / 3 << 1 << page_size_p2)
+         auto total = std::max(total_mmap, 1l << page_size_p2);
+         while (total - total_mmap + munmap_size < size && total <= (std::numeric_limits<decltype(total)>::max() >> page_size_p2) / 3 << 1 << page_size_p2)
             total = (total >> page_size_p2) + ((total >> page_size_p2) + (2 - 1) >> 1) << page_size_p2;
-         if (RSN_UNLIKELY((mmap_size = total - total_mmap + munmap_size) < size)) mmap_size = 0, throw std::bad_alloc{};
-         auto base = (unsigned char *)::mmap(mmap_base, mmap_size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, {});
-         if (RSN_UNLIKELY(base == MAP_FAILED)) mmap_size = 0, throw std::bad_alloc{};
-         total_mmap = total, mmap_base = base + size, mmap_size -= size, munmap_size = 0;
-         return base;
+         if ( RSN_UNLIKELY((mmap_size = total - total_mmap + munmap_size) < size) ||
+              RSN_UNLIKELY((mmap_base = (unsigned char *)::mmap(mmap_base, mmap_size, PROT_READ | PROT_WRITE | PROT_EXEC,
+                 MAP_PRIVATE | MAP_ANONYMOUS, -1, {})) == MAP_FAILED) ) mmap_size = 0, throw std::bad_alloc{};
+         total_mmap = total, munmap_size = 0;
       }(size); // slow path
+      auto base = mmap_base;
+      return mmap_base += size, mmap_size -= size, base; // fast path
    };
    if (RSN_UNLIKELY(size > 1u << max_segm_size_p2)) // redundant sanity check "not above nor negative"
       throw std::bad_alloc{};
@@ -118,9 +117,9 @@ rsn::objcode::segm::_alloc(int size) {
       RSN_IF_WITH_MT([&](auto) RSN_INLINE){
          if (RSN_UNLIKELY(total_used + size > max_total_used))
             throw std::bad_alloc{};
-         if (RSN_LIKELY(rsn::free[size_p2 - min_size_p2])) { // fast path
+         if (RSN_LIKELY(free[size_p2 - min_size_p2])) { // fast path
             populate_size = 0;
-            rsn::free[size_p2 - min_size_p2] = reinterpret_cast<const struct rsn::free *>(_base = rsn::free[size_p2 - min_size_p2])->next;
+            free[size_p2 - min_size_p2] = reinterpret_cast<const struct free *>(_base = free[size_p2 - min_size_p2])->next;
          } else
          if (RSN_UNLIKELY(size_p2 >= page_size_p2)) {
             if (RSN_UNLIKELY(total_phys + (populate_size = 1 << size_p2) > max_total_phys)) throw std::bad_alloc{};
@@ -129,8 +128,8 @@ rsn::objcode::segm::_alloc(int size) {
             populate_size = 0;
             if (RSN_UNLIKELY(total_phys + (1 << page_size_p2)) throw std::bad_alloc{};
             auto base = _base = mmap(1 << page_size_p2);
-            for (auto _ = 1 << page_size_p2 - size_p2; --_;) (struct rsn::free *)(base += 1 << size_p2)->next =
-               rsn::free[size_p2 - min_size_p2], rsn::free[size_p2 - min_size_p2] = base;
+            for (auto _ = 1 << page_size_p2 - size_p2; --_;) (struct free *)(base += 1 << size_p2)->next =
+               free[size_p2 - min_size_p2], free[size_p2 - min_size_p2] = base;
             total_phys += 1 << page_size_p2;
          }
          total_used += _size = size;
@@ -145,9 +144,9 @@ rsn::objcode::segm::_alloc(int size) {
       RSN_IF_WITH_MT([&](auto) RSN_INLINE){
          if (RSN_UNLIKELY(total_used + size > max_total_used))
             throw std::bad_alloc{};
-         if (RSN_LIKELY(rsn::free[size_p2 - min_size_p2])) { // fast path
+         if (RSN_LIKELY(free[size_p2 - min_size_p2])) { // fast path
             if (RSN_UNLIKELY(total_phys + (populate_size = size - 1 & -(1 << page_size_p2)) > max_total_phys)) throw std::bad_alloc{};
-            rsn::free[size_p2 - min_size_p2] = reinterpret_cast<const struct rsn::free *>(_base = rsn::free[size_p2 - min_size_p2])->next;
+            free[size_p2 - min_size_p2] = reinterpret_cast<const struct free *>(_base = free[size_p2 - min_size_p2])->next;
             total_phys += populate_size;
          } else {
             if (RSN_UNLIKELY(total_phys + (populate_size = size + (1 << page_size_p2) - 1 & -(1 << page_size_p2)) > max_total_phys)) throw std::bad_alloc{};
@@ -169,14 +168,14 @@ rsn::objcode::segm::_free() noexcept {
    if (RSN_LIKELY(size <= 1 << threshold_1_p2)) {
       auto size_p2 = std::numeric_limits<int>::digits + 1 - __builtin_clz(std::max(_size, 1 << min_size_p2) - 1);
       RSN_IF_WITH_MT((void)std::lock_guard(mutex),)
-         (struct rsn::free *)(_base)->next = rsn::free[size_p2 - min_size_p2], rsn::free[size_p2 - min_size_p2] = _base,
+         (struct free *)(_base)->next = free[size_p2 - min_size_p2], free[size_p2 - min_size_p2] = _base,
          total_used -= 1 << size_p2;
    } else
    if (RSN_LIKELY(size <= 1 << threshold_2_p2)) {
       auto size_p2 = std::numeric_limits<int>::digits + 1 - __builtin_clz(std::max(_size, 1 << min_size_p2) - 1);
       ::madvise(_base + (1 << page_size_p2), (1 << size_p2) - (1 << page_size_p2), MADV_DONTNEED),
       RSN_IF_WITH_MT((void)std::lock_guard(mutex),)
-         (struct rsn::free *)(_base)->next = rsn::free[size_p2 - min_size_p2], rsn::free[size_p2 - min_size_p2] = _base,
+         (struct free *)(_base)->next = free[size_p2 - min_size_p2], free[size_p2 - min_size_p2] = _base,
          total_used -= 1 << size_p2, total_phys -= (1 << size_p2) - (1 << page_size_p2);
    } else {
       auto size = _size + (1 << page_size_p2) - 1 & -(1 << page_size_p2);
