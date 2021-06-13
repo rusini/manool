@@ -76,10 +76,21 @@ void rsn::objcode::load(unsigned char *RSN_RESTRICT base) const noexcept {
    }
 }
 
-rsn::objcode::segm::segm(const objcode &oc)
-   : segm(oc.size()) { oc.load(static_cast<unsigned char *>(*this)); }
+namespace rsn {
+   namespace {
+   static constexpr auto
+      min_size_p2    = 1 << cacheline_size_p2 + 1 /*128 B                        */,
+      threshold_1_p2 = page_size_p2 + 1           /*  8 KiB - up to 14x overhead */, // if size is above, use ::madvise to release unneeded physical storage
+      threshold_2_p2 = page_size_p2 + 6           /*256 MiB - up to 16 Ki mmaps  */; // if size is above, delegate to ::mmap/::munmap directly
 
-rsn::objcode::segm::segm(int size) {
+      unsigned char *free[threshold_2_p2 - min_size_p2 + 1];
+      free { unsigned char *next; };
+      long total_used, total_phys;
+      std::mutex mutex;
+   }
+}
+
+rsn::objcode::segm::alloc(int size) {
    static constexpr auto mmap = [](int size) RSN_INLINE{
       assert(size > 0), assert(size <= 1 << mmap_threshold_p2);
       assert(size % (1 << page_size_p2) == 0);
@@ -104,63 +115,79 @@ rsn::objcode::segm::segm(int size) {
       return base;
    };
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-   if (RSN_LIKELY(!size))
-      { _base = {}, _size = 0; return; } // trivial path - zero size is acceptable but results in zero address
-   if (RSN_UNLIKELY(size > 1u << max_segm_size_p2))
-      throw std::bad_alloc{}; // redundant sanity check "not above nor negative"
+   if (RSN_UNLIKELY(size > 1u << max_segm_size_p2)) // redundant sanity check "not above nor negative"
+      throw std::bad_alloc{};
    if (RSN_LIKELY(size <= 1 << threshold_1_p2)) {
-      bool need_prefault;
-      auto size_p2 = std::numeric_limits<decltype(size)>::digits + 1 - __builtin_clz(std::max(size, 1 << min_size_p2) - 1);
-      [&](auto) RSN_INLINE{
+      int populate_size;
+      auto size_p2 = std::numeric_limits<int>::digits + 1 - __builtin_clz(std::max(size, 1 << min_size_p2) - 1);
+      RSN_IF_WITH_MT([&](auto) RSN_INLINE){
          if (RSN_UNLIKELY(total_used + size > max_total_used))
             throw std::bad_alloc{};
-         if (RSN_LIKELY(free[size_p2 - min_size_p2]))
-            free[size_p2 - min_size_p2] = reinterpret_cast<const struct free *>(_base = free[size_p2 - min_size_p2])->next,
-            need_prefault = false;
-         else
+         if (RSN_LIKELY(rsn::free[size_p2 - min_size_p2])) { // fast path
+            populate_size = 0;
+            rsn::free[size_p2 - min_size_p2] = reinterpret_cast<const struct rsn::free *>(_base = rsn::free[size_p2 - min_size_p2])->next;
+         } else
          if (RSN_UNLIKELY(size_p2 >= page_size_p2)) {
-            if (RSN_UNLIKELY(total_phys + (1 << size_p2) > max_total_phys)) throw std::bad_alloc{};
-            _base = mmap(1 << size_p2); total_phys += 1 << size_p2;
-            need_prefault = 1 << size_p2 > 1 << page_size_p2;
+            if (RSN_UNLIKELY(total_phys + (populate_size = 1 << size_p2) > max_total_phys)) throw std::bad_alloc{};
+            _base = mmap(1 << size_p2); total_phys += populate_size;
          } else {
+            populate_size = 0;
             if (RSN_UNLIKELY(total_phys + (1 << page_size_p2)) throw std::bad_alloc{};
             auto base = _base = mmap(1 << page_size_p2);
-            for (auto _ = 1 << page_size_p2 - size_p2; --_;) (struct free *)(base += 1 << size_p2)->next =
-               free[size_p2 - min_size_p2], free[size_p2 - min_size_p2] = base;
+            for (auto _ = 1 << page_size_p2 - size_p2; --_;) (struct rsn::free *)(base += 1 << size_p2)->next =
+               rsn::free[size_p2 - min_size_p2], rsn::free[size_p2 - min_size_p2] = base;
             total_phys += 1 << page_size_p2;
-            need_prefault = 1 << page_size_p2 > 1 << page_size_p2;
          }
          total_used += _size = size;
-      }(std::lock_guard(mutex));
-      if (RSN_UNLIKELY(need_prefault)) ::madvise(_base, size, MADV_WILLNEED);
+      }RSN_IF_WITH_MT((std::lock_guard(mutex));)
+      if (RSN_UNLIKELY(populate_size > 1 << page_size_p2)) ::madvise(_base, size, MADV_WILLNEED);
    } else
    if (RSN_LIKELY(size <= 1 << threshold_2_p2)) {
-      bool need_prefault;
-      auto size_p2 = std::numeric_limits<decltype(size)>::digits + 1 - __builtin_clz(std::max(size, 1 << min_size_p2) - 1);
-      [&](auto) RSN_INLINE{
+      int populate_size;
+      auto size_p2 = std::numeric_limits<int>::digits + 1 - __builtin_clz(std::max(size, 1 << min_size_p2) - 1);
+      RSN_IF_WITH_MT([&](auto) RSN_INLINE){
          if (RSN_UNLIKELY(total_used + size > max_total_used))
             throw std::bad_alloc{};
-         if (RSN_LIKELY(free[size_p2 - min_size_p2])) {
-            if (RSN_UNLIKELY(total_phys + (size - 1 & -(1 << page_size_p2)) > max_total_phys)) throw std::bad_alloc{};
-            free[size_p2 - min_size_p2] = reinterpret_cast<const struct free *>(_base = free[size_p2 - min_size_p2])->next;
-            total_phys += size - 1 & -(1 << page_size_p2);
-            need_prefault = size - 1 & -(1 << page_size_p2) > 1 << page_size_p2;
+         if (RSN_LIKELY(rsn::free[size_p2 - min_size_p2])) { // fast path
+            if (RSN_UNLIKELY(total_phys + (populate_size = size - 1 & -(1 << page_size_p2)) > max_total_phys)) throw std::bad_alloc{};
+            rsn::free[size_p2 - min_size_p2] = reinterpret_cast<const struct rsn::free *>(_base = rsn::free[size_p2 - min_size_p2])->next;
+            total_phys += populate_size;
          } else {
-            if (RSN_UNLIKELY(total_phys + (size + (1 << page_size_p2) - 1 & -(1 << page_size_p2)) > max_total_phys)) throw std::bad_alloc{};
-            _base = mmap(1 << size_p2); total_phys += size + (1 << page_size_p2) - 1 & -(1 << page_size_p2);
-            need_prefault = size + (1 << page_size_p2) - 1 & -(1 << page_size_p2 > 1 << page_size_p2;
+            if (RSN_UNLIKELY(total_phys + (populate_size = size + (1 << page_size_p2) - 1 & -(1 << page_size_p2)) > max_total_phys)) throw std::bad_alloc{};
+            _base = mmap(1 << size_p2); total_phys += populate_size;
          }
          total_used += _size = size;
-      }(std::lock_guard(mutex));
-      if (RSN_UNLIKELY(need_prefault)) ::madvise(_base, size, MADV_WILLNEED);
-   } else [&](auto) RSN_INLINE{
+      }RSN_IF_WITH_MT((std::lock_guard(mutex));)
+      if (RSN_UNLIKELY(populate_size > 1 << page_size_p2)) ::madvise(_base, size, MADV_WILLNEED);
+   } else RSN_IF_WITH_MT([&](auto) RSN_INLINE){
       if ( RSN_UNLIKELY(total_used + size > max_total_used) ||
            RSN_UNLIKELY(total_phys + (size + (1 << page_size_p2) - 1 & -(1 << page_size_p2)) > max_total_phys) ) throw std::bad_alloc{};
       if ( RSN_UNLIKELY((_base = (unsigned char *)(::mmap({}, size, PROT_READ | PROT_WRITE | PROT_EXEC,
          MAP_PRIVATE | MAP_ANONYMOUS | MAP_POPULATE, -1, {}))) == MAP_FAILED) ) throw std::bad_alloc{};
       total_phys += size + (1 << page_size_p2) - 1 & -(1 << page_size_p2), total_used += _size = size;
-   }(std::lock_guard(mutex));
+   }RSN_IF_WITH_MT((std::lock_guard(mutex)));
 }
+
+rsn::objcode::segm::free() noexcept {
+   if (RSN_LIKELY(size <= 1 << threshold_1_p2)) {
+      auto size_p2 = std::numeric_limits<int>::digits + 1 - __builtin_clz(std::max(_size, 1 << min_size_p2) - 1);
+      RSN_IF_WITH_MT((void)std::lock_guard(mutex),)
+         (struct rsn::free *)(_base)->next = rsn::free[size_p2 - min_size_p2], rsn::free[size_p2 - min_size_p2] = _base,
+         total_used -= 1 << size_p2;
+   } else
+   if (RSN_LIKELY(size <= 1 << threshold_2_p2)) {
+      auto size_p2 = std::numeric_limits<int>::digits + 1 - __builtin_clz(std::max(_size, 1 << min_size_p2) - 1);
+      ::madvise(_base + (1 << page_size_p2), (1 << size_p2) - (1 << page_size_p2), MADV_DONTNEED),
+      RSN_IF_WITH_MT((void)std::lock_guard(mutex),)
+         (struct rsn::free *)(_base)->next = rsn::free[size_p2 - min_size_p2], rsn::free[size_p2 - min_size_p2] = _base,
+         total_used -= 1 << size_p2, total_phys -= (1 << size_p2) - (1 << page_size_p2);
+   } else {
+      auto size = _size + (1 << page_size_p2) - 1 & -(1 << page_size_p2);
+      RSN_IF_WITH_MT((void)std::lock_guard(mutex),)
+         ::munmap(_base, _size), total_used -= size, total_phys -= size;
+   }
+}
+
 
 rsn::objcode::segm::free_slow() noexcept {
    if (RSN_UNLIKELY(_size > 1 << threshold_2_p2)) {

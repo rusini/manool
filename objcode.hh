@@ -181,69 +181,25 @@ namespace rsn::mnl {
 } // namespace rsn::mnl
 
 class objcode::segm/*ent*/ { // represents target memory segment for object code loading
-private:
-   static constexpr auto
-      cacheline_size_p2 =  6 /*64 B*/,                 // for CPU memory cache
-      page_size_p2      = 12 /*4 KiB*/,                // for MMU paging
-      max_segm_size_p2  = page_size_p2 + 18 /*1 GiB*/, // half of positive numbers space (actual maximum for ::mmap w/MAP_32BIT under Linux)
-
-      min_size_p2       = 7                /*128 B - two cache lines      */
-      threshold_1_p2    = page_size_p2 + 1 /*  8 KiB - up to 14x overhead */, // if size is above, use ::madvise to release unneeded physical storage
-      threshold_2_p2    = page_size_p2 + 6 /*256 MiB - up to 16 Ki mmaps  */; // if size is above, delegate to ::mmap/::munmap directly
-
-public:
-   RSN_INLINE segm() noexcept
-      : base{}, size(0) {}
-   RSN_INLINE explicit segm(int size) {
-      if (RSN_LIKELY(!size)) { base = {}, size_p2 = -1; return; } // trivial path - zero size is acceptable but results in zero address (and special size_p2)
-      if (RSN_UNLIKELY(_size > 1 << threshold_2_p2 - 1)) alloc_slow(); else {
-         if (RSN_LIKELY(free[size_p2 - min_size_p2]))
-            free[size_p2 - min_size_p2] = static_cast<const struct free *>(base = free[size_p2 - min_size_p2])->next, this->size_p2 = size_p2;
-         else
-      }
-
-
-
-if (RSN_UNLIKELY(size > 1u << max_segm_size_p2)) throw std::bad_alloc{}; // redundant sanity check "not above nor negative"
-      size_p2 = std::numeric_limits<decltype(size)>::digits + 1 - __builtin_clz(std::max(size, 1 << min_size_p2) - 1);
-      if (RSN_LIKELY(free[size_p2 - min_size_p2])) // fast path
-         free[size_p2 - min_size_p2] = static_cast<const struct free *>(base = free[size_p2 - min_size_p2])->next, this->size_p2 = size_p2;
-   }
-   RSN_INLINE explicit segm(int size);
-   RSN_INLINE segm(segm &&rhs) noexcept: _base(rhs._base), _size(rhs._size) {
-      rhs._base = {}; // after moving out, valid for destruction but not consistent enough for other operations
-   }
-   RSN_INLINE ~segm() {
-      if (RSN_UNLIKELY(_size)) if (RSN_UNLIKELY(_size > 1 << threshold_1_p2)) free_slow(); else {
-         auto size_p2 = std::numeric_limits<decltype(_size)>::digits + 1 - __builtin_clz(std::max(_size, 1 << min_size_p2) - 1);
-         RSN_IF_WITH_MT((void)std::lock_guard(mutex),)
-            (struct free *)(_base)->next = free[size_p2 - min_size_p2], free[size_p2 - min_size_p2] = _base,
-            total_used -= 1 << size_p2;
-      }
-   }
-   RSN_INLINE &operator=(segm &&rhs) noexcept {
-      swap(rhs);
-   }
-   RSN_INLINE void swap(segm &rhs) noexcept {
-      std::swap(_base, rhs._base), std::swap(_size, rhs._size);
-   }
+public: // standard operations
+   RSN_INLINE segm() noexcept: base{}, size(0) {}
+   RSN_INLINE segm(segm &&rhs) noexcept: _base(rhs._base), _size(rhs._size) { rhs._base = {}; }
+   RSN_INLINE ~segm() { if (RSN_UNLIKELY(_size)) _free(); }
+   RSN_INLINE &operator=(segm &&rhs) noexcept { swap(rhs); }
+   RSN_INLINE void swap(segm &rhs) noexcept { std::swap(_base, rhs._base), std::swap(_size, rhs._size); }
+public: // misc constructors
+   RSN_INLINE explicit segm(int size) { if (RSN_UNLIKELY(size)) _alloc(size); else _base = {}, _size = 0; }
+   RSN_INLINE segm(const objcode &oc): segm(oc.size()) { oc.load(static_cast<unsigned char *>(*this)); }
 public: // access to contents
    template<typename T> RSN_INLINE explicit operator T *() const noexcept { return reinterpret_cast<T *>(_base); }
    RSN_INLINE int size() const noexcept { return _size; }
 private: // internal representation
    unsigned char *_base; int _size;
+private: // implementation helpers
+   void _alloc(int), _free();
 private:
-   static inline std::mutex mutex;
-   static inline decltype(base) free[threshold_2_p2 - min_size_p2 + 1] = {};
-   struct free { decltype(base) next; };
-private:
-   static inline long total_used, total_phys;
    static inline long max_total_used = 256 * 1024 * 1024, max_total_phys = 768 * 1024 * 1024;
-public:
-   segm(const objcode &);
 };
 namespace rsn { RSN_INLINE inline void swap(segm &lhs, segm &rhs) noexcept { lhs.swap(rhs); } }
 
 RSN_INLINE inline segm rsn::objcode::load() const { return segm(*this); }
-
-
