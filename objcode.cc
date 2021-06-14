@@ -89,8 +89,17 @@ namespace rsn {
    }
 }
 
-78'9787 0x2 0177
-//8989'2 aaaa 0b10'110
+//78'9787 0x2 0177
+123.99e+1'1
+//89892 aaaa 0b10'110
+
+123'232
+123E+1
+0x123.23p+1
+0x.0p0
+0b10'0
+123'33'3'dd\nkkk'
+
 
 rsn::objcode::segm::_alloc(int size) {
    static constexpr auto mmap = [](int size) RSN_INLINE{
@@ -101,7 +110,7 @@ rsn::objcode::segm::_alloc(int size) {
          if (RSN_UNLIKELY(mmap_size))
             ::munmap(mmap_base, munmap_size = mmap_size);
          if (RSN_UNLIKELY((mmap_base = (unsigned char *)::mmap(mmap_base, (RSN_UNLIKELY(size <= munmap_size) ? munmap_size :
-            (size - munmap_size + mmap_incr_size - 1) / mmap_incr_size * mmap_incr_size + munmap_size), PROT_READ | PROT_WRITE | PROT_EXEC,
+            (size - munmap_size + mmap_delta - 1) / mmap_delta * mmap_delta + munmap_size), PROT_READ | PROT_WRITE | PROT_EXEC,
             MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE, -1, {})) == MAP_FAILED)) mmap_base = {}, mmap_size = 0, throw std::bad_alloc{};
          munmap_size = 0;
 
