@@ -89,25 +89,32 @@ namespace rsn {
    }
 }
 
+78'9787 0x2 0177
+//8989'2 aaaa 0b10'110
+
 rsn::objcode::segm::_alloc(int size) {
    static constexpr auto mmap = [](int size) RSN_INLINE{
       static unsigned char *mmap_base;
       static long mmap_size;
       if (RSN_UNLIKELY(size > mmap_size)) [](int size) RSN_NOINLINE{
-         static long munmap_size, total_mmap;
-         if (RSN_UNLIKELY(mmap_size)) ::munmap(mmap_base, munmap_size = mmap_size);
-         auto total = std::max(total_mmap, 1l << page_size_p2);
-         while ( total - total_mmap + munmap_size < size &&
-                 total <= (std::numeric_limits<decltype(total)>::max() >> page_size_p2) / 3 << 1 << page_size_p2 )
-            total = (total >> page_size_p2) + ((total >> page_size_p2) + (2 - 1) >> 1) << page_size_p2;
+         static long munmap_size;
+         if (RSN_UNLIKELY(mmap_size))
+            ::munmap(mmap_base, munmap_size = mmap_size);
+         if (RSN_UNLIKELY((mmap_base = (unsigned char *)::mmap(mmap_base, (RSN_UNLIKELY(size <= munmap_size) ? munmap_size :
+            (size - munmap_size + mmap_incr_size - 1) / mmap_incr_size * mmap_incr_size + munmap_size), PROT_READ | PROT_WRITE | PROT_EXEC,
+            MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE, -1, {})) == MAP_FAILED)) mmap_base = {}, mmap_size = 0, throw std::bad_alloc{};
+         munmap_size = 0;
 
-         alloc = size <= munmap_size ? size : (size - munmap_size + mmap_incr_size - 1) / (mmap_incr_size - 1) * (mmap_incr_size - 1);
 
-         if ( RSN_UNLIKELY((mmap_size = total - total_mmap + munmap_size) < size) ||
-              RSN_UNLIKELY((mmap_base = (unsigned char *)::mmap(mmap_base, mmap_size, PROT_READ | PROT_WRITE | PROT_EXEC,
-                 MAP_PRIVATE | MAP_ANONYMOUS, -1, {})) == MAP_FAILED) )
-            mmap_size = 0, throw std::bad_alloc{};
-         total_mmap = total, munmap_size = 0;
+         if (RSN_UNLIKELY(mmap_size)) ::munmap(mmap_base, munmap_size = mmap_size),
+            mmap_size = (size - munmap_size + mmap_incr_size - 1) / mmap_incr_size * mmap_incr_size + munmap_size;
+         else if (RSN_LIKELY(size <= munmap_size)) mmap_size = munmap_size;
+         else mmap_size = (size - munmap_size + mmap_incr_size - 1) / mmap_incr_size * mmap_incr_size + munmap_size;
+
+
+         if (RSN_UNLIKELY((mmap_base = (unsigned char *)::mmap(mmap_base, mmap_size, PROT_READ | PROT_WRITE | PROT_EXEC,
+            MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE, -1, {})) == MAP_FAILED)) mmap_base = {}, mmap_size = 0, throw std::bad_alloc{};
+         munmap_size = 0;
       }(size); // slow path
       auto base = mmap_base;
       return mmap_base += size, mmap_size -= size, base; // fast path
