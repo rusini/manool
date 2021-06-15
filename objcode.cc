@@ -81,7 +81,7 @@ namespace rsn {
       static constexpr auto
          min_size_p2    = 1 + 6      /*128 B - two cache lines       */,
          threshold_1_p2 = 1 + 2 + 10 /*  8 KiB - up to ~14x overhead */, // if size is above, use ::madvise to release unneeded physical storage
-         threshold_2_p2 = 8 + 10   /*256 KiB - up to ~16 Ki mmaps  */; // if size is above, delegate to ::mmap/::munmap directly
+         threshold_2_p2 = 8 + 10     /*256 KiB - up to ~16 Ki mmaps  */; // if size is above, delegate to ::mmap/::munmap directly
       unsigned char *free[threshold_2_p2 - min_size_p2 + 1];
       struct free { unsigned char *next; };
       long total_used, total_phys;
@@ -90,6 +90,7 @@ namespace rsn {
 }
 
 void rsn::objcode::segm::_alloc(int size) {
+   static_assert(min_size_p2 >= cacheline_size_p2);
    if (RSN_UNLIKELY(size > 1u << max_segm_size_p2)) // redundant sanity check "not above nor negative"
       throw std::bad_alloc{};
    static constexpr auto mmap = [](int size) RSN_INLINE{
@@ -98,35 +99,41 @@ void rsn::objcode::segm::_alloc(int size) {
       if (RSN_UNLIKELY(size > mmap_size)) [](int size) RSN_NOINLINE{
          static int munmap_size;
          if (RSN_UNLIKELY(mmap_size)) ::munmap(mmap_base, munmap_size = mmap_size);
-         static constexpr auto mmap_delta = sizeof(void *) == sizeof(long long) ? 24 << 10 << 10 /*MiB*/ :
-            sizeof(void *) == sizeof(int) ? 384 << 10 /*KiB*/ : -1;
-         static_assert(mmap_delta % (1 << page_size_p2) == 0);
-         auto base = (unsigned char *)::mmap(mmap_base, (mmap_size = RSN_UNLIKELY(size <= munmap_size) ?
-            munmap_size : (size - munmap_size + mmap_delta - 1) / mmap_delta * mmap_delta + munmap_size),
-            PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE, -1, {});
-         if (RSN_UNLIKELY(base == MAP_FAILED)) mmap_size = 0, throw std::bad_alloc{};
+         static constexpr auto mmap_delta = sizeof(void *) == 8 ? 12/*MiB*/ << 10 << 10 : sizeof(void *) == 4 ? 192/*KiB*/ << 10 : 0;
+         mmap_size = RSN_UNLIKELY(size <= munmap_size) ? munmap_size : (size - munmap_size + mmap_delta - 1) / mmap_delta * mmap_delta + munmap_size;
+         static_assert(mmap_delta && mmap_delta % (1 << page_size_p2) == 0);
+      # if __linux__
+         auto base = (unsigned char *)::mmap(mmap_base, mmap_size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE, -1, {});
+         if (base == MAP_FAILED) base = {};
+      # elif __FreeBSD__
+         auto base = (unsigned char *)::mmap(mmap_base, mmap_size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANON, -1, {});
+         if (base == MAP_FAILED) base = {};
+      # else
+         # error "Either __linux__ or __FreeBSD__ is required"
+         unsigned char *base = {};
+      # endif
+         if (RSN_UNLIKELY(!base)) mmap_size = 0, throw std::bad_alloc{};
          munmap_size = 0, mmap_base = base;
       }(size); // slow path
       auto base = mmap_base;
       return mmap_base += size, mmap_size -= size, base; // fast path
    };
    if (RSN_LIKELY(size <= 1 << threshold_1_p2)) {
-      static_assert(threshold_1_p2 >= page_size_p2);
-      int populate_size;
+      int prefault_size;
       auto size_p2 = std::numeric_limits<unsigned>::digits - __builtin_clz(std::max(size, 1 << min_size_p2) - 1);
-      static_assert(min_size_p2 >= cacheline_size_p2); static_assert(min_size_p2 < page_size_p2);
+      static_assert(min_size_p2 < page_size_p2);
       RSN_IF_WITH_MT([&](auto) RSN_INLINE){
          if (RSN_UNLIKELY(total_used + size > max_total_used))
             throw std::bad_alloc{};
          if (RSN_LIKELY(free[size_p2 - min_size_p2])) { // fast path
-            populate_size = 0;
+            prefault_size = 0;
             free[size_p2 - min_size_p2] = reinterpret_cast<const struct free *>(_base = free[size_p2 - min_size_p2])->next;
          } else
          if (RSN_UNLIKELY(size_p2 >= page_size_p2)) {
-            if (RSN_UNLIKELY(total_phys + (populate_size = 1 << size_p2) > max_total_phys)) throw std::bad_alloc{};
-            _base = mmap(1 << size_p2); total_phys += populate_size;
+            if (RSN_UNLIKELY(total_phys + (prefault_size = 1 << size_p2) > max_total_phys)) throw std::bad_alloc{};
+            _base = mmap(1 << size_p2); total_phys += prefault_size;
          } else {
-            populate_size = 0;
+            prefault_size = 0;
             //if (RSN_UNLIKELY(total_phys + (1 << page_size_p2)) throw std::bad_alloc{};
             auto base = _base = mmap(1 << page_size_p2);
             for (auto _ = 1 << page_size_p2 - size_p2; --_;) ((struct free *)(base += 1 << size_p2))->next =
@@ -135,34 +142,34 @@ void rsn::objcode::segm::_alloc(int size) {
          }
          total_used += _size = size;
       }RSN_IF_WITH_MT((std::lock_guard(mutex));)
-      if (RSN_UNLIKELY(populate_size > 1 << page_size_p2))
       # if __linux__
-         ::madvise(_base, size, MADV_WILLNEED);
+         if (RSN_UNLIKELY(prefault_size > 1 << page_size_p2)) ::madvise(_base, size, MADV_WILLNEED);
       # elif __FreeBSD__
       # else
          # error "Either __linux__ or __FreeBSD__ is required"
       # endif
    } else
    if (RSN_LIKELY(size <= 1 << threshold_2_p2)) {
+      static_assert(threshold_1_p2 >= page_size_p2);
       static_assert(threshold_2_p2 >= page_size_p2);
-      int populate_size;
+      int prefault_size;
       auto size_p2 = std::numeric_limits<unsigned>::digits - __builtin_clz(size - 1);
       RSN_IF_WITH_MT([&](auto) RSN_INLINE){
          if (RSN_UNLIKELY(total_used + size > max_total_used))
             throw std::bad_alloc{};
          if (RSN_LIKELY(free[size_p2 - min_size_p2])) { // fast path
-            if (RSN_UNLIKELY(total_phys + (populate_size = size - 1 & -(1 << page_size_p2)) > max_total_phys)) throw std::bad_alloc{};
+            if (RSN_UNLIKELY(total_phys + (prefault_size = size - 1 & -(1 << page_size_p2)) > max_total_phys)) throw std::bad_alloc{};
             free[size_p2 - min_size_p2] = reinterpret_cast<const struct free *>(_base = free[size_p2 - min_size_p2])->next;
-            total_phys += populate_size;
+            total_phys += prefault_size;
          } else {
-            if (RSN_UNLIKELY(total_phys + (populate_size = size + (1 << page_size_p2) - 1 & -(1 << page_size_p2)) > max_total_phys)) throw std::bad_alloc{};
-            _base = mmap(1 << size_p2); total_phys += populate_size;
+            if (RSN_UNLIKELY(total_phys + (prefault_size = size + (1 << page_size_p2) - 1 & -(1 << page_size_p2)) > max_total_phys)) throw std::bad_alloc{};
+            _base = mmap(1 << size_p2); total_phys += prefault_size;
          }
          total_used += _size = size;
       }RSN_IF_WITH_MT((std::lock_guard(mutex));)
-      if (RSN_UNLIKELY(populate_size > 1 << page_size_p2))
+      if (RSN_UNLIKELY(prefault_size > 1 << page_size_p2))
       # if __linux__
-         ::madvise(_base, size, MADV_WILLNEED);
+         if (RSN_UNLIKELY(prefault_size > 1 << page_size_p2)) ::madvise(_base, size, MADV_WILLNEED);
       # elif __FreeBSD__
       # else
          # error "Either __linux__ or __FreeBSD__ is required"
@@ -212,5 +219,6 @@ void rsn::objcode::segm::_free() noexcept {
    }
 }
 
-long rsn::objcode::segm::max_total_used = 256 * 1024 * 1024, rsn::objcode::segm::max_total_phys = 768 * 1024 * 1024;
-
+long
+   rsn::objcode::segm::max_total_used = 256/*MiB*/ << 10 << 10,
+   rsn::objcode::segm::max_total_phys = 768/*MiB*/ << 10 << 10;
