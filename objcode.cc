@@ -135,7 +135,13 @@ void rsn::objcode::segm::_alloc(int size) {
          }
          total_used += _size = size;
       }RSN_IF_WITH_MT((std::lock_guard(mutex));)
-      if (RSN_UNLIKELY(populate_size > 1 << page_size_p2)) ::madvise(_base, size, MADV_WILLNEED);
+      if (RSN_UNLIKELY(populate_size > 1 << page_size_p2))
+      # if __linux__
+         ::madvise(_base, size, MADV_WILLNEED);
+      # elif __FreeBSD__
+      # else
+         # error "Either __linux__ or __FreeBSD__ is required"
+      # endif
    } else
    if (RSN_LIKELY(size <= 1 << threshold_2_p2)) {
       static_assert(threshold_2_p2 >= page_size_p2);
@@ -154,33 +160,52 @@ void rsn::objcode::segm::_alloc(int size) {
          }
          total_used += _size = size;
       }RSN_IF_WITH_MT((std::lock_guard(mutex));)
-      if (RSN_UNLIKELY(populate_size > 1 << page_size_p2)) ::madvise(_base, size, MADV_WILLNEED);
+      if (RSN_UNLIKELY(populate_size > 1 << page_size_p2))
+      # if __linux__
+         ::madvise(_base, size, MADV_WILLNEED);
+      # elif __FreeBSD__
+      # else
+         # error "Either __linux__ or __FreeBSD__ is required"
+      # endif
    } else RSN_IF_WITH_MT([&](auto) RSN_INLINE){
       if ( RSN_UNLIKELY(total_used + size > max_total_used) ||
            RSN_UNLIKELY(total_phys + (size + (1 << page_size_p2) - 1 & -(1 << page_size_p2)) > max_total_phys) ) throw std::bad_alloc{};
-      if ( RSN_UNLIKELY((_base = (unsigned char *)(::mmap({}, size, PROT_READ | PROT_WRITE | PROT_EXEC,
-         MAP_PRIVATE | MAP_ANONYMOUS | MAP_POPULATE, -1, {}))) == MAP_FAILED) ) throw std::bad_alloc{};
+   # if __linux__
+      if (RSN_UNLIKELY((_base = (unsigned char *)::mmap({}, size, PROT_READ | PROT_WRITE | PROT_EXEC,
+         MAP_PRIVATE | MAP_ANONYMOUS | MAP_POPULATE, -1, {})) == MAP_FAILED)) throw std::bad_alloc{};
+   # elif __FreeBSD__
+      if (RSN_UNLIKELY((_base = (unsigned char *)::mmap({}, size, PROT_READ | PROT_WRITE | PROT_EXEC,
+         MAP_PRIVATE | MAP_ANON, -1, {})) == MAP_FAILED)) throw std::bad_alloc{};
+   # else
+      # error "Either __linux__ or __FreeBSD__ is required"
+   # endif
       total_phys += size + (1 << page_size_p2) - 1 & -(1 << page_size_p2), total_used += _size = size;
    }RSN_IF_WITH_MT((std::lock_guard(mutex)));
 }
 
 void rsn::objcode::segm::_free() noexcept {
    if (RSN_LIKELY(_size <= 1 << threshold_1_p2)) {
-      static_assert(threshold_1_p2 >= page_size_p2);
       auto size_p2 = std::numeric_limits<unsigned>::digits - __builtin_clz(std::max(_size, 1 << min_size_p2) - 1);
-      static_assert(min_size_p2 >= cacheline_size_p2); static_assert(min_size_p2 < page_size_p2);
+      static_assert(min_size_p2 >= cacheline_size_p2); static_assert(min_size_p2 <= threshold_1_p2);
       RSN_IF_WITH_MT((void)std::lock_guard(mutex),)
          ((struct free *)(_base))->next = free[size_p2 - min_size_p2], free[size_p2 - min_size_p2] = _base,
          total_used -= 1 << size_p2;
    } else
    if (RSN_LIKELY(_size <= 1 << threshold_2_p2)) {
-      static_assert(threshold_2_p2 >= threshold_1_p2);
+      static_assert(threshold_1_p2 >= page_size_p2);
       auto size_p2 = std::numeric_limits<unsigned>::digits - __builtin_clz(_size - 1);
-      ::madvise(_base + (1 << page_size_p2), (1 << size_p2) - (1 << page_size_p2), MADV_DONTNEED),
+   # if __linux__
+      ::madvise(_base + (1 << page_size_p2), _size - (1 << page_size_p2), MADV_DONTNEED);
+   # elif __FreeBSD__
+      ::madvise(_base + (1 << page_size_p2), _size - (1 << page_size_p2), MADV_FREE);
+   # else
+      # error "Either __linux__ or __FreeBSD__ is required"
+   # endif
       RSN_IF_WITH_MT((void)std::lock_guard(mutex),)
          ((struct free *)(_base))->next = free[size_p2 - min_size_p2], free[size_p2 - min_size_p2] = _base,
          total_used -= 1 << size_p2, total_phys -= (1 << size_p2) - (1 << page_size_p2);
    } else {
+      static_assert(threshold_2_p2 >= threshold_1_p2);
       auto size = _size + (1 << page_size_p2) - 1 & -(1 << page_size_p2);
       RSN_IF_WITH_MT((void)std::lock_guard(mutex),)
          ::munmap(_base, _size), total_used -= size, total_phys -= size;
