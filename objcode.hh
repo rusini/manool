@@ -17,6 +17,9 @@
 # include <cstring>
 # include <cstdio>
 # include <vector>
+# include <limits>
+# include <algorithm>
+# include <mutex>
 
 # include <new> // bad_alloc
 
@@ -24,7 +27,7 @@
 
 # include "rusini0.hh"
 
-namespace rsn::mnl {
+namespace rsn {
 
    class objcode /*object code*/ { // with relocations suitable for the target ISA
    private: // important magnitudes
@@ -50,10 +53,10 @@ namespace rsn::mnl {
          const bool is_rodata;           // whether the section contains text (code) or read-only data
       public: // construction and standard operations
          RSN_INLINE _sect(bool is_rodata) noexcept: is_rodata(is_rodata) {}
-         RSN_INLINE _sect(_sect &&rhs) noexcept: base(rhs.base), pc(rhs.pc), res(rhs.res), alloc(rhs.alloc), align(rhs.align) { rhs.base = {}; }
-         RSN_INLINE ~_sect() { if (RSN_UNLIKELY(base))) std::free(const_cast<unsigned char *>(base)); } // own fast/slow path split
+         RSN_INLINE _sect(_sect &&rhs) noexcept: base(rhs.base), pc(rhs.pc), res(rhs.res), alloc(rhs.alloc), align(rhs.align), is_rodata(rhs.is_rodata) { rhs.base = {}; }
+         RSN_INLINE ~_sect() { if (RSN_UNLIKELY(base)) std::free(const_cast<unsigned char *>(base)); } // own fast/slow path split
       public: // temporary member variables
-         mutable void *load_base; // target virtual address after section loading
+         mutable unsigned char *load_base; // target virtual address after section loading
       public: // helper stuff
          struct fixup { // AKA relocation records - specific to x86 and x86-64 ISAs (suitable for x86 and all data and code models for x86-64)
             enum { plus_label_quad, plus_label_long, plus_label_minus_next_addr_long, plus_label_minus_next_addr_byte, minus_next_addr_long } kind;
@@ -74,7 +77,7 @@ namespace rsn::mnl {
          label(label &&) = default;
       public:
          RSN_INLINE explicit label(objcode &owner): sn(RSN_LIKELY(owner.labels.reserve((int)owner.labels.size() + 1),
-            (int)owner.labels.size() != std::numeric_limits<int>::max()) ? owner.labels.size() : throw std::bad_alloc{})) { owner.labels.emplace_back(); }
+            (int)owner.labels.size() != std::numeric_limits<int>::max()) ? owner.labels.size() : throw std::bad_alloc{}) { owner.labels.emplace_back(); }
       };
    public: // Program Text and (RO)Data Sections ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
       class sect/*ion*/ {
@@ -82,7 +85,7 @@ namespace rsn::mnl {
          objcode &owner;
       public: // assembly memory allocation
          RSN_INLINE auto &reserve(int size) const {
-            assert(size >= 0);
+            //assert(size >= 0);
             if (RSN_LIKELY((unsigned)sects[sn].res + size <= sects[sn].alloc))
                sects[sn].res += size; // fast path
             else [](auto &sect, auto size) RSN_NOINLINE{
@@ -116,15 +119,15 @@ namespace rsn::mnl {
          template<typename Type> RSN_INLINE auto &q(Type *val) const noexcept { return q(reinterpret_cast<unsigned long>(val)); } // suitable for 64-bit ABIs
       public:
          // symbolic and relative addresses
-         RSN_INLINE auto &q (const label &label, decltype(x86quad)::_ offset = 0) const // useful for 64-bit addressing
+         RSN_INLINE auto &q (const label &label, decltype(x86quad::_) offset = 0) const // useful for 64-bit addressing
             { return owner.fixups.push_back({_sect::fixup::plus_label_quad, sects, sn, (int)(sects[sn].pc - sects[sn].base), label.sn}), q(offset); }
-         RSN_INLINE auto &l (const label &label, decltype(x86long)::_ offset = 0) const // useful for 32-bit addressing
+         RSN_INLINE auto &l (const label &label, decltype(x86long::_) offset = 0) const // useful for 32-bit addressing
             { return owner.fixups.push_back({_sect::fixup::plus_label_long, sects, sn, (int)(sects[sn].pc - sects[sn].base), label.sn}), l(offset); }
-         RSN_INLINE auto &rl(const label &label, decltype(x86long)::_ offset = 0) const
+         RSN_INLINE auto &rl(const label &label, decltype(x86long::_) offset = 0) const
             { return owner.fixups.push_back({_sect::fixup::plus_label_minus_next_addr_long, sects, sn, (int)(sects[sn].pc - sects[sn].base), label.sn}), l(offset); }
-         RSN_INLINE auto &rb(const label &label, decltype(x86byte)::_ offset = 0) const
+         RSN_INLINE auto &rb(const label &label, decltype(x86byte::_) offset = 0) const
             { return owner.fixups.push_back({_sect::fixup::plus_label_minus_next_addr_byte, sects, sn, (int)(sects[sn].pc - sects[sn].base), label.sn}), b(offset); }
-         RSN_INLINE auto &rl(decltype(x86long)::_ val) const // useful for 32-bit addressing
+         RSN_INLINE auto &rl(decltype(x86long::_) val) const // useful for 32-bit addressing
             { return owner.fixups.push_back({_sect::fixup::minus_next_addr_long, sects, sn, (int)(sects[sn].pc - sects[sn].base)}), l(val); }
          // convenience helpers for the above
          template<typename Type> RSN_INLINE auto &rl(Type *val) const { return rl(reinterpret_cast<unsigned long>(val)); } // useful for 32-bit addressing
@@ -160,7 +163,7 @@ namespace rsn::mnl {
          sect(sect &&rhs) = default;
       public:
          RSN_INLINE explicit sect(objcode &owner, int sgroup): owner(owner), sects(owner.sects[sgroup]), sn(RSN_LIKELY(sects.reserve((int)sects.size() + 1),
-            (int)sects.size() != std::numeric_limits<int>::max()) ? sects.size() : throw std::bad_alloc{})) { sects.emplace_back(); }
+            (int)sects.size() != std::numeric_limits<int>::max()) ? sects.size() : throw std::bad_alloc{}) { sects.emplace_back(); }
       };
    public: /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       RSN_INLINE sect text() { return sect(*this, 0); }
@@ -168,29 +171,28 @@ namespace rsn::mnl {
       RSN_INLINE class label label() { typedef class label _label; return _label(*this); }
       RSN_INLINE sect text(int size) { auto res = text(); res.reserve(size); return res; }
       RSN_INLINE sect rodata(int size) { auto res = rodata(); res.reserve(size); return res; }
-      void load(unsigned char *) const noexcept;
    public:
       class segm/*ent*/ { // represents target memory segment for object code loading
       public: // standard operations
-         RSN_INLINE segm() noexcept: base{}, size(0) {}
+         RSN_INLINE segm() noexcept: _base{}, _size(0) {}
          RSN_INLINE segm(segm &&rhs) noexcept: _base(rhs._base), _size(rhs._size) { rhs._base = {}; }
          RSN_INLINE ~segm() { if (RSN_UNLIKELY(_base)) _free(); }
-         RSN_INLINE &operator=(segm &&rhs) noexcept { swap(rhs); }
+         RSN_INLINE auto &operator=(segm &&rhs) noexcept { swap(rhs); return *this; }
          RSN_INLINE void swap(segm &rhs) noexcept { using std::swap; swap(_base, rhs._base), swap(_size, rhs._size); }
       public: // misc constructors
          RSN_INLINE explicit segm(int size) { if (RSN_UNLIKELY(size)) _alloc(size); else _base = {}, _size = 0; }
-         RSN_INLINE segm(const objcode &oc): segm(oc.size()) { oc.load(reinterpret_cast<unsigned char *>(*this)); }
+         RSN_INLINE segm(const objcode &oc): segm(oc.size()) { oc.load((unsigned char *)(*this)); }
       public: // access to contents
          template<typename T> RSN_INLINE explicit operator T *() const noexcept { return reinterpret_cast<T *>(_base); }
          RSN_INLINE int size() const noexcept { return _size; }
       private: // internal representation
          unsigned char *_base; int _size;
       private: // implementation helpers
-         void _alloc(int), _free();
+         void _alloc(int), _free() noexcept;
       private:
-         static inline long max_total_used = 256 * 1024 * 1024, max_total_phys = 768 * 1024 * 1024;
+         static long max_total_used, max_total_phys;
       };
-      RSN_INLINE inline segm rsn::objcode::load() const { return segm(*this); }
+      RSN_INLINE inline segm load() const { return segm(*this); }
    public:
       int size() const noexcept;
       void load(unsigned char *) const noexcept;
