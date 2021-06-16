@@ -88,7 +88,6 @@ namespace rsn {
             static const id init;
          };
       };
-   private:
    public: // Symbolic Addresses ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       class label: public _label::id { // fully identifies a label
       public:
@@ -177,7 +176,7 @@ namespace rsn {
             }
             RSN_UNREACHABLE();
          }
-      public: // defining (placing) _labels
+      public: // defining (placing) labels
          RSN_INLINE auto label(class label &label, int offset = 0) const noexcept
             { assert(&label.owner == &owner); owner._labels[label.sn] = {sn, (int)(owner._sects[sn].pc - owner._sects[sn].base) + offset}; return *this; }
          RSN_INLINE auto label(int offset = 0) const
