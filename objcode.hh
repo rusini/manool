@@ -75,8 +75,9 @@ namespace rsn {
             int label/*s/n*/; // kind != minus_next_addr_long
          };
       };
-      struct _label {
-         int sect/*s/n*/, offset;
+      class _label {
+      public:
+         int sect/*s/n*/ = {}, offset = {};
       public: // opaque ID in context of a specific (assumed) instance of objcode (that lacks an explicit reference to that instance to fully identify a label)
          class id {
             friend objcode;
@@ -109,10 +110,10 @@ namespace rsn {
                static_assert(max_segm_size_p2 < std::numeric_limits<int>::digits);
                auto res = sect.res + size;
                auto pc = (int)(sect.pc - sect.base);
-               auto alloc = std::max(std::min(sect.alloc + (sect.alloc + 2 - 1 >> 1), 1 << max_segm_size_p2), res);
-               auto base = static_cast<unsigned char *>(std::realloc(const_cast<unsigned char *>(sect.base), alloc));
+               auto base = static_cast<unsigned char *>(std::realloc(const_cast<unsigned char *>(sect.base),
+                  std::min(res + res / 2, 1 << max_segm_size_p2)));
                if (RSN_UNLIKELY(!base)) throw std::bad_alloc{};
-               sect.base = base, sect.pc = base + pc, sect.alloc = alloc;
+               sect.base = base, sect.pc = base + pc, sect.alloc = std::min(res + res / 2, 1 << max_segm_size_p2);
                sect.res = res;
             }(owner.sects[sn], size); // slow path
             return *this;
