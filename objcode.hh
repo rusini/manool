@@ -55,8 +55,6 @@ namespace rsn {
          RSN_INLINE _sect(bool is_rodata) noexcept: is_rodata(is_rodata) {}
          RSN_INLINE _sect(_sect &&rhs) noexcept: base(rhs.base), pc(rhs.pc), res(rhs.res), alloc(rhs.alloc), align(rhs.align), is_rodata(rhs.is_rodata) { rhs.base = {}; }
          RSN_INLINE ~_sect() { if (RSN_UNLIKELY(base)) std::free(const_cast<unsigned char *>(base)); } // own fast/slow path split
-      public: // temporary member variables
-         mutable unsigned char *load_base; // target virtual address after section loading
       public: // helper stuff
          struct fixup { // AKA relocation records - specific to x86 and x86-64 ISAs (suitable for x86 and all data and code models for x86-64)
             enum { plus_label_quad, plus_label_long, plus_label_minus_next_addr_long, plus_label_minus_next_addr_byte, minus_next_addr_long } kind;

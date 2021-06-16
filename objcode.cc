@@ -33,44 +33,47 @@ int rsn::objcode::size() const noexcept {
 }
 
 void rsn::objcode::load(unsigned char *RSN_RESTRICT base) const noexcept {
-   [&]() noexcept RSN_INLINE{ // transfer contents of sections to target load address
-      int pc = 0;
+   unsigned char *sect_base[sects.size()]; // target VA after section loading
+   // transfer contents of sections to target load address
+   [&]() noexcept RSN_INLINE{
+      int pc = 0; unsigned char **_sect_base = sect_base;
       bool has_rodata = false;
       for (auto &sect: sects) if (RSN_UNLIKELY(sect.is_rodata)) has_rodata = true; else {
          int size = sect.pc - sect.base;
-         sect.load_base = static_cast<unsigned char *>(std::memcpy(base +
+         *_sect_base++ = static_cast<unsigned char *>(std::memcpy(base +
             (unsigned)(pc = pc + sect.align - 1 & -sect.align), sect.base, (unsigned)size)), pc += size;
       }
       if (RSN_LIKELY(!has_rodata)) return;
       pc = pc + (1 << cacheline_size_p2) - 1 & -(1 << cacheline_size_p2);
       for (auto &sect: sects) if (RSN_UNLIKELY(sect.is_rodata)) {
          int size = sect.pc - sect.base;
-         sect.load_base = static_cast<unsigned char *>(std::memcpy(base +
+         *_sect_base++ = static_cast<unsigned char *>(std::memcpy(base +
             (unsigned)(pc = pc + sect.align - 1 & -sect.align), sect.base, (unsigned)size)), pc += size;
       }
    }();
-   for (auto fixup: fixups) switch (fixup.kind) { // apply fixup relocations to run-time memory contents
-      case _sect::fixup::plus_label_quad: // useful for 64-bit ABIs
-         reinterpret_cast<x86quad *>(sects[fixup.sect].load_base + fixup.offset)->_ +=
-            reinterpret_cast<unsigned long>(sects[labels[fixup.label].sect].load_base + labels[fixup.label].offset);
+   // apply fixup relocations to run-time memory contents
+   for (auto fixup: fixups) switch (fixup.kind) {
+      case _sect::fixup::plus_label_quad: // for 64-bit code models
+         reinterpret_cast<x86quad *>(sect_base[fixup.sect] + fixup.offset)->_ +=
+            reinterpret_cast<unsigned long>(sect_base[labels[fixup.label].sect] + labels[fixup.label].offset);
          continue;
-      case _sect::fixup::plus_label_long: // useful for 32-bit ABIs
-         reinterpret_cast<x86long *>(sects[fixup.sect].load_base + fixup.offset)->_ +=
-            reinterpret_cast<unsigned long>(sects[labels[fixup.label].sect].load_base + labels[fixup.label].offset);
+      case _sect::fixup::plus_label_long: // for 32-bit code models
+         reinterpret_cast<x86long *>(sect_base[fixup.sect] + fixup.offset)->_ +=
+            reinterpret_cast<unsigned long>(sect_base[labels[fixup.label].sect] + labels[fixup.label].offset);
          continue;
       case _sect::fixup::plus_label_minus_next_addr_long:
-         reinterpret_cast<x86long *>(sects[fixup.sect].load_base + fixup.offset)->_ +=
-            reinterpret_cast<unsigned long>(sects[labels[fixup.label].sect].load_base + labels[fixup.label].offset) -
-            reinterpret_cast<unsigned long>(sects[fixup.sect].load_base + fixup.offset + sizeof(x86long));
+         reinterpret_cast<x86long *>(sect_base[fixup.sect] + fixup.offset)->_ +=
+            reinterpret_cast<unsigned long>(sect_base[labels[fixup.label].sect] + labels[fixup.label].offset) -
+            reinterpret_cast<unsigned long>(sect_base[fixup.sect] + fixup.offset + sizeof(x86long));
          continue;
       case _sect::fixup::plus_label_minus_next_addr_byte:
-         reinterpret_cast<x86byte *>(sects[fixup.sect].load_base + fixup.offset)->_ +=
-            reinterpret_cast<unsigned long>(sects[labels[fixup.label].sect].load_base + labels[fixup.label].offset) -
-            reinterpret_cast<unsigned long>(sects[fixup.sect].load_base + fixup.offset + sizeof(x86byte));
+         reinterpret_cast<x86byte *>(sect_base[fixup.sect] + fixup.offset)->_ +=
+            reinterpret_cast<unsigned long>(sect_base[labels[fixup.label].sect] + labels[fixup.label].offset) -
+            reinterpret_cast<unsigned long>(sect_base[fixup.sect] + fixup.offset + sizeof(x86byte));
          continue;
-      case _sect::fixup::minus_next_addr_long: // useful for 32-bit ABIs
-         reinterpret_cast<x86long *>(sects[fixup.sect].load_base + fixup.offset)->_ -=
-            reinterpret_cast<unsigned long>(sects[fixup.sect].load_base + fixup.offset + sizeof(x86long));
+      case _sect::fixup::minus_next_addr_long: // for 32-bit code models
+         reinterpret_cast<x86long *>(sect_base[fixup.sect] + fixup.offset)->_ -=
+            reinterpret_cast<unsigned long>(sect_base[fixup.sect] + fixup.offset + sizeof(x86long));
          continue;
       default: RSN_UNREACHABLE();
    }
