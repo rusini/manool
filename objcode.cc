@@ -17,14 +17,14 @@
 int rsn::objcode::size() const noexcept {
    int pc = 0;
    bool has_rodata = false;
-   for (const auto &sect: sects) if (RSN_UNLIKELY(sect.is_rodata)) has_rodata = true; else {
+   for (const auto &sect: _sects) if (RSN_UNLIKELY(sect.is_rodata)) has_rodata = true; else {
       if (RSN_UNLIKELY((unsigned)(pc = pc + sect.align - 1 & -sect.align) +
          (int)(sect.pc - sect.base) > 1 << max_segm_size_p2)) return -1;
       pc += (int)(sect.pc - sect.base);
    }
    if (RSN_LIKELY(!has_rodata)) return pc;
    pc = pc + ((1 << cacheline_size_p2) - 1) & -(1 << cacheline_size_p2);
-   for (const auto &sect: sects) if (RSN_UNLIKELY(sect.is_rodata)) {
+   for (const auto &sect: _sects) if (RSN_UNLIKELY(sect.is_rodata)) {
       if (RSN_UNLIKELY((unsigned)(pc = pc + sect.align - 1 & -sect.align) +
          (int)(sect.pc - sect.base) > 1 << max_segm_size_p2)) return -1;
       pc += (int)(sect.pc - sect.base);
@@ -33,13 +33,13 @@ int rsn::objcode::size() const noexcept {
 }
 
 void rsn::objcode::load(unsigned char *RSN_RESTRICT base) const noexcept {
-   unsigned char *sect_base[sects.size()]; // target virtual address after section loading
+   unsigned char *sect_base[_sects.size()]; // target virtual address after section loading
    // transfer contents of sections to target load address
-   [&]() noexcept RSN_INLINE{
+   [&]() RSN_INLINE noexcept{
       int pc = 0;
       bool has_rodata = false;
       {  unsigned char **_sect_base = sect_base;
-         for (auto &sect: sects) {
+         for (auto &sect: _sects) {
             if (RSN_UNLIKELY(sect.is_rodata))
                { ++_sect_base; has_rodata = true; continue; }
             int size = sect.pc - sect.base;
@@ -50,7 +50,7 @@ void rsn::objcode::load(unsigned char *RSN_RESTRICT base) const noexcept {
       if (RSN_LIKELY(!has_rodata)) return;
       pc = pc + (1 << cacheline_size_p2) - 1 & -(1 << cacheline_size_p2);
       {  unsigned char **_sect_base = sect_base;
-         for (auto &sect: sects) {
+         for (auto &sect: _sects) {
             if (!RSN_UNLIKELY(sect.is_rodata))
                { ++_sect_base; continue; }
             int size = sect.pc - sect.base;
@@ -60,23 +60,23 @@ void rsn::objcode::load(unsigned char *RSN_RESTRICT base) const noexcept {
       }
    }();
    // apply fixup relocations to run-time memory contents
-   for (auto fixup: fixups) switch (fixup.kind) {
+   for (auto fixup: _fixups) switch (fixup.kind) {
       case _sect::fixup::plus_label_quad: // for 64-bit code models
          reinterpret_cast<x86quad *>(sect_base[fixup.sect] + fixup.offset)->_ +=
-            reinterpret_cast<unsigned long>(sect_base[labels[fixup.label].sect] + labels[fixup.label].offset);
+            reinterpret_cast<unsigned long>(sect_base[_labels[fixup.label].sect] + _labels[fixup.label].offset);
          continue;
       case _sect::fixup::plus_label_long: // for 32-bit code models
          reinterpret_cast<x86long *>(sect_base[fixup.sect] + fixup.offset)->_ +=
-            reinterpret_cast<unsigned long>(sect_base[labels[fixup.label].sect] + labels[fixup.label].offset);
+            reinterpret_cast<unsigned long>(sect_base[_labels[fixup.label].sect] + _labels[fixup.label].offset);
          continue;
       case _sect::fixup::plus_label_minus_next_addr_long:
          reinterpret_cast<x86long *>(sect_base[fixup.sect] + fixup.offset)->_ +=
-            reinterpret_cast<unsigned long>(sect_base[labels[fixup.label].sect] + labels[fixup.label].offset) -
+            reinterpret_cast<unsigned long>(sect_base[_labels[fixup.label].sect] + _labels[fixup.label].offset) -
             reinterpret_cast<unsigned long>(sect_base[fixup.sect] + fixup.offset + sizeof(x86long));
          continue;
       case _sect::fixup::plus_label_minus_next_addr_byte:
          reinterpret_cast<x86byte *>(sect_base[fixup.sect] + fixup.offset)->_ +=
-            reinterpret_cast<unsigned long>(sect_base[labels[fixup.label].sect] + labels[fixup.label].offset) -
+            reinterpret_cast<unsigned long>(sect_base[_labels[fixup.label].sect] + _labels[fixup.label].offset) -
             reinterpret_cast<unsigned long>(sect_base[fixup.sect] + fixup.offset + sizeof(x86byte));
          continue;
       case _sect::fixup::minus_next_addr_long: // for 32-bit code models
@@ -233,3 +233,36 @@ void rsn::objcode::segm::_free() noexcept {
 long
    rsn::objcode::segm::max_total_used = 256/*MiB*/ << 10 << 10,
    rsn::objcode::segm::max_total_phys = 768/*MiB*/ << 10 << 10;
+
+
+static void f() {
+   std::puts("Hi");
+}
+
+int main() {
+   //std::printf("%p\n", f);
+
+   rsn::objcode oc;
+   auto l0 = oc.label(), l1 = oc.label();
+
+   auto ts0 = oc.text(); ts0.reserve(128);
+   ts0
+   .align(16,10)
+   .sl(0x4883EC'08)            // subq $8, %rsp
+   .sw(0x48B8).q(f).sw(0xFFD0) // movabsq f, %rax; call *%rax
+   .sl(0x4883C408)             // addq $8, %rsp
+   .b(0xE9).rl(l0)             // jmp l0
+   ;
+
+   auto ts1 = oc.text().reserve(128);
+   ts1
+   .align(16, 10).label(l0)
+   .b(0xB9).l(1'000'000'000)       // movl $1000000000, %ecx
+   .align(16, 10).label(l1)
+   .sw(0x83E9).b(1).b(0x75).rb(l1) // subl $1, %ecx; jnz l1
+   .b(0xB8).l(123).b(0xC3)         // movl $123, %eax; ret
+   ;
+
+   std::printf("%d\n", static_cast<int (*)()>(oc.load())());
+   return 0;
+}
