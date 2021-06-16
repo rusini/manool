@@ -16,6 +16,7 @@
 # include <cstdlib>
 # include <cstring>
 # include <cstdio>
+# include <cassert>
 # include <vector>
 # include <limits>
 # include <algorithm>
@@ -45,18 +46,30 @@ namespace rsn {
       struct RSN_PACK x86quad { unsigned long long _; };
    private: // Internal Helper Types ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       class _sect/*ion*/ {
-      public: // persistent members
-         unsigned char *pc = {};         // section program counter for code emission
+      public:
+         unsigned char *pc = {};         // section program counter for code/data emission
          const unsigned char *base = {}; // start of buffer
-         int res = 0, alloc = 0;         // requested and actual buffer size (up to 1 << max_size_p2)
-         int align = 1;                  // alignment requirements accumulated so far (up to 1 << cacheline_size_p2)
+         int res = 0, alloc = 0;         // requested and actual buffer size (not exceeding 1 << max_segm_size_p2)
+         int align = 1;                  // alignment requirements accumulated so far (not exceeding 1 << cacheline_size_p2)
          const bool is_rodata;           // whether the section contains text (code) or read-only data
       public: // construction and standard operations
-         RSN_INLINE _sect(bool is_rodata) noexcept: is_rodata(is_rodata) {}
-         RSN_INLINE _sect(_sect &&rhs) noexcept: base(rhs.base), pc(rhs.pc), res(rhs.res), alloc(rhs.alloc), align(rhs.align), is_rodata(rhs.is_rodata) { rhs.base = {}; }
-         RSN_INLINE ~_sect() { if (RSN_UNLIKELY(base)) std::free(const_cast<unsigned char *>(base)); } // own fast/slow path split
+         RSN_INLINE _sect(bool is_rodata) noexcept
+            : is_rodata(is_rodata) {}
+         RSN_INLINE _sect(_sect &&rhs) noexcept
+            : pc(rhs.pc), base(rhs.base), res(rhs.res), alloc(rhs.alloc), align(rhs.align), is_rodata(rhs.is_rodata) { rhs.base = {}; }
+         RSN_INLINE ~_sect()
+            { if (RSN_UNLIKELY(base)) std::free(const_cast<unsigned char *>(base)); } // own fast/slow path split
+      public: // opaque ID in context of a specific (assumed) instance of objcode (that lacks an explicit reference to that instance to fully identify a section)
+         class id {
+            friend objcode;
+            int sn;
+            RSN_INLINE explicit constexpr id(decltype(sn) sn): sn(sn) {}
+         public:
+            id() = default;
+            static const id init;
+         };
       public: // helper stuff
-         struct fixup { // AKA relocation records - specific to x86 and x86-64 ISAs (suitable for x86 and all data and code models for x86-64)
+         struct fixup { // AKA relocation records - specific to x86 and x86-64 ISAs (suitable for x86 and all code models for x86-64)
             enum { plus_label_quad, plus_label_long, plus_label_minus_next_addr_long, plus_label_minus_next_addr_byte, minus_next_addr_long } kind;
             int sect/*s/n*/, offset;
             int label/*s/n*/; // kind != minus_next_addr_long
@@ -64,24 +77,36 @@ namespace rsn {
       };
       struct _label {
          int sect/*s/n*/, offset;
+      public: // opaque ID in context of a specific (assumed) instance of objcode (that lacks an explicit reference to that instance to fully identify a label)
+         class id {
+            friend objcode;
+            int sn;
+            RSN_INLINE explicit constexpr id(decltype(sn) sn): sn(sn) {}
+         public:
+            id() = default;
+            static const id init;
+         };
       };
+   private:
    public: // Symbolic Addresses ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-      class label {
-         int sn;
-         friend objcode;
+      class label: public _label::id { // fully identifies a label
       public:
-         label(label &&) = default;
+         objcode &owner;
       public:
-         RSN_INLINE explicit label(objcode &owner): sn(RSN_LIKELY(owner.labels.reserve((int)owner.labels.size() + 1),
-            (int)owner.labels.size() != std::numeric_limits<int>::max()) ? owner.labels.size() : throw std::bad_alloc{}) { owner.labels.emplace_back(); }
+         RSN_INLINE constexpr label(decltype(owner) owner, id _)
+            : owner(owner), id(_) {}
+         RSN_INLINE static label create(decltype(owner) owner) {
+            if (RSN_UNLIKELY((decltype(sn))owner.labels.size() == std::numeric_limits<decltype(sn)>::max())) throw std::bad_alloc{};
+            owner.labels.emplace_back(); return {owner, id{(decltype(sn))owner.sects.size() - 1}};
+         }
       };
    public: // Program Text and (RO)Data Sections ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-      class sect/*ion*/ {
+      class sect/*ion*/: public _sect::id { // fully identifies a section
       public:
          objcode &owner;
       public: // assembly memory allocation
          RSN_INLINE auto reserve(int size) const {
-            //assert(size >= 0);
+            assert(size >= 0);
             if (RSN_LIKELY((unsigned)owner.sects[sn].res + size <= owner.sects[sn].alloc))
                owner.sects[sn].res += size; // fast path
             else [](auto &sect, auto size) RSN_NOINLINE{
@@ -160,25 +185,32 @@ namespace rsn {
          RSN_INLINE auto label(class label &label, int offset = 0) const noexcept
             { owner.labels[label.sn] = {sn, (int)(owner.sects[sn].pc - owner.sects[sn].base) + offset}; return *this; }
          // convenience helper for the above
-         RSN_INLINE auto label(int offset = 0) const { auto res = owner.label(); label(res, offset); return res; }
+         // RSN_INLINE auto label(int offset = 0) const { auto res = owner.label(); label(res, offset); return res; }
       public: // miscellaneous
          RSN_INLINE int size() const noexcept { return owner.sects[sn].pc - owner.sects[sn].base; }
          RSN_INLINE int reserved() const noexcept { return owner.sects[sn].res; }
       public: // construction
-         RSN_INLINE static auto create(objcode &owner, bool is_rodata = false) {
-            if (RSN_UNLIKELY((int)owner.sects.size() == std::numeric_limits<int>::max())) throw std::bad_alloc{};
-            return owner.sects.emplace_back(is_rodata), sect{owner, (int)owner.sects.size() - 1};
+         RSN_INLINE static auto create(decltype(owner) owner, bool is_rodata = false) {
+            if (RSN_UNLIKELY((decltype(sn))owner.sects.size() == std::numeric_limits<decltype(sn)>::max())) throw std::bad_alloc{};
+            return owner.sects.emplace_back(is_rodata), sect{owner, (decltype(sn))owner.sects.size() - 1};
          }
-      private: // internal representation
-         int sn;
-      private: // implementation helpers
-         RSN_INLINE explicit sect(decltype(owner), decltype(sn)) noexcept: owner(owner), sn(sn) {}
+      private:
+         RSN_INLINE explicit constexpr sect(decltype(owner), decltype(sn)): owner(owner), id(sn) {}
       };
    public: /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-      RSN_INLINE sect text() { return sect::create(*this); }
-      RSN_INLINE sect rodata() { return sect::create(*this, true); }
-      RSN_INLINE class label label() { typedef class label _label; return _label(*this); }
-      //RSN_INLINE sect text(int size) { auto res = text(); res.reserve(size); return res; }
+      RSN_INLINE class sect sect(bool is_rodata) {
+         if (RSN_UNLIKELY((decltype(sect::sn))labels.size() == std::numeric_limits<decltype(sect::sn)>::max())) throw std::bad_alloc{};
+         sects.emplace_back(is_rodata); return {*this, sect::id{(decltype(sect::sn))labels.size() - 1}};
+      }
+      RSN_INLINE class label label() {
+         if (RSN_UNLIKELY((decltype(label::sn))labels.size() == std::numeric_limits<decltype(label::sn)>::max())) throw std::bad_alloc{};
+         labels.emplace_back(); return {*this, label::id{(decltype(label::sn))labels.size() - 1}};
+      }
+   public:
+      RSN_INLINE class sect text()   { return sect(false); }
+      RSN_INLINE class sect rodata() { return sect(true); }
+   public:
+      //RSN_INLINE class sect sect(sect::id sect) { return {*this, sect::id{sect.sn}; }
       //RSN_INLINE sect rodata(int size) { auto res = rodata(); res.reserve(size); return res; }
    public:
       class segm/*ent*/ { // represents target memory segment for object code loading
@@ -213,5 +245,16 @@ namespace rsn {
 
 } // namespace rsn::mnl
 
+constexpr rsn::objcode::sect::id  rsn::objcode::sect::id::init  = id{-1};
+constexpr rsn::objcode::label::id rsn::objcode::label::id::init = id{-1};
+
+
 namespace rsn { RSN_INLINE inline void swap(objcode::segm &lhs, objcode::segm &rhs) noexcept { lhs.swap(rhs); } }
+
+void test() {
+   rsn::objcode oc;
+   auto ts = oc.text();
+   rsn::objcode::sect::id id = ts;
+   id = ts;
+}
 
