@@ -60,13 +60,11 @@ namespace rsn {
       public: // helper stuff
          struct fixup { // AKA relocation records - specific to x86 and x86-64 ISAs (suitable for x86 and all data and code models for x86-64)
             enum { plus_label_quad, plus_label_long, plus_label_minus_next_addr_long, plus_label_minus_next_addr_byte, minus_next_addr_long } kind;
-            const std::vector<_sect> &sects;
             int sect/*s/n*/, offset;
             int label/*s/n*/; // kind != minus_next_addr_long
          };
       };
       struct _label {
-         const std::vector<_sect> *sects;
          int sect/*s/n*/, offset;
       };
    public: // Symbolic Addresses ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -86,8 +84,8 @@ namespace rsn {
       public: // assembly memory allocation
          RSN_INLINE auto &reserve(int size) const {
             //assert(size >= 0);
-            if (RSN_LIKELY((unsigned)sects[sn].res + size <= sects[sn].alloc))
-               sects[sn].res += size; // fast path
+            if (RSN_LIKELY((unsigned)owner.sects[sn].res + size <= owner.sects[sn].alloc))
+               owner.sects[sn].res += size; // fast path
             else [](auto &sect, auto size) RSN_NOINLINE{
                if (RSN_UNLIKELY((unsigned)sect.res + size > 1 << max_segm_size_p2)) throw std::bad_alloc{};
                static_assert(max_segm_size_p2 < std::numeric_limits<int>::digits);
@@ -98,44 +96,53 @@ namespace rsn {
                if (RSN_UNLIKELY(!base)) throw std::bad_alloc{};
                sect.base = base, sect.pc = base + pc, sect.alloc = alloc;
                sect.res = res;
-            }(sects[sn], size); // slow path
+            }(owner.sects[sn], size); // slow path
             return *this;
          }
       public: // appending section contents (specific to x86 and x86-64 ISAs)
          RSN_INLINE auto &b(decltype(x86byte::_) val) const noexcept
-            { reinterpret_cast<x86byte *>(sects[sn].pc)->_ = val, sects[sn].pc += sizeof(x86byte); return *this; }
+            { ((x86byte *)owner.sects[sn].pc)->_ = val, owner.sects[sn].pc += sizeof(x86byte); return *this; }
          RSN_INLINE auto &w(decltype(x86word::_) val) const noexcept
-            { reinterpret_cast<x86word *>(sects[sn].pc)->_ = val, sects[sn].pc += sizeof(x86word); return *this; }
+            { ((x86word *)owner.sects[sn].pc)->_ = val, owner.sects[sn].pc += sizeof(x86word); return *this; }
          RSN_INLINE auto &l(decltype(x86long::_) val) const noexcept
-            { reinterpret_cast<x86long *>(sects[sn].pc)->_ = val, sects[sn].pc += sizeof(x86long); return *this; }
+            { ((x86long *)owner.sects[sn].pc)->_ = val, owner.sects[sn].pc += sizeof(x86long); return *this; }
          RSN_INLINE auto &q(decltype(x86quad::_) val) const noexcept
-            { reinterpret_cast<x86quad *>(sects[sn].pc)->_ = val, sects[sn].pc += sizeof(x86quad); return *this; }
+            { ((x86quad *)owner.sects[sn].pc)->_ = val, owner.sects[sn].pc += sizeof(x86quad); return *this; }
          // sometimes it's convenient to store in BE format (for instruction encoding)
          RSN_INLINE auto &sw(decltype(x86word::_) val) const noexcept { return w(__builtin_bswap16(val)); }
          RSN_INLINE auto &sl(decltype(x86long::_) val) const noexcept { return l(__builtin_bswap32(val)); }
          RSN_INLINE auto &sq(decltype(x86quad::_) val) const noexcept { return q(__builtin_bswap64(val)); }
          // misc convenience helpers for the above
-         template<typename Type> RSN_INLINE auto &l(Type *val) const noexcept { return l(reinterpret_cast<unsigned long>(val)); } // suitable for 32-bit ABIs
-         template<typename Type> RSN_INLINE auto &q(Type *val) const noexcept { return q(reinterpret_cast<unsigned long>(val)); } // suitable for 64-bit ABIs
+         template<typename Type> RSN_INLINE auto &l(Type *val) const noexcept { return l(reinterpret_cast<unsigned long>(val)); } // for 32-bit code models
+         template<typename Type> RSN_INLINE auto &q(Type *val) const noexcept { return q(reinterpret_cast<unsigned long>(val)); } // for 64-bit code models
       public:
          // symbolic and relative addresses
-         RSN_INLINE auto &q (const label &label, decltype(x86quad::_) offset = 0) const // useful for 64-bit addressing
-            { return owner.fixups.push_back({_sect::fixup::plus_label_quad, sects, sn, (int)(sects[sn].pc - sects[sn].base), label.sn}), q(offset); }
-         RSN_INLINE auto &l (const label &label, decltype(x86long::_) offset = 0) const // useful for 32-bit addressing
-            { return owner.fixups.push_back({_sect::fixup::plus_label_long, sects, sn, (int)(sects[sn].pc - sects[sn].base), label.sn}), l(offset); }
-         RSN_INLINE auto &rl(const label &label, decltype(x86long::_) offset = 0) const
-            { return owner.fixups.push_back({_sect::fixup::plus_label_minus_next_addr_long, sects, sn, (int)(sects[sn].pc - sects[sn].base), label.sn}), l(offset); }
-         RSN_INLINE auto &rb(const label &label, decltype(x86byte::_) offset = 0) const
-            { return owner.fixups.push_back({_sect::fixup::plus_label_minus_next_addr_byte, sects, sn, (int)(sects[sn].pc - sects[sn].base), label.sn}), b(offset); }
-         RSN_INLINE auto &rl(decltype(x86long::_) val) const // useful for 32-bit addressing
-            { return owner.fixups.push_back({_sect::fixup::minus_next_addr_long, sects, sn, (int)(sects[sn].pc - sects[sn].base)}), l(val); }
+         RSN_INLINE auto &q (const label &label, decltype(x86quad::_) offset = 0) const { // for 64-bit code models
+            return owner.fixups.push_back({_sect::fixup::plus_label_quad, sn,
+               (int)(owner.sects[sn].pc - owner.sects[sn].base), label.sn}), q(offset);
+         }
+         RSN_INLINE auto &l (const label &label, decltype(x86long::_) offset = 0) const { // for 32-bit code models
+            return owner.fixups.push_back({_sect::fixup::plus_label_long, sn,
+               (int)(owner.sects[sn].pc - owner.sects[sn].base), label.sn}), l(offset);
+         }
+         RSN_INLINE auto &rl(const label &label, decltype(x86long::_) offset = 0) const {
+            return owner.fixups.push_back({_sect::fixup::plus_label_minus_next_addr_long, sn,
+               (int)(owner.sects[sn].pc - owner.sects[sn].base), label.sn}), l(offset); }
+         RSN_INLINE auto &rb(const label &label, decltype(x86byte::_) offset = 0) const {
+            return owner.fixups.push_back({_sect::fixup::plus_label_minus_next_addr_byte, sn,
+               (int)(owner.sects[sn].pc - owner.sects[sn].base), label.sn}), b(offset);
+         }
+         RSN_INLINE auto &rl(decltype(x86long::_) val) const {
+            return owner.fixups.push_back({_sect::fixup::minus_next_addr_long, sn,
+               (int)(owner.sects[sn].pc - owner.sects[sn].base)}), l(val);
+         }
          // convenience helpers for the above
-         template<typename Type> RSN_INLINE auto &rl(Type *val) const { return rl(reinterpret_cast<unsigned long>(val)); } // useful for 32-bit addressing
+         template<typename Type> RSN_INLINE auto &rl(Type *val) const { return rl(reinterpret_cast<unsigned long>(val)); } // for 32-bit code models
       public: // address alignment (specific to x86 and x86-64 ISAs)
          RSN_INLINE auto &align(int boundary, int max = 1 << cacheline_size_p2) const noexcept {
-            auto pad_size = (int)(sects[sn].base - sects[sn].pc & boundary - 1);
+            auto pad_size = (int)(owner.sects[sn].base - owner.sects[sn].pc & boundary - 1);
             if (RSN_LIKELY(pad_size > max)) return *this;
-            if (RSN_UNLIKELY(sects[sn].align < boundary)) sects[sn].align = boundary;
+            if (RSN_UNLIKELY(owner.sects[sn].align < boundary)) owner.sects[sn].align = boundary;
             for (auto _ = pad_size / 10; _; --_) sw(0x662E).sq(0x0F1F840000000000);
             switch (pad_size % 10) {
             case 0: return *this;
@@ -153,21 +160,20 @@ namespace rsn {
          }
       public: // defining (placing) labels
          RSN_INLINE auto &label(class label &label, int offset = 0) const noexcept
-            { owner.labels[label.sn] = {&sects, sn, (int)(sects[sn].pc - sects[sn].base) + offset}; return *this; }
+            { owner.labels[label.sn] = {sn, (int)(owner.sects[sn].pc - owner.sects[sn].base) + offset}; return *this; }
          // convenience helper for the above
          RSN_INLINE auto pc(int offset = 0) const { auto res = owner.label(); label(res, offset); return res; }
       private: // internal representation
-         std::vector<_sect> &sects;
          int sn;
       public: // construction
          sect(sect &&rhs) = default;
       public:
-         RSN_INLINE explicit sect(objcode &owner, int sgroup): owner(owner), sects(owner.sects[sgroup]), sn(RSN_LIKELY(sects.reserve((int)sects.size() + 1),
-            (int)sects.size() != std::numeric_limits<int>::max()) ? sects.size() : throw std::bad_alloc{}) { sects.emplace_back(); }
+         RSN_INLINE explicit sect(objcode &owner, bool is_rodata = false): owner(owner), sn(RSN_LIKELY(owner.sects.reserve((int)owner.sects.size() + 1),
+            (int)owner.sects.size() != std::numeric_limits<int>::max()) ? owner.sects.size() : throw std::bad_alloc{}) { owner.sects.emplace_back(is_rodata); }
       };
    public: /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-      RSN_INLINE sect text() { return sect(*this, 0); }
-      RSN_INLINE sect rodata() { return sect(*this, 1); }
+      RSN_INLINE sect text() { return sect(*this); }
+      RSN_INLINE sect rodata() { return sect(*this, true); }
       RSN_INLINE class label label() { typedef class label _label; return _label(*this); }
       RSN_INLINE sect text(int size) { auto res = text(); res.reserve(size); return res; }
       RSN_INLINE sect rodata(int size) { auto res = rodata(); res.reserve(size); return res; }

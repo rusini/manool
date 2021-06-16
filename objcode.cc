@@ -64,7 +64,7 @@ void rsn::objcode::load(unsigned char *RSN_RESTRICT base) const noexcept {
             reinterpret_cast<unsigned long>(sects[fixup.sect].load_base + fixup.offset + sizeof(x86long));
          continue;
       case _sect::fixup::plus_label_minus_next_addr_byte:
-         reinterpret_cast<x86byte *>(fixup.sects[fixup.sect].load_base + fixup.offset)->_ +=
+         reinterpret_cast<x86byte *>(sects[fixup.sect].load_base + fixup.offset)->_ +=
             reinterpret_cast<unsigned long>(sects[labels[fixup.label].sect].load_base + labels[fixup.label].offset) -
             reinterpret_cast<unsigned long>(sects[fixup.sect].load_base + fixup.offset + sizeof(x86byte));
          continue;
