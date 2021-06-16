@@ -164,7 +164,7 @@ namespace rsn {
       private: // internal representation
          int sn;
       public: // construction
-         sect(sect &&rhs) = default;
+         //sect(sect &&rhs) = default;
       public:
          RSN_INLINE explicit sect(objcode &owner, bool is_rodata = false): owner(owner), sn(RSN_LIKELY(owner.sects.reserve((int)owner.sects.size() + 1),
             (int)owner.sects.size() != std::numeric_limits<int>::max()) ? owner.sects.size() : throw std::bad_alloc{}) { owner.sects.emplace_back(is_rodata); }

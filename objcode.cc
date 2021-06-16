@@ -33,22 +33,30 @@ int rsn::objcode::size() const noexcept {
 }
 
 void rsn::objcode::load(unsigned char *RSN_RESTRICT base) const noexcept {
-   unsigned char *sect_base[sects.size()]; // target VA after section loading
+   unsigned char *sect_base[sects.size()]; // target virtual address after section loading
    // transfer contents of sections to target load address
    [&]() noexcept RSN_INLINE{
-      int pc = 0; unsigned char **_sect_base = sect_base;
+      int pc = 0;
       bool has_rodata = false;
-      for (auto &sect: sects) if (RSN_UNLIKELY(sect.is_rodata)) has_rodata = true; else {
-         int size = sect.pc - sect.base;
-         *_sect_base++ = static_cast<unsigned char *>(std::memcpy(base +
-            (unsigned)(pc = pc + sect.align - 1 & -sect.align), sect.base, (unsigned)size)), pc += size;
+      {  unsigned char **_sect_base = sect_base;
+         for (auto &sect: sects) {
+            if (RSN_UNLIKELY(sect.is_rodata))
+               { ++_sect_base; has_rodata = true; continue; }
+            int size = sect.pc - sect.base;
+            *_sect_base++ = static_cast<unsigned char *>(std::memcpy(base +
+               (unsigned)(pc = pc + sect.align - 1 & -sect.align), sect.base, (unsigned)size)), pc += size;
+         }
       }
       if (RSN_LIKELY(!has_rodata)) return;
       pc = pc + (1 << cacheline_size_p2) - 1 & -(1 << cacheline_size_p2);
-      for (auto &sect: sects) if (RSN_UNLIKELY(sect.is_rodata)) {
-         int size = sect.pc - sect.base;
-         *_sect_base++ = static_cast<unsigned char *>(std::memcpy(base +
-            (unsigned)(pc = pc + sect.align - 1 & -sect.align), sect.base, (unsigned)size)), pc += size;
+      {  unsigned char **_sect_base = sect_base;
+         for (auto &sect: sects) {
+            if (!RSN_UNLIKELY(sect.is_rodata))
+               { ++_sect_base; continue; }
+            int size = sect.pc - sect.base;
+            *_sect_base++ = static_cast<unsigned char *>(std::memcpy(base +
+               (unsigned)(pc = pc + sect.align - 1 & -sect.align), sect.base, (unsigned)size)), pc += size;
+         }
       }
    }();
    // apply fixup relocations to run-time memory contents
