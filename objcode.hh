@@ -65,7 +65,7 @@ namespace rsn {
             int sn;
             RSN_INLINE explicit constexpr id(decltype(sn) sn): sn(sn) {}
          public:
-            id() = default;
+            explicit id() = default;
             static const id init;
          };
       public: // helper stuff
@@ -83,7 +83,7 @@ namespace rsn {
             int sn;
             RSN_INLINE explicit constexpr id(decltype(sn) sn): sn(sn) {}
          public:
-            id() = default;
+            explicit id() = default;
             static const id init;
          };
       };
@@ -92,18 +92,13 @@ namespace rsn {
       class label: public _label::id { // fully identifies a label
       public:
          objcode &owner;
-      public:
-         RSN_INLINE constexpr label(decltype(owner) owner, id _)
-            : owner(owner), id(_) {}
-         RSN_INLINE static label create(decltype(owner) owner) {
-            if (RSN_UNLIKELY((decltype(sn))owner.labels.size() == std::numeric_limits<decltype(sn)>::max())) throw std::bad_alloc{};
-            owner.labels.emplace_back(); return {owner, id{(decltype(sn))owner.sects.size() - 1}};
-         }
+         RSN_INLINE constexpr label(decltype(owner) owner, id _): owner(owner), id(_) {}
       };
    public: // Program Text and (RO)Data Sections ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
       class sect/*ion*/: public _sect::id { // fully identifies a section
       public:
          objcode &owner;
+         RSN_INLINE constexpr sect(decltype(owner) owner, id _): owner(owner), id(_) {}
       public: // assembly memory allocation
          RSN_INLINE auto reserve(int size) const {
             assert(size >= 0);
@@ -189,13 +184,6 @@ namespace rsn {
       public: // miscellaneous
          RSN_INLINE int size() const noexcept { return owner.sects[sn].pc - owner.sects[sn].base; }
          RSN_INLINE int reserved() const noexcept { return owner.sects[sn].res; }
-      public: // construction
-         RSN_INLINE static auto create(decltype(owner) owner, bool is_rodata = false) {
-            if (RSN_UNLIKELY((decltype(sn))owner.sects.size() == std::numeric_limits<decltype(sn)>::max())) throw std::bad_alloc{};
-            return owner.sects.emplace_back(is_rodata), sect{owner, (decltype(sn))owner.sects.size() - 1};
-         }
-      private:
-         RSN_INLINE explicit constexpr sect(decltype(owner), decltype(sn)): owner(owner), id(sn) {}
       };
    public: /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       RSN_INLINE class sect sect(bool is_rodata) {
