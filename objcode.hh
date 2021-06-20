@@ -39,11 +39,6 @@ namespace rsn {
          /* max_segm_size_p2 maxval is half of positive space of int numbers
             (good for x86/x86-64 ISAs but ought to be much lower for RISC ISAs) */
       static_assert(max_segm_size_p2 < std::numeric_limits<int>::digits);
-   private: // data size nomenclature (specific to AT&T assembly language for x86/x86-64 ISAs)
-      struct RSN_PACK x86byte { unsigned char      _; };
-      struct RSN_PACK x86word { unsigned short     _; };
-      struct RSN_PACK x86long { unsigned           _; };
-      struct RSN_PACK x86quad { unsigned long long _; };
    private: // Internal Helper Types ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       class _sect/*ion*/ {
       public:
@@ -59,14 +54,14 @@ namespace rsn {
             : pc(rhs.pc), base(rhs.base), res(rhs.res), alloc(rhs.alloc), align(rhs.align), is_rodata(rhs.is_rodata) { rhs.base = {}; }
          RSN_INLINE ~_sect()
             { if (RSN_UNLIKELY(base)) std::free(const_cast<unsigned char *>(base)); } // own fast/slow path split
-      public: // opaque ID in context of a specific (assumed) instance of objcode (that lacks an explicit reference to that instance to fully identify a section)
-         class id {
+      public: // opaque ID of a section in context of a specific (assumed) instance of objcode
+         class id { // (this lacks an explicit reference to that instance to fully identify a section)
             friend objcode;
             int sn;
-            RSN_INLINE explicit constexpr id(decltype(sn) sn): sn(sn) {}
+            RSN_INLINE explicit constexpr id(decltype(sn) sn) noexcept: sn(sn) {}
          public:
             explicit id() = default;
-            static const id init;
+            static const id unspec;
          };
       public: // helper stuff
          struct fixup { // AKA relocation records - specific to x86 and x86-64 ISAs (suitable for x86 and all code models for x86-64)
@@ -78,35 +73,40 @@ namespace rsn {
       class _label {
       public:
          int sect/*s/n*/, offset;
-      public: // opaque ID in context of a specific (assumed) instance of objcode (that lacks an explicit reference to that instance to fully identify a label)
-         class id {
+      public: // opaque ID of a label in context of a specific (assumed) instance of objcode
+         class id { // (this lacks an explicit reference to that instance to fully identify a label)
             friend objcode;
             int sn;
-            RSN_INLINE explicit constexpr id(decltype(sn) sn): sn(sn) {}
+            RSN_INLINE explicit constexpr id(decltype(sn) sn) noexcept: sn(sn) {}
          public:
             explicit id() = default;
-            static const id init;
+            static const id unspec;
          };
       };
+   private: // data size nomenclature (specific to AT&T assembly language for x86 and x86-64 ISAs)
+      struct RSN_PACK x86byte { unsigned char      _; };
+      struct RSN_PACK x86word { unsigned short     _; };
+      struct RSN_PACK x86long { unsigned           _; };
+      struct RSN_PACK x86quad { unsigned long long _; };
    public: // Symbolic Addresses ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       class label: public _label::id { // fully identifies a label
       public:
          objcode &owner;
-         RSN_INLINE constexpr label(decltype(owner) owner, id _): owner(owner), id(_) {}
+         RSN_INLINE constexpr label(decltype(owner) owner, id _) noexcept: owner(owner), id(_) {}
       };
    public: // Program Text and (RO)Data Sections ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
       class sect/*ion*/: public _sect::id { // fully identifies a section
       public:
          objcode &owner;
-         RSN_INLINE constexpr sect(decltype(owner) owner, id _): owner(owner), id(_) {}
+         RSN_INLINE constexpr sect(decltype(owner) owner, id _) noexcept: owner(owner), id(_) {}
       public: // assembly memory allocation
          RSN_INLINE auto reserve(int size) const {
             assert(size >= 0);
             if (RSN_LIKELY((unsigned)owner._sects[sn].res + size <= owner._sects[sn].alloc))
                owner._sects[sn].res += size; // fast path
             else [](auto &sect, auto size) RSN_NOINLINE{
+               static_assert(max_segm_size_p2 >= 0 && max_segm_size_p2 < std::numeric_limits<int>::digits);
                if (RSN_UNLIKELY((unsigned)sect.res + size > 1 << max_segm_size_p2)) throw std::bad_alloc{};
-               static_assert(max_segm_size_p2 < std::numeric_limits<int>::digits);
                auto pc = (int)(sect.pc - sect.base);
                auto res = sect.res + size;
                auto base = static_cast<unsigned char *>(std::realloc(const_cast<unsigned char *>(sect.base),
@@ -150,7 +150,7 @@ namespace rsn {
             return owner._fixups.push_back({_sect::fixup::plus_label_minus_next_addr_byte, sn,
                (int)(owner._sects[sn].pc - owner._sects[sn].base), label.sn}), b(offset);
          }
-         RSN_INLINE auto rl(decltype(x86long::_) val) const {
+         RSN_INLINE auto rl(decltype(x86long::_) val) const { // for 32-bit code models
             return owner._fixups.push_back({_sect::fixup::minus_next_addr_long, sn,
                (int)(owner._sects[sn].pc - owner._sects[sn].base)}), l(val);
          }
@@ -159,6 +159,7 @@ namespace rsn {
       public: // address alignment (specific to x86 and x86-64 ISAs)
          RSN_INLINE auto align(int boundary, int max = 1 << cacheline_size_p2) const noexcept {
             auto pad_size = (int)(owner._sects[sn].base - owner._sects[sn].pc & boundary - 1);
+            assert(size() + pad_size <= reserved());
             if (RSN_LIKELY(pad_size > max)) return *this;
             if (RSN_UNLIKELY(owner._sects[sn].align < boundary)) owner._sects[sn].align = boundary;
             for (auto _ = pad_size / 10; _; --_) sw(0x662E).sq(0x0F1F84'00000000'00);
@@ -230,8 +231,8 @@ namespace rsn {
 
 } // namespace rsn::mnl
 
-constexpr rsn::objcode::sect::id  rsn::objcode::sect::id::init  = id{-1};
-constexpr rsn::objcode::label::id rsn::objcode::label::id::init = id{-1};
+constexpr rsn::objcode::sect::id  rsn::objcode::sect::id::unspec(-1);
+constexpr rsn::objcode::label::id rsn::objcode::label::id::unspec(-1);
 
 namespace rsn { RSN_INLINE inline void swap(objcode::segm &lhs, objcode::segm &rhs) noexcept { lhs.swap(rhs); } }
 
