@@ -36,18 +36,18 @@ namespace rsn {
    private: // Internal Helper Types ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       class _sect/*ion*/ {
       public:
-         unsigned char *pc = {};         // section program counter for code/data emission
+         unsigned char *pc = {};         // section program-counter for code/data emission
          const unsigned char *base = {}; // start of buffer
-         int res = 0, alloc = 0;         // requested and actual buffer size (not exceeding 1 << max_segm_size_p2)
-         int align = 1;                  // alignment requirements accumulated so far (not exceeding 1 << cacheline_size_p2)
+         int res = 0, alloc = 0;         // requested and actual buffer size, in bytes (not exceeding 1 << max_segm_size_p2)
+         int align = 1;                  // alignment requirements accumulated so far, some power of 2 in bytes (not exceeding 1 << cacheline_size_p2)
          const bool is_rodata;           // whether the section contains text (code) or read-only data
-      public: // construction and standard operations
-         RSN_INLINE constexpr _sect(bool is_rodata) noexcept
-            : is_rodata(is_rodata) {}
-         RSN_INLINE _sect(_sect &&rhs) noexcept
+      public: // standard operations and construction
+         RSN_INLINE _sect(_sect &&rhs) noexcept // only ~_sect() is applicable afterwards
             : pc(rhs.pc), base(rhs.base), res(rhs.res), alloc(rhs.alloc), align(rhs.align), is_rodata(rhs.is_rodata) { rhs.base = {}; }
          RSN_INLINE ~_sect()
             { if (RSN_UNLIKELY(base)) std::free(const_cast<unsigned char *>(base)); } // own fast/slow path split
+      public:
+         RSN_INLINE constexpr _sect(bool is_rodata) noexcept: is_rodata(is_rodata) {}
       public: // opaque ID of a section in context of a specific (assumed) instance of objcode
          class id { // (this lacks an explicit reference to that instance to fully identify a section)
             friend objcode;
@@ -61,7 +61,7 @@ namespace rsn {
          struct fixup { // AKA relocation records - specific to x86 and x86-64 ISAs (suitable for x86 and all code models for x86-64)
             enum { plus_label_quad, plus_label_long, plus_label_minus_next_addr_long, plus_label_minus_next_addr_byte, minus_next_addr_long } kind;
             int sect/*s/n*/, offset;
-            int label/*s/n*/; // kind != minus_next_addr_long
+            int label/*s/n*/; // relevant unless kind == minus_next_addr_long
          };
       };
       class _label {
@@ -194,28 +194,28 @@ namespace rsn {
       RSN_INLINE class sect rodata() { return sect(true); }
    public:
       class segm/*ent*/ { // represents target memory segment for object code loading
-      public: // standard operations
-         constexpr segm() noexcept: _base(decltype(_base){}), _size{} {}
-         RSN_INLINE segm(segm &&rhs) noexcept: _base(rhs._base), _size(rhs._size) { rhs._base = decltype(_base){}; }
+      public:
+         static long max_total_used, max_total_phys; // maximum totals with and without overhead, respectively
+      public: // standard operations and other primary constructors
+         constexpr segm() noexcept: _base{}, _size{} {}
+         RSN_INLINE segm(segm &&rhs) noexcept: _base(rhs._base), _size(rhs._size) { rhs._base = {}; }
          RSN_INLINE ~segm() { if (RSN_UNLIKELY(_base)) _free(); }
          RSN_INLINE auto &operator=(segm &&rhs) noexcept { swap(rhs); return *this; }
          RSN_INLINE void swap(segm &rhs) noexcept { std::swap(_base, rhs._base), std::swap(_size, rhs._size); }
-      public: // misc constructors
-         RSN_INLINE explicit segm(int size) { if (RSN_UNLIKELY(size)) _alloc(size); else _base = decltype(_base){}, _size = {}; }
       public:
-         RSN_INLINE segm(const objcode &rhs): segm(rhs.size()) { rhs.load(*this); }
-         RSN_INLINE explicit segm(const segm &rhs): segm(rhs.size()) { std::memcpy(*this, rhs, size()); }
+         RSN_INLINE explicit segm(int size) { if (RSN_UNLIKELY(size)) _alloc(size); else _base = {}, _size = {}; }
       public: // access to contents
-         template<typename Type> RSN_INLINE operator Type *() const noexcept { return reinterpret_cast<Type *>(_base); }
-         RSN_INLINE constexpr int size() const noexcept { return _base ? _size : 0; }
+         template<typename Type> RSN_INLINE explicit operator Type *() const noexcept { return reinterpret_cast<Type *>(_base); }
+         RSN_INLINE auto size() const noexcept { return _base ? _size : 0 /*brachless*/; }
+      public: // convenience constructors
+         RSN_INLINE segm(const objcode &rhs): segm(rhs.size()) { rhs.load((unsigned char *)*this); }
+         RSN_INLINE explicit segm(const segm &rhs): segm(rhs.size()) { std::memcpy((unsigned char *)*this, (const unsigned char *)rhs, size()); }
       private: // internal representation
          unsigned char *_base; int _size;
       private: // internal helper stuff
          void _alloc(int), _free() noexcept;
-      public:
-         static long max_total_used, max_total_phys;
       };
-      RSN_INLINE inline segm load() const { return segm(*this); }
+      RSN_INLINE inline segm load() const { return *this; }
    public:
       int size() const;
       void load(unsigned char *) const;
