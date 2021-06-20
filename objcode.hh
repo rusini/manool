@@ -82,13 +82,14 @@ namespace rsn {
       struct RSN_PACK x86word { unsigned short     _; };
       struct RSN_PACK x86long { unsigned           _; };
       struct RSN_PACK x86quad { unsigned long long _; };
-   public: // Symbolic Addresses ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   public:
+      // Symbolic Addresses ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       class label: public _label::id { // fully identifies a label
       public:
          objcode &owner;
          RSN_INLINE constexpr label(decltype(owner) owner, id _) noexcept: owner(owner), id(_) {}
       };
-   public: // Program Text and (RO)Data Sections ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      // Program Text and (RO)Data Sections ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       class sect/*ion*/: public _sect::id { // fully identifies a section
       public:
          objcode &owner;
@@ -180,6 +181,30 @@ namespace rsn {
          RSN_INLINE int size() const noexcept { return owner._sects[sn].pc - owner._sects[sn].base; }
          RSN_INLINE int reserved() const noexcept { return owner._sects[sn].res; }
       };
+      // Target Memory Segment for Object Code Loading /////////////////////////////////////////////////////////////////////////////////////////////////////////
+      class segm/*ent*/ {
+      public:
+         static long max_total_used, max_total_phys; // maximum totals with and without overhead, respectively
+      public: // standard operations and primary constructors
+         constexpr segm() noexcept: _base{}, _size{} {}
+         RSN_INLINE segm(segm &&rhs) noexcept: _base(rhs._base), _size(rhs._size) { rhs._base = {}; }
+         RSN_INLINE ~segm() { if (RSN_UNLIKELY(_base)) _free(); }
+         RSN_INLINE auto &operator=(segm &&rhs) noexcept { swap(rhs); return *this; }
+         RSN_INLINE void swap(segm &rhs) noexcept { std::swap(_base, rhs._base), std::swap(_size, rhs._size); }
+      public:
+         RSN_INLINE explicit segm(int size) { if (RSN_UNLIKELY(size)) _alloc(size); else _base = {}, _size = {}; }
+      public: // access to contents
+         template<typename Type> RSN_INLINE explicit operator Type *() const noexcept { return reinterpret_cast<Type *>(_base); }
+         RSN_INLINE auto size() const noexcept { return _base ? _size : 0 /*brachless*/; }
+      public: // miscellaneous operations
+         RSN_INLINE segm(const objcode &rhs): segm(rhs.size()) { rhs.load((unsigned char *)*this); }
+         RSN_INLINE explicit segm(const segm &rhs): segm(rhs.size()) { std::memcpy((unsigned char *)*this, (const unsigned char *)rhs, size()); }
+      private: // internal representation
+         unsigned char *_base; int _size;
+      private: // internal helper stuff
+         void _alloc(int), _free() noexcept;
+      };
+      RSN_INLINE segm load() const { return *this; }
    public: /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       RSN_INLINE class sect sect(bool is_rodata) {
          if (RSN_UNLIKELY((decltype(sect::sn))_sects.size() == std::numeric_limits<decltype(sect::sn)>::max())) throw std::bad_alloc{};
@@ -192,31 +217,7 @@ namespace rsn {
    public:
       RSN_INLINE class sect text()   { return sect(false); }
       RSN_INLINE class sect rodata() { return sect(true); }
-   public:
-      class segm/*ent*/ { // represents target memory segment for object code loading
-      public:
-         static long max_total_used, max_total_phys; // maximum totals with and without overhead, respectively
-      public: // standard operations and other primary constructors
-         constexpr segm() noexcept: _base{}, _size{} {}
-         RSN_INLINE segm(segm &&rhs) noexcept: _base(rhs._base), _size(rhs._size) { rhs._base = {}; }
-         RSN_INLINE ~segm() { if (RSN_UNLIKELY(_base)) _free(); }
-         RSN_INLINE auto &operator=(segm &&rhs) noexcept { swap(rhs); return *this; }
-         RSN_INLINE void swap(segm &rhs) noexcept { std::swap(_base, rhs._base), std::swap(_size, rhs._size); }
-      public:
-         RSN_INLINE explicit segm(int size) { if (RSN_UNLIKELY(size)) _alloc(size); else _base = {}, _size = {}; }
-      public: // access to contents
-         template<typename Type> RSN_INLINE explicit operator Type *() const noexcept { return reinterpret_cast<Type *>(_base); }
-         RSN_INLINE auto size() const noexcept { return _base ? _size : 0 /*brachless*/; }
-      public: // convenience constructors
-         RSN_INLINE segm(const objcode &rhs): segm(rhs.size()) { rhs.load((unsigned char *)*this); }
-         RSN_INLINE explicit segm(const segm &rhs): segm(rhs.size()) { std::memcpy((unsigned char *)*this, (const unsigned char *)rhs, size()); }
-      private: // internal representation
-         unsigned char *_base; int _size;
-      private: // internal helper stuff
-         void _alloc(int), _free() noexcept;
-      };
-      RSN_INLINE inline segm load() const { return *this; }
-   public:
+   public: // miscellaneous stuff
       int size() const;
       void load(unsigned char *) const;
    private: // internal representation
