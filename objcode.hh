@@ -12,19 +12,13 @@
    You should have received a copy of the GNU General Public License along with this software.  If not, see <https://www.gnu.org/licenses/>.  */
 
 
-# include <cstdint>
-# include <cstdlib>
-# include <cstring>
-# include <cstdio>
+# include <new>       // bad_alloc
 # include <cassert>
-# include <vector>
+# include <cstdlib>   // free, realloc
+# include <cstring>   // memcpy
 # include <limits>
-# include <algorithm>
-# include <mutex>
-
-# include <new> // bad_alloc
-
-#include <sys/mman.h>
+# include <vector>
+# include <algorithm> // max/min
 
 # include "rusini0.hh"
 
@@ -48,7 +42,7 @@ namespace rsn {
          int align = 1;                  // alignment requirements accumulated so far (not exceeding 1 << cacheline_size_p2)
          const bool is_rodata;           // whether the section contains text (code) or read-only data
       public: // construction and standard operations
-         RSN_INLINE _sect(bool is_rodata) noexcept
+         RSN_INLINE constexpr _sect(bool is_rodata) noexcept
             : is_rodata(is_rodata) {}
          RSN_INLINE _sect(_sect &&rhs) noexcept
             : pc(rhs.pc), base(rhs.base), res(rhs.res), alloc(rhs.alloc), align(rhs.align), is_rodata(rhs.is_rodata) { rhs.base = {}; }
@@ -201,38 +195,38 @@ namespace rsn {
    public:
       class segm/*ent*/ { // represents target memory segment for object code loading
       public: // standard operations
-         RSN_INLINE segm() noexcept: _base{}, _size(0) {}
-         RSN_INLINE segm(segm &&rhs) noexcept: _base(rhs._base), _size(rhs._size) { rhs._base = {}; }
+         constexpr segm() noexcept: _base(decltype(_base){}), _size{} {}
+         RSN_INLINE segm(segm &&rhs) noexcept: _base(rhs._base), _size(rhs._size) { rhs._base = decltype(_base){}; }
          RSN_INLINE ~segm() { if (RSN_UNLIKELY(_base)) _free(); }
          RSN_INLINE auto &operator=(segm &&rhs) noexcept { swap(rhs); return *this; }
-         RSN_INLINE void swap(segm &rhs) noexcept { using std::swap; swap(_base, rhs._base), swap(_size, rhs._size); }
+         RSN_INLINE void swap(segm &rhs) noexcept { std::swap(_base, rhs._base), std::swap(_size, rhs._size); }
       public: // misc constructors
-         RSN_INLINE explicit segm(int size) { if (RSN_UNLIKELY(size)) _alloc(size); else _base = {}, _size = 0; }
-         RSN_INLINE segm(const objcode &oc): segm(oc.size()) { oc.load((unsigned char *)(*this)); }
+         RSN_INLINE explicit segm(int size) { if (RSN_UNLIKELY(size)) _alloc(size); else _base = decltype(_base){}, _size = {}; }
+      public:
+         RSN_INLINE segm(const objcode &rhs): segm(rhs.size()) { rhs.load(*this); }
+         RSN_INLINE explicit segm(const segm &rhs): segm(rhs.size()) { std::memcpy(*this, rhs, size()); }
       public: // access to contents
-         template<typename T> RSN_INLINE explicit operator T *() const noexcept { return reinterpret_cast<T *>(_base); }
-         RSN_INLINE int size() const noexcept { return _size; }
+         template<typename Type> RSN_INLINE operator Type *() const noexcept { return reinterpret_cast<Type *>(_base); }
+         RSN_INLINE constexpr int size() const noexcept { return _base ? _size : 0; }
       private: // internal representation
          unsigned char *_base; int _size;
-      private: // implementation helpers
+      private: // internal helper stuff
          void _alloc(int), _free() noexcept;
       public:
          static long max_total_used, max_total_phys;
       };
       RSN_INLINE inline segm load() const { return segm(*this); }
    public:
-      int size() const noexcept;
-      void load(unsigned char *) const noexcept;
+      int size() const;
+      void load(unsigned char *) const;
    private: // internal representation
       std::vector<_sect> _sects;
       std::vector<_sect::fixup> _fixups;
       std::vector<_label> _labels;
    };
+   RSN_INLINE inline void swap(objcode::segm &lhs, objcode::segm &rhs) noexcept { lhs.swap(rhs); }
 
 } // namespace rsn::mnl
 
 constexpr rsn::objcode::sect::id  rsn::objcode::sect::id::unspec(-1);
 constexpr rsn::objcode::label::id rsn::objcode::label::id::unspec(-1);
-
-namespace rsn { RSN_INLINE inline void swap(objcode::segm &lhs, objcode::segm &rhs) noexcept { lhs.swap(rhs); } }
-

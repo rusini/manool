@@ -14,7 +14,13 @@
 
 # include "objcode.hh"
 
-int rsn::objcode::size() const noexcept {
+# if RSN_WITH_MULTITHREADING
+   # include <mutex>
+# endif
+
+# include <sys/mman.h>
+
+int rsn::objcode::size() const {
    int pc = 0;
    bool has_rodata = false;
    for (const auto &sect: _sects) if (RSN_UNLIKELY(sect.is_rodata)) has_rodata = true; else {
@@ -32,7 +38,7 @@ int rsn::objcode::size() const noexcept {
    return pc;
 }
 
-void rsn::objcode::load(unsigned char *RSN_RESTRICT base) const noexcept {
+void rsn::objcode::load(unsigned char *RSN_RESTRICT base) const {
    unsigned char *sect_base[_sects.size()]; // target virtual address after section loading
    // transfer contents of sections to target load address
    [&]() RSN_INLINE{
