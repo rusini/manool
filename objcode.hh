@@ -206,25 +206,27 @@ namespace rsn {
       };
       RSN_INLINE segm load() const { return *this; }
    public: /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-      RSN_INLINE class sect sect(bool is_rodata) {
-         if (RSN_UNLIKELY((decltype(sect::sn))_sects.size() == std::numeric_limits<decltype(sect::sn)>::max())) throw std::bad_alloc{};
-         _sects.emplace_back(is_rodata); return {*this, sect::id{(decltype(sect::sn))_sects.size() - 1}};
-      }
+      RSN_INLINE auto text()   { return sect(false); }
+      RSN_INLINE auto rodata() { return sect(true); }
+   public:
       RSN_INLINE class label label() {
          if (RSN_UNLIKELY((decltype(label::sn))_labels.size() == std::numeric_limits<decltype(label::sn)>::max())) throw std::bad_alloc{};
          _labels.emplace_back(); return {*this, label::id{(decltype(label::sn))_labels.size() - 1}};
       }
-   public:
-      RSN_INLINE class sect text()   { return sect(false); }
-      RSN_INLINE class sect rodata() { return sect(true); }
    public: // miscellaneous stuff
+      RSN_INLINE class sect sect(bool is_rodata) {
+         if (RSN_UNLIKELY((decltype(sect::sn))_sects.size() == std::numeric_limits<decltype(sect::sn)>::max())) throw std::bad_alloc{};
+         _sects.emplace_back(is_rodata); return {*this, sect::id{(decltype(sect::sn))_sects.size() - 1}};
+      }
+   public:
       int size() const;
       void load(unsigned char *) const;
    private: // internal representation
-      std::vector<_sect> _sects;
+      std::vector<_sect>        _sects;
       std::vector<_sect::fixup> _fixups;
-      std::vector<_label> _labels;
+      std::vector<_label>       _labels;
    };
+
    RSN_INLINE inline void swap(objcode::segm &lhs, objcode::segm &rhs) noexcept { lhs.swap(rhs); }
 
 } // namespace rsn::mnl
