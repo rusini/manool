@@ -148,8 +148,10 @@ namespace rsn {
          template<typename Type> RSN_INLINE auto rl(Type *val) const { return rl(reinterpret_cast<unsigned long>(val)); } // for 32-bit code models
       public: // address alignment (specific to x86 and x86-64 ISAs)
          RSN_INLINE auto align(int boundary, int max = 1 << cacheline_size_p2) const noexcept {
+            assert(__builtin_popcount(boundary) == 1 && boundary <= 1 << cacheline_size_p2);
+            assert(max >= 0 && (max <= boundary || max == 1 << cacheline_size_p2));
+            assert(size() + std::min(boundary - 1, max) <= reserved());
             auto pad_size = (int)(owner._sects[sn].base - owner._sects[sn].pc & boundary - 1);
-            assert(size() + pad_size <= reserved());
             if (RSN_LIKELY(pad_size > max)) return *this;
             if (RSN_UNLIKELY(owner._sects[sn].align < boundary)) owner._sects[sn].align = boundary;
             for (auto _ = pad_size / 10; _; --_) sw(0x662E).sq(0x0F1F84'00000000'00);

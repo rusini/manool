@@ -39,7 +39,7 @@ int rsn::objcode::size() const {
 void rsn::objcode::load(unsigned char *RSN_RESTRICT base) const {
    if (RSN_LIKELY(!base)) return;
    // target virtual address after section loading for each section
-   auto using_vla = _sects.size() <= (1 << 16) / sizeof(unsigned char *) /*64 KiB*/; // VLAs in C++ (and zero-length VLAs) is a GCC extension:
+   auto using_vla = (int)_sects.size() <= (1 << 16) / sizeof(unsigned char *) /*64 KiB*/; // VLAs in C++ (and zero-length VLAs) is a GCC extension:
    unsigned char *_vla[RSN_LIKELY(using_vla) ? _sects.size() : 0], **const load_base = RSN_LIKELY(using_vla) ? _vla : new unsigned char *[_sects.size()];
    // transfer contents of sections to target load address
    [&]()RSN_INLINE {
@@ -88,6 +88,7 @@ void rsn::objcode::load(unsigned char *RSN_RESTRICT base) const {
    }
    // cleanup
    if (!RSN_LIKELY(using_vla)) delete[] load_base;
+   RSN_BARRIER(); // to be able to reinterpret_cast the loaded code however it is needed
 }
 
 namespace rsn {
