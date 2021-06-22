@@ -14,7 +14,7 @@
 
 # include "objcode.hh"
 
-# if RSN_WITH_MULTITHREADING
+# if !RSN_NO_MULTITHREADING
    # include <mutex>
 # endif
 
@@ -38,52 +38,56 @@ int rsn::objcode::size() const {
 
 void rsn::objcode::load(unsigned char *RSN_RESTRICT base) const {
    if (RSN_LIKELY(!base)) return;
-   unsigned char *sect_base[_sects.size()]; // target virtual address after section loading
+   // target virtual address after section loading for each section
+   auto using_vla = _sects.size() <= (1 << 16) / sizeof(unsigned char *) /*64 KiB*/; // VLAs in C++ (and zero-length VLAs) is a GCC extension:
+   unsigned char *_vla[RSN_LIKELY(using_vla) ? _sects.size() : 0], **const load_base = RSN_LIKELY(using_vla) ? _vla : new unsigned char *[_sects.size()];
    // transfer contents of sections to target load address
    [&]()RSN_INLINE {
       int pc = 0;
       bool has_rodata = false;
-      {  auto _sect_base = sect_base;
-         for (const auto &sect: _sects) if (RSN_UNLIKELY(sect.is_rodata)) ++_sect_base, has_rodata = true; else {
+      {  auto _load_base = load_base;
+         for (const auto &sect: _sects) if (RSN_UNLIKELY(sect.is_rodata)) ++_load_base, has_rodata = true; else {
             int size = sect.pc - sect.base;
-            *_sect_base++ = static_cast<unsigned char *>(_memcpy(base + (unsigned)(pc = pc + sect.align - 1 & -sect.align), sect.base, size)), pc += size;
+            *_load_base++ = static_cast<unsigned char *>(_memcpy(base + (unsigned)(pc = pc + sect.align - 1 & -sect.align), sect.base, size)), pc += size;
          }
       }
       if (RSN_LIKELY(!has_rodata)) return;
       pc = pc + (1 << cacheline_size_p2) - 1 & -(1 << cacheline_size_p2);
-      {  auto _sect_base = sect_base;
-         for (const auto &sect: _sects) if (!RSN_UNLIKELY(sect.is_rodata)) ++_sect_base; else {
+      {  auto _load_base = load_base;
+         for (const auto &sect: _sects) if (!RSN_UNLIKELY(sect.is_rodata)) ++_load_base; else {
             int size = sect.pc - sect.base;
-            *_sect_base++ = static_cast<unsigned char *>(_memcpy(base + (unsigned)(pc = pc + sect.align - 1 & -sect.align), sect.base, size)), pc += size;
+            *_load_base++ = static_cast<unsigned char *>(_memcpy(base + (unsigned)(pc = pc + sect.align - 1 & -sect.align), sect.base, size)), pc += size;
          }
       }
    }();
    // apply fixup relocations to run-time memory contents
    for (auto fixup: _fixups) switch (fixup.kind) {
       case _sect::fixup::plus_label_quad: // for 64-bit code models
-         reinterpret_cast<x86quad *>(sect_base[fixup.sect] + fixup.offset)->_ +=
-            reinterpret_cast<unsigned long>(sect_base[_labels[fixup.label].sect] + _labels[fixup.label].offset);
+         reinterpret_cast<x86quad *>(load_base[fixup.sect] + fixup.offset)->_ +=
+            reinterpret_cast<unsigned long>(load_base[_labels[fixup.label].sect] + _labels[fixup.label].offset);
          continue;
       case _sect::fixup::plus_label_long: // for 32-bit code models
-         reinterpret_cast<x86long *>(sect_base[fixup.sect] + fixup.offset)->_ +=
-            reinterpret_cast<unsigned long>(sect_base[_labels[fixup.label].sect] + _labels[fixup.label].offset);
+         reinterpret_cast<x86long *>(load_base[fixup.sect] + fixup.offset)->_ +=
+            reinterpret_cast<unsigned long>(load_base[_labels[fixup.label].sect] + _labels[fixup.label].offset);
          continue;
       case _sect::fixup::plus_label_minus_next_addr_long:
-         reinterpret_cast<x86long *>(sect_base[fixup.sect] + fixup.offset)->_ +=
-            reinterpret_cast<unsigned long>(sect_base[_labels[fixup.label].sect] + _labels[fixup.label].offset) -
-            reinterpret_cast<unsigned long>(sect_base[fixup.sect] + fixup.offset + sizeof(x86long));
+         reinterpret_cast<x86long *>(load_base[fixup.sect] + fixup.offset)->_ +=
+            reinterpret_cast<unsigned long>(load_base[_labels[fixup.label].sect] + _labels[fixup.label].offset) -
+            reinterpret_cast<unsigned long>(load_base[fixup.sect] + fixup.offset + sizeof(x86long));
          continue;
       case _sect::fixup::plus_label_minus_next_addr_byte:
-         reinterpret_cast<x86byte *>(sect_base[fixup.sect] + fixup.offset)->_ +=
-            reinterpret_cast<unsigned long>(sect_base[_labels[fixup.label].sect] + _labels[fixup.label].offset) -
-            reinterpret_cast<unsigned long>(sect_base[fixup.sect] + fixup.offset + sizeof(x86byte));
+         reinterpret_cast<x86byte *>(load_base[fixup.sect] + fixup.offset)->_ +=
+            reinterpret_cast<unsigned long>(load_base[_labels[fixup.label].sect] + _labels[fixup.label].offset) -
+            reinterpret_cast<unsigned long>(load_base[fixup.sect] + fixup.offset + sizeof(x86byte));
          continue;
       case _sect::fixup::minus_next_addr_long: // for 32-bit code models
-         reinterpret_cast<x86long *>(sect_base[fixup.sect] + fixup.offset)->_ -=
-            reinterpret_cast<unsigned long>(sect_base[fixup.sect] + fixup.offset + sizeof(x86long));
+         reinterpret_cast<x86long *>(load_base[fixup.sect] + fixup.offset)->_ -=
+            reinterpret_cast<unsigned long>(load_base[fixup.sect] + fixup.offset + sizeof(x86long));
          continue;
       default: RSN_UNREACHABLE();
    }
+   // cleanup
+   if (!RSN_LIKELY(using_vla)) delete[] load_base;
 }
 
 namespace rsn {
@@ -95,7 +99,7 @@ namespace rsn {
       unsigned char *free[threshold_2_p2 - min_size_p2 + 1];
       struct free { unsigned char *next; };
       long total_used, total_phys;
-      std::mutex mutex;
+      RSN_IF_WITH_MT(std::mutex mutex;)
    }
 }
 
