@@ -12,6 +12,9 @@
    You should have received a copy of the GNU General Public License along with this software.  If not, see <https://www.gnu.org/licenses/>.  */
 
 
+# ifndef RSN_INCLUDED_OBJCODE
+# define RSN_INCLUDED_OBJCODE
+
 # include <new>       // bad_alloc
 # include <cassert>
 # include <cstdlib>   // free, realloc
@@ -25,14 +28,6 @@
 namespace rsn {
 
    class objcode /*object code*/ { // with relocations suitable for the target ISA
-   private: // important magnitudes
-      static constexpr auto
-         cacheline_size_p2 =  6 /*64 B*/,                 // for CPU L#I/L#D caches (64 B for x86/x86-64 CPUs and many others)
-         page_size_p2      = 12 /*4 KiB*/,                // for MMU paging (4 KiB for x86/x86-64 CPUs and many others)
-         max_segm_size_p2  = page_size_p2 + 18 /*1 GiB*/; // maximum size of an executable segment
-         /* max_segm_size_p2 maxval is half of positive space of int numbers
-            (good for x86/x86-64 ISAs but ought to be much lower for RISC ISAs) */
-      static_assert(max_segm_size_p2 < std::numeric_limits<int>::digits);
    private: // Internal Helper Types ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       class _sect/*ion*/ {
       public:
@@ -99,13 +94,13 @@ namespace rsn {
             assert(size >= 0);
             if (RSN_LIKELY((unsigned)owner._sects[sn].res + size <= owner._sects[sn].alloc))
                owner._sects[sn].res += size; // fast path
-            else [](auto &sect, auto size) RSN_NOINLINE{
+            else [](auto &sect, auto size)RSN_NOINLINE {
                static_assert(max_segm_size_p2 >= 0 && max_segm_size_p2 < std::numeric_limits<int>::digits);
                if (RSN_UNLIKELY((unsigned)sect.res + size > 1 << max_segm_size_p2)) throw std::bad_alloc{};
                auto pc = (int)(sect.pc - sect.base);
                auto res = sect.res + size;
                auto base = static_cast<unsigned char *>(std::realloc(const_cast<unsigned char *>(sect.base),
-                  std::min(res + res / 2, 1 << max_segm_size_p2)));
+                  (unsigned)std::min(res + res / 2, 1 << max_segm_size_p2)));
                if (RSN_UNLIKELY(!base)) throw std::bad_alloc{};
                sect.base = base, sect.pc = base + pc, sect.alloc = std::min(res + res / 2, 1 << max_segm_size_p2);
                sect.res = res;
@@ -161,7 +156,7 @@ namespace rsn {
             switch (pad_size % 10) {
             case 0: return *this;
             case 1: return b(0x90);
-            case 2: return sw(0x66'90);
+            case 2: return sw(0x6690);
             case 3: return b(0x0F).sw(0x1F'00);
             case 4: return sl(0x0F1F40'00);
             case 5: return b(0x0F).sl(0x1F44'0000);
@@ -175,16 +170,16 @@ namespace rsn {
       public: // defining (placing) labels
          RSN_INLINE auto label(class label &label, int offset = 0) const noexcept
             { assert(&label.owner == &owner); owner._labels[label.sn] = {sn, (int)(owner._sects[sn].pc - owner._sects[sn].base) + offset}; return *this; }
-         RSN_INLINE auto label(int offset = 0) const
-            { auto label = owner.label(); this->label(label, offset); return label; }
+         // convenience helpers for the above
+         RSN_INLINE auto label(int offset = 0) const { auto label = owner.label(); this->label(label, offset); return label; }
       public: // miscellaneous
-         RSN_INLINE int size() const noexcept { return owner._sects[sn].pc - owner._sects[sn].base; }
-         RSN_INLINE int reserved() const noexcept { return owner._sects[sn].res; }
+         RSN_INLINE auto size() const noexcept { return (int)(owner._sects[sn].pc - owner._sects[sn].base); }
+         RSN_INLINE auto reserved() const noexcept { return owner._sects[sn].res; }
       };
       // Target Memory Segment for Object Code Loading /////////////////////////////////////////////////////////////////////////////////////////////////////////
       class segm/*ent*/ {
       public:
-         static long max_total_used, max_total_phys; // maximum totals with and without overhead, respectively
+         static long max_total_used, max_total_phys; // maximum totals without/with overhead, respectively
       public: // standard operations and primary constructors
          constexpr segm() noexcept: _base{}, _size{} {}
          RSN_INLINE segm(segm &&rhs) noexcept: _base(rhs._base), _size(rhs._size) { rhs._base = {}; }
@@ -195,10 +190,10 @@ namespace rsn {
          RSN_INLINE explicit segm(int size) { if (RSN_UNLIKELY(size)) _alloc(size); else _base = {}, _size = {}; }
       public: // access to contents
          template<typename Type> RSN_INLINE explicit operator Type *() const noexcept { return reinterpret_cast<Type *>(_base); }
-         RSN_INLINE auto size() const noexcept { return _base ? _size : 0 /*brachless*/; }
+         RSN_INLINE auto size() const noexcept { return _base ? _size : 0 /*branchless*/; }
       public: // miscellaneous operations
          RSN_INLINE segm(const objcode &rhs): segm(rhs.size()) { rhs.load((unsigned char *)*this); }
-         RSN_INLINE explicit segm(const segm &rhs): segm(rhs.size()) { std::memcpy((unsigned char *)*this, (const unsigned char *)rhs, size()); }
+         RSN_INLINE explicit segm(const segm &rhs): segm(rhs.size()) { _memcpy((void *)*this, (const void *)rhs, size()); }
       private: // internal representation
          unsigned char *_base; int _size;
       private: // internal helper stuff
@@ -225,6 +220,16 @@ namespace rsn {
       std::vector<_sect>        _sects;
       std::vector<_sect::fixup> _fixups;
       std::vector<_label>       _labels;
+   private: // internal helper stuff
+      static constexpr auto
+         cacheline_size_p2 =  6 /*64 B*/,                 // for CPU L#I/L#D caches (64 B for x86/x86-64 CPUs and many others)
+         page_size_p2      = 12 /*4 KiB*/,                // for MMU paging (4 KiB for x86/x86-64 CPUs and many others)
+         max_segm_size_p2  = page_size_p2 + 18 /*1 GiB*/; // maximum size of an executable segment
+         /* max_segm_size_p2 maxval is half of positive space of int numbers
+            (good for x86/x86-64 ISAs but ought to be much lower for RISC ISAs) */
+      static_assert(max_segm_size_p2 < std::numeric_limits<int>::digits);
+   private:
+      RSN_INLINE static void *_memcpy(void *lhs, const void *rhs, int size) { if (RSN_UNLIKELY(size)) std::memcpy(lhs, rhs, (unsigned)size); return lhs; }
    };
 
    RSN_INLINE inline void swap(objcode::segm &lhs, objcode::segm &rhs) noexcept { lhs.swap(rhs); }
@@ -233,3 +238,5 @@ namespace rsn {
 
 constexpr rsn::objcode::sect::id  rsn::objcode::sect::id::unspec(-1);
 constexpr rsn::objcode::label::id rsn::objcode::label::id::unspec(-1);
+
+# endif // # ifndef RSN_INCLUDED_OBJCODE

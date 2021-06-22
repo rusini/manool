@@ -24,44 +24,37 @@ int rsn::objcode::size() const {
    int pc = 0;
    bool has_rodata = false;
    for (const auto &sect: _sects) if (RSN_UNLIKELY(sect.is_rodata)) has_rodata = true; else {
-      if (RSN_UNLIKELY((unsigned)(pc = pc + sect.align - 1 & -sect.align) +
-         (int)(sect.pc - sect.base) > 1 << max_segm_size_p2)) return -1;
+      if (RSN_UNLIKELY((unsigned)(pc = pc + sect.align - 1 & -sect.align) + (int)(sect.pc - sect.base) > 1 << max_segm_size_p2)) return -1;
       pc += (int)(sect.pc - sect.base);
    }
    if (RSN_LIKELY(!has_rodata)) return pc;
    pc = pc + ((1 << cacheline_size_p2) - 1) & -(1 << cacheline_size_p2);
-   for (const auto &sect: _sects) if (RSN_UNLIKELY(sect.is_rodata)) {
-      if (RSN_UNLIKELY((unsigned)(pc = pc + sect.align - 1 & -sect.align) +
-         (int)(sect.pc - sect.base) > 1 << max_segm_size_p2)) return -1;
+   for (const auto &sect: _sects) if (!RSN_UNLIKELY(sect.is_rodata)); else {
+      if (RSN_UNLIKELY((unsigned)(pc = pc + sect.align - 1 & -sect.align) + (int)(sect.pc - sect.base) > 1 << max_segm_size_p2)) return -1;
       pc += (int)(sect.pc - sect.base);
    }
    return pc;
 }
 
 void rsn::objcode::load(unsigned char *RSN_RESTRICT base) const {
+   if (RSN_LIKELY(!base)) return;
    unsigned char *sect_base[_sects.size()]; // target virtual address after section loading
    // transfer contents of sections to target load address
-   [&]() RSN_INLINE{
+   [&]()RSN_INLINE {
       int pc = 0;
       bool has_rodata = false;
-      {  unsigned char **_sect_base = sect_base;
-         for (auto &sect: _sects) {
-            if (RSN_UNLIKELY(sect.is_rodata))
-               { ++_sect_base; has_rodata = true; continue; }
+      {  auto _sect_base = sect_base;
+         for (const auto &sect: _sects) if (RSN_UNLIKELY(sect.is_rodata)) ++_sect_base, has_rodata = true; else {
             int size = sect.pc - sect.base;
-            *_sect_base++ = static_cast<unsigned char *>(std::memcpy(base +
-               (unsigned)(pc = pc + sect.align - 1 & -sect.align), sect.base, (unsigned)size)), pc += size;
+            *_sect_base++ = static_cast<unsigned char *>(_memcpy(base + (unsigned)(pc = pc + sect.align - 1 & -sect.align), sect.base, size)), pc += size;
          }
       }
       if (RSN_LIKELY(!has_rodata)) return;
       pc = pc + (1 << cacheline_size_p2) - 1 & -(1 << cacheline_size_p2);
-      {  unsigned char **_sect_base = sect_base;
-         for (auto &sect: _sects) {
-            if (!RSN_UNLIKELY(sect.is_rodata))
-               { ++_sect_base; continue; }
+      {  auto _sect_base = sect_base;
+         for (const auto &sect: _sects) if (!RSN_UNLIKELY(sect.is_rodata)) ++_sect_base; else {
             int size = sect.pc - sect.base;
-            *_sect_base++ = static_cast<unsigned char *>(std::memcpy(base +
-               (unsigned)(pc = pc + sect.align - 1 & -sect.align), sect.base, (unsigned)size)), pc += size;
+            *_sect_base++ = static_cast<unsigned char *>(_memcpy(base + (unsigned)(pc = pc + sect.align - 1 & -sect.align), sect.base, size)), pc += size;
          }
       }
    }();
@@ -139,7 +132,7 @@ void rsn::objcode::segm::_alloc(int size) {
       int prefault_size;
       auto size_p2 = std::numeric_limits<unsigned>::digits - __builtin_clz(std::max(size, 1 << min_size_p2) - 1);
       static_assert(min_size_p2 < page_size_p2);
-      RSN_IF_WITH_MT([&](auto) RSN_INLINE){
+      RSN_IF_WITH_MT([&](auto)RSN_INLINE ){
          if (RSN_UNLIKELY(total_used + size > max_total_used))
             throw std::bad_alloc{};
          if (RSN_LIKELY(free[size_p2 - min_size_p2])) { // fast path
@@ -171,7 +164,7 @@ void rsn::objcode::segm::_alloc(int size) {
       static_assert(threshold_2_p2 >= page_size_p2);
       int prefault_size;
       auto size_p2 = std::numeric_limits<unsigned>::digits - __builtin_clz(size - 1);
-      RSN_IF_WITH_MT([&](auto) RSN_INLINE){
+      RSN_IF_WITH_MT([&](auto)RSN_INLINE ){
          if (RSN_UNLIKELY(total_used + size > max_total_used))
             throw std::bad_alloc{};
          if (RSN_LIKELY(free[size_p2 - min_size_p2])) { // fast path
@@ -191,7 +184,7 @@ void rsn::objcode::segm::_alloc(int size) {
       # else
          # error "Either __linux__ or __FreeBSD__ is required"
       # endif
-   } else RSN_IF_WITH_MT([&](auto) RSN_INLINE){
+   } else RSN_IF_WITH_MT([&](auto)RSN_INLINE ){
       if ( RSN_UNLIKELY(total_used + size > max_total_used) ||
            RSN_UNLIKELY(total_phys + (size + (1 << page_size_p2) - 1 & -(1 << page_size_p2)) > max_total_phys) ) throw std::bad_alloc{};
    # if __linux__
@@ -239,33 +232,3 @@ void rsn::objcode::segm::_free() noexcept {
 long
    rsn::objcode::segm::max_total_used = 256/*MiB*/ << 10 << 10,
    rsn::objcode::segm::max_total_phys = 768/*MiB*/ << 10 << 10;
-
-
-static void f() {
-   std::puts("Hi");
-}
-
-int main() {
-   rsn::objcode oc;
-   auto l0 = oc.label(), l1 = oc.label();
-
-   auto ts0 = oc.text(); ts0.reserve(128);
-   ts0
-   .align(16,10)
-   .sl(0x4883EC'08)            // subq $8, %rsp
-   .sw(0x48B8).q(f).sw(0xFFD0) // movabsq f, %rax; call *%rax
-   .sl(0x4883C408)             // addq $8, %rsp
-   .b(0xE9).rl(l0)             // jmp l0
-   ;
-   auto ts1 = oc.text().reserve(128);
-   ts1
-   .align(16, 10).label(l0)
-   .b(0xB9).l(1'000'000'000)       // movl $1000000000, %ecx
-   .align(16, 10).label(l1)
-   .sw(0x83E9).b(1).b(0x75).rb(l1) // subl $1, %ecx; jnz l1
-   .b(0xB8).l(123).b(0xC3)         // movl $123, %eax; ret
-   ;
-
-   std::printf("%d\n", static_cast<int (*)()>(oc.load())());
-   return 0;
-}
