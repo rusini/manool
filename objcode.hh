@@ -1,5 +1,5 @@
-// objcode.hh -- run-time "assembler" for building up object code (kind of relocatable machine code, which is emitted
-// by a JIT compiler code generator) and eventually loading it into target address as executable segment
+// objcode.hh -- run-time "assembler" for building up object code (kind of relocatable machine code), which is emitted
+// by a JIT compiler code generator, and eventually loading it into target address as executable segment
 
 /*    Copyright (C) 2021 Alexey Protasov (AKA Alex or rusini)
 
@@ -34,7 +34,7 @@ namespace rsn {
          unsigned char *pc = {};         // section program-counter for code/data emission
          const unsigned char *base = {}; // start of buffer
          int res = 0, alloc = 0;         // requested and actual buffer size, in bytes (not exceeding 1 << max_segm_size_p2)
-         int align = 1;                  // alignment requirements accumulated so far, some power of 2 in bytes (not exceeding 1 << cacheline_size_p2)
+         int align = 1;                  // alignment requirements accumulated so far, a power of two in bytes (not exceeding 1 << cacheline_size_p2)
          const bool is_rodata;           // whether the section contains text (code) or read-only data
       public: // standard operations and construction
          RSN_INLINE _sect(_sect &&rhs) noexcept // only ~_sect() is applicable afterwards
@@ -42,7 +42,7 @@ namespace rsn {
          RSN_INLINE ~_sect()
             { if (RSN_UNLIKELY(base)) std::free(const_cast<unsigned char *>(base)); } // own fast/slow path split
       public:
-         RSN_INLINE constexpr _sect(bool is_rodata) noexcept: is_rodata(is_rodata) {}
+         RSN_INLINE explicit constexpr _sect(decltype(is_rodata) is_rodata) noexcept: is_rodata(is_rodata) {}
       public: // opaque ID of a section in context of a specific (assumed) instance of objcode
          class id { // (this lacks an explicit reference to that instance to fully identify a section)
             friend objcode;

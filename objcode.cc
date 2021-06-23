@@ -1,5 +1,5 @@
-// objcode.cc -- run-time "assembler" for building up object code (kind of relocatable machine code, which is emitted
-// by a JIT compiler code generator) and eventually loading it into target address as executable segment
+// objcode.cc -- run-time "assembler" for building up object code (kind of relocatable machine code), which is emitted
+// by a JIT compiler code generator, and eventually loading it into target address as executable segment
 
 /*    Copyright (C) 2021 Alexey Protasov (AKA Alex or rusini)
 
