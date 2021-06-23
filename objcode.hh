@@ -202,10 +202,10 @@ namespace rsn {
          template<typename Type> RSN_INLINE explicit operator Type *() const noexcept { return reinterpret_cast<Type *>(_base); }
          RSN_INLINE auto size() const noexcept { return _base ? _size : 0 /*branchless*/; }
       public: // miscellaneous operations
-         RSN_INLINE segm(const objcode &rhs): segm(rhs.size()) { rhs.load((unsigned char *)*this); }
-         RSN_INLINE explicit segm(const segm &rhs): segm(rhs.size()) { _memcpy((void *)*this, (const void *)rhs, size()); }
+         RSN_INLINE segm(const objcode &rhs): segm(rhs.size()) { rhs.load(static_cast<unsigned char *>(*this)); }
+         RSN_INLINE explicit segm(const segm &rhs): segm(rhs.size()) { _memcpy(static_cast<void *>(*this), static_cast<const void *>(rhs), size()); }
       private: // internal representation
-         unsigned char *_base; int _size; // TODO: make _base void *
+         unsigned char *_base; int _size;
       private: // internal helper stuff
          void _alloc(int), _free() noexcept;
       };
