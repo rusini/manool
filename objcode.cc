@@ -108,10 +108,10 @@ void rsn::objcode::segm::_alloc(int size) {
    static_assert(min_size_p2 >= cacheline_size_p2);
    if (RSN_UNLIKELY(size > 1u << max_segm_size_p2)) // redundant sanity check "not above nor negative"
       throw std::bad_alloc{};
-   static constexpr auto mmap = [](int size) RSN_INLINE{
+   static constexpr auto mmap = [](int size)RSN_INLINE {
       static unsigned char *mmap_base;
       static int mmap_size;
-      if (RSN_UNLIKELY(size > mmap_size)) [](int size) RSN_NOINLINE{
+      if (RSN_UNLIKELY(size > mmap_size)) [](int size)RSN_NOINLINE {
          static int munmap_size;
          if (RSN_UNLIKELY(mmap_size)) ::munmap(mmap_base, munmap_size = mmap_size);
          static constexpr auto mmap_delta = sizeof(void *) == 8 ? 12/*MiB*/ << 10 << 10 : sizeof(void *) == 4 ? 192/*KiB*/ << 10 : 0;

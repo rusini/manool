@@ -121,8 +121,16 @@ namespace rsn {
          RSN_INLINE auto sl(decltype(x86long::_) val) const noexcept { return l(__builtin_bswap32(val)); }
          RSN_INLINE auto sq(decltype(x86quad::_) val) const noexcept { return q(__builtin_bswap64(val)); }
          // misc convenience helpers for the above
-         template<typename Type> RSN_INLINE auto l(Type *val) const noexcept { return l(reinterpret_cast<unsigned long>(val)); } // for 32-bit code models
-         template<typename Type> RSN_INLINE auto q(Type *val) const noexcept { return q(reinterpret_cast<unsigned long>(val)); } // for 64-bit code models
+         template<typename Type> RSN_INLINE auto l(Type *val) const noexcept { // for 32-bit code models
+            return l(reinterpret_cast<unsigned long>(val));
+         }
+         template<typename Type> RSN_INLINE auto q(Type *val) const noexcept { // for 64-bit code models
+            return q(reinterpret_cast<unsigned long>(val));
+         }
+         RSN_INLINE auto b(const char *str, int size = -1) const noexcept {
+            assert(size >= 0 && size <= 1 << max_segm_size_p2 || size == -1 && std::strlen(str) <= 1 << max_segm_size_p2);
+            while (size && (b(*str), *str)) ++str, --size;
+         }
       public:
          // symbolic and relative addresses
          RSN_INLINE auto q (const label &label, decltype(x86quad::_) offset = 0) const { // for 64-bit code models
@@ -197,7 +205,7 @@ namespace rsn {
          RSN_INLINE segm(const objcode &rhs): segm(rhs.size()) { rhs.load((unsigned char *)*this); }
          RSN_INLINE explicit segm(const segm &rhs): segm(rhs.size()) { _memcpy((void *)*this, (const void *)rhs, size()); }
       private: // internal representation
-         unsigned char *_base; int _size;
+         unsigned char *_base; int _size; // TODO: make _base void *
       private: // internal helper stuff
          void _alloc(int), _free() noexcept;
       };
