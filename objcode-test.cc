@@ -22,35 +22,33 @@ int main() {
 
       auto l0 = oc.label();
       // loop begin
-      ts .sw(0x89FB)           // movl %edi, %ebx
-         .align(16).label(l0);
-
-      auto l1 = oc.label(), l2 = oc.label();
-      ts .b(0x4C).sw(0x89F8) .sw(0x31D2) .b(0xB9).l(13) .b(0x48).sw(0xF7F1) // movq %r15, %rax; xorl %edx, %edx; movl $13, %ecx; divq %rcx
-         .b(0x48).sw(0x09D2) .sw(0x0F84).rl(l1);                            // orq %rdx, %rdx; jz.d32 l1
-      // auxiliary text section begin
-      ts.owner.text().reserve(64) .label(l1)
-         .b(0x48).sw(0x8D3D).rl(ds.reserve(16).align(2).label()) // leaq str_1(%rip), %rdi
-         .b(0x4C).sw(0x89FE)                                     // movq %r15, %rsi
-         .sw(0x48B8).q(::printf) .sw(0xFFD0)                     // movabsq $printf, %rax; call *%rax
-         .b(0x41).sw(0x83C4).b(1)                                // addl $1, %r12d
-         .b(0xE9).rl(l2);                                        // jmp.d32 l2
-      ds.b("x = %llu\n");
-      // auxiliary text section end
-      ts .align(16, 10).label(l2)
-         .sl(0x4B8D043E) .b(0x4D).sw(0x89FE) .b(0x49).sw(0x89C7); // leaq (%r14,%r15), %rax; movq %r15, %r14; movq %rax, %r15
+      ts .sw(0x89FB)               // movl %edi, %ebx
+         .align(16, 10).label(l0);
 
       // another piece for the main text section
       ts .reserve(64);
-      auto l3 = oc.label();
-      // spin loop begin
-      ts .b(0xB9).l(50'000'000)            // movl $50*1000*1000, %ecx
-         .align(16).label(l3)
-         .b(0x90)                          // nop
-         .sw(0x83E9).b(1) .b(0x75).rb(l3); // subl $1, %ecx; jnz.d8 l3
-      // spin loop end
-
-      // first piece continues here
+      auto l1 = oc.label();
+      ts .b(0x4C).sw(0x89F8) .sw(0x31D2) .b(0xB9).l(13) .b(0x48).sw(0xF7F1) // movq %r15, %rax; xorl %edx, %edx; movl $13, %ecx; divq %rcx
+         .b(0x48).sw(0x09D2) .sw(0x0F84).rl(l1);                            // orq %rdx, %rdx; jz.d32 l1
+      // auxiliary text section begin
+      auto l2 = oc.label(), l_str = ds.label();
+      ts.owner.text().reserve(64) .align(16).label(l1)
+         .b(0x48).sw(0x8D3D).rl(l_str)                 // leaq l_str(%rip), %rdi
+         .b(0x4C).sw(0x89FE)                           // movq %r15, %rsi
+         .sw(0x48B8).q(::printf) .sw(0xFFD0)           // movabsq $printf, %rax; call *%rax
+         .b(0x41).sw(0x83C4).b(1)                      // addl $1, %r12d
+         // spin loop begin
+         .b(0xB9).l(1'000'000'000)                     // movl $1*1000*1000*1000, %ecx
+         .align(16, 6).label(l2)
+         .b(0x90)                                      // nop
+         .sw(0x83E9).b(1) .b(0x75).rb(l2)              // subl $1, %ecx; jnz.d8 l2
+         // spin loop end
+         .b(0xE9).rl(ts.align(16, 10).label());        // jmp.d32 0f
+      ds .reserve(16) .label(l_str).b("x = %llu\n");
+      // auxiliary text section end
+      ts                                                          // 0:
+         .sl(0x4B8D043E) .b(0x4D).sw(0x89FE) .b(0x49).sw(0x89C7); // leaq (%r14,%r15), %rax; movq %r15, %r14; movq %rax, %r15
+      // first piece continues here again
 
       ts .sw(0x83EB).b(1) .sw(0x0F85).rl(l0); // subl $1, %ebx; jnz.d32 l0
       // loop end
