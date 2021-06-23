@@ -225,12 +225,11 @@ namespace rsn {
       std::vector<_label>       _labels;
    private: // internal helper stuff
       static constexpr auto
-         cacheline_size_p2 =  6 /*64 B*/,                 // for CPU L#I/L#D caches (64 B for x86/x86-64 CPUs and many others)
-         page_size_p2      = 12 /*4 KiB*/,                // for MMU paging (4 KiB for x86/x86-64 CPUs and many others)
-         max_segm_size_p2  = page_size_p2 + 18 /*1 GiB*/; // maximum size of an executable segment
-         /* max_segm_size_p2 maxval is half of positive space of int numbers
-            (good for x86/x86-64 ISAs but ought to be much lower for RISC ISAs) */
-      static_assert(max_segm_size_p2 < std::numeric_limits<int>::digits);
+         cacheline_size_p2 =  6 /*64 B*/,  // for CPU L#I/L#D caches (64 B for x86/x86-64 CPUs and many others)
+         page_size_p2      = 12 /*4 KiB*/; // for MMU paging (4 KiB for x86/x86-64 CPUs and many others)
+      static constexpr auto // maximum size of an executable segment (ought to be as low as 1 MiB for aarch64 ISA)
+         max_segm_size_p2  = sizeof(void *) == 8 ? 30 /*1 GiB*/ : 24 /*16 MiB*/;
+      static_assert(max_segm_size_p2 >= 0 && max_segm_size_p2 < std::numeric_limits<int>::digits);
    private:
       RSN_INLINE static void *_memcpy(void *lhs, const void *rhs, int size) { if (RSN_UNLIKELY(size)) std::memcpy(lhs, rhs, (unsigned)size); return lhs; }
    };
