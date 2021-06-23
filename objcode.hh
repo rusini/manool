@@ -121,9 +121,9 @@ namespace rsn {
          RSN_INLINE auto sl(decltype(x86long::_) val) const noexcept { return l(__builtin_bswap32(val)); }
          RSN_INLINE auto sq(decltype(x86quad::_) val) const noexcept { return q(__builtin_bswap64(val)); }
          // misc convenience helpers for the above
-         RSN_INLINE auto b(const char val[], int size) const noexcept { for (int _ = 0; _ < size; ++_) b(*val++); return *this; } // strings
-         template<typename Type> RSN_INLINE auto l(Type *val) const noexcept { return l(reinterpret_cast<unsigned long>(val)); }  // for 32-bit code models
-         template<typename Type> RSN_INLINE auto q(Type *val) const noexcept { return q(reinterpret_cast<unsigned long>(val)); }  // for 64-bit code models
+         template<typename Type> RSN_INLINE auto l(Type *val) const noexcept { return l(reinterpret_cast<unsigned long>(val)); } // for 32-bit code models
+         template<typename Type> RSN_INLINE auto q(Type *val) const noexcept { return q(reinterpret_cast<unsigned long>(val)); } // for 64-bit code models
+         template<int Size> RSN_INLINE auto b(const char (&val)[Size]) const noexcept { for (int _ = 0; _ < Size; ++_) b(val[_]); return *this; }
       public:
          // symbolic and relative addresses
          RSN_INLINE auto q (const label &label, decltype(x86quad::_) offset = 0) const { // for 64-bit code models
