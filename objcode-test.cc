@@ -44,7 +44,7 @@ int main() {
          .sw(0x83E9).b(1) .b(0x75).rb(l2)              // subl $1, %ecx; jnz.d8 l2
          // spin loop end
          .b(0xE9).rl(ts.align(16, 10).label());        // jmp.d32 0f
-      ds .reserve(16) .label(l_str).b("x = %llu\n");
+      ds .reserve(16) .label(l_str).b("x = %llu\n"); // a piece for rodata section
       // auxiliary text section end
       ts                                                          // 0:
          .sl(0x4B8D043E) .b(0x4D).sw(0x89FE) .b(0x49).sw(0x89C7); // leaq (%r14,%r15), %rax; movq %r15, %r14; movq %rax, %r15
