@@ -108,29 +108,22 @@ namespace rsn {
             return *this;
          }
       public: // appending section contents (specific to x86 and x86-64 ISAs)
-         RSN_INLINE auto b(decltype(x86byte::_) val = {}) const noexcept
+         RSN_INLINE auto b(decltype(x86byte::_) val) const noexcept
             { assert(size() + sizeof(x86byte) <= reserved()); ((x86byte *)owner._sects[sn].pc)->_ = val, owner._sects[sn].pc += sizeof(x86byte); return *this; }
-         RSN_INLINE auto w(decltype(x86word::_) val = {}) const noexcept
+         RSN_INLINE auto w(decltype(x86word::_) val) const noexcept
             { assert(size() + sizeof(x86word) <= reserved()); ((x86word *)owner._sects[sn].pc)->_ = val, owner._sects[sn].pc += sizeof(x86word); return *this; }
-         RSN_INLINE auto l(decltype(x86long::_) val = {}) const noexcept
+         RSN_INLINE auto l(decltype(x86long::_) val) const noexcept
             { assert(size() + sizeof(x86long) <= reserved()); ((x86long *)owner._sects[sn].pc)->_ = val, owner._sects[sn].pc += sizeof(x86long); return *this; }
-         RSN_INLINE auto q(decltype(x86quad::_) val = {}) const noexcept
+         RSN_INLINE auto q(decltype(x86quad::_) val) const noexcept
             { assert(size() + sizeof(x86quad) <= reserved()); ((x86quad *)owner._sects[sn].pc)->_ = val, owner._sects[sn].pc += sizeof(x86quad); return *this; }
          // sometimes it's convenient to store in BE format (for instruction encoding)
          RSN_INLINE auto sw(decltype(x86word::_) val) const noexcept { return w(__builtin_bswap16(val)); }
          RSN_INLINE auto sl(decltype(x86long::_) val) const noexcept { return l(__builtin_bswap32(val)); }
          RSN_INLINE auto sq(decltype(x86quad::_) val) const noexcept { return q(__builtin_bswap64(val)); }
          // misc convenience helpers for the above
-         template<typename Type> RSN_INLINE auto l(Type *val) const noexcept { // for 32-bit code models
-            return l(reinterpret_cast<unsigned long>(val));
-         }
-         template<typename Type> RSN_INLINE auto q(Type *val) const noexcept { // for 64-bit code models
-            return q(reinterpret_cast<unsigned long>(val));
-         }
-         RSN_INLINE auto b(const char *str, int size = -1) const noexcept {
-            assert(size >= 0 && size <= 1 << max_segm_size_p2 || size == -1 && std::strlen(str) <= 1 << max_segm_size_p2);
-            while (size && (b(*str), *str)) ++str, --size;
-         }
+         RSN_INLINE auto b(const char val[], int size) const noexcept { for (int _ = 0; _ < size; ++_) b(*val++); return *this; } // strings
+         template<typename Type> RSN_INLINE auto l(Type *val) const noexcept { return l(reinterpret_cast<unsigned long>(val)); }  // for 32-bit code models
+         template<typename Type> RSN_INLINE auto q(Type *val) const noexcept { return q(reinterpret_cast<unsigned long>(val)); }  // for 64-bit code models
       public:
          // symbolic and relative addresses
          RSN_INLINE auto q (const label &label, decltype(x86quad::_) offset = 0) const { // for 64-bit code models
