@@ -58,6 +58,6 @@ int main() {
          .sl(0x4883C4'08) .b(0xC3);                   // addq $8, %rsp; ret
    }
 
-   std::printf("Found %d solutions\n", static_cast<int (*)(int)>(oc.load())(98));
+   std::printf("Found %d solutions\n", static_cast<int (*)(int)>(oc.load())(78));
    return 0;
 }
