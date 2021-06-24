@@ -46,7 +46,7 @@ namespace rsn {
             { if (RSN_UNLIKELY(base)) std::free(const_cast<unsigned char *>(base)); } // own fast/slow path split
       public:
          RSN_INLINE explicit constexpr _sect(decltype(is_rodata) is_rodata) noexcept: is_rodata(is_rodata) {} // non-aggregate
-      public: // opaque, pointer-alike ID of a section in context of a specific (assumed) instance of objcode
+      public: // opaque, first-class ID of a section in context of a specific (assumed) instance of objcode
          class id { // (this lacks an explicit reference to that instance to fully identify a section)
             friend objcode;
             int sn;
@@ -65,7 +65,7 @@ namespace rsn {
       class _label {
       public:
          int sect/*s/n*/, offset;
-      public: // opaque, pointer-alike ID of a label in context of a specific (assumed) instance of objcode
+      public: // opaque, first-class ID of a label in context of a specific (assumed) instance of objcode
          class id { // (this lacks an explicit reference to that instance to fully identify a label)
             friend objcode;
             int sn;
