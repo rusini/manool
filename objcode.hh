@@ -82,15 +82,15 @@ namespace rsn {
       struct RSN_PACK x86quad { unsigned long long _; };
    public:
       // Symbolic Addresses ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-      class label: public _label::id { // fully identifies a label (reference-alike)
+      class label: public _label::id { // fully identifies a label
       public:
-         objcode &owner;
+         objcode &owner; // makes the whole containing class non-assignable (reference-alike)
          RSN_INLINE constexpr label(decltype(owner) owner, id _) noexcept: owner(owner), id(_) {}
       };
       // Program Text and (RO)Data Sections ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-      class sect/*ion*/: public _sect::id { // fully identifies a section (reference-alike)
+      class sect/*ion*/: public _sect::id { // fully identifies a section
       public:
-         objcode &owner;
+         objcode &owner; // makes the whole containing class non-assignable (reference-alike)
          RSN_INLINE constexpr sect(decltype(owner) owner, id _) noexcept: owner(owner), id(_) {}
       public: // assembly memory allocation
          RSN_INLINE auto reserve(int size) const {
