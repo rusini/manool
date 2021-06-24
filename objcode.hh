@@ -84,13 +84,13 @@ namespace rsn {
       // Symbolic Addresses ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       class label: public _label::id { // fully identifies a label
       public:
-         objcode &owner; // makes the whole containing class non-assignable (reference-alike)
+         objcode &owner; // makes the whole containing class non-assignable (that is, reference-alike itself), which is tolerable (otherwise, ID could be used instead)
          RSN_INLINE constexpr label(decltype(owner) owner, id _) noexcept: owner(owner), id(_) {}
       };
       // Program Text and (RO)Data Sections ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       class sect/*ion*/: public _sect::id { // fully identifies a section
       public:
-         objcode &owner; // makes the whole containing class non-assignable (reference-alike)
+         objcode &owner; // makes the whole containing class non-assignable (that is, reference-alike itself), which is tolerable (otherwise, ID could be used instead)
          RSN_INLINE constexpr sect(decltype(owner) owner, id _) noexcept: owner(owner), id(_) {}
       public: // assembly memory allocation
          RSN_INLINE auto reserve(int size) const {
