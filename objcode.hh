@@ -40,7 +40,7 @@ namespace rsn {
          int align = 1;                  // alignment requirements accumulated so far, a power of two in bytes (not exceeding 1 << cacheline_size_p2)
          const bool is_rodata;           // whether the section contains text (code) or read-only data
       public: // standard operations and construction
-         RSN_INLINE _sect(_sect &&rhs) noexcept // only move-constructible - only ~_sect() is applicable afterwards
+         RSN_INLINE _sect(_sect &&rhs) noexcept // only move-constructible - only ~_sect() is applicable after moving out
             : pc(rhs.pc), base(rhs.base), res(rhs.res), alloc(rhs.alloc), align(rhs.align), is_rodata(rhs.is_rodata) { rhs.base = {}; }
          RSN_INLINE ~_sect()
             { if (RSN_UNLIKELY(base)) std::free(const_cast<unsigned char *>(base)); } // own fast/slow path split
