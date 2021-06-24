@@ -92,11 +92,11 @@ void rsn::objcode::load(unsigned char *RSN_RESTRICT base) const {
 }
 
 namespace rsn {
+   constexpr auto
+      min_size_p2    = 1 + 6      /*128 B - two cache lines       */,
+      threshold_1_p2 = 1 + 2 + 10 /*  8 KiB - up to ~14x overhead */, // if size is above, use ::madvise to release unneeded physical storage
+      threshold_2_p2 = 8 + 10     /*256 KiB - up to ~16 Ki mmaps  */; // if size is above, delegate to ::mmap/::munmap directly
    namespace {
-      static constexpr auto
-         min_size_p2    = 1 + 6      /*128 B - two cache lines       */,
-         threshold_1_p2 = 1 + 2 + 10 /*  8 KiB - up to ~14x overhead */, // if size is above, use ::madvise to release unneeded physical storage
-         threshold_2_p2 = 8 + 10     /*256 KiB - up to ~16 Ki mmaps  */; // if size is above, delegate to ::mmap/::munmap directly
       unsigned char *free[threshold_2_p2 - min_size_p2 + 1];
       struct free { unsigned char *next; };
       long total_used, total_phys;
