@@ -11,7 +11,7 @@ excerpt: The Programming Language MANOOL
 MANOOL is a general-purpose language suitable for diverse programming tasks from several problem domains. However, it has substantial bias toward so-called
 scripting languages and hopefully represents an evolutionary step over existing scripting languages. Thus, MANOOL should be compared to and has nearly the same
 purpose as Python, Ruby, PHP, Scheme, JavaScript, or Lua, which implies properties typical for such languages, e.g.: short edit-compile-test development cycle
-(at least for code bases under 1 MLOC) and run-time type checking.
+(at least for code bases under 1 MLOCs) and run-time type checking.
 
 More than with anything else, MANOOL is compatible with the basic, C/C++, run-time environment and is implemented itself in C++, which allows for easier
 integration of programs with many existing libraries and native APIs (which is the case for some scripting languages and not for another). Although MANOOL has a
@@ -76,14 +76,15 @@ In addition to the above, MANOOL provides a combination of the following feature
 
 * High contruct orthogonality allowing for more liberal feature combination in creative and even unforeseen ways. For example, modular system...
 
-#### What does it give to potential project maintainers and/or contributors?
+#### What does it offer to potential project maintainers and contributors?
 
-Since MANOOL is a personal, solo-developer project, its implementation ought to have a fairly simple, highly streamlined, and modular implementation based on
-pretty straightforward algorithms (from the computer science and language/compiler theory point of view). For instance, compare the implementation size: whereas
-MANOOL has less than 20 KLOC, a typical Python interpreter relies on more than 100 KLOC. This does not necessarily mean that the current MANOOL
-implementation is cheap but rather that an extra development effort can be dedicated to ensuring high implementation quality and reliability. This also implies
-lower project entry requirements, inviting more people to contribute to the development. I even argue that such language implementations can be also more
-suitable for educational purposes than larger (and often full of legacy stuff) implementations.
+Since MANOOL is a personal, solo-developer project with severely limited resources, it almost inevitably has to use a straightforward, streamlined, and modular
+implementation, which is based on simple algorithms and data-structures from the compiler theory standpoint. Let's take, for instance, the implementation size;
+the MANOOL translator is written in under 10 KLOCs, whereas the most widely used Python interpreter relies on at least 100 KLOCs.
+
+This does not necessarily mean that the MANOOL implementation is cheap or otherwise low-grade but rather that extra development efforts can be committed to
+ensuring high implementation quality and reliability. This also implies lower project entry requirements, encouraging more people to contribute to the
+development. I even argue that such compact code bases are also more suitable for educational purposes (than larger ones, which are often full of legacy stuff).
 
 #### Are there any plans for future development?
 
@@ -93,7 +94,7 @@ and LuaJIT) but only at a fraction of their complexity.
 
 #### Give me a quick example of what code in MANOOL looks like
 
-In the second version of the language a "Hello World" program might look like
+A "Hello World" program might look like (in the second version of the language)
 
     ((extern "manool.org.18/std/1.0/all") in Out.WriteLine["Hello, world!"])
 
