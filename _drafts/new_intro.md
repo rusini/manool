@@ -38,7 +38,9 @@ speed sooner or later broadens the domain area of a programming language and/or 
 
 #### Why should we, practicing software engineers, learn your language?
 
-In addition to the above, MANOOL provides a combination of the following features. Pick one or more of them that apply in your case:
+Like any other programming language, MANOOL provides a unique blend of features, some of which might make sense for you and some might be irrelevant. I do not
+intend to list all of them here. Instead, I suggest to pick one or more of the most uncommon and distinctive features and even paradigms MANOOL support (in
+comparison to existing mainstream languages) that you should experiment with and maybe integrate into your next project:
 
 * Extensible (and homoiconic) architecture in the spirit of Lisp-family languages but without most of peculiarities and practical difficulties of
   S-expressions
@@ -79,12 +81,12 @@ In addition to the above, MANOOL provides a combination of the following feature
 #### What does it offer to potential project maintainers and contributors?
 
 Since MANOOL is a personal, solo-developer project with severely limited resources, it almost inevitably has to use a straightforward, streamlined, and modular
-implementation, which is based on simple algorithms and data-structures from the compiler theory standpoint. Let's take, for instance, the implementation size;
-the MANOOL translator is written in under 10 KLOCs, whereas the most widely used Python interpreter relies on at least 100 KLOCs.
+implementation, which is based on simple algorithms and data-structures (from the compiler theory standpoint). Let's take, for instance, the implementation
+size; the MANOOL translator is written in under 10 KLOCs, whereas the most widely used Python interpreter relies on at least 100 KLOCs.
 
 This does not necessarily mean that the MANOOL implementation is cheap or otherwise low-grade but rather that extra development efforts can be committed to
 ensuring high implementation quality and reliability. This also implies lower project entry requirements, encouraging more people to contribute to the
-development. I even argue that such compact code bases are also more suitable for educational purposes (than larger ones, which are often full of legacy stuff).
+development. Besides, such compact code bases are more suitable for educational purposes (than larger ones, which are often full of legacy stuff).
 
 #### Are there any plans for future development?
 
@@ -110,6 +112,10 @@ And in the following sample program a recursive factorial function is defined an
 ---
 ---
 ---
+
+
+In addition to the above, MANOOL provides a combination of the following features. Pick one or more of them that apply in your case:
+
 
 
 More that with anythig else, MANOOL is compatible with the basic, C/C++, run-time environment and is implemented itself in C++, which allows for easier
