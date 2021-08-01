@@ -38,14 +38,27 @@ speed sooner or later broadens the domain area of a programming language and/or 
 
 #### Why should we, practicing software engineers, learn your language?
 
-Like any other programming language, MANOOL provides a unique blend of features, some of which might make sense for you and some might be irrelevant. I do not
-intend to list all of them here. Instead, I suggest to pick one or more of the most uncommon and distinctive features and even paradigms MANOOL support (in
-comparison to existing mainstream languages) that you should experiment with and maybe integrate into your next project:
+Like any other language, MANOOL provides a unique blend of features, some of which may make sense for you and some may be irrelevant. I do not intend to list
+all of them here. Instead, I suggest to pick one or more of the most uncommon and distinctive approaches and paradigms (in respect of existing mainstream
+languages) that you should experiment with and maybe make a workhorse for your next project:
 
 * Extensible (and homoiconic) architecture in the spirit of Lisp-family languages but without most of peculiarities and practical difficulties of
-  S-expressions
+  classic S-expressions (actually no blame is intended here)
    
   An extremely small language core with very few built-in features allows for higher extensibility and definition of many useful DSLs on top of core MANOOL.
+
+      ( (extern "manool.org.18/std/1.0/all") in
+      : let ( do = (macro
+          : proc (F) as
+          : if (Size[F] == 4) & (F[2] == unless') then
+              (array of if# (array of (~)# F[3]) then' F[1])
+            else
+              (array of do#) + F[Range[1; Size[F]]]) )
+        in
+          (do Out.WriteLine["Success"] unless False)
+          (do Out.WriteLine["Failure"] unless True) )
+
+
 
 * As it is the case for languages like SETL or Python, a large number of high-level composite data types, like sets, mappings (dictionaries), arrays, and
   sequences provides a handful and reasonable (performance-wise) choice of built-in data structures to deal with composite data. Example: ...
