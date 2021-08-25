@@ -8,33 +8,46 @@ excerpt: The Programming Language MANOOL
 
 #### What is the purpose of MANOOL?
 
-MANOOL is a general-purpose language suitable for diverse programming tasks from several problem domains. However, it has substantial bias toward so-called
-scripting languages and hopefully represents an evolutionary step over existing scripting languages. Thus, MANOOL should be compared to and has nearly the same
-purpose as Python, Ruby, PHP, Scheme, JavaScript, or Lua, which implies properties typical for such languages, e.g.: short edit-compile-test development cycle
-(at least for code bases under 1 MLOCs) and run-time type checking.
-
-More than with anything else, MANOOL is compatible with the basic, C/C++, run-time environment and is implemented itself in C++, which allows for easier
-integration of programs with many existing libraries and native APIs (which is the case for some scripting languages and not for another). Although MANOOL has a
-high-level dynamic semantics, which normally means quite low run-time performance, the goal for the upcoming version of the language and its translator is to
-achieve the performance only marginally below that of the most sophisticated, high-end dynamic-language engines in the market (such as V8 and LuaJIT).
+MANOOL is a general-purpose language suitable for diverse programming tasks from several problem domains. However, it has substantial bias toward scripting and
+hopefully represents an evolutionary step over existing scripting languages. Thus, MANOOL should be compared to and has nearly the same purpose as Python, Ruby,
+PHP, Scheme, JavaScript, or Lua, which implies properties typical for such languages, e.g.: short edit-compile-test development cycle (at least for code bases
+under 1 MLOCs) and run-time type checking.
 
 #### What real-world problems does your project solve?
 
 MANOOL is intentionally designed in such way that it represents a specific point on a continuum; on one side of this continuum are high-level languages designed
 with the programmer's convenience and productivity in mind, and on the other side are languages designed with execution speed and/or solution scalability in
 mind (whereas, as a matter of fact, software quality and reliability may be correlated with either of those extremes, depending on the situation). Based on my
-past programming experience, I argue that no existing mainstream language addresses both goals in a balanced way. As a result, programs are either more
-expensive in development than they should be or do not scale with workload as needed.
+past programming experience, I argue that no existing mainstream language addresses both goals simultaneously in a balanced way. As a result, programs are
+either more expensive in development than they should be or do not scale with workload as needed.
 
-Think, for instance, about the number of users and their contributions on a simple
-social media Web site. Working as a server infrastructure administrator, on a number of occasions I saw real scalability issues due to backend software
-architecture design flaws, including the choice of programming language and/or its implementation.
+Think, for instance, about the number of registered users and their contributions on an in-house social-network Web-site. Working as a server infrastructure
+administrator, on a number of occasions I saw severe scalability issues to pop up suddenly after a year of production use due to flaws in backend software
+architecture, including the choice of programming language and/or its implementation.
 
 As a more detailed illustration, using a primarily statically-typed language where composite values like arrays or structures are gratuitously shared between
-several points or components in the program in form of mutable objects (which is typical for languages like Java or C#) places an undue cognitive load on
+several points or components in the program in form of mutable objects (which is typical for languages like Java or C#) is not like we normally think about
+algorithms in mathematical terms and thus places an undue cognitive load on
 programmers for simple backend "scripting". On the other hand, while execution speed is not always relevant (within certain reasonable constraints), developing
-such scripts in typical scripting languages (like Python, Ruby, PHP) turns out to scale poorly with the site workload growth and couting with extra execution
+such scripts in typical scripting languages (like Python, Ruby, PHP) turns out to scale poorly with the site workload growth and counting with extra execution
 speed sooner or later broadens the domain area of a programming language and/or its implementation.
+
+#### OK, but what warrants a whole new language in case of MANOOL?
+
+Starting off with some relatively unpopular language makes little sense for me as a language designer, since I might miss in this case some improvement
+opportunities (whatever it means) while getting almost nothing in return. But why not just extend an existing mainstream language to suite the above stated
+goals instead of creating one from scratch?
+
+Achieving competing and even contradictory goals is hard and may lead to overly complex and difficult to adopt language designs. MANOOL leverages two principles
+in order to deal with this problem, which are currently not observed among mainstream languages:
+
+* open (homoiconic) approach to language architecture (in the same sense as in Lisp but using an alternative to S-expressions and with syntactic macro
+  definitions applying to their own limited scope in the program), and
+* primarily value (non-referential) semantics with copy-on-write policy under the hood and move operations (and this works even for user-defined abstract data
+  types).
+
+These mechanisms require things to work slightly differently on the very basic level, which suggests that introducing a whole new language is more appropriate
+than trying to extend an existing one.
 
 #### Why should we, practicing software engineers, learn your language?
 
@@ -89,23 +102,41 @@ languages) that you should experiment with and maybe make a workhorse for your n
 * Enhanced program reliability. You can, for instance, easily integrate in your program a recovery strategy even after exhaustion of dynamically allocated
   memory (heap).
 
-* High contruct orthogonality allowing for more liberal feature combination in creative and even unforeseen ways. For example, modular system...
+* High construct orthogonality allowing for more liberal feature combination in creative and even unforeseen ways. For example, modular system...
+
+
+
+MANOOL can give you a sense of joy Python programming although with no arbitrary limitations, and at the same time gives you control over resources (objects)
+that represent idealized mathematical values right when and where you need it.
+
+* As it is the case for languages like SETL or Python, a large number of high-level composite data types, like sets, mappings (dictionaries), arrays, and
+  sequences provides a handful and reasonable (performance-wise) choice of built-in data structures to deal with composite data. Example: ...
+
+The principle of MANOOL is to allow the programmer to provide specific hints about what is needed where this is easy and automate tasks where its is harder and
+thus more appropriate. For instance, the programmer is to choose an internal data structure for composite data instead of using more generic or universal
+composite data (like "objects" in JavaScript or "tables" in Lua). At the same time, the MANOOL runtime decides rather transparently when objects are cloned
+(based on reference counting).
 
 #### What does it offer to potential project maintainers and contributors?
 
-Since MANOOL is a personal, solo-developer project with severely limited resources, it almost inevitably has to use a straightforward, streamlined, and modular
-implementation, which is based on simple algorithms and data-structures (from the compiler theory standpoint). Let's take, for instance, the implementation
-size; the MANOOL translator is written in under 10 KLOCs, whereas the most widely used Python interpreter relies on at least 100 KLOCs.
+MANOOL is a personal, solo-developer project with severely limited resources. Thus, to be viable, it almost inevitably has to use a straightforward,
+streamlined, and modular implementation, which is based on simple algorithms and data structures (from the compiler theory standpoint). Let's take, for
+instance, the implementation size -- the MANOOL translator is written in under 10 KLOCs, whereas the most widely used Python interpreter relies on at least 100
+KLOCs.
 
 This does not necessarily mean that the MANOOL implementation is cheap or otherwise low-grade but rather that extra development efforts can be committed to
-ensuring high implementation quality and reliability. This also implies lower project entry requirements, encouraging more people to contribute to the
+ensuring high implementation quality and reliability. This also implies lower project entry requirements, encouraging more people to participate in the
 development. Besides, such compact code bases are more suitable for educational purposes (than larger ones, which are often full of legacy stuff).
 
 #### Are there any plans for future development?
 
 Although MANOOL has a high-level dynamic semantics, which normally means quite low run-time performance, the goal for the upcoming version of the language and
-its translator is to achieve the performance only marginally below that of the most sophisticated, high-end dynamic-language engines in the market (such as V8
-and LuaJIT) but only at a fraction of their complexity.
+its translator is to achieve the one-fold boost of performance, which is going to be only marginally below that of the most sophisticated, high-end
+dynamic-language engines in the market (such as V8 and LuaJIT), but only at a fraction of their complexity.
+
+Another notable change involves using normal parentheses in place of curly braces, mostly in order to appeal more to at least one existing language community
+(Lisp/Scheme), although at the cost to using a more complicated LL(2) surface grammar (after usual transformation by left-recursion elimination) and more
+complicated (but still reasonable) rules for the programmer. This change is actually reflected in code samples in this wrap-up.
 
 #### Give me a quick example of what code in MANOOL looks like
 
@@ -125,6 +156,26 @@ And in the following sample program a recursive factorial function is defined an
 ---
 ---
 ---
+
+achieves the above goals while being based on an open
+(homoiconic) approach to language design. Also, to achieve those goals, MANOOL introduces a non-so-prevalent data model, called non-referential semantics, and
+supports so-called move operations, which suggests that introducing a new language is simpler than trying to extend an existing one.
+
+Achieving contradictory goals is hard and may lead to complex and difficult to adopt designs. MANOOL achieves the above goals while being based on an open
+(homoiconic) approach to language design. Also, to achieve those goals, MANOOL introduces a non-so-prevalent data model, called non-referential semantics, and
+supports so-called move operations, which suggests that introducing a new language is simpler than trying to extend an existing one.
+
+
+
+
+More than with anything else, MANOOL is compatible with the basic, C/C++, run-time environment and is implemented itself in C++, which allows for easier
+integration of programs with many existing libraries and native APIs (which is the case for some scripting languages and not for another). Although MANOOL has a
+high-level dynamic semantics, which normally means quite low run-time performance, the goal for the upcoming version of the language and its translator is to
+achieve the performance only marginally below that of the most sophisticated, high-end dynamic-language engines in the market (such as V8 and LuaJIT).
+
+
+
+
 
 
 In addition to the above, MANOOL provides a combination of the following features. Pick one or more of them that apply in your case:
