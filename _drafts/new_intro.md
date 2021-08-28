@@ -49,24 +49,35 @@ than trying to extend an existing one.
 
 #### Why should I learn MANOOL?
 
-It depends on who is asking. One possible reason is that programming in MANOOL means joy and fun that existing mainstream languages can hardly offer, e.g.:
+It depends on who is asking. One possible reason is that programming in MANOOL means joy and fun that existing mainstream languages can hardly afford.
 
-* Assuming `A = (array of 1 2 3); B = A`, after `A[1] = 0` `B[1]` equals 2. Likewise, after `B[1] = 0` `A[1]` equals 2 (value semantics).
+In brief:
 
-* On the other hand, `A[1] = 0` or `S = S! + "Hi"` may have (amortized) O(1) run-time complexity (move operations).
+* Assuming `A == (array of 1 2 3)`, after `B = A; A[1] = 0`, `B[1] == 2`. Likewise, after `B = A; B[1] = 0`, `A[1] == 2` (value semantics, see above).
 
-* `A[1] = 0` is actually equivalent to `A = A!.Repl[1; 0]` (syntactic sugar).
+* On the other hand, `A[1] = 0` or `S = S! + "Hi"` may have (amortized) O(1) run-time complexity (thanks to move operations).
 
-* You can construct and index into a key-value mapping with sets as keys: after `M = (map of (set of 1 2 3) = 1; (set of 4 5 6) = 2)`, `M[(set of 4 5 6)]`
-  equals 2 (no arbitrary restrictions).
+* `A[1] = 0` is actually equivalent to `A = A!.Repl[1; 0]`, and in other contexts `A[1]` is equivalent to `A.Apply[1]` (unifying syntactic sugar).
 
-* On the other hand, the body of the following loop has amortized constant run-time complexity: `{repeat N do S = S! + "Hi"}` (move operations).
+* You can construct and index into a key-value mapping with sets as keys. After
 
-* There's no arbitrary restrictions on how do you manipulate composite data. For instance, this is how you construct and index into a key-value mapping where
-  the keys are sets: `M = {map of {set of 1 2 3} = 1; {set of 4 5 6} = 2}`, `M[{set of 4 5 6}]` (equals `2`).
+      M = (map of (set of 1 2 3) = 1; (set of 4 5 6) = 2)
+      
+  `M[(set of 4 5 6)] == 2` (no arbitrary restrictions on keys or their type).
 
-* Suppose you find appropriate to use an `unless` construct locally (reminiscent of Perl), which is absent in standard MANOOL, but you are unsure where it is
-  appropriate everywhere. This is how you would define and use it: `(let (unless = (macro: proc (F) as ...)) in ...unless...)`.
+* Use can write the whole program unit in your very own domain-specific language instead of standard MANOOL, just replace `((extern ...) in ...)` (see below)
+  with a reference to your own module.
+
+* On the other hand, macro bindings have limited scope (like any kind of bindings):
+
+      (let (unless = (macro: proc (F) as ...)) in ... (unless ...) ...)
+
+* Modules are introduced by a construct like `(let (...) in: export ...)`, which can be used on a program unit level or bound to a name and become a local
+  module (as in Modula-2). Incidentally, a module can be imported into a limited scope: `(M in ...)`.
+
+* "Overloaded" operators and "methods" behave normal (first-class) procedures (and at the same time they are just symbols):
+
+      (let (Plus = (+)) in ... 1.Plus[1] ... "Hi".Plus["World"] ... Out.Write[Plus] ...)
 
 #### Why should we, practicing software engineers, learn your language?
 
