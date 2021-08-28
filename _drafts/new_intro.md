@@ -9,28 +9,26 @@ excerpt: The Programming Language MANOOL
 #### What is the purpose of MANOOL?
 
 MANOOL is a general-purpose language suitable for diverse programming tasks from several problem domains. However, it has substantial bias toward scripting and
-hopefully represents an evolutionary step over existing scripting languages. Thus, MANOOL should be compared to and has nearly the same purpose as Python, Ruby,
+hopefully represents an evolutionary step over existing scripting languages. Thus, MANOOL should be compared to and can serve the same purpose as Python, Ruby,
 PHP, Scheme, JavaScript, or Lua, which implies properties typical for such languages, e.g.: short edit-compile-test development cycle (at least for code bases
 under 1 MLOCs) and run-time type checking.
 
-#### What real-world problems does your project solve?
+#### What real-world problem does your project solve?
 
 MANOOL is intentionally designed in such way that it represents a specific point on a continuum; on one side of this continuum are high-level languages designed
 with the programmer's convenience and productivity in mind, and on the other side are languages designed with execution speed and/or solution scalability in
-mind (whereas, as a matter of fact, software quality and reliability may be correlated with either of those extremes, depending on the situation). Based on my
-past programming experience, I argue that no existing mainstream language addresses both goals simultaneously in a balanced way. As a result, programs are
-either more expensive in development than they should be or do not scale with workload as needed.
+mind (whereas, as a matter of fact, software quality and reliability may correlate with either of those extremes, depending on the situation). Based on my past
+programming experience, I argue that no existing mainstream language addresses both goals at once in a balanced way. As a result, programs are either more
+expensive in development than they should be or do not scale with workload as needed.
 
 Think, for instance, about the number of registered users and their contributions on an in-house social-network Web-site. Working as a server infrastructure
-administrator, on a number of occasions I saw severe scalability issues to pop up suddenly after a year of production use due to flaws in backend software
+administrator, on multiple occasions I saw serious scalability issues to pop up suddenly after a year of production use due to flaws in backend software
 architecture, including the choice of programming language and/or its implementation.
 
-As a more detailed illustration, using a primarily statically-typed language where composite values like arrays or structures are gratuitously shared between
-several points or components in the program in form of mutable objects (which is typical for languages like Java or C#) is not like we normally think about
-algorithms in mathematical terms and thus places an undue cognitive load on
-programmers for simple backend "scripting". On the other hand, while execution speed is not always relevant (within certain reasonable constraints), developing
-such scripts in typical scripting languages (like Python, Ruby, PHP) turns out to scale poorly with the site workload growth and counting with extra execution
-speed sooner or later broadens the domain area of a programming language and/or its implementation.
+As a more elaborate illustration, using a rigid static type system and gratuitous sharing mutable state in the program (widespread in traditional OOP) is far
+from how many people think about problem solving in terms of basic (immutable) mathematical objects, and thus this places undue cognitive load on developers for
+simple backend scripting. On the other hand, implementing backend algorithms in an average exploratory-programming language (especially in a straightforward
+and/or idiomatic way) often leads to poor run-time performance scalability w.r.t. Web-site workload growth.
 
 #### OK, but what warrants a whole new language in case of MANOOL?
 
@@ -48,6 +46,27 @@ in order to deal with this problem, which are currently not observed among mains
 
 These mechanisms require things to work slightly differently on the very basic level, which suggests that introducing a whole new language is more appropriate
 than trying to extend an existing one.
+
+#### Why should I learn MANOOL?
+
+It depends on who is asking. One possible reason is that programming in MANOOL means joy and fun that existing mainstream languages can hardly offer, e.g.:
+
+* Assuming `A = (array of 1 2 3); B = A`, after `A[1] = 0` `B[1]` equals 2. Likewise, after `B[1] = 0` `A[1]` equals 2 (value semantics).
+
+* On the other hand, `A[1] = 0` or `S = S! + "Hi"` may have (amortized) O(1) run-time complexity (move operations).
+
+* `A[1] = 0` is actually equivalent to `A = A!.Repl[1; 0]` (syntactic sugar).
+
+* You can construct and index into a key-value mapping with sets as keys: after `M = (map of (set of 1 2 3) = 1; (set of 4 5 6) = 2)`, `M[(set of 4 5 6)]`
+  equals 2 (no arbitrary restrictions).
+
+* On the other hand, the body of the following loop has amortized constant run-time complexity: `{repeat N do S = S! + "Hi"}` (move operations).
+
+* There's no arbitrary restrictions on how do you manipulate composite data. For instance, this is how you construct and index into a key-value mapping where
+  the keys are sets: `M = {map of {set of 1 2 3} = 1; {set of 4 5 6} = 2}`, `M[{set of 4 5 6}]` (equals `2`).
+
+* Suppose you find appropriate to use an `unless` construct locally (reminiscent of Perl), which is absent in standard MANOOL, but you are unsure where it is
+  appropriate everywhere. This is how you would define and use it: `(let (unless = (macro: proc (F) as ...)) in ...unless...)`.
 
 #### Why should we, practicing software engineers, learn your language?
 
