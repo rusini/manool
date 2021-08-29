@@ -51,7 +51,7 @@ than trying to extend an existing one.
 
 It depends on who is asking. One possible reason is that programming in MANOOL means joy and fun that existing mainstream languages can hardly afford.
 
-In brief:
+In brief, e.g.:
 
 * Assuming `A == (array of 1 2 3)`, after `B = A; A[1] = 0`, `B[1] == 2`. Likewise, after `B = A; B[1] = 0`, `A[1] == 2` (value semantics, see above).
 
@@ -72,89 +72,27 @@ In brief:
 
       (let (unless = (macro: proc (F) as ...)) in ... (unless ...) ...)
 
-* Modules are introduced by a construct like `(let (...) in: export ...)`, which can be used on a program unit level or bound to a name and become a local
-  module (as in Modula-2). Incidentally, a module can be imported into a limited scope: `(M in ...)`.
+* Modules are introduced by a construct like `(let (...) in: export ...)`, which can be used on a program unit level or, equally, bound to a name and become a
+  local module (&agrave; la Modula-2): `(let (M = (let ... export)) in ...)`. Incidentally, a module can be imported into a limited scope: `(M in ...)`.
 
-* "Overloaded" operators and "methods" behave normal (first-class) procedures (and at the same time they are just symbols):
+* Polymorphic operations are indistinguishable from normal (first-class) procedures (and at the same time they are just symbols):
 
       (let (Plus = (+)) in ... 1.Plus[1] ... "Hi".Plus["World"] ... Out.Write[Plus] ...)
 
-#### Why should we, practicing software engineers, learn your language?
+    Incidentally, `P[A; B]` is equivalent to `A.P[B]` (unifying syntactic sugar once again).
 
-Like any other language, MANOOL provides a unique blend of features, some of which may make sense for you and some may be irrelevant. I do not intend to list
-all of them here. Instead, I suggest to pick one or more of the most uncommon and distinctive approaches and paradigms (in respect of existing mainstream
-languages) that you should experiment with and maybe make a workhorse for your next project:
+* Programs can recover from out-of-memory and stack-overflow situations gracefully and reliably:
 
-* Extensible (and homoiconic) architecture in the spirit of Lisp-family languages but without most of peculiarities and practical difficulties of
-  classic S-expressions (actually no blame is intended here)
-   
-  An extremely small language core with very few built-in features allows for higher extensibility and definition of many useful DSLs on top of core MANOOL.
-
-      ( (extern "manool.org.18/std/1.0/all") in
-      : let ( do = (macro
-          : proc (F) as
-          : if (Size[F] == 4) & (F[2] == unless') then
-              (array of if# (array of (~)# F[3]) then' F[1])
-            else
-              (array of do#) + F[Range[1; Size[F]]]) )
-        in
-          (do Out.WriteLine["Success"] unless False)
-          (do Out.WriteLine["Failure"] unless True) )
-
-
-
-* As it is the case for languages like SETL or Python, a large number of high-level composite data types, like sets, mappings (dictionaries), arrays, and
-  sequences provides a handful and reasonable (performance-wise) choice of built-in data structures to deal with composite data. Example: ...
-
-* Value semantics (as opposed to reference semantics) is used by default, with the implementation based on the form of lazy copying (copy-on-write) techniques,
-  which also implies more deterministic object lifecycle management compared to tracing GC (whereas the problem of shared-memory concurrent reference counting
-  is taken out of the equation). Value semantics makes the language much more on the functional programming side, but without disallowing assignments entirely
-  (as such, idiomatic MANOOL is already based on typical functional constructs, like first-class procedures and block-scope lexical value bindings). Example:
-  ...
-
-* The language specification, which stipulates precisely run time and space requirements of your programs and allows for easy reasoning about and control over
-  those requirements. For instance, MANOOL supports move semantics when manipulating large composite values (which is reminiscent of linear or uniqueness
-  typing)
-
-* Full support for thread-based concurrent and parallel programming (without using a parallelization-inhibiting global interpreter lock, typical for Python,
-  Ruby, and JavaScript runtimes)
-
-* Reasonably high run-time performance
-
-  According to my own benchmarking, we could range languages and/or their implementation according to execution speed in the following way: 1. C/C++, 2. Java,
-  C#, and similar, 3. Julia, JavaScript and Lua (via LuaJIT), 4. some high-speed implementations of Scheme and Common Lisp, 5. most typical scripting
-  languages, like Python, PHP, and Perl, and 6. some of the slowest scripting languages and/or their implementaions, like Tcl or Bash. On a number of
-  benchmarks MANOOL can be placed slightly below (3) and slightly below (4), typically exposing the one fold program execution speedup over most typical
-  scripting languages and (only) 15 times slowdown over fastest equivalent programs written in C or C++. This is because inspite of being a high-level
-  scripting language and having strict JIT compilation run-time constraints, MANOOL nevertheless employs simple and efficient native-code compilation
-  techniques.
-
-* Enhanced program reliability. You can, for instance, easily integrate in your program a recovery strategy even after exhaustion of dynamically allocated
-  memory (heap).
-
-* High construct orthogonality allowing for more liberal feature combination in creative and even unforeseen ways. For example, modular system...
-
-
-
-MANOOL can give you a sense of joy Python programming although with no arbitrary limitations, and at the same time gives you control over resources (objects)
-that represent idealized mathematical values right when and where you need it.
-
-* As it is the case for languages like SETL or Python, a large number of high-level composite data types, like sets, mappings (dictionaries), arrays, and
-  sequences provides a handful and reasonable (performance-wise) choice of built-in data structures to deal with composite data. Example: ...
-
-The principle of MANOOL is to allow the programmer to provide specific hints about what is needed where this is easy and automate tasks where its is harder and
-thus more appropriate. For instance, the programmer is to choose an internal data structure for composite data instead of using more generic or universal
-composite data (like "objects" in JavaScript or "tables" in Lua). At the same time, the MANOOL runtime decides rather transparently when objects are cloned
-(based on reference counting).
+      ReserveHeap[...]; ReserveStack[...]; (do ... on HeapExhausted = ...; StackOverflow = ...)
 
 #### What does it offer to potential project maintainers and contributors?
 
 MANOOL is a personal, solo-developer project with severely limited resources. Thus, to be viable, it almost inevitably has to use a straightforward,
 streamlined, and modular implementation, which is based on simple algorithms and data structures (from the compiler theory standpoint). Let's take, for
-instance, the implementation size -- the MANOOL translator is written in under 10 KLOCs, whereas the most widely used Python interpreter relies on at least 100
+instance, the implementation size -- the MANOOL translator is written in under 10 KLOCs, whereas the most widespread Python interpreter builds upon at least 100
 KLOCs.
 
-This does not necessarily mean that the MANOOL implementation is cheap or otherwise low-grade but rather that extra development efforts can be committed to
+This does not necessarily mean that the MANOOL implementation is cheap or otherwise low-grade but rather that extra development effort can be committed to
 ensuring high implementation quality and reliability. This also implies lower project entry requirements, encouraging more people to participate in the
 development. Besides, such compact code bases are more suitable for educational purposes (than larger ones, which are often full of legacy stuff).
 
@@ -168,7 +106,7 @@ Another notable change involves using normal parentheses in place of curly brace
 (Lisp/Scheme), although at the cost to using a more complicated LL(2) surface grammar (after usual transformation by left-recursion elimination) and more
 complicated (but still reasonable) rules for the programmer. This change is actually reflected in code samples in this wrap-up.
 
-#### Give me a quick example of what code in MANOOL looks like
+#### Give me a complete example of what code in MANOOL may look like
 
 A "Hello World" program might look like (in the second version of the language)
 
