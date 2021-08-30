@@ -64,7 +64,7 @@ you. E.g., in brief:
 
       M = (map of (set of 1 2 3) = 1; (set of 4 5 6) = 2)
       
-  `M[(set of 4 5 6)] == 2` (no arbitrary restrictions on keys or their type).
+  `M[(set of 4 5 6)] == 2` (no arbitrary restrictions on keys or their type, which is in a sense a consequence of value semantics).
 
 * You can write the whole program unit in some domain-specific language instead of standard MANOOL. Just replace `(extern "...")` (see below) with the reference
   to a module.
@@ -116,12 +116,17 @@ A "Hello World" program might look like
 
 #### What's next? Do you have a roadmap for MANOOL?
 
-*[As of September 2021]*
+Sure, here it is (*as of September 2021*):
 
-1. I am currently working on a JIT compiler for MANOOL to achieve run-time performance only marginally slower than that of the most sophisticated
-   dynamic-language engines in the market (such as V8 and LuaJIT), but only at a fraction of their complexity.
+1. Complete a JIT compiler for MANOOL to achieve run-time performance only marginally slower than that of the most sophisticated dynamic-language engines in the
+   market (such as V8 and LuaJIT), but only at a fraction of their complexity.
 
-2. 
+2. Replace `{` and `}` in the syntax by `(` and `)` in the second version of the language. The idea is to to appeal more to at least one established language
+   community (Lisp/Scheme) (although at the cost of extra complexity, including a more complicated LL(2) parser).
+
+3. Complete the language specification and the tutorial.
+
+4. Build a MANOOL ecosystem (libraries) and a user community.
 
 ---
 ---
