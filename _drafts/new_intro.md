@@ -49,14 +49,16 @@ to extend an existing one.
 
 #### Why should I learn MANOOL?
 
-It depends on who is asking. One possible reason is that playing around with MANOOL means joy and fun that existing mainstream languages can hardly afford.
-E.g., in brief:
+It depends on who is asking. One possible reason is that playing around with MANOOL means joy and fun that existing mainstream languages can hardly offer to
+you. E.g., in brief:
 
-* Assuming `A == (array of 1 2 3)`, after `B = A; A[1] = 0`, `B[1] == 2`. Likewise, after `B = A; B[1] = 0`, `A[1] == 2` (value semantics, see above).
+* Assuming `A == (array of 1 2 3)`, after `B = A; A[1] = 0`, `B[1] == 2`. Likewise, after `B = A; B[1] = 0`, `A[1] == 2` (value semantics).
 
-* On the other hand, `A[1] = 0` or `S = S! + "Hi"` may have (amortized) O(1) run-time complexity (thanks to move operations).
+* On the other hand, `A[1] = 0` and `S = S! + "Hi"` may have (amortized) O(1) run-time complexity (thanks to move operations).
 
 * `A[1] = 0` is actually equivalent to `A = A!.Repl[1; 0]`, and in other contexts `A[1]` is equivalent to `A.Apply[1]` (unifying syntactic sugar).
+
+* Incidentally, `A.P[...]` is equivalent to `P[A; ...]`, which could also be written simply as `(P A; ...)` (more syntactic sugar).
 
 * You can construct and index into a key-value mapping with sets as keys. After
 
@@ -64,25 +66,28 @@ E.g., in brief:
       
   `M[(set of 4 5 6)] == 2` (no arbitrary restrictions on keys or their type).
 
-* Use can write the whole program unit in your very own domain-specific language instead of standard MANOOL, just replace `((extern ...) in ...)` (see below)
-  with a reference to your own module.
+* You can write the whole program unit in some domain-specific language instead of standard MANOOL. Just replace `(extern "...")` (see below) with the reference
+  to a module.
 
-* On the other hand, macro bindings have limited scope (like any kind of bindings):
+* On the other hand, macro bindings have limited scope (like any other kind of bindings):
 
       (let (unless = (macro: proc (F) as ...)) in ... (unless ...) ...)
 
-* Modules are introduced by a construct like `(let (...) in: export ...)`, which can be used on a program unit level or, equally, bound to a name and become a
-  local module (&agrave; la Modula-2): `(let (M = (let ... export)) in ...)`. Incidentally, a module can be imported into a limited scope: `(M in ...)`.
+* First-class value bindings involve compile-time evaluation, and similarly you can use handful syntactic sugar to specify literal values, e.g.: `F64["1.1"]$`,
+  `D128["1.10"]$`.
+
+* A module can be introduced on a program unit level by the construct `(let (...) in: export ...)` or, equally, be bound to a name and thus become a local
+  module (&agrave; la Modula-2):
+  
+      (let (M = (let (...) in: export ...)) in ... (M in ...) ...)
 
 * Polymorphic operations are indistinguishable from normal (first-class) procedures (and at the same time they are just symbols):
 
-      (let (Plus = (+)) in ... 1.Plus[1] ... "Hi".Plus["World"] ... Out.Write[Plus] ...)
+      (var (Plus = (+)) in ... 1.Plus[1] ... "Hi".Plus["World"] ... Out.Write[Plus] ...)
 
-    Incidentally, `P[A; B]` is equivalent to `A.P[B]` (more syntactic sugar).
+* Programs can recover from out-of-memory conditions gracefully and reliably:
 
-* Programs can recover from out-of-memory and stack-overflow situations gracefully and reliably:
-
-      ReserveHeap[...]; ReserveStack[...]; (do ... on HeapExhausted = ...; StackOverflow = ...)
+      ReserveHeap[...]; (on HeapExhausted do ... after ...)
 
 #### What does it offer to potential project maintainers and contributors?
 
@@ -108,6 +113,19 @@ A "Hello World" program might look like
         : if N == 0 then 1 else N * Fact[N - 1]))
       in
         Out.WriteLine["Factorial of 10 = " Fact[10]])
+
+#### What's next? Do you have a roadmap for MANOOL?
+
+*[As of September 2021]*
+
+1. I am currently working on a JIT compiler for MANOOL to achieve run-time performance only marginally slower than that of the most sophisticated
+   dynamic-language engines in the market (such as V8 and LuaJIT), but only at a fraction of their complexity.
+
+2. 
+
+---
+---
+---
 
 #### What's next? Are there any plans for future development?
 
