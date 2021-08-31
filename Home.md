@@ -25,7 +25,8 @@ hype of the past. "MANOOL" should be pronounced as "manul" ([the Pallas's cat]).
 {%include page_header.md%}{%raw%}
 
 
-*MANOOL is a fairly readable homoiconic language with primarily value (non-referential) semantics that balances programmer's productivity with scalability...*
+*MANOOL is a fairly readable homoiconic language with primarily value (non-referential) semantics that balances the programmer's productivity with
+scalability...*
 
 #### What is the purpose of MANOOL?
 
@@ -43,7 +44,7 @@ programming experience, I argue that no existing mainstream language addresses b
 expensive in development than they should be or do not scale with workload as needed.
 
 Think, for instance, about the number of registered users and their contributions on an in-house social-network Web-site. Working as a server infrastructure
-administrator, on multiple occasions I saw serious scalability issues to pop up suddenly after a year of production use due to flaws in backend software
+administrator, on multiple occasions I saw serious scalability issues popping up suddenly after a year of production use due to flaws in backend software
 architecture, including the choice of programming language and/or its implementation.
 
 As a more elaborate illustration, using a rigid static type system and gratuitous sharing mutable state in the program (widespread in traditional OOP) is far
@@ -87,7 +88,7 @@ you. E.g., in brief:
 * You can construct and index into a key-value mapping with sets as keys. After
 
       M = (map of (set of 1 2 3) = 1; (set of 4 5 6) = 2)
-      
+
   `M[(set of 4 5 6)] == 2` -- no arbitrary restrictions on keys or their type, which is partly a consequence of value semantics.
 
 * First-class value bindings involve compile-time evaluation, and similarly you can use handful syntactic sugar to specify constant values, e.g.: `F64["1.1"]$`,
@@ -102,7 +103,7 @@ you. E.g., in brief:
 
 * A module can be introduced at program-unit level by the construct `(let (...) in: export ...)` or, equally, be bound to a name and thus become a local module
   (&agrave; la Modula-2):
-  
+
       (let (mUtilities = (let (...) in: export ...)) in ... (mUtilities in ...) ...)
 
 * Programs can recover from out-of-memory conditions gracefully and reliably:
@@ -138,7 +139,7 @@ A "Hello World" program might look like
 
 Sure, here it is (as of September 2021):
 
-1. Complete a JIT compiler for MANOOL to achieve run-time performance only marginally slower than that of the most sophisticated dynamic-language engines in the
+1. Complete a JIT compiler for MANOOL to achieve run-time performance only marginally slower than that of the most sophisticated dynamic-language engines on the
    market (such as V8 and LuaJIT) but only at a fraction of their complexity -- this is doable as per my experiments.
 
 2. Replace `{`/`}` in the syntax by `(`/`)` in the 2<sup>nd</sup> version of the language (as shown in this writeup). The idea is to appeal more to at least one
