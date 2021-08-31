@@ -2,7 +2,7 @@
 # Home.md
 permalink: /
 title:     The Programming Language MANOOL
-updated:   2021-09-01
+updated:   2021-08-31
 ---
 
 <aside markdown="1" class="right">
@@ -24,6 +24,8 @@ hype of the past. "MANOOL" should be pronounced as "manul" ([the Pallas's cat]).
 
 {%include page_header.md%}{%raw%}
 
+
+*MANOOL is a fairly readable homoiconic language with primarily value (non-referential) semantics that balances programmer's productivity with scalability...*
 
 #### What is the purpose of MANOOL?
 
@@ -57,11 +59,10 @@ goals instead of creating one from scratch?
 
 Achieving competing (and even incompatible) goals is hard and may lead to overly complex and difficult to adopt language designs. MANOOL leverages two
 principles in order to deal with this problem, which are currently not observed among mainstream languages:
-
-* open (homoiconic) approach to language architecture (in the same sense as in Lisp but using a notation alternative to S-expressions and with macro definitions
-  applying to their own limited scope), and
-* primarily value (non-referential) semantics with copy-on-write policy under the hood and move operations (and this works even for user-defined abstract data
-  types, due to availability of special syntactic sugar).
+  * open (homoiconic) approach to language architecture (in the same sense as in Lisp but using a notation alternative to S-expressions and with macro
+    definitions applying to their own limited scope), and
+  * primarily value (non-referential) semantics with copy-on-write policy under the hood and move operations (and this works even for user-defined abstract data
+    types, due to availability of special syntactic sugar).
 
 Both of those principles require things to work slightly differently on the very basic level, which suggests that introducing a whole new language is more
 appropriate than trying to extend an existing one.
@@ -138,7 +139,7 @@ A "Hello World" program might look like
 Sure, here it is (as of September 2021):
 
 1. Complete a JIT compiler for MANOOL to achieve run-time performance only marginally slower than that of the most sophisticated dynamic-language engines in the
-   market (such as V8 and LuaJIT) but only at a fraction of their complexity -- this is doable according to my experiments.
+   market (such as V8 and LuaJIT) but only at a fraction of their complexity -- this is doable as per my experiments.
 
 2. Replace `{`/`}` in the syntax by `(`/`)` in the 2<sup>nd</sup> version of the language (as shown in this writeup). The idea is to appeal more to at least one
    established language community (Lisp/Scheme), albeit at the cost of extra complexity (including a more complicated LL(2) parser).
