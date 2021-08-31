@@ -79,11 +79,18 @@ you. E.g., in brief:
 
 * Incidentally, `A.P[...]` just stands for `P[A; ...]` (which could also be written as `(P A; ...)` in a Lisp-ish form) -- more syntactic sugar.
 
+* Polymorphic operations are indistinguishable from regular (first-class) procedures (and at the same time they are just symbols):
+
+      (var (Plus = (+)) in ... 1.Plus[1] ... "Hi".Plus["World"] ... Out.Write[Plus] ...)
+
 * You can construct and index into a key-value mapping with sets as keys. After
 
       M = (map of (set of 1 2 3) = 1; (set of 4 5 6) = 2)
       
   `M[(set of 4 5 6)] == 2` -- no arbitrary restrictions on keys or their type, which is partly a consequence of value semantics.
+
+* First-class value bindings involve compile-time evaluation, and similarly you can use handful syntactic sugar to specify constant values, e.g.: `F64["1.1"]$`,
+  `D128["1.10"]$`, `Sqrt[F64[2]]$`.
 
 * You can write the whole program unit in some domain-specific language instead of standard MANOOL; just replace `(extern "...")` at program-unit level (see
   complete examples below) with the reference to a different module.
@@ -92,17 +99,10 @@ you. E.g., in brief:
 
       (let (unless = (macro: proc (F) as ...)) in ... (unless ...) ...)
 
-* First-class value bindings involve compile-time evaluation, and similarly you can use handful syntactic sugar to specify literal values, e.g.: `F64["1.1"]$`,
-  `D128["1.10"]$`.
-
 * A module can be introduced at program-unit level by the construct `(let (...) in: export ...)` or, equally, be bound to a name and thus become a local module
   (&agrave; la Modula-2):
   
-      (let (M = (let (...) in: export ...)) in ... (M in ...) ...)
-
-* Polymorphic operations are indistinguishable from normal (first-class) procedures (and at the same time they are just symbols):
-
-      (var (Plus = (+)) in ... 1.Plus[1] ... "Hi".Plus["World"] ... Out.Write[Plus] ...)
+      (let (mUtilities = (let (...) in: export ...)) in ... (mUtilities in ...) ...)
 
 * Programs can recover from out-of-memory conditions gracefully and reliably:
 
@@ -125,7 +125,7 @@ A "Hello World" program might look like
 
     ((extern "manool.org.18/std/1.0/all") in Out.WriteLine["Hello, world!"])
 
-(using the second version of the syntax, see below). And in the following sample program a recursive factorial function is defined and invoked:
+(using the 2<sup>nd</sup> version of the syntax, see below), and in the following sample program a recursive factorial function is defined and invoked:
 
     ( (extern "manool.org.18/std/1.0/all") in
     : let rec (Fact = (proc (N) as
@@ -135,17 +135,17 @@ A "Hello World" program might look like
 
 #### What's next? Do you have a roadmap for MANOOL?
 
-Sure, here it is (*as of September 2021*):
+Sure, here it is (as of September 2021):
 
 1. Complete a JIT compiler for MANOOL to achieve run-time performance only marginally slower than that of the most sophisticated dynamic-language engines in the
-   market (such as V8 and LuaJIT), but only at a fraction of their complexity.
+   market (such as V8 and LuaJIT) but only at a fraction of their complexity -- this is doable according to my experiments.
 
-2. Replace `{` and `}` in the syntax by `(` and `)` in the second version of the language (as shown in this write-up). The idea is to to appeal more to at least
-   one established language community (Lisp/Scheme), although at the cost of extra complexity, including a more complicated LL(2) parser.
+2. Replace `{`/`}` in the syntax by `(`/`)` in the 2<sup>nd</sup> version of the language (as shown in this writeup). The idea is to appeal more to at least one
+   established language community (Lisp/Scheme), albeit at the cost of extra complexity (including a more complicated LL(2) parser).
 
-3. Complete the language specification and the tutorial.
+3. Complete and polish the MANOOL language [Specification](specification/) and the [Tutorial](tutorial/lesson-1).
 
-4. Build a MANOOL ecosystem (e.g., libraries) and a user community.
+4. And ultimately, build a MANOOL ecosystem (libraries, tools, success stories) and a user community -- any help is welcome!
 
 
 {%endraw%}{%include page_footer.md%}
