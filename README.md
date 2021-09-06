@@ -1,28 +1,113 @@
 <img alt="MANOOL Logo" src="https://manool.org/MANOOL-Logo.png" width="64" height="64"> MANOOL v0.6.1
 =====================================================================================================
 
-**MANOOL is meant to make exploratory programming safer and faster.**
+*MANOOL is a fairly readable homoiconic language with primarily value (non-referential) semantics that balances the programmer's productivity with
+scalability...*
 
-Some programming tasks are common and predictable from the project management perspective, but often, even enterprise information systems (especially in the
-area of startups) involve some innovation and exploratory programming. Imagine you have such a task at hand. Whenever this happens you have two options:
-  1. use an *implementation-level* programming language, such as C, C++, Java, or maybe Rust (if you want to try a more recent approach) or
-  2. use a language more suitable for *throw-away* programming, such as PHP, Python, Ruby, JavaScript, or even Scheme.
+#### What is the purpose of MANOOL?
 
-In the former case, you eventually get stuck with your coding -- trying to conceive some poorly understood algorithms, deciding which data types to use and how
-to get around seemingly arbitrary constraints for composite data types, devising resource management policies, and dealing with confusing program logic.
+MANOOL is a general-purpose language suitable for diverse programming tasks from several problem domains. However, it has substantial bias toward scripting and
+hopefully represents an evolutionary step over existing scripting languages. Thus, MANOOL should be compared to and can serve the same purpose as Python, Ruby,
+PHP, Scheme, JavaScript, or Lua, which implies properties typical for such languages, e.g.: short edit-compile-test development cycle (at least for code bases
+under 1 MLOCs) and run-time type checking.
 
-Then you resort to the second option, in which case you also have to conceive poorly understood algorithms, deal with confusing program logic, and occasionally
-think about how to circumvent composite data type constraints, but most probably you end up familiarized yourself with the problem domain and come to a working
-prototype.
+#### What real-world problem does your project solve?
 
-You show your solution (which mostly looks nice) to the managers, and suddenly they react: "OK, let's clear up the bugs; tomorrow we deploy it in production!".
-Then disaster falls on you; after some time of production use, it turns out that
-  * your code is not scalable to a grown user base and hence larger workload, or the solution is simply slow according to your end users,
-  * your code has mysterious and hard to localize bugs, and of course
-  * the program logic itself still looks confusing and complex.
+MANOOL is intentionally designed in such way that it represents a specific point on a continuum; on one side of this continuum are high-level languages designed
+with the programmer's convenience and productivity in mind, and on the other side are languages designed with execution speed and/or solution scalability in
+mind (whereas, as a matter of fact, software quality and reliability may correlate with either of those extremes, depending on the situation). Based on my past
+programming experience, I argue that no existing mainstream language addresses both goals at once in a balanced way. As a result, programs are either more
+expensive in development than they should be or do not scale with workload as needed.
 
-  This happens because paying attention to those details would imply an undue cognitive burden at the early stage of development. And unlike your managers you
-already knew that: a major rewrite is unavoidable, now in a "real" implementation-level language -- sounds familiar?
+Think, for instance, about the number of registered users and their contributions on an in-house social-network Web-site. Working as a server infrastructure
+administrator, on multiple occasions I saw serious scalability issues popping up suddenly after a year of production use due to flaws in backend software
+architecture, including the choice of programming language and/or its implementation.
 
-While MANOOL is a general-purpose programming language, it is specifically designed to solve the above problem. It may also help you to come to a working
-prototype faster and then gradually refactor your code up to a production-quality state instead of rewriting the code entirely from scratch.
+As a more elaborate illustration, using a rigid static type system and gratuitous sharing mutable state in the program (widespread in traditional OOP) is far
+from how many people think about problem solving in terms of basic (immutable) mathematical objects, and thus this places undue cognitive load on developers for
+simple backend scripting. On the other hand, implementing backend algorithms in an average exploratory-programming language (especially in a straightforward
+and/or idiomatic way) often leads to poor run-time performance scalability w.r.t. Web-site workload growth.
+
+#### OK, but what warrants a whole new language in case of MANOOL?
+
+Starting off with some relatively unpopular language makes little sense for me as a language designer, since I might miss in this case some improvement
+opportunities (whatever it means) while getting almost nothing in return. But why not just extend an existing mainstream language to suite the above stated
+goals instead of creating one from scratch?
+
+Achieving competing (and even incompatible) goals is hard and may lead to overly complex and difficult to adopt language designs. MANOOL leverages two
+principles in order to deal with this problem, which are currently not observed among mainstream languages:
+  * open (homoiconic) approach to language architecture (in the same sense as in Lisp but using a notation alternative to S-expressions and with macro
+    definitions applying to their own limited scope), and
+  * primarily value (non-referential) semantics with copy-on-write policy under the hood and move operations (and this works even for user-defined abstract data
+    types, due to availability of special syntactic sugar).
+
+Both of those principles require things to work slightly differently on the very basic level, which suggests that introducing a whole new language is more
+appropriate than trying to extend an existing one.
+
+#### Why should I learn MANOOL?
+
+It depends on who is asking. One possible reason is that playing around with MANOOL means joy and fun that existing mainstream languages can hardly offer to
+you. E.g., in brief:
+
+* Assuming `A == {array of 1 2 3}`, after `B = A; A[1] = 0`, `B[1] == 2`. Likewise, after `B = A; B[1] = 0`, `A[1] == 2` -- value semantics.
+
+* On the other hand, `A[1] = 0` (as well as `S = S! + "Hi"`) may have (amortized) O(1) run-time complexity -- thanks to move operations.
+
+* `A[1] = 0` is actually a shorthand for `A = A!.Repl[1; 0]`, and in other contexts `A[1]` is equivalent to `A.Apply[1]` -- unifying syntactic sugar.
+
+* Incidentally, `A.P[...]` just stands for `P[A; ...]` (which could also be written as `(P A; ...)` in a Lisp-ish form) -- more syntactic sugar.
+
+* Polymorphic operations are indistinguishable from regular (first-class) procedures (and at the same time they are just symbols):
+
+      {var {Plus = (+)} in ... 1.Plus[1] ... "Hi".Plus["World"] ... Out.Write[Plus] ...}
+
+* You can construct and index into a key-value mapping with sets as keys. After
+
+      M = {map of {set of 1 2 3} = 1; {set of 4 5 6} = 2}
+
+  `M[{set of 4 5 6}] == 2` -- no arbitrary restrictions on keys or their type, which is partly a consequence of value semantics.
+
+* First-class value bindings involve compile-time evaluation, and similarly you can use handful syntactic sugar to specify constant values, e.g.: `F64["1.1"]$`,
+  `D128["1.10"]$`, `Sqrt[F64[2]]$`.
+
+* You can write the whole program unit in some domain-specific language instead of standard MANOOL; just replace `(extern "...")` at program-unit level (see
+  complete examples below) with the reference to a different module.
+
+* On the other hand, macro bindings have limited scope (like any other kind of bindings):
+
+      {let {unless = {macro: proc {F} as ...}} in ... {unless ...} ...}
+
+* A module can be introduced at program-unit level by the construct `{let {...} in: export ...}` or, equally, be bound to a name and thus become a local module
+  (&agrave; la Modula-2):
+
+      {let {mUtilities = {let {...} in: export ...}} in ... {mUtilities in ...} ...}
+
+* Programs can recover from out-of-memory conditions gracefully and reliably:
+
+      ReserveHeap[...]; {on HeapExhausted do ... after ...}
+
+#### What does it offer to potential project maintainers and contributors?
+
+MANOOL is a personal, solo-developer project with severely limited resources. Thus, to be viable, it almost inevitably has to use a straightforward,
+streamlined, and modular implementation, which is based on simple algorithms and data structures (from the compiler theory standpoint). Let's take, for
+instance, the implementation size -- the MANOOL translator is written in under 10 KLOCs, whereas the most widespread Python interpreter builds upon at least 100
+KLOCs.
+
+This does not necessarily mean that the MANOOL implementation is cheap or otherwise low-grade but rather that extra development effort can be committed to
+ensuring high implementation quality and reliability. This also implies lower project entry requirements, encouraging more people to participate in the
+development. Besides, such compact code bases are more suitable for educational purposes (than larger ones, which are often full of legacy stuff).
+
+#### Give me a complete example of what code in MANOOL may look like
+
+A "Hello World" program might look like
+
+    {{extern "manool.org.18/std/1.0/all"} in Out.WriteLine["Hello, world!"]}
+
+and in the following sample program a recursive factorial function is defined and invoked:
+
+    { {extern "manool.org.18/std/1.0/all"} in
+    : let rec { Fact = {proc {N} as:
+       if N == 0 then 1 else N * Fact[N - 1]} }
+      in
+      Out.WriteLine["Factorial of 10 = " Fact[10]]
+    }
