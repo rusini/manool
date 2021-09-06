@@ -22,7 +22,7 @@ Then disaster falls on you; after some time of production use, it turns out that
   * the program logic itself still looks confusing and complex.
 
   This happens because paying attention to those details would imply an undue cognitive burden at the early stage of development. And unlike your managers you
-already knew that: a major rewrite is unavoidable, now in a "real" implementation-level language -- does this sound familiar?
+already knew that: a major rewrite is unavoidable, now in a "real" implementation-level language -- sounds familiar?
 
 While MANOOL is a general-purpose programming language, it is specifically designed to solve the above problem. It may also help you to come to a working
 prototype faster and then gradually refactor your code up to a production-quality state instead of rewriting the code entirely from scratch.
