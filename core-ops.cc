@@ -179,12 +179,6 @@ namespace aux {
       # endif
          (MNL_UNLIKELY(lhs < 0 ^ rhs < 0) ? MNL_LIKELY(lhs % rhs) ? lhs % rhs + rhs : 0 : lhs % rhs);
    }
-   template<typename Dat> MNL_INLINE static inline enable_same<Dat, long long> _neg(Dat rhs) {
-      return -rhs;
-   }
-   template<typename Dat> MNL_INLINE static inline enable_same<Dat, long long> _abs(Dat rhs) {
-      return abs(rhs);
-   }
    template<typename Dat> MNL_INLINE static inline enable_same<Dat, long long, string> _str(Dat rhs) {
       char res[sizeof "+140737488355327"];
       return sprintf(res, "%lld", rhs), res;
@@ -213,16 +207,10 @@ namespace aux {
       if (MNL_LIKELY(!isnan(res))) return res;
       MNL_ERR(MNL_SYM("Undefined"));
    }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _neg(Dat rhs) {
-      return -rhs;
-   }
    template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _fma(Dat a1, Dat a2, Dat a3) {
       auto res = fma(a1, a2, a3);
       if (MNL_LIKELY(!isinf(res))) return res;
       MNL_ERR(MNL_SYM("Overflow"));
-   }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _abs(Dat rhs) {
-      return abs(rhs);
    }
    template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _sign(Dat rhs) {
       return rhs > 0 ? +1 : rhs < 0 ? -1 : rhs;
@@ -405,8 +393,6 @@ namespace aux {
    }
 
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-   template<typename Dat> MNL_INLINE static inline enable_same<Dat, unsigned> _neg(Dat rhs) { return -rhs; }
-   template<typename Dat> MNL_INLINE static inline enable_same<Dat, unsigned> _abs(Dat rhs) { return +rhs; }
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    template<typename Dat> MNL_INLINE static inline enable_same<Dat, unsigned, string> _str(Dat rhs, const string &format) {
       auto pc = format.c_str();
@@ -924,127 +910,6 @@ namespace aux {
          MNL_ERR(MNL_SYM("UnrecognizedOperation"));
       }
    }
-   val pub::_eq(val &&lhs, val &&rhs) {
-      switch (lhs.rep.tag()) {
-      case 0x7FF8u: return  static_cast<val::root *>(lhs.rep.dat<void *>())->invoke(move(lhs), MNL_SYM("=="), 1, &rhs);
-      case 0x7FF9u: return  test<>(rhs);
-      case 0x7FFAu: return  MNL_LIKELY(test<long long>(rhs)) && cast<long long>(lhs) == cast<long long>(rhs);
-      default:      return  MNL_LIKELY(test<double>(rhs)) && cast<double>(lhs) == cast<double>(rhs);
-      case 0x7FFCu: return  MNL_LIKELY(test<float>(rhs)) && cast<float>(lhs) == cast<float>(rhs);
-      case 0x7FFBu: return  MNL_LIKELY(test<sym>(rhs)) && cast<const sym &>(lhs) == cast<const sym &>(rhs);
-      case 0x7FFEu: return  rhs.rep.tag() == 0x7FFEu;
-      case 0x7FFFu: return  rhs.rep.tag() == 0x7FFFu;
-      case 0x7FFDu: return  MNL_LIKELY(test<unsigned>(rhs)) && cast<unsigned>(lhs) == cast<unsigned>(rhs);
-      }
-   }
-   val pub::_ne(val &&lhs, val &&rhs) {
-      switch (lhs.rep.tag()) {
-      case 0x7FF8u: return  static_cast<val::root *>(lhs.rep.dat<void *>())->invoke(move(lhs), MNL_SYM("<>"), 1, &rhs);
-      case 0x7FF9u: return !test<>(rhs);
-      case 0x7FFAu: return !MNL_LIKELY(test<long long>(rhs)) || cast<long long>(lhs) != cast<long long>(rhs);
-      default:      return !MNL_LIKELY(test<double>(rhs)) || cast<double>(lhs) != cast<double>(rhs);
-      case 0x7FFCu: return !MNL_LIKELY(test<float>(rhs)) || cast<float>(lhs) != cast<float>(rhs);
-      case 0x7FFBu: return !MNL_LIKELY(test<sym>(rhs)) || cast<const sym &>(lhs) != cast<const sym &>(rhs);
-      case 0x7FFEu: return  rhs.rep.tag() != 0x7FFEu;
-      case 0x7FFFu: return  rhs.rep.tag() != 0x7FFFu;
-      case 0x7FFDu: return !MNL_LIKELY(test<unsigned>(rhs)) || cast<unsigned>(lhs) != cast<unsigned>(rhs);
-      }
-   }
-   # define MNL_M(OP, SYM) { \
-      switch (lhs.rep.tag()) { \
-      case 0x7FF8u: /* BoxPtr (fallback) */ \
-         return static_cast<val::root *>(lhs.rep.dat<void *>())->invoke(move(lhs), MNL_SYM(SYM), 1, &rhs); \
-      case 0x7FF9u: case 0x7FFBu: case 0x7FFEu: case 0x7FFFu: \
-         MNL_ERR(MNL_SYM("UnrecognizedOperation")); \
-      case 0x7FFAu: /* I48 */ \
-         if (MNL_UNLIKELY(!test<long long>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return cast<long long>(lhs) OP cast<long long>(rhs); \
-      default: /* F64 */ \
-         if (MNL_UNLIKELY(!test<double>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return cast<double>(lhs) OP cast<double>(rhs); \
-      case 0x7FFCu: /* F32 */ \
-         if (MNL_UNLIKELY(!test<float>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return cast<float>(lhs) OP cast<float>(rhs); \
-      case 0x7FFDu: /* U32 */ \
-         if (MNL_UNLIKELY(!test<unsigned>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return cast<unsigned>(lhs) OP cast<unsigned>(rhs); \
-      } \
-   } \
-   // end # define MNL_M(OP, SYM)
-   val pub::_lt(val &&lhs, val &&rhs) MNL_M(<,  "<")
-   val pub::_le(val &&lhs, val &&rhs) MNL_M(<=, "<=")
-   val pub::_gt(val &&lhs, val &&rhs) MNL_M(>,  ">")
-   val pub::_ge(val &&lhs, val &&rhs) MNL_M(>=, ">=")
-   # undef MNL_M
-   # define MNL_M(OP, SYM) val pub::OP(val &&lhs, val &&rhs) { \
-      switch (lhs.rep.tag()) { \
-      case 0x7FF8u: /* BoxPtr (fallback) */ \
-         return static_cast<val::root *>(lhs.rep.dat<void *>())->invoke(move(lhs), MNL_SYM(SYM), 1, &rhs); \
-      case 0x7FF9u: case 0x7FFBu: case 0x7FFEu: case 0x7FFFu: \
-         MNL_ERR(MNL_SYM("UnrecognizedOperation")); \
-      case 0x7FFAu: /* I48 */ \
-         if (MNL_UNLIKELY(!test<long long>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return aux::OP(cast<long long>(lhs), cast<long long>(rhs)); \
-      default: /* F64 */ \
-         if (MNL_UNLIKELY(!test<double>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return aux::OP(cast<double>(lhs), cast<double>(rhs)); \
-      case 0x7FFCu: /* F32 */ \
-         if (MNL_UNLIKELY(!test<float>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return aux::OP(cast<float>(lhs), cast<float>(rhs)); \
-      case 0x7FFDu: /* U32 */ \
-         if (MNL_UNLIKELY(!test<unsigned>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return aux::OP(cast<unsigned>(lhs), cast<unsigned>(rhs)); \
-      } \
-   } \
-   // end # define MNL_M(OP, SYM)
-   MNL_M(_add, "+") MNL_M(_sub, "-") MNL_M(_mul, "*")
-   # undef MNL_M
-   # define MNL_M(OP, SYM) val pub::OP(val &&rhs) { \
-      switch (rhs.rep.tag()) { \
-      case 0x7FF8u: /* BoxPtr (fallback) */ \
-         return static_cast<val::root *>(rhs.rep.dat<void *>())->invoke(move(rhs), MNL_SYM(SYM), 0, {}); \
-      case 0x7FF9u: case 0x7FFBu: case 0x7FFEu: case 0x7FFFu: \
-         MNL_ERR(MNL_SYM("UnrecognizedOperation")); \
-      case 0x7FFAu: return aux::OP(cast<long long>(rhs)); \
-      default:      return aux::OP(cast<double>(rhs)); \
-      case 0x7FFCu: return aux::OP(cast<float>(rhs)); \
-      case 0x7FFDu: return aux::OP(cast<unsigned>(rhs)); \
-      } \
-   } \
-   // end # define MNL_M(OP, SYM)
-   MNL_M(_neg, "Neg") MNL_M(_abs, "Abs")
-   # undef MNL_M
-   val pub::_xor(val &&lhs, val &&rhs) {
-      switch (lhs.rep.tag()) {
-      case 0x7FF8u: // BoxPtr (fallback)
-         return static_cast<val::root *>(lhs.rep.dat<void *>())->invoke(move(lhs), MNL_SYM("Xor"), 1, &rhs);
-      default:
-         MNL_ERR(MNL_SYM("UnrecognizedOperation"));
-      case 0x7FFEu: // Bool/False
-         if (MNL_UNLIKELY(!test<bool>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch"));
-         return val{decltype(val::rep){rhs.rep.tag()}};
-      case 0x7FFFu: // Bool/True
-         if (MNL_UNLIKELY(!test<bool>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch"));
-         return val{decltype(val::rep){rhs.rep.tag() ^ 1}};
-      case 0x7FFDu: // U32
-         if (MNL_UNLIKELY(!test<unsigned>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch"));
-         return cast<unsigned>(lhs) ^ cast<unsigned>(rhs);
-      }
-   }
-   val pub::_not(val &&rhs) {
-      switch (rhs.rep.tag()) {
-      case 0x7FF8u: // BoxPtr (fallback)
-         return static_cast<val::root *>(rhs.rep.dat<void *>())->invoke(move(rhs), MNL_SYM("~"), 0, {});
-      case 0x7FF9u: case 0x7FFBu:
-         MNL_ERR(MNL_SYM("UnrecognizedOperation"));
-      case 0x7FFEu: return true;
-      case 0x7FFFu: return false;
-      case 0x7FFDu: return ~cast<unsigned>(rhs);
-      case 0x7FFAu: return aux::_neg(cast<long long>(rhs)); // Neg(ation)
-      default:      return aux::_neg(cast<double>(rhs));    // Neg(ation)
-      case 0x7FFCu: return aux::_neg(cast<float>(rhs));     // Neg(ation)
-      }
-   }
 
    val proc_Min::invoke(val &&self, const sym &op, int argc, val argv[], val *) {
       if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
@@ -1251,6 +1116,45 @@ namespace aux {
          }
       }
       return self.default_invoke(op, argc, argv);
+   }
+
+   template<> val box<vector<val>>::_invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) {
+      static const auto compact = [](vector<val> &dat)
+         { if (MNL_UNLIKELY(dat.capacity() > dat.size() * 2)) dat.shrink_to_fit(); };
+      if (MNL_LIKELY(argc == 1)) {
+         if (MNL_LIKELY(test<long long>(argv[0]))) { // Array[Index]
+            if (MNL_UNLIKELY(cast<long long>(argv[0]) < 0) || MNL_UNLIKELY(cast<long long>(argv[0]) >= dat.size()))
+               MNL_ERR(MNL_SYM("IndexOutOfRange"));
+            return dat[cast<long long>(argv[0])];
+         }
+         if (MNL_LIKELY(test<range<>>(argv[0]))) { // Array[Range[Low; High]]
+            if (MNL_UNLIKELY(cast<range<>>(argv[0]).lo < 0) || MNL_UNLIKELY(cast<range<>>(argv[0]).hi > dat.size()))
+               MNL_ERR(MNL_SYM("IndexOutOfRange"));
+            if (MNL_LIKELY(rc() == 1)) return
+               dat.resize(cast<range<>>(argv[0]).hi), dat.erase(dat.begin(), dat.begin() + cast<range<>>(argv[0]).lo), compact(dat), move(self);
+            return vector<val>(dat.cbegin() + cast<range<>>(argv[0]).lo, dat.cbegin() + cast<range<>>(argv[0]).hi);
+         }
+         if (MNL_LIKELY(test<range<true>>(argv[0]))) { // Array[RevRange[Low; High]] - IMDOOs: all
+            if (MNL_UNLIKELY(cast<range<true>>(argv[0]).lo < 0) || MNL_UNLIKELY(cast<range<true>>(argv[0]).hi > dat.size()))
+               MNL_ERR(MNL_SYM("IndexOutOfRange"));
+            return vector<val>(dat.crend() - cast<range<true>>(argv[0]).hi, dat.crend() - cast<range<true>>(argv[0]).lo);
+         }
+         MNL_ERR(MNL_SYM("TypeMismatch"));
+      }
+      if (MNL_LIKELY(argc > 1)) { // Array[Index; ...]
+         if (MNL_UNLIKELY(cast<long long>(argv[0]) < 0) || MNL_UNLIKELY(cast<long long>(argv[0]) >= dat.size())) MNL_ERR(MNL_SYM("IndexOutOfRange"));
+         return dat[cast<long long>(argv[0])](argc - 1, argv + 1);
+      }
+      MNL_ERR(MNL_SYM("InvalidInvocation"));
+   }
+
+   template<> val box<vector<val>>::apply(const val &self, const val &a0) {
+      if (MNL_LIKELY(test<long long>(a0))) { // Array[Index]
+         if (MNL_UNLIKELY(cast<long long>(a0) < 0) || MNL_UNLIKELY(cast<long long>(a0) >= dat.size()))
+            MNL_ERR(MNL_SYM("IndexOutOfRange"));
+         return dat[cast<long long>(a0)];
+      }
+      MNL_ERR(MNL_SYM("TypeMismatch"));
    }
 
    template<> val box<vector<val>>::invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) { // one instance of List is Array

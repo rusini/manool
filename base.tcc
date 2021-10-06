@@ -43,7 +43,9 @@ namespace aux {
 
    struct expr_tmp { MNL_LVALUE(true)
       int off;
-      MNL_INLINE val execute(bool = {}) const { return tmp_stk[tmp_frm + off]; }
+      MNL_INLINE const val &execute(bool = {}) const { return tmp_stk[tmp_frm + off]; }
+      //MNL_INLINE val execute(bool = {}) const { return tmp_stk[tmp_frm + off]; }
+      MNL_INLINE void exec_in(const val &value) const { exec_in(val(value)); }
       MNL_INLINE void exec_in(val &&value) const { tmp_stk[tmp_frm + off] = move(value); } // according to tests, better than tmp_stk[tmp_frm + off].swap(value)
       MNL_INLINE val exec_out() const { return move(tmp_stk[tmp_frm + off]); }
    private:
@@ -70,13 +72,43 @@ namespace aux {
       friend bool aux::match<>(const code &, expr_apply0 &);
    };
 
+   template<typename Target, typename Arg0> MNL_INLINE inline
+   typename std::enable_if<std::is_same<typename std::remove_cv<typename std::remove_reference<Target &&>::type>::type, val>::value &&
+      std::is_same<typename std::remove_cv<typename std::remove_reference<Arg0 &&>::type>::type, val>::value, val>::type
+   _apply(Target &&target, Arg0 &&arg0) {
+      if (target.rep.tag() == 0x7FF8u && static_cast<val::root *>(target.rep.template dat<void *>())->tag == val::root::array) {
+         if (MNL_LIKELY(test<long long>(arg0))) { // Array[Index]
+            if (MNL_UNLIKELY(cast<long long>(arg0) < 0) || MNL_UNLIKELY(cast<long long>(arg0) >= cast<const vector<val> &>(target).size()))
+               MNL_ERR(MNL_SYM("IndexOutOfRange"));
+            return cast<const vector<val> &>(target)[cast<long long>(arg0)];
+         }
+      }
+      val argv[] = {std::forward<Arg0>(arg0)};
+      return std::forward<Target>(target)(std::extent<decltype(argv)>::value, argv);
+   }
+   template<typename Target, typename Arg0> MNL_INLINE inline
+   typename std::enable_if<std::is_same<typename std::remove_cv<typename std::remove_reference<Target &&>::type>::type, val>::value &&
+      !std::is_same<typename std::remove_cv<typename std::remove_reference<Arg0 &&>::type>::type, val>::value, val>::type
+   _apply(Target &&target, Arg0 &&arg0) {
+      val argv[] = {std::forward<Arg0>(arg0)};
+      return std::forward<Target>(target)(std::extent<decltype(argv)>::value, argv);
+   }
+   template<typename Target, typename Arg0> MNL_INLINE inline
+   typename std::enable_if<std::is_same<typename std::remove_cv<typename std::remove_reference<Target &&>::type>::type, sym>::value, val>::type
+   _apply(Target &&target, Arg0 &&arg0) {
+      val argv[] = {std::forward<Arg0>(arg0)};
+      return std::forward<Target>(target)(std::extent<decltype(argv)>::value, argv);
+   }
+
    template<typename Target = code, typename Arg0 = code> struct expr_apply1 {
       MNL_LVALUE(target.is_lvalue())
       Target target; Arg0 arg0; loc _loc;
    public:
       MNL_INLINE val execute(bool = {}) const {
-         val argv[]{arg0.execute()}; auto &&target = this->target.execute();
-         try { return (move)(target)(std::extent<decltype(argv)>::value, argv); } catch (...) { trace_execute(_loc); }
+         auto &&arg0 = this->arg0.execute(); auto &&target = this->target.execute();
+         try { return _apply(std::forward<decltype(target)>(target), std::forward<decltype(arg0)>(arg0)); } catch (...) { trace_execute(_loc); }
+         //val argv[]{arg0.execute()}; auto &&target = this->target.execute();
+         //try { return (move)(target)(std::extent<decltype(argv)>::value, argv); } catch (...) { trace_execute(_loc); }
       }
       template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
          target.exec_in([&]()->val{
@@ -294,6 +326,7 @@ namespace aux {
          if (MNL_UNLIKELY(!test<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
          return (cast<bool>(cond) ? body1 : body2).execute(fast_sig);
       }
+      MNL_INLINE void exec_in(const val &value) const { exec_in(val(value)); }
       MNL_INLINE void exec_in(val &&value) const {
          auto &&cond = this->cond.execute();
          if (MNL_UNLIKELY(!test<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
@@ -470,6 +503,7 @@ namespace aux {
             MNL_ERR_LOC(_loc, MNL_SYM("KeyLookupFailed"));
          return cast<const object &>(obj)[cast<const sym &>(att)];
       }
+      MNL_INLINE void exec_in(const val &value) const { exec_in(val(value)); }
       MNL_INLINE void exec_in(val &&value) const {
          auto obj = this->obj.exec_out(), att = this->att.execute();
          if (MNL_UNLIKELY(!test<sym>(att)))
@@ -504,6 +538,7 @@ namespace aux {
             MNL_ERR_LOC(_loc, MNL_SYM("KeyLookupFailed"));
          return cast<const object &>(obj)[att.value];
       }
+      MNL_INLINE void exec_in(const val &value) const { exec_in(val(value)); }
       MNL_INLINE void exec_in(val &&value) const {
          auto &obj = tmp_stk[tmp_frm + this->obj.off];
          try {
