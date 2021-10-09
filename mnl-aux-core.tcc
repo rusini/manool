@@ -325,19 +325,33 @@ namespace aux { namespace pub {
       vcri_range operator-(long) const noexcept;
    public: // Related stuff
       friend sym;
-      friend val  _eq(const val &, const val &),  _eq(const val &, val &&),  _eq(val &&, const val &),  _eq(val &&, val &&);
-      friend val  _ne(const val &, const val &),  _ne(const val &, val &&),  _ne(val &&, const val &),  _ne(val &&, val &&);
-      friend val  _lt(const val &, const val &),  _lt(const val &, val &&),  _lt(val &&, const val &),  _lt(val &&, val &&);
-      friend val  _le(const val &, const val &),  _le(const val &, val &&),  _le(val &&, const val &),  _le(val &&, val &&);
-      friend val  _gt(const val &, const val &),  _gt(const val &, val &&),  _gt(val &&, const val &),  _gt(val &&, val &&);
-      friend val  _ge(const val &, const val &),  _ge(const val &, val &&),  _ge(val &&, const val &),  _ge(val &&, val &&);
-      friend val _add(const val &, const val &), _add(const val &, val &&), _add(val &&, const val &), _add(val &&, val &&);
-      friend val _sub(const val &, const val &), _sub(const val &, val &&), _sub(val &&, const val &), _sub(val &&, val &&);
-      friend val _mul(const val &, const val &), _mul(const val &, val &&), _mul(val &&, const val &), _mul(val &&, val &&);
-      friend val _neg(const val &), _neg(val &&);
-      friend val _abs(const val &), _abs(val &&);
-      friend val _xor(const val &, const val &), _xor(const val &, val &&), _xor(val &&, const val &), _xor(val &&, val &&);
-      friend val _not(const val &), _not(val &&);
+   private:
+      template<typename Val, typename Res = val> using enable_ref = typename std::enable_if<
+         std::is_same<Val, const val &>::value || std::is_same<Val, val &&>::value >::type;
+      template<typename Lhs, typename Rhs> friend enable_ref<Lhs, enable_ref<Rhs>>  _eq(Lhs &&, Rhs &&);
+      template<typename Lhs, typename Rhs> friend enable_ref<Lhs, enable_ref<Rhs>>  _ne(Lhs &&, Rhs &&);
+      template<typename Lhs, typename Rhs> friend enable_ref<Lhs, enable_ref<Rhs>>  _lt(Lhs &&, Rhs &&);
+      template<typename Lhs, typename Rhs> friend enable_ref<Lhs, enable_ref<Rhs>>  _le(Lhs &&, Rhs &&);
+      template<typename Lhs, typename Rhs> friend enable_ref<Lhs, enable_ref<Rhs>>  _gt(Lhs &&, Rhs &&);
+      template<typename Lhs, typename Rhs> friend enable_ref<Lhs, enable_ref<Rhs>>  _ge(Lhs &&, Rhs &&);
+      template<typename Lhs, typename Rhs> friend enable_ref<Lhs, enable_ref<Rhs>> _add(Lhs &&, Rhs &&);
+      template<typename Lhs, typename Rhs> friend enable_ref<Lhs, enable_ref<Rhs>> _sub(Lhs &&, Rhs &&);
+      template<typename Lhs, typename Rhs> friend enable_ref<Lhs, enable_ref<Rhs>> _mul(Lhs &&, Rhs &&);
+      template<typename Rhs> friend enable_ref<Rhs> _neg(Rhs &&);
+      template<typename Rhs> friend enable_ref<Rhs> _abs(Rhs &&);
+      template<typename Lhs, typename Rhs> friend enable_ref<Lhs, enable_ref<Rhs>> _xor(Lhs &&, Rhs &&);
+      template<typename Rhs> friend enable_ref<Rhs> _not(Rhs &&);
+   public:
+      template<typename Lhs, typename Dat> friend enable_ref<Lhs, enable_corenum<Dat>>  _eq(Lhs &&, Dat);
+      template<typename Lhs, typename Dat> friend enable_ref<Lhs, enable_corenum<Dat>>  _ne(Lhs &&, Dat);
+      template<typename Lhs, typename Dat> friend enable_ref<Lhs, enable_corenum<Dat>>  _lt(Lhs &&, Dat);
+      template<typename Lhs, typename Dat> friend enable_ref<Lhs, enable_corenum<Dat>>  _le(Lhs &&, Dat);
+      template<typename Lhs, typename Dat> friend enable_ref<Lhs, enable_corenum<Dat>>  _gt(Lhs &&, Dat);
+      template<typename Lhs, typename Dat> friend enable_ref<Lhs, enable_corenum<Dat>>  _ge(Lhs &&, Dat);
+      template<typename Lhs, typename Dat> friend enable_ref<Lhs, enable_corenum<Dat>> _add(Lhs &&, Dat);
+      template<typename Lhs, typename Dat> friend enable_ref<Lhs, enable_corenum<Dat>> _sub(Lhs &&, Dat);
+      template<typename Lhs, typename Dat> friend enable_ref<Lhs, enable_corenum<Dat>> _mul(Lhs &&, Dat);
+   public:
       friend class proc_Min; friend class proc_Max;
    };
    MNL_INLINE inline void swap(val &lhs, val &rhs) noexcept { lhs.swap(rhs); }
@@ -416,31 +430,44 @@ namespace aux { namespace pub {
       long rc() const { return MNL_IF_WITHOUT_MT(_rc) MNL_IF_WITH_MT(__atomic_load_n(&_rc, __ATOMIC_RELAXED)); }
    private:
       /*atomic*/ long _rc = 1;
-      virtual val invoke(val &&, const sym &, int, val [], val * = {}) = 0;
+      template<typename Self> MNL_INLINE val invoke(Self &&self, const sym &op, int argc, val argv[], val *argv_out = {})
+         { return _invoke(std::forward<Self>(self), op, argc, argv, argv_out); }
+      virtual val _invoke(const val &, const sym &, int, val [], val *) = 0, _invoke(val &&, const sym &, int, val [], val *) = 0;
    public:
       friend sym;
       friend val;
-      friend val  _eq(const val &, const val &),  _eq(const val &, val &&),  _eq(val &&, const val &),  _eq(val &&, val &&);
-      friend val  _ne(const val &, const val &),  _ne(const val &, val &&),  _ne(val &&, const val &),  _ne(val &&, val &&);
-      friend val  _lt(const val &, const val &),  _lt(const val &, val &&),  _lt(val &&, const val &),  _lt(val &&, val &&);
-      friend val  _le(const val &, const val &),  _le(const val &, val &&),  _le(val &&, const val &),  _le(val &&, val &&);
-      friend val  _gt(const val &, const val &),  _gt(const val &, val &&),  _gt(val &&, const val &),  _gt(val &&, val &&);
-      friend val  _ge(const val &, const val &),  _ge(const val &, val &&),  _ge(val &&, const val &),  _ge(val &&, val &&);
-      friend val _add(const val &, const val &), _add(const val &, val &&), _add(val &&, const val &), _add(val &&, val &&);
-      friend val _sub(const val &, const val &), _sub(const val &, val &&), _sub(val &&, const val &), _sub(val &&, val &&);
-      friend val _mul(const val &, const val &), _mul(const val &, val &&), _mul(val &&, const val &), _mul(val &&, val &&);
-      friend val _neg(const val &), _neg(val &&);
-      friend val _abs(const val &), _abs(val &&);
-      friend val _xor(const val &, const val &), _xor(const val &, val &&), _xor(val &&, const val &), _xor(val &&, val &&);
-      friend val _not(const val &), _not(val &&);
+      template<typename Lhs, typename Rhs> friend enable_ref<Lhs, enable_ref<Rhs>>  _eq(Lhs &&, Rhs &&);
+      template<typename Lhs, typename Rhs> friend enable_ref<Lhs, enable_ref<Rhs>>  _ne(Lhs &&, Rhs &&);
+      template<typename Lhs, typename Rhs> friend enable_ref<Lhs, enable_ref<Rhs>>  _lt(Lhs &&, Rhs &&);
+      template<typename Lhs, typename Rhs> friend enable_ref<Lhs, enable_ref<Rhs>>  _le(Lhs &&, Rhs &&);
+      template<typename Lhs, typename Rhs> friend enable_ref<Lhs, enable_ref<Rhs>>  _gt(Lhs &&, Rhs &&);
+      template<typename Lhs, typename Rhs> friend enable_ref<Lhs, enable_ref<Rhs>>  _ge(Lhs &&, Rhs &&);
+      template<typename Lhs, typename Rhs> friend enable_ref<Lhs, enable_ref<Rhs>> _add(Lhs &&, Rhs &&);
+      template<typename Lhs, typename Rhs> friend enable_ref<Lhs, enable_ref<Rhs>> _sub(Lhs &&, Rhs &&);
+      template<typename Lhs, typename Rhs> friend enable_ref<Lhs, enable_ref<Rhs>> _mul(Lhs &&, Rhs &&);
+      template<typename Rhs> friend enable_ref<Rhs> _neg(Rhs &&);
+      template<typename Rhs> friend enable_ref<Rhs> _abs(Rhs &&);
+      template<typename Lhs, typename Rhs> friend enable_ref<Lhs, enable_ref<Rhs>> _xor(Lhs &&, Rhs &&);
+      template<typename Rhs> friend enable_ref<Rhs> _not(Rhs &&);
+   public:
+      template<typename Lhs, typename Dat> friend enable_ref<Lhs, enable_corenum<Dat>>  _eq(Lhs &&, Dat);
+      template<typename Lhs, typename Dat> friend enable_ref<Lhs, enable_corenum<Dat>>  _ne(Lhs &&, Dat);
+      template<typename Lhs, typename Dat> friend enable_ref<Lhs, enable_corenum<Dat>>  _lt(Lhs &&, Dat);
+      template<typename Lhs, typename Dat> friend enable_ref<Lhs, enable_corenum<Dat>>  _le(Lhs &&, Dat);
+      template<typename Lhs, typename Dat> friend enable_ref<Lhs, enable_corenum<Dat>>  _gt(Lhs &&, Dat);
+      template<typename Lhs, typename Dat> friend enable_ref<Lhs, enable_corenum<Dat>>  _ge(Lhs &&, Dat);
+      template<typename Lhs, typename Dat> friend enable_ref<Lhs, enable_corenum<Dat>> _add(Lhs &&, Dat);
+      template<typename Lhs, typename Dat> friend enable_ref<Lhs, enable_corenum<Dat>> _sub(Lhs &&, Dat);
+      template<typename Lhs, typename Dat> friend enable_ref<Lhs, enable_corenum<Dat>> _mul(Lhs &&, Dat);
    };
    template<typename Dat> class box final: val::root {
       Dat dat;
       explicit box(Dat &&dat): root(std::is_same<Dat, std::vector<val>>::value ? array : other), dat(std::move(dat)) {}
       ~box() {}
-      val invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) override { return dat.invoke(std::move(self), op, argc, argv, argv_out); }
-      val _invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out);
-      val apply(const val &self, const val &);
+      val _invoke(const val &self, const sym &op, int argc, val argv[], val *argv_out) override { return invoke(self, op, argc, argv, argv_out); }
+      val _invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) override { return invoke(std::move(self), op, argc, argv, argv_out); }
+      template<typename Self> MNL_INLINE val invoke(Self &&self, const sym &op, int argc, val argv[], val *argv_out)
+         { return dat.invoke(std::forward<Val>(self), op, argc, argv, argv_out); }
       friend val;
    };
    template<> class box<decltype(nullptr)>; // to be left incomplete to improve diagnostics
@@ -542,6 +569,13 @@ namespace aux { namespace pub {
    }
    MNL_INLINE inline long val::rc() const noexcept
       { return static_cast<const root *>(rep.dat<void *>())->rc(); }
+
+   template<> MNL_INLINE inline bool val::test<std::vector>() const noexcept
+      { return MNL_LIKELY(rep.tag() == 0x7FF8u) && static_cast<root *>(rep.dat<void *>())->type == root::array; }
+   template<> MNL_INLINE inline bool val::test<const std::vector &>() const noexcept
+      { return test<std::vector>(); }
+   template<> MNL_INLINE inline bool val::test<std::vector &>() const noexcept
+      { return test<std::vector>(); }
 
    // Fake test/cast for val outputs
    template<> MNL_INLINE inline bool val::test<const val &>() const noexcept { return true; }
@@ -788,20 +822,39 @@ namespace aux { namespace pub {
    }
 
 
+   template<typename Target> MNL_INLINE inline std::enable_if_v<
+      std::is_same_v<Target &&, const val &> || std::is_same_v<Target &&, val &&>, val>
+   _apply(Target &&target, int argc, val argv[]) {
+      if (MNL_LIKELY(target.rep.tag() == 0x7FF8u))
+         return static_cast<root *>(target.rep.template dat<void *>())->invoke(std::forward<decltype(target)>(target), MNL_SYM("Apply"), argc, argv);
+      if (MNL_LIKELY(test<sym>(target))
+         return cast<const sym &>(target)(argc, argv);
+      MNL_ERR(MNL_SYM("UnrecognizedOperation"));
+   }
+
    template<typename Target, typename Arg0> MNL_INLINE inline std::enable_if_v<
       (std::is_same_v<Target &&, const val &> || std::is_same_v<Target &&, val &&>) &&
       (std::is_same<Arg0 &&, const val &> || std::is_same<Arg0 &&, val &&>), val>
    _apply(Target &&target, Arg0 &&arg0) {
-      if (target.rep.tag() == 0x7FF8u && static_cast<val::root *>(target.rep.template dat<void *>())->tag == val::root::array) {
-         if (MNL_LIKELY(test<long long>(arg0))) { // Array[Index]
-            if (MNL_UNLIKELY(cast<long long>(arg0) < 0) || MNL_UNLIKELY(cast<long long>(arg0) >= cast<const vector<val> &>(target).size()))
-               MNL_ERR(MNL_SYM("IndexOutOfRange"));
+      if (MNL_LIKELY(target.rep.tag() == 0x7FF8u)) {
+         if (MNL_LIKELY(static_cast<root *>(target.rep.template dat<void *>())->type == val::root::array) {
+            if (MNL_UNLIKELY(test<long long>(arg0)) goto fallback;
+            if (MNL_UNLIKELY(cast<long long>(arg0) >= cast<const vector<val> &>(target).size())) MNL_ERR(MNL_SYM("IndexOutOfRange"));
             return cast<const vector<val> &>(target)[cast<long long>(arg0)];
          }
+         if (MNL_LIKELY(static_cast<root *>(target.rep.template dat<void *>())->type == val::root::record) {
+            if (MNL_UNLIKELY(test<sym>(arg0)) goto fallback;
+            return cast<const vector<val> &>(target)[cast<long long>(arg0)];
+         }
+      fallback:
+         return static_cast<root *>(target.rep.template dat<void *>())->invoke(std::forward<decltype(target)>(target), MNL_SYM("Apply"), argc, argv);
       }
-      val argv[] = {std::forward<Arg0>(arg0)};
-      return std::forward<Target>(target)(std::extent<decltype(argv)>::value, argv);
+      if (MNL_LIKELY(test<sym>(target))
+         return std::forward<Target>(target)(std::forward<Arg0>(arg0));
+      MNL_ERR(MNL_SYM("UnrecognizedOperation"));
    }
+
+
    template<typename Target, typename Arg0> MNL_INLINE inline
    typename std::enable_if<std::is_same<typename std::remove_cv<typename std::remove_reference<Target &&>::type>::type, val>::value &&
       !std::is_same<typename std::remove_cv<typename std::remove_reference<Arg0 &&>::type>::type, val>::value, val>::type
@@ -819,14 +872,10 @@ namespace aux { namespace pub {
 
 
 
-   template<typename Lhs, typename Rhs> MNL_INLINE inline std::enable_if_t<
-      (std::is_same_v<Lhs &&, const val &> || std::is_same_v<Lhs &&, val &&>) &&
-      (std::is_same_v<Rhs &&, const val &> || std::is_same_v<Rhs &&, val &&>), val >
-   _eq(Lhs &&lhs, Rhs &&rhs) {
+   template<typename Lhs, typename Rhs> MNL_INLINE inline val::enable_ref<Lhs, val::enable_ref<Rhs>> _eq(Lhs &&lhs, Rhs &&rhs) {
       switch (lhs.rep.tag()) {
-      case 0x7FF8u: return static_cast<val::root *>(lhs.rep.template dat<void *>())->invoke(
-         std::conditional_t<std::is_same_v<Lhs &&, const val &>, val, val &&>(lhs), MNL_SYM("=="), 1,
-         &const_cast<val &>((const val &)std::conditional_t<std::is_same_v<Rhs &&, const val &>, val, val &&>(rhs)) );
+      case 0x7FF8u: return static_cast<val::root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs), MNL_SYM("=="),
+         1, &const_cast<val &>((const val &)std::conditional_t<std::is_same_v<Rhs &&, const val &>, val, val &&>(rhs)));
       case 0x7FF9u: return  test<>(rhs);
       case 0x7FFAu: return  MNL_LIKELY(test<long long>(rhs)) && cast<long long>(lhs) == cast<long long>(rhs);
       default:      return  MNL_LIKELY(test<double>(rhs)) && cast<double>(lhs) == cast<double>(rhs);
@@ -837,14 +886,10 @@ namespace aux { namespace pub {
       case 0x7FFDu: return  MNL_LIKELY(test<unsigned>(rhs)) && cast<unsigned>(lhs) == cast<unsigned>(rhs);
       }
    }
-   template<typename Lhs, typename Rhs> MNL_INLINE inline std::enable_if_t<
-      (std::is_same_v<Lhs &&, const val &> || std::is_same_v<Lhs &&, val &&>) &&
-      (std::is_same_v<Rhs &&, const val &> || std::is_same_v<Rhs &&, val &&>), val >
-   _ne(Lhs &&lhs, Rhs &&rhs) {
+   template<typename Lhs, typename Rhs> MNL_INLINE inline val::enable_ref<Lhs, val::enable_ref<Rhs>> _ne(Lhs &&lhs, Rhs &&rhs) {
       switch (lhs.rep.tag()) {
-      case 0x7FF8u: return static_cast<val::root *>(lhs.rep.template dat<void *>())->invoke(
-         std::conditional_t<std::is_same_v<Lhs &&, const val &>, val, val &&>(lhs), MNL_SYM("<>"), 1,
-         &const_cast<val &>((const val &)std::conditional_t<std::is_same_v<Rhs &&, const val &>, val, val &&>(rhs)) );
+      case 0x7FF8u: return static_cast<val::root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs), MNL_SYM("<>"),
+         1, &const_cast<val &>((const val &)std::conditional_t<std::is_same_v<Rhs &&, const val &>, val, val &&>(rhs)));
       case 0x7FF9u: return !test<>(rhs);
       case 0x7FFAu: return !MNL_LIKELY(test<long long>(rhs)) || cast<long long>(lhs) != cast<long long>(rhs);
       default:      return !MNL_LIKELY(test<double>(rhs)) || cast<double>(lhs) != cast<double>(rhs);
@@ -856,15 +901,11 @@ namespace aux { namespace pub {
       }
    }
 # define MNL_M(ID, OP) \
-   template<typename Lhs, typename Rhs> MNL_INLINE inline std::enable_if_t< \
-      (std::is_same_v<Lhs &&, const val &> || std::is_same_v<Lhs &&, val &&>) && \
-      (std::is_same_v<Rhs &&, const val &> || std::is_same_v<Rhs &&, val &&>), val > \
-   ID(Lhs &&lhs, Rhs &&rhs) { \
+   template<typename Lhs, typename Rhs> MNL_INLINE inline val::enable_ref<Lhs, val::enable_ref<Rhs>> ID(Lhs &&lhs, Rhs &&rhs) { \
       switch (lhs.rep.tag()) { \
       case 0x7FF8u: /* BoxPtr (fallback) */ \
-         return static_cast<val::root *>(lhs.rep.template dat<void *>())->invoke( \
-            std::conditional_t<std::is_same_v<Lhs &&, const val &>, val, val &&>(lhs), MNL_SYM(#OP), 1, \
-            &const_cast<val &>((const val &)std::conditional_t<std::is_same_v<Rhs &&, const val &>, val, val &&>(rhs)) ); \
+         return static_cast<val::root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs), MNL_SYM(#OP), \
+            1, &const_cast<val &>((const val &)std::conditional_t<std::is_same_v<Rhs &&, const val &>, val, val &&>(rhs))); \
       case 0x7FF9u: case 0x7FFBu: case 0x7FFEu: case 0x7FFFu: \
          MNL_ERR(MNL_SYM("UnrecognizedOperation")); \
       case 0x7FFAu: /* I48 */ \
@@ -885,10 +926,7 @@ namespace aux { namespace pub {
    MNL_M(_lt, <) MNL_M(_le, <=) MNL_M(_gt, >) MNL_M(_ge, >=)
 # undef MNL_M
 # define MNL_M(ID, SYM) \
-   template<typename Lhs, typename Rhs> MNL_INLINE inline std::enable_if_t< \
-      (std::is_same_v<Lhs &&, const val &> || std::is_same_v<Lhs &&, val &&>) && \
-      (std::is_same_v<Rhs &&, const val &> || std::is_same_v<Rhs &&, val &&>), val > \
-   ID(Lhs &&lhs, Rhs &&rhs) { \
+   template<typename Lhs, typename Rhs> MNL_INLINE inline val::enable_ref<Lhs, val::enable_ref<Rhs>> ID(Lhs &&lhs, Rhs &&rhs) { \
       if (MNL_LIKELY(test<long long>(rhs))) { \
          if (MNL_UNLIKELY(!test<long long>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
          return aux::ID(cast<long long>(lhs), cast<long long>(rhs)); \
@@ -905,23 +943,19 @@ namespace aux { namespace pub {
          if (MNL_UNLIKELY(!test<float>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
          return aux::ID(cast<float>(lhs), cast<float>(rhs)); \
       } \
-      if (MNL_LIKELY(lhs.rep.tag() == 0x7FF8u)) \
-         return static_cast<val::root *>(lhs.rep.template dat<void *>())->invoke( \
-            std::conditional_t<std::is_same_v<Lhs &&, const val &>, val, val &&>(lhs), MNL_SYM(SYM), 1, \
-            &const_cast<val &>((const val &)std::conditional_t<std::is_same_v<Rhs &&, const val &>, val, val &&>(rhs)) ); \
+      if (MNL_LIKELY(lhs.rep.tag() == 0x7FF8u)) /* BoxPtr (fallback) */ \
+         return static_cast<val::root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs), MNL_SYM(SYM), \
+            1, &const_cast<val &>((const val &)std::conditional_t<std::is_same_v<Rhs &&, const val &>, val, val &&>(rhs))); \
       MNL_ERR(MNL_SYM("UnrecognizedOperation")); \
    } \
-// end # define MNL_M(ID, OP)
+// end # define MNL_M(ID, SYM)
    MNL_M(_add, "+") MNL_M(_sub, "-") MNL_M(_mul, "*")
 # undef MNL_M
 # define MNL_M(OP, SYM) \
-   template<typename Rhs> MNL_INLINE inline std::enable_if_t< \
-      (std::is_same_v<Rhs &&, const val &> || std::is_same_v<Rhs &&, val &&>), val > \
-   OP(Rhs &&rhs) { \
+   template<typename Rhs> MNL_INLINE inline val::enable_ref<Rhs> OP(Rhs &&rhs) { \
       switch (rhs.rep.tag()) { \
       case 0x7FF8u: /* BoxPtr (fallback) */ \
-         return static_cast<val::root *>(rhs.rep.dat<void *>())->invoke( \
-            std::conditional_t<std::is_same_v<Rhs &&, const val &>, val, val &&>(rhs), MNL_SYM(SYM), 0, {} ); \
+         return static_cast<val::root *>(rhs.rep.dat<void *>())->invoke(std::forward<Rhs>(rhs), MNL_SYM(SYM), 0, {}); \
       case 0x7FF9u: case 0x7FFBu: case 0x7FFEu: case 0x7FFFu: \
          MNL_ERR(MNL_SYM("UnrecognizedOperation")); \
       case 0x7FFAu: return aux::OP(cast<long long>(rhs)); \
@@ -933,13 +967,11 @@ namespace aux { namespace pub {
 // end # define MNL_M(OP, SYM)
    MNL_M(_neg, "Neg") MNL_M(_abs, "Abs")
 # undef MNL_M
-   template<typename Lhs, typename Rhs> MNL_INLINE inline std::enable_if_t<
-      (std::is_same_v<Lhs &&, const val &> || std::is_same_v<Lhs &&, val &&>) &&
-      (std::is_same_v<Rhs &&, const val &> || std::is_same_v<Rhs &&, val &&>), val >
-   _xor(Lhs &&lhs, Rhs &&rhs) {
+   template<typename Lhs, typename Rhs> MNL_INLINE inline val::enable_ref<Lhs, val::enable_ref<Rhs>> _xor(Lhs &&lhs, Rhs &&rhs) {
       switch (lhs.rep.tag()) {
       case 0x7FF8u: // BoxPtr (fallback)
-         return static_cast<val::root *>(lhs.rep.dat<void *>())->invoke(move(lhs), MNL_SYM("Xor"), 1, &rhs);
+         return static_cast<val::root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs), MNL_SYM("Xor"),
+            1, &const_cast<val &>((const val &)std::conditional_t<std::is_same_v<Rhs &&, const val &>, val, val &&>(rhs)));
       default:
          MNL_ERR(MNL_SYM("UnrecognizedOperation"));
       case 0x7FFEu: // Bool/False
@@ -953,13 +985,10 @@ namespace aux { namespace pub {
          return cast<unsigned>(lhs) ^ cast<unsigned>(rhs);
       }
    }
-   template<typename Rhs> MNL_INLINE inline std::enable_if_t<
-      (std::is_same_v<Rhs &&, const val &> || std::is_same_v<Rhs &&, val &&>), val >
-   _not(Rhs &&rhs) {
+   template<typename Rhs> MNL_INLINE inline val::enable_ref<Rhs> _not(Rhs &&rhs) {
       switch (rhs.rep.tag()) {
       case 0x7FF8u: // BoxPtr (fallback)
-         return static_cast<val::root *>(rhs.rep.dat<void *>())->invoke(
-            std::conditional_t<std::is_same_v<Rhs &&, const val &>, val, val &&>(rhs), MNL_SYM("~"), 0, {} );
+         return static_cast<val::root *>(rhs.rep.dat<void *>())->invoke(std::forward<Rhs>(rhs), MNL_SYM("~"), 0, {});
       case 0x7FF9u: case 0x7FFBu:
          MNL_ERR(MNL_SYM("UnrecognizedOperation"));
       case 0x7FFEu: return true;
@@ -973,68 +1002,50 @@ namespace aux { namespace pub {
 
    // I48, F64, F32, U32 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   template<typename Lhs, typename Dat> MNL_INLINE inline std::enable_if_t<
-      (std::is_same_v<Lhs &&, const val &> || std::is_same_v<Lhs &&, val &&>) &&
-      (std::is_same_v<Dat, long long> || std::is_same_v<Dat, double> || std::is_same_v<Dat, float> || std::is_same_v<Dat, unsigned>), val >
-   _eq(Lhs &&lhs, Dat rhs)
-      { if (MNL_LIKELY(test<Dat>(lhs))) return cast<Dat>(lhs) == rhs; return ID(std::forward<Lhs>(lhs), (val)rhs); }
-   template<typename Lhs, typename Dat> MNL_INLINE inline std::enable_if_t<
-      (std::is_same_v<Lhs &&, const val &> || std::is_same_v<Lhs &&, val &&>) &&
-      (std::is_same_v<Dat, long long> || std::is_same_v<Dat, double> || std::is_same_v<Dat, float> || std::is_same_v<Dat, unsigned>), val >
-   _ne(Lhs &&lhs, Dat rhs)
-      { if (MNL_LIKELY(test<Dat>(lhs))) return cast<Dat>(lhs) != rhs; return ID(std::forward<Lhs>(lhs), (val)rhs); }
+   template<typename Lhs, typename Dat> MNL_INLINE inline val::enable_ref<Lhs, enable_corenum<Dat>> _eq(Lhs &&lhs, Dat rhs) {
+      if (MNL_LIKELY(test<Dat>(lhs))) return cast<Dat>(lhs) == rhs;
+      if (!MNL_LIKELY(lhs.rep.tag() == 0x7FF8u)) return false;
+      return static_cast<val::root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs), MNL_SYM("=="), 1, &const_cast<val &>((const val &)rhs));
+   }
+   template<typename Lhs, typename Dat> MNL_INLINE inline val::enable_ref<Lhs, enable_corenum<Dat>> _ne(Lhs &&lhs, Dat rhs) {
+      if (MNL_LIKELY(test<Dat>(lhs))) return cast<Dat>(lhs) != rhs;
+      if (!MNL_LIKELY(lhs.rep.tag() == 0x7FF8u)) return true;
+      return static_cast<val::root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs), MNL_SYM("<>"), 1, &const_cast<val &>((const val &)rhs));
+   }
 # define MNL_M(ID, OP) \
-   template<typename Lhs, typename Dat> MNL_INLINE inline std::enable_if_t< \
-      (std::is_same_v<Lhs &&, const val &> || std::is_same_v<Lhs &&, val &&>) && \
-      (std::is_same_v<Dat, long long> || std::is_same_v<Dat, double> || std::is_same_v<Dat, float> || std::is_same_v<Dat, unsigned>), val > \
-   OP(Lhs &&lhs, Dat rhs) { \
-      if (MNL_LIKELY(test<Dat>(lhs))) \
-         return cast<Dat>(lhs) OP rhs; \
-      if (MNL_LIKELY(lhs.rep.tag() == 0x7FF8u)) \
-         return static_cast<val::root *>(lhs.rep.template dat<void *>())->invoke( \
-            std::conditional_t<std::is_same_v<Lhs &&, const val &>, val, val &&>(lhs), MNL_SYM(#OP), 1, &const_cast<val &>((const val &)rhs) ); \
-      return []()MNL_NORETURN{ return ID(std::forward<Lhs>(lhs), (val)rhs); }(); \
+   template<typename Lhs, typename Dat> MNL_INLINE inline val::enable_ref<Lhs, enable_corenum<Dat>> ID(Lhs &&lhs, Dat rhs) { \
+      if (MNL_LIKELY(test<Dat>(lhs))) return cast<Dat>(lhs) OP rhs; \
+      if (!MNL_LIKELY(lhs.rep.tag() == 0x7FF8u)) return [&]()MNL_NORETURN{ return ID(std::forward<Lhs>(lhs), (val)rhs); }(); \
+      return static_cast<val::root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs), MNL_SYM(#OP), 1, &const_cast<val &>((const val &)rhs)); \
    } \
 // end # define MNL_M(ID, OP)
    MNL_M(_lt, <) MNL_M(_le, <=) MNL_M(_gt, >) MNL_M(_ge, >=)
 # undef MNL_M
-# define MNL_M(ID, OP) \
-   template<typename Lhs, typename Dat> MNL_INLINE inline std::enable_if_t< \
-      (std::is_same_v<Lhs &&, const val &> || std::is_same_v<Lhs &&, val &&>) && \
-      (std::is_same_v<Dat, long long> || std::is_same_v<Dat, double> || std::is_same_v<Dat, float> || std::is_same_v<Dat, unsigned>), val > \
-   OP(Lhs &&lhs, Dat rhs) \
-      { if (MNL_LIKELY(test<Dat>(lhs))) return aux::OP(cast<Dat>(lhs), rhs); return OP(std::forward<Lhs>(lhs), (val)rhs); } \
-// end # define MNL_M(ID, OP)
-   MNL_M(_add, +) MNL_M(_sub, -) MNL_M(_mul, *)
+# define MNL_M(ID, SYM) \
+   template<typename Lhs, typename Dat> MNL_INLINE inline val::enable_ref<Lhs, enable_corenum<Dat>> ID(Lhs &&lhs, Dat rhs) { \
+      if (MNL_LIKELY(test<Dat>(lhs))) return aux::ID(cast<Dat>(lhs), rhs); \
+      if (!MNL_LIKELY(lhs.rep.tag() == 0x7FF8u)) return [&]()MNL_NORETURN{ return ID(std::forward<Lhs>(lhs), (val)rhs); }(); \
+      return static_cast<val::root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs), MNL_SYM(SYM), 1, &const_cast<val &>((const val &)rhs)); \
+   } \
+// end # define MNL_M(ID, SYM)
+   MNL_M(_add, "+") MNL_M(_sub, "-") MNL_M(_mul, "*")
 # undef MNL_M
 
-   template<typename Rhs, typename Dat> MNL_INLINE inline std::enable_if_t<
-      (std::is_same_v<Rhs &&, const val &> || std::is_same_v<Lhs &&, val &&>) &&
-      (std::is_same_v<Dat, long long> || std::is_same_v<Dat, double> || std::is_same_v<Dat, float> || std::is_same_v<Dat, unsigned>), bool >
-   _eq(Dat lhs, const Rhs &rhs) noexcept
+   template<typename Rhs, typename Dat> MNL_INLINE inline val::enable_ref<Rhs, enable_corenum<Dat, bool>> _eq(Dat lhs, Rhs &&rhs) noexcept
       { return  MNL_LIKELY(test<Dat>(rhs)) && lhs == cast<Dat>(rhs); }
-   template<typename Rhs, typename Dat> MNL_INLINE inline std::enable_if_t<
-      (std::is_same_v<Rhs &&, const val &> || std::is_same_v<Lhs &&, val &&>) &&
-      (std::is_same_v<Dat, long long> || std::is_same_v<Dat, double> || std::is_same_v<Dat, float> || std::is_same_v<Dat, unsigned>), bool >
-   _ne(Dat lhs, const Rhs &rhs) noexcept
+   template<typename Rhs, typename Dat> MNL_INLINE inline val::enable_ref<Rhs, enable_corenum<Dat, bool>> _ne(Dat lhs, Rhs &&rhs) noexcept
       { return !MNL_LIKELY(test<Dat>(rhs)) || lhs != cast<Dat>(rhs); }
 # define MNL_M(ID, OP) \
-   template<typename Rhs, typename Dat> MNL_INLINE inline std::enable_if_t< \
-      (std::is_same_v<Rhs &&, const val &> || std::is_same_v<Lhs &&, val &&>) && \
-      (std::is_same_v<Dat, long long> || std::is_same_v<Dat, double> || std::is_same_v<Dat, float> || std::is_same_v<Dat, unsigned>), bool > \
-   OP(Dat lhs, const Rhs &rhs) \
+   template<typename Rhs, typename Dat> MNL_INLINE inline val::enable_ref<Rhs, enable_corenum<Dat, bool>> ID(Dat lhs, Rhs &&rhs) \
       { if (MNL_LIKELY(test<Dat>(rhs))) return lhs OP cast<Dat>(rhs); MNL_ERR(MNL_SYM("TypeMismatch")); } \
 // end # define MNL_M(ID, OP)
    MNL_M(_lt, <) MNL_M(_le, <=) MNL_M(_gt, >) MNL_M(_ge, >=)
 # undef MNL_M
-# define MNL_M(ID, OP) \
-   template<typename Rhs, typename Dat> MNL_INLINE inline std::enable_if_t< \
-      (std::is_same_v<Rhs &&, const val &> || std::is_same_v<Lhs &&, val &&>) && \
-      (std::is_same_v<Dat, long long> || std::is_same_v<Dat, double> || std::is_same_v<Dat, float> || std::is_same_v<Dat, unsigned>), Dat > \
-   OP(Dat lhs, const Rhs &rhs) \
-      { if (MNL_LIKELY(test<Dat>(rhs))) return aux::OP(lhs, cast<Dat>(rhs)); MNL_ERR(MNL_SYM("TypeMismatch")); } \
-// end # define MNL_M(ID, OP)
-   MNL_M(_add, +) MNL_M(_sub, -) MNL_M(_mul, *)
+# define MNL_M(ID) \
+   template<typename Rhs, typename Dat> MNL_INLINE inline val::enable_ref<Rhs, enable_corenum<Dat, Dat>> ID(Dat lhs, Rhs &&rhs) \
+      { if (MNL_LIKELY(test<Dat>(rhs))) return aux::ID(lhs, cast<Dat>(rhs)); MNL_ERR(MNL_SYM("TypeMismatch")); } \
+// end # define MNL_M(ID)
+   MNL_M(_add) MNL_M(_sub) MNL_M(_mul)
 # undef MNL_M
 
 
