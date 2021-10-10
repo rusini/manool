@@ -433,6 +433,57 @@ namespace aux { namespace pub {
       template<typename Self> MNL_INLINE val invoke(Self &&self, const sym &op, int argc, val argv[], val *argv_out = {})
          { return _invoke(std::forward<Self>(self), op, argc, argv, argv_out); }
       virtual val _invoke(const val &, const sym &, int, val [], val *) = 0, _invoke(val &&, const sym &, int, val [], val *) = 0;
+   private:
+      private:
+         virtual val _apply(const val &self, const val &) = 0;
+         virtual val _apply(const val &self, val &&) = 0;
+         virtual val _apply(val &&self, const val &) = 0;
+         virtual val _apply(val &&self, val &&) = 0;
+         virtual val _apply(const val &self, const val &, const val &) = 0;
+         virtual val _apply(const val &self, const val &, val &&) = 0;
+         virtual val _apply(const val &self, val &&, const val &) = 0;
+         virtual val _apply(const val &self, val &&, val &&) = 0;
+         virtual val _apply(val &&self, const val &, const val &) = 0;
+         virtual val _apply(val &&self, const val &, val &&) = 0;
+         virtual val _apply(val &&self, val &&, const val &) = 0;
+         virtual val _apply(val &&self, val &&, val &&) = 0;
+      private:
+         virtual val _repl(const val &self, const val &, const val &) = 0;
+         virtual val _repl(const val &self, const val &, val &&) = 0;
+         virtual val _repl(const val &self, const val &, val &) = 0;
+         virtual val _repl(const val &self, val &&, const val &) = 0;
+         virtual val _repl(const val &self, val &&, val &&) = 0;
+         virtual val _repl(const val &self, val &&, val &) = 0;
+         virtual val _repl(val &&self, const val &, const val &) = 0;
+         virtual val _repl(val &&self, const val &, val &&) = 0;
+         virtual val _repl(val &&self, const val &, val &) = 0;
+         virtual val _repl(val &&self, val &&, const val &) = 0;
+         virtual val _repl(val &&self, val &&, val &&) = 0;
+         virtual val _repl(val &&self, val &&, val &) = 0;
+         virtual val _repl(const val &self, const val &, const val &, const val &) = 0;
+         virtual val _repl(const val &self, const val &, const val &, val &&) = 0;
+         virtual val _repl(const val &self, const val &, const val &, val &) = 0;
+         virtual val _repl(const val &self, const val &, val &&, const val &) = 0;
+         virtual val _repl(const val &self, const val &, val &&, val &&) = 0;
+         virtual val _repl(const val &self, const val &, val &&, val &) = 0;
+         virtual val _repl(const val &self, val &&, const val &, const val &) = 0;
+         virtual val _repl(const val &self, val &&, const val &, val &&) = 0;
+         virtual val _repl(const val &self, val &&, const val &, val &) = 0;
+         virtual val _repl(const val &self, val &&, val &&, const val &) = 0;
+         virtual val _repl(const val &self, val &&, val &&, val &&) = 0;
+         virtual val _repl(const val &self, val &&, val &&, val &) = 0;
+         virtual val _repl(val &&self, const val &, const val &, const val &) = 0;
+         virtual val _repl(val &&self, const val &, const val &, val &&) = 0;
+         virtual val _repl(val &&self, const val &, const val &, val &) = 0;
+         virtual val _repl(val &&self, const val &, val &&, const val &) = 0;
+         virtual val _repl(val &&self, const val &, val &&, val &&) = 0;
+         virtual val _repl(val &&self, const val &, val &&, val &) = 0;
+         virtual val _repl(val &&self, val &&, const val &, const val &) = 0;
+         virtual val _repl(val &&self, val &&, const val &, val &&) = 0;
+         virtual val _repl(val &&self, val &&, const val &, val &) = 0;
+         virtual val _repl(val &&self, val &&, val &&, const val &) = 0;
+         virtual val _repl(val &&self, val &&, val &&, val &&) = 0;
+         virtual val _repl(val &&self, val &&, val &&, val &) = 0;
    public:
       friend sym;
       friend val;
@@ -469,6 +520,107 @@ namespace aux { namespace pub {
       template<typename Self> MNL_INLINE val invoke(Self &&self, const sym &op, int argc, val argv[], val *argv_out)
          { return dat.invoke(std::forward<Val>(self), op, argc, argv, argv_out); }
       friend val;
+
+
+
+   private:
+      template<typename Rhs> MNL_INLINE auto move(Rhs &&rhs) noexcept { return std::move(rhs); }
+      template<typename Rhs> MNL_INLINE auto forward(Rhs &&rhs) noexcept { return forward<Rhs>(rhs); }
+   private:
+      MNL_NOINLINE val _invoke(const val &self, const sym &op, int argc, val argv[], val *argv_out) override { return invoke(self, op, argv, argv, argv_out); }
+      MNL_NOINLINE val _invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) override { return invoke(move(self), op, argv, argv, argv_out); }
+   private:
+      // For one argument (6 entries)
+      val _apply(const val &self, const val &arg0) override { return apply(self, arg0); }
+      val _apply(const val &self, val &&arg0) override { return apply(self, move(arg0)); }
+      val _apply(const val &self, const sym &arg0) override { return apply(self, arg0); }
+      val _apply(val &&self, const val &arg0) override { return apply(move(self), arg0); }
+      val _apply(val &&self, val &&arg0) override { return apply(move(self), move(arg0)); }
+      val _apply(val &&self, const sym &arg0) override { return apply(move(self), arg0); }
+      // For two arguments (12 entries)
+      val _apply(const val &self, const val &arg0, const val &arg1) override { return apply(self, arg0, arg1); }
+      val _apply(const val &self, const val &arg0, val &&arg1) override { return apply(self, arg0, move(arg1)); }
+      val _apply(const val &self, const val &arg0, const sym &arg1) override { return apply(self, arg0, arg1); }
+      val _apply(const val &self, val &&arg0, const val &arg1) override { return apply(self, move(arg0), arg1); }
+      val _apply(const val &self, val &&arg0, val &&arg1) override { return apply(self, move(arg0), move(arg1)); }
+      val _apply(const val &self, val &&arg0, const sym &arg1) override { return apply(self, move(arg0), arg1); }
+      val _apply(val &&self, const val &arg0, const val &arg1) override { return apply(move(self), arg0, arg1); }
+      val _apply(val &&self, const val &arg0, val &&arg1) override { return apply(move(self), arg0, move(arg1)); }
+      val _apply(val &&self, const val &arg0, const sym &arg1) override { return apply(move(self), arg0, arg1); }
+      val _apply(val &&self, val &&arg0, const val &arg1) override { return apply(move(self), move(arg0), arg1); }
+      val _apply(val &&self, val &&arg0, val &&arg1) override { return apply(move(self), move(arg0), move(arg1)); }
+      val _apply(val &&self, val &&arg0, const sym &arg1) override { return apply(move(self), move(arg0), arg1); }
+   private:
+      // For two arguments (12 entries)
+      val _repl(const val &self, const val &arg0, const val &arg1, val *argv_out) override { return repl(self, arg0, arg1, argv_out); }
+      val _repl(const val &self, const val &arg0, val &&arg1, val *argv_out) override { return repl(self, arg0, move(arg1), argv_out); }
+      val _repl(const val &self, const val &arg0, const sym &arg1, val *argv_out) override { return repl(self, arg0, arg1, argv_out); }
+      val _repl(const val &self, val &&arg0, const val &arg1, val *argv_out) override { return repl(self, move(arg0), arg1, argv_out); }
+      val _repl(const val &self, val &&arg0, val &&arg1, val *argv_out) override { return repl(self, move(arg0), move(arg1), argv_out); }
+      val _repl(const val &self, val &&arg0, const sym &arg1, val *argv_out) override { return repl(self, move(arg0), arg1, argv_out); }
+      val _repl(val &&self, const val &arg0, const val &arg1, val *argv_out) override { return repl(move(self), arg0, arg1, argv_out); }
+      val _repl(val &&self, const val &arg0, val &&arg1, val *argv_out) override { return repl(move(self), arg0, move(arg1), argv_out); }
+      val _repl(val &&self, const val &arg0, const sym &arg1, val *argv_out) override { return repl(move(self), arg0, arg1, argv_out); }
+      val _repl(val &&self, val &&arg0, const val &arg1, val *argv_out) override { return repl(move(self), move(arg0), arg1, argv_out); }
+      val _repl(val &&self, val &&arg0, val &&arg1, val *argv_out) override { return repl(move(self), move(arg0), move(arg1), argv_out); }
+      val _repl(val &&self, val &&arg0, const sym &arg1, val *argv_out) override { return repl(move(self), move(arg0), arg1, argv_out); }
+      // For three arguments (24 entries)
+      val _repl(const val &self, const val &arg0, const val &arg1, const val &arg2, val *argv_out) override { return repl(self, arg0, arg1, arg2, argv_out); }
+      val _repl(const val &self, const val &arg0, const val &arg1, val &&arg2, val *argv_out) override { return repl(self, arg0, arg1, move(arg2), argv_out); }
+      val _repl(const val &self, const val &arg0, const val &arg1, const sym &arg2, val *argv_out) override { return repl(self, arg0, arg1, arg2, argv_out); }
+      val _repl(const val &self, const val &arg0, val &&arg1, const val &arg2, val *argv_out) override { return repl(self, arg0, move(arg1), arg2, argv_out); }
+      val _repl(const val &self, const val &arg0, val &&arg1, val &&arg2, val *argv_out) override { return repl(self, arg0, move(arg1), move(arg2), argv_out); }
+      val _repl(const val &self, const val &arg0, val &&arg1, const sym &arg2, val *argv_out) override { return repl(self, arg0, move(arg1), arg2, argv_out); }
+      val _repl(const val &self, val &&arg0, const val &arg1, const val &arg2, val *argv_out) override { return repl(self, move(arg0), arg1, arg2, argv_out); }
+      val _repl(const val &self, val &&arg0, const val &arg1, val &&arg2, val *argv_out) override { return repl(self, move(arg0), arg1, move(arg2), argv_out); }
+      val _repl(const val &self, val &&arg0, const val &arg1, const sym &arg2, val *argv_out) override { return repl(self, move(arg0), arg1, arg2, argv_out); }
+      val _repl(const val &self, val &&arg0, val &&arg1, const val &arg2, val *argv_out) override { return repl(self, move(arg0), move(arg1), arg2, argv_out); }
+      val _repl(const val &self, val &&arg0, val &&arg1, val &&arg2, val *argv_out) override { return repl(self, move(arg0), move(arg1), move(arg2), argv_out); }
+      val _repl(const val &self, val &&arg0, val &&arg1, const sym &arg2, val *argv_out) override { return repl(self, move(arg0), move(arg1), arg2, argv_out); }
+      val _repl(val &&self, const val &arg0, const val &arg1, const val &arg2, val *argv_out) override { return repl(move(self), arg0, arg1, arg2, argv_out); }
+      val _repl(val &&self, const val &arg0, const val &arg1, val &&arg2, val *argv_out) override { return repl(move(self), arg0, arg1, move(arg2), argv_out); }
+      val _repl(val &&self, const val &arg0, const val &arg1, const sym &arg2, val *argv_out) override { return repl(move(self), arg0, arg1, arg2, argv_out); }
+      val _repl(val &&self, const val &arg0, val &&arg1, const val &arg2, val *argv_out) override { return repl(move(self), arg0, move(arg1), arg2, argv_out); }
+      val _repl(val &&self, const val &arg0, val &&arg1, val &&arg2, val *argv_out) override { return repl(move(self), arg0, move(arg1), move(arg2), argv_out); }
+      val _repl(val &&self, const val &arg0, val &&arg1, const sym &arg2, val *argv_out) override { return repl(move(self), arg0, move(arg1), arg2, argv_out); }
+      val _repl(val &&self, val &&arg0, const val &arg1, const val &arg2, val *argv_out) override { return repl(move(self), move(arg0), arg1, arg2, argv_out); }
+      val _repl(val &&self, val &&arg0, const val &arg1, val &&arg2, val *argv_out) override { return repl(move(self), move(arg0), arg1, move(arg2), argv_out); }
+      val _repl(val &&self, val &&arg0, const val &arg1, const sym &arg2, val *argv_out) override { return repl(move(self), move(arg0), arg1, arg2, argv_out); }
+      val _repl(val &&self, val &&arg0, val &&arg1, const val &arg2, val *argv_out) override { return repl(move(self), move(arg0), move(arg1), arg2, argv_out); }
+      val _repl(val &&self, val &&arg0, val &&arg1, val &&arg2, val *argv_out) override { return repl(move(self), move(arg0), move(arg1), move(arg2), argv_out); }
+      val _repl(val &&self, val &&arg0, val &&arg1, const sym &arg2, val *argv_out) override { return repl(move(self), move(arg0), move(arg1), arg2, argv_out); }
+   private:
+      template<typename Self> MNL_INLINE val invoke(Self &&self, const sym &op, int argc, val argv[], val *argv_out)
+         { return dat.invoke(forward<Self>(self), op, argc, argv, argv_out); }
+      template<typename Self, typename Arg0> MNL_INLINE val apply(Self &&self, Arg0 &&arg0)
+         { return default_apply(forward<Self>(self), forward<Arg0>(arg0)); }
+      template<typename Self, typename Arg0, typename Arg1> MNL_INLINE val apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1)
+         { return default_apply(forward<Self>(self), forward<Arg0>(arg0), forward<Arg1>(arg1)); }
+      template<typename Self, typename Arg0, typename Arg1> MNL_INLINE val repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1, val *argv_out)
+         { return default_repl(forward<Self>(self), forward<Arg0>(arg0), forward<Arg1>(arg1), argv_out); }
+      template<typename Self, typename Arg0, typename Arg1, typename Arg2> MNL_INLINE val repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1, Arg2 &&arg2, val *argv_out)
+         { return default_repl(forward<Self>(self), forward<Arg0>(arg0), forward<Arg1>(arg1), forward<Arg2>(arg2), argv_out); }
+   private:
+      template<typename Self, typename Arg0>
+      MNL_INLINE val default_apply(Self &&self, Arg0 &&arg0) {
+         return _invoke(forward<Self>(self), MNL_SYM("Apply"), 1,
+            &const_cast<val &>((const val &)std::conditional_t<std::is_convertible_v<Arg0 &&, val &&>, val &&, val>(arg0)), {});
+      }
+      template<typename Self, typename Arg0, typename Arg1>
+      MNL_INLINE val default_apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
+         val argv[] = {forward<Arg0>(arg0), forward<Arg1>(arg1)};
+         return _invoke(forward<Self>(self), MNL_SYM("Apply"), std::extent_v<decltype(argv)>, argv, {});
+      }
+      template<typename Self, typename Arg0, typename Arg1>
+      MNL_INLINE val default_repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1, val *argv_out) {
+         val argv[] = {forward<Arg0>(arg0), forward<Arg1>(arg1)};
+         return _invoke(forward<Self>(self), MNL_SYM("Repl"), std::extent_v<decltype(argv)>, argv, argv_out);
+      }
+      template<typename Self, typename Arg0, typename Arg1, typename Arg2>
+      MNL_INLINE val default_repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1, Arg2 &&arg2, val *argv_out) {
+         val argv[] = {forward<Arg0>(arg0), forward<Arg1>(arg1), forward<Arg1>(arg2)};
+         return _invoke(forward<Self>(self), MNL_SYM("Repl"), std::extent_v<decltype(argv)>, argv, argv_out);
+      }
    };
    template<> class box<decltype(nullptr)>; // to be left incomplete to improve diagnostics
    template<> class box<long long>;         // ditto
@@ -1048,483 +1200,39 @@ namespace aux { namespace pub {
    MNL_M(_add) MNL_M(_sub) MNL_M(_mul)
 # undef MNL_M
 
-
-
-   MNL_INLINE inline val _eq(const val &lhs, const val &rhs) {
-      switch (lhs.rep.tag()) {
-      case 0x7FF8u: return  static_cast<val::root *>(lhs.rep.dat<void *>())->invoke(val(lhs), MNL_SYM("=="), 1, &const_cast<val &>((const val &)val(rhs)));
-      case 0x7FF9u: return  test<>(rhs);
-      case 0x7FFAu: return  MNL_LIKELY(test<long long>(rhs)) && cast<long long>(lhs) == cast<long long>(rhs);
-      default:      return  MNL_LIKELY(test<double>(rhs)) && cast<double>(lhs) == cast<double>(rhs);
-      case 0x7FFCu: return  MNL_LIKELY(test<float>(rhs)) && cast<float>(lhs) == cast<float>(rhs);
-      case 0x7FFBu: return  MNL_LIKELY(test<sym>(rhs)) && cast<const sym &>(lhs) == cast<const sym &>(rhs);
-      case 0x7FFEu: return  rhs.rep.tag() == 0x7FFEu;
-      case 0x7FFFu: return  rhs.rep.tag() == 0x7FFFu;
-      case 0x7FFDu: return  MNL_LIKELY(test<unsigned>(rhs)) && cast<unsigned>(lhs) == cast<unsigned>(rhs);
-      }
-   }
-   MNL_INLINE inline val _eq(const val &lhs, val &&rhs) {
-      switch (lhs.rep.tag()) {
-      case 0x7FF8u: return  static_cast<val::root *>(lhs.rep.dat<void *>())->invoke(val(lhs), MNL_SYM("=="), 1, &rhs);
-      case 0x7FF9u: return  test<>(rhs);
-      case 0x7FFAu: return  MNL_LIKELY(test<long long>(rhs)) && cast<long long>(lhs) == cast<long long>(rhs);
-      default:      return  MNL_LIKELY(test<double>(rhs)) && cast<double>(lhs) == cast<double>(rhs);
-      case 0x7FFCu: return  MNL_LIKELY(test<float>(rhs)) && cast<float>(lhs) == cast<float>(rhs);
-      case 0x7FFBu: return  MNL_LIKELY(test<sym>(rhs)) && cast<const sym &>(lhs) == cast<const sym &>(rhs);
-      case 0x7FFEu: return  rhs.rep.tag() == 0x7FFEu;
-      case 0x7FFFu: return  rhs.rep.tag() == 0x7FFFu;
-      case 0x7FFDu: return  MNL_LIKELY(test<unsigned>(rhs)) && cast<unsigned>(lhs) == cast<unsigned>(rhs);
-      }
-   }
-   MNL_INLINE inline val _eq(val &&lhs, const val &rhs) {
-      switch (lhs.rep.tag()) {
-      case 0x7FF8u: return  static_cast<val::root *>(lhs.rep.dat<void *>())->invoke(move(lhs), MNL_SYM("=="), 1, &const_cast<val &>((const val &)val(rhs)));
-      case 0x7FF9u: return  test<>(rhs);
-      case 0x7FFAu: return  MNL_LIKELY(test<long long>(rhs)) && cast<long long>(lhs) == cast<long long>(rhs);
-      default:      return  MNL_LIKELY(test<double>(rhs)) && cast<double>(lhs) == cast<double>(rhs);
-      case 0x7FFCu: return  MNL_LIKELY(test<float>(rhs)) && cast<float>(lhs) == cast<float>(rhs);
-      case 0x7FFBu: return  MNL_LIKELY(test<sym>(rhs)) && cast<const sym &>(lhs) == cast<const sym &>(rhs);
-      case 0x7FFEu: return  rhs.rep.tag() == 0x7FFEu;
-      case 0x7FFFu: return  rhs.rep.tag() == 0x7FFFu;
-      case 0x7FFDu: return  MNL_LIKELY(test<unsigned>(rhs)) && cast<unsigned>(lhs) == cast<unsigned>(rhs);
-      }
-   }
-   MNL_INLINE inline val _eq(val &&lhs, val &&rhs) {
-      switch (lhs.rep.tag()) {
-      case 0x7FF8u: return  static_cast<val::root *>(lhs.rep.dat<void *>())->invoke(move(lhs), MNL_SYM("=="), 1, &rhs);
-      case 0x7FF9u: return  test<>(rhs);
-      case 0x7FFAu: return  MNL_LIKELY(test<long long>(rhs)) && cast<long long>(lhs) == cast<long long>(rhs);
-      default:      return  MNL_LIKELY(test<double>(rhs)) && cast<double>(lhs) == cast<double>(rhs);
-      case 0x7FFCu: return  MNL_LIKELY(test<float>(rhs)) && cast<float>(lhs) == cast<float>(rhs);
-      case 0x7FFBu: return  MNL_LIKELY(test<sym>(rhs)) && cast<const sym &>(lhs) == cast<const sym &>(rhs);
-      case 0x7FFEu: return  rhs.rep.tag() == 0x7FFEu;
-      case 0x7FFFu: return  rhs.rep.tag() == 0x7FFFu;
-      case 0x7FFDu: return  MNL_LIKELY(test<unsigned>(rhs)) && cast<unsigned>(lhs) == cast<unsigned>(rhs);
-      }
-   }
-   MNL_INLINE inline val _ne(const val &lhs, const val &rhs) {
-      switch (lhs.rep.tag()) {
-      case 0x7FF8u: return  static_cast<val::root *>(lhs.rep.dat<void *>())->invoke(val(lhs), MNL_SYM("<>"), 1, &const_cast<val &>((const val &)val(rhs)));
-      case 0x7FF9u: return !test<>(rhs);
-      case 0x7FFAu: return !MNL_LIKELY(test<long long>(rhs)) || cast<long long>(lhs) != cast<long long>(rhs);
-      default:      return !MNL_LIKELY(test<double>(rhs)) || cast<double>(lhs) != cast<double>(rhs);
-      case 0x7FFCu: return !MNL_LIKELY(test<float>(rhs)) || cast<float>(lhs) != cast<float>(rhs);
-      case 0x7FFBu: return !MNL_LIKELY(test<sym>(rhs)) || cast<const sym &>(lhs) != cast<const sym &>(rhs);
-      case 0x7FFEu: return  rhs.rep.tag() != 0x7FFEu;
-      case 0x7FFFu: return  rhs.rep.tag() != 0x7FFFu;
-      case 0x7FFDu: return !MNL_LIKELY(test<unsigned>(rhs)) || cast<unsigned>(lhs) != cast<unsigned>(rhs);
-      }
-   }
-   MNL_INLINE inline val _ne(const val &lhs, val &&rhs) {
-      switch (lhs.rep.tag()) {
-      case 0x7FF8u: return  static_cast<val::root *>(lhs.rep.dat<void *>())->invoke(val(lhs), MNL_SYM("<>"), 1, &rhs);
-      case 0x7FF9u: return !test<>(rhs);
-      case 0x7FFAu: return !MNL_LIKELY(test<long long>(rhs)) || cast<long long>(lhs) != cast<long long>(rhs);
-      default:      return !MNL_LIKELY(test<double>(rhs)) || cast<double>(lhs) != cast<double>(rhs);
-      case 0x7FFCu: return !MNL_LIKELY(test<float>(rhs)) || cast<float>(lhs) != cast<float>(rhs);
-      case 0x7FFBu: return !MNL_LIKELY(test<sym>(rhs)) || cast<const sym &>(lhs) != cast<const sym &>(rhs);
-      case 0x7FFEu: return  rhs.rep.tag() != 0x7FFEu;
-      case 0x7FFFu: return  rhs.rep.tag() != 0x7FFFu;
-      case 0x7FFDu: return !MNL_LIKELY(test<unsigned>(rhs)) || cast<unsigned>(lhs) != cast<unsigned>(rhs);
-      }
-   }
-   MNL_INLINE inline val _ne(val &&lhs, const val &rhs) {
-      switch (lhs.rep.tag()) {
-      case 0x7FF8u: return  static_cast<val::root *>(lhs.rep.dat<void *>())->invoke(move(lhs), MNL_SYM("<>"), 1, &const_cast<val &>((const val &)val(rhs)));
-      case 0x7FF9u: return !test<>(rhs);
-      case 0x7FFAu: return !MNL_LIKELY(test<long long>(rhs)) || cast<long long>(lhs) != cast<long long>(rhs);
-      default:      return !MNL_LIKELY(test<double>(rhs)) || cast<double>(lhs) != cast<double>(rhs);
-      case 0x7FFCu: return !MNL_LIKELY(test<float>(rhs)) || cast<float>(lhs) != cast<float>(rhs);
-      case 0x7FFBu: return !MNL_LIKELY(test<sym>(rhs)) || cast<const sym &>(lhs) != cast<const sym &>(rhs);
-      case 0x7FFEu: return  rhs.rep.tag() != 0x7FFEu;
-      case 0x7FFFu: return  rhs.rep.tag() != 0x7FFFu;
-      case 0x7FFDu: return !MNL_LIKELY(test<unsigned>(rhs)) || cast<unsigned>(lhs) != cast<unsigned>(rhs);
-      }
-   }
-   MNL_INLINE inline val _ne(val &&lhs, val &&rhs) {
-      switch (lhs.rep.tag()) {
-      case 0x7FF8u: return  static_cast<val::root *>(lhs.rep.dat<void *>())->invoke(move(lhs), MNL_SYM("<>"), 1, &rhs);
-      case 0x7FF9u: return !test<>(rhs);
-      case 0x7FFAu: return !MNL_LIKELY(test<long long>(rhs)) || cast<long long>(lhs) != cast<long long>(rhs);
-      default:      return !MNL_LIKELY(test<double>(rhs)) || cast<double>(lhs) != cast<double>(rhs);
-      case 0x7FFCu: return !MNL_LIKELY(test<float>(rhs)) || cast<float>(lhs) != cast<float>(rhs);
-      case 0x7FFBu: return !MNL_LIKELY(test<sym>(rhs)) || cast<const sym &>(lhs) != cast<const sym &>(rhs);
-      case 0x7FFEu: return  rhs.rep.tag() != 0x7FFEu;
-      case 0x7FFFu: return  rhs.rep.tag() != 0x7FFFu;
-      case 0x7FFDu: return !MNL_LIKELY(test<unsigned>(rhs)) || cast<unsigned>(lhs) != cast<unsigned>(rhs);
-      }
-   }
-# define MNL_M(ID, OP, SYM) \
-   MNL_INLINE inline val ID(const val &lhs, const val &rhs) { \
-      switch (lhs.rep.tag()) { \
-      case 0x7FF8u: /* BoxPtr (fallback) */ \
-         return static_cast<val::root *>(lhs.rep.dat<void *>())->invoke(val(lhs), MNL_SYM(SYM), 1, &const_cast<val &>((const val &)val(rhs))); \
-      case 0x7FF9u: case 0x7FFBu: case 0x7FFEu: case 0x7FFFu: \
-         MNL_ERR(MNL_SYM("UnrecognizedOperation")); \
-      case 0x7FFAu: /* I48 */ \
-         if (MNL_UNLIKELY(!test<long long>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return cast<long long>(lhs) OP cast<long long>(rhs); \
-      default: /* F64 */ \
-         if (MNL_UNLIKELY(!test<double>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return cast<double>(lhs) OP cast<double>(rhs); \
-      case 0x7FFCu: /* F32 */ \
-         if (MNL_UNLIKELY(!test<float>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return cast<float>(lhs) OP cast<float>(rhs); \
-      case 0x7FFDu: /* U32 */ \
-         if (MNL_UNLIKELY(!test<unsigned>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return cast<unsigned>(lhs) OP cast<unsigned>(rhs); \
-      } \
-   } \
-   MNL_INLINE inline val ID(const val &lhs, val &&rhs) { \
-      switch (lhs.rep.tag()) { \
-      case 0x7FF8u: /* BoxPtr (fallback) */ \
-         return static_cast<val::root *>(lhs.rep.dat<void *>())->invoke(val(lhs), MNL_SYM(SYM), 1, &rhs); \
-      case 0x7FF9u: case 0x7FFBu: case 0x7FFEu: case 0x7FFFu: \
-         MNL_ERR(MNL_SYM("UnrecognizedOperation")); \
-      case 0x7FFAu: /* I48 */ \
-         if (MNL_UNLIKELY(!test<long long>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return cast<long long>(lhs) OP cast<long long>(rhs); \
-      default: /* F64 */ \
-         if (MNL_UNLIKELY(!test<double>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return cast<double>(lhs) OP cast<double>(rhs); \
-      case 0x7FFCu: /* F32 */ \
-         if (MNL_UNLIKELY(!test<float>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return cast<float>(lhs) OP cast<float>(rhs); \
-      case 0x7FFDu: /* U32 */ \
-         if (MNL_UNLIKELY(!test<unsigned>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return cast<unsigned>(lhs) OP cast<unsigned>(rhs); \
-      } \
-   } \
-   MNL_INLINE inline val ID(val &&lhs, const val &rhs) { \
-      switch (lhs.rep.tag()) { \
-      case 0x7FF8u: /* BoxPtr (fallback) */ \
-         return static_cast<val::root *>(lhs.rep.dat<void *>())->invoke(move(lhs), MNL_SYM(SYM), 1, &const_cast<val &>((const val &)val(rhs))); \
-      case 0x7FF9u: case 0x7FFBu: case 0x7FFEu: case 0x7FFFu: \
-         MNL_ERR(MNL_SYM("UnrecognizedOperation")); \
-      case 0x7FFAu: /* I48 */ \
-         if (MNL_UNLIKELY(!test<long long>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return cast<long long>(lhs) OP cast<long long>(rhs); \
-      default: /* F64 */ \
-         if (MNL_UNLIKELY(!test<double>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return cast<double>(lhs) OP cast<double>(rhs); \
-      case 0x7FFCu: /* F32 */ \
-         if (MNL_UNLIKELY(!test<float>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return cast<float>(lhs) OP cast<float>(rhs); \
-      case 0x7FFDu: /* U32 */ \
-         if (MNL_UNLIKELY(!test<unsigned>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return cast<unsigned>(lhs) OP cast<unsigned>(rhs); \
-      } \
-   } \
-   MNL_INLINE inline val ID(val &&lhs, val &&rhs) { \
-      switch (lhs.rep.tag()) { \
-      case 0x7FF8u: /* BoxPtr (fallback) */ \
-         return static_cast<val::root *>(lhs.rep.dat<void *>())->invoke(move(lhs), MNL_SYM(SYM), 1, &rhs); \
-      case 0x7FF9u: case 0x7FFBu: case 0x7FFEu: case 0x7FFFu: \
-         MNL_ERR(MNL_SYM("UnrecognizedOperation")); \
-      case 0x7FFAu: /* I48 */ \
-         if (MNL_UNLIKELY(!test<long long>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return cast<long long>(lhs) OP cast<long long>(rhs); \
-      default: /* F64 */ \
-         if (MNL_UNLIKELY(!test<double>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return cast<double>(lhs) OP cast<double>(rhs); \
-      case 0x7FFCu: /* F32 */ \
-         if (MNL_UNLIKELY(!test<float>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return cast<float>(lhs) OP cast<float>(rhs); \
-      case 0x7FFDu: /* U32 */ \
-         if (MNL_UNLIKELY(!test<unsigned>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return cast<unsigned>(lhs) OP cast<unsigned>(rhs); \
-      } \
-   } \
-// end # define MNL_M(ID, OP, SYM)
-   MNL_M(_lt, <, "<") MNL_M(_le, <=, "<=") MNL_M(_gt, >, ">") MNL_M(_ge, >=, ">=")
-# undef MNL_M
-# define MNL_M(OP, SYM) \
-   MNL_INLINE inline val OP(const val &lhs, const val &rhs) { \
-      switch (lhs.rep.tag()) { \
-      case 0x7FF8u: /* BoxPtr (fallback) */ \
-         return static_cast<val::root *>(lhs.rep.dat<void *>())->invoke(val(lhs), MNL_SYM(SYM), 1, &const_cast<val &>((const val &)val(rhs))); \
-      case 0x7FF9u: case 0x7FFBu: case 0x7FFEu: case 0x7FFFu: \
-         MNL_ERR(MNL_SYM("UnrecognizedOperation")); \
-      case 0x7FFAu: /* I48 */ \
-         if (MNL_UNLIKELY(!test<long long>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return aux::OP(cast<long long>(lhs), cast<long long>(rhs)); \
-      default: /* F64 */ \
-         if (MNL_UNLIKELY(!test<double>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return aux::OP(cast<double>(lhs), cast<double>(rhs)); \
-      case 0x7FFCu: /* F32 */ \
-         if (MNL_UNLIKELY(!test<float>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return aux::OP(cast<float>(lhs), cast<float>(rhs)); \
-      case 0x7FFDu: /* U32 */ \
-         if (MNL_UNLIKELY(!test<unsigned>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return aux::OP(cast<unsigned>(lhs), cast<unsigned>(rhs)); \
-      } \
-   } \
-   MNL_INLINE inline val OP(const val &lhs, val &&rhs) { \
-      switch (lhs.rep.tag()) { \
-      case 0x7FF8u: /* BoxPtr (fallback) */ \
-         return static_cast<val::root *>(lhs.rep.dat<void *>())->invoke(val(lhs), MNL_SYM(SYM), 1, &rhs); \
-      case 0x7FF9u: case 0x7FFBu: case 0x7FFEu: case 0x7FFFu: \
-         MNL_ERR(MNL_SYM("UnrecognizedOperation")); \
-      case 0x7FFAu: /* I48 */ \
-         if (MNL_UNLIKELY(!test<long long>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return aux::OP(cast<long long>(lhs), cast<long long>(rhs)); \
-      default: /* F64 */ \
-         if (MNL_UNLIKELY(!test<double>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return aux::OP(cast<double>(lhs), cast<double>(rhs)); \
-      case 0x7FFCu: /* F32 */ \
-         if (MNL_UNLIKELY(!test<float>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return aux::OP(cast<float>(lhs), cast<float>(rhs)); \
-      case 0x7FFDu: /* U32 */ \
-         if (MNL_UNLIKELY(!test<unsigned>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return aux::OP(cast<unsigned>(lhs), cast<unsigned>(rhs)); \
-      } \
-   } \
-   MNL_INLINE inline val OP(val &&lhs, const val &rhs) { \
-      switch (lhs.rep.tag()) { \
-      case 0x7FF8u: /* BoxPtr (fallback) */ \
-         return static_cast<val::root *>(lhs.rep.dat<void *>())->invoke(move(lhs), MNL_SYM(SYM), 1, &const_cast<val &>((const val &)val(rhs))); \
-      case 0x7FF9u: case 0x7FFBu: case 0x7FFEu: case 0x7FFFu: \
-         MNL_ERR(MNL_SYM("UnrecognizedOperation")); \
-      case 0x7FFAu: /* I48 */ \
-         if (MNL_UNLIKELY(!test<long long>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return aux::OP(cast<long long>(lhs), cast<long long>(rhs)); \
-      default: /* F64 */ \
-         if (MNL_UNLIKELY(!test<double>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return aux::OP(cast<double>(lhs), cast<double>(rhs)); \
-      case 0x7FFCu: /* F32 */ \
-         if (MNL_UNLIKELY(!test<float>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return aux::OP(cast<float>(lhs), cast<float>(rhs)); \
-      case 0x7FFDu: /* U32 */ \
-         if (MNL_UNLIKELY(!test<unsigned>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return aux::OP(cast<unsigned>(lhs), cast<unsigned>(rhs)); \
-      } \
-   } \
-   MNL_INLINE inline val OP(val &&lhs, val &&rhs) { \
-      switch (lhs.rep.tag()) { \
-      case 0x7FF8u: /* BoxPtr (fallback) */ \
-         return static_cast<val::root *>(lhs.rep.dat<void *>())->invoke(move(lhs), MNL_SYM(SYM), 1, &rhs); \
-      case 0x7FF9u: case 0x7FFBu: case 0x7FFEu: case 0x7FFFu: \
-         MNL_ERR(MNL_SYM("UnrecognizedOperation")); \
-      case 0x7FFAu: /* I48 */ \
-         if (MNL_UNLIKELY(!test<long long>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return aux::OP(cast<long long>(lhs), cast<long long>(rhs)); \
-      default: /* F64 */ \
-         if (MNL_UNLIKELY(!test<double>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return aux::OP(cast<double>(lhs), cast<double>(rhs)); \
-      case 0x7FFCu: /* F32 */ \
-         if (MNL_UNLIKELY(!test<float>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return aux::OP(cast<float>(lhs), cast<float>(rhs)); \
-      case 0x7FFDu: /* U32 */ \
-         if (MNL_UNLIKELY(!test<unsigned>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-         return aux::OP(cast<unsigned>(lhs), cast<unsigned>(rhs)); \
-      } \
-   } \
-// end # define MNL_M(OP, SYM)
-   MNL_M(_add, "+") MNL_M(_sub, "-") MNL_M(_mul, "*")
-# undef MNL_M
-# define MNL_M(OP, SYM) \
-   MNL_INLINE inline val OP(const val &rhs) { \
-      switch (rhs.rep.tag()) { \
-      case 0x7FF8u: /* BoxPtr (fallback) */ \
-         return static_cast<val::root *>(rhs.rep.dat<void *>())->invoke(val(rhs), MNL_SYM(SYM), 0, {}); \
-      case 0x7FF9u: case 0x7FFBu: case 0x7FFEu: case 0x7FFFu: \
-         MNL_ERR(MNL_SYM("UnrecognizedOperation")); \
-      case 0x7FFAu: return aux::OP(cast<long long>(rhs)); \
-      default:      return aux::OP(cast<double>(rhs)); \
-      case 0x7FFCu: return aux::OP(cast<float>(rhs)); \
-      case 0x7FFDu: return aux::OP(cast<unsigned>(rhs)); \
-      } \
-   } \
-   MNL_INLINE inline val OP(val &&rhs) { \
-      switch (rhs.rep.tag()) { \
-      case 0x7FF8u: /* BoxPtr (fallback) */ \
-         return static_cast<val::root *>(rhs.rep.dat<void *>())->invoke(move(rhs), MNL_SYM(SYM), 0, {}); \
-      case 0x7FF9u: case 0x7FFBu: case 0x7FFEu: case 0x7FFFu: \
-         MNL_ERR(MNL_SYM("UnrecognizedOperation")); \
-      case 0x7FFAu: return aux::OP(cast<long long>(rhs)); \
-      default:      return aux::OP(cast<double>(rhs)); \
-      case 0x7FFCu: return aux::OP(cast<float>(rhs)); \
-      case 0x7FFDu: return aux::OP(cast<unsigned>(rhs)); \
-      } \
-   } \
-// end # define MNL_M(OP, SYM)
-   MNL_M(_neg, "Neg") MNL_M(_abs, "Abs")
-# undef MNL_M
-   MNL_INLINE inline val _xor(const val &lhs, const val &rhs) {
-      switch (lhs.rep.tag()) {
-      case 0x7FF8u: // BoxPtr (fallback)
-         return static_cast<val::root *>(lhs.rep.dat<void *>())->invoke(val(lhs), MNL_SYM("Xor"), 1, &const_cast<val &>((const val &)val(rhs)));
-      default:
-         MNL_ERR(MNL_SYM("UnrecognizedOperation"));
-      case 0x7FFEu: // Bool/False
-         if (MNL_UNLIKELY(!test<bool>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch"));
-         return val{decltype(val::rep){rhs.rep.tag()}};
-      case 0x7FFFu: // Bool/True
-         if (MNL_UNLIKELY(!test<bool>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch"));
-         return val{decltype(val::rep){rhs.rep.tag() ^ 1}};
-      case 0x7FFDu: // U32
-         if (MNL_UNLIKELY(!test<unsigned>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch"));
-         return cast<unsigned>(lhs) ^ cast<unsigned>(rhs);
-      }
-   }
-   MNL_INLINE inline val _xor(const val &lhs, val &&rhs) {
-      switch (lhs.rep.tag()) {
-      case 0x7FF8u: // BoxPtr (fallback)
-         return static_cast<val::root *>(lhs.rep.dat<void *>())->invoke(val(lhs), MNL_SYM("Xor"), 1, &rhs);
-      default:
-         MNL_ERR(MNL_SYM("UnrecognizedOperation"));
-      case 0x7FFEu: // Bool/False
-         if (MNL_UNLIKELY(!test<bool>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch"));
-         return val{decltype(val::rep){rhs.rep.tag()}};
-      case 0x7FFFu: // Bool/True
-         if (MNL_UNLIKELY(!test<bool>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch"));
-         return val{decltype(val::rep){rhs.rep.tag() ^ 1}};
-      case 0x7FFDu: // U32
-         if (MNL_UNLIKELY(!test<unsigned>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch"));
-         return cast<unsigned>(lhs) ^ cast<unsigned>(rhs);
-      }
-   }
-   MNL_INLINE inline val _xor(val &&lhs, const val &rhs) {
-      switch (lhs.rep.tag()) {
-      case 0x7FF8u: // BoxPtr (fallback)
-         return static_cast<val::root *>(lhs.rep.dat<void *>())->invoke(move(lhs), MNL_SYM("Xor"), 1, &const_cast<val &>((const val &)val(rhs)));
-      default:
-         MNL_ERR(MNL_SYM("UnrecognizedOperation"));
-      case 0x7FFEu: // Bool/False
-         if (MNL_UNLIKELY(!test<bool>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch"));
-         return val{decltype(val::rep){rhs.rep.tag()}};
-      case 0x7FFFu: // Bool/True
-         if (MNL_UNLIKELY(!test<bool>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch"));
-         return val{decltype(val::rep){rhs.rep.tag() ^ 1}};
-      case 0x7FFDu: // U32
-         if (MNL_UNLIKELY(!test<unsigned>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch"));
-         return cast<unsigned>(lhs) ^ cast<unsigned>(rhs);
-      }
-   }
-   MNL_INLINE inline val _xor(val &&lhs, val &&rhs) {
-      switch (lhs.rep.tag()) {
-      case 0x7FF8u: // BoxPtr (fallback)
-         return static_cast<val::root *>(lhs.rep.dat<void *>())->invoke(move(lhs), MNL_SYM("Xor"), 1, &rhs);
-      default:
-         MNL_ERR(MNL_SYM("UnrecognizedOperation"));
-      case 0x7FFEu: // Bool/False
-         if (MNL_UNLIKELY(!test<bool>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch"));
-         return val{decltype(val::rep){rhs.rep.tag()}};
-      case 0x7FFFu: // Bool/True
-         if (MNL_UNLIKELY(!test<bool>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch"));
-         return val{decltype(val::rep){rhs.rep.tag() ^ 1}};
-      case 0x7FFDu: // U32
-         if (MNL_UNLIKELY(!test<unsigned>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch"));
-         return cast<unsigned>(lhs) ^ cast<unsigned>(rhs);
-      }
-   }
-   MNL_INLINE inline val _not(const val &rhs) {
-      switch (rhs.rep.tag()) {
-      case 0x7FF8u: // BoxPtr (fallback)
-         return static_cast<val::root *>(rhs.rep.dat<void *>())->invoke(val(rhs), MNL_SYM("~"), 0, {});
-      case 0x7FF9u: case 0x7FFBu:
-         MNL_ERR(MNL_SYM("UnrecognizedOperation"));
-      case 0x7FFEu: return true;
-      case 0x7FFFu: return false;
-      case 0x7FFDu: return ~cast<unsigned>(rhs);
-      case 0x7FFAu: return aux::_neg(cast<long long>(rhs)); // Neg(ation)
-      default:      return aux::_neg(cast<double>(rhs));    // Neg(ation)
-      case 0x7FFCu: return aux::_neg(cast<float>(rhs));     // Neg(ation)
-      }
-   }
-   MNL_INLINE inline val _not(val &&rhs) {
-      switch (rhs.rep.tag()) {
-      case 0x7FF8u: // BoxPtr (fallback)
-         return static_cast<val::root *>(rhs.rep.dat<void *>())->invoke(move(rhs), MNL_SYM("~"), 0, {});
-      case 0x7FF9u: case 0x7FFBu:
-         MNL_ERR(MNL_SYM("UnrecognizedOperation"));
-      case 0x7FFEu: return true;
-      case 0x7FFFu: return false;
-      case 0x7FFDu: return ~cast<unsigned>(rhs);
-      case 0x7FFAu: return aux::_neg(cast<long long>(rhs)); // Neg(ation)
-      default:      return aux::_neg(cast<double>(rhs));    // Neg(ation)
-      case 0x7FFCu: return aux::_neg(cast<float>(rhs));     // Neg(ation)
-      }
-   }
-
-   // I48, F64, F32, U32 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, val> _eq (const val &lhs, Dat rhs)
-      { if (MNL_LIKELY(test<Dat>(lhs))) return cast<Dat>(lhs) == rhs; return _eq(lhs, (val)rhs); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, val> _ne (const val &lhs, Dat rhs)
-      { if (MNL_LIKELY(test<Dat>(lhs))) return cast<Dat>(lhs) != rhs; return _ne(lhs, (val)rhs); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, val> _lt (const val &lhs, Dat rhs)
-      { if (MNL_LIKELY(test<Dat>(lhs))) return cast<Dat>(lhs) <  rhs; return _lt(lhs, (val)rhs); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, val> _le (const val &lhs, Dat rhs)
-      { if (MNL_LIKELY(test<Dat>(lhs))) return cast<Dat>(lhs) <= rhs; return _le(lhs, (val)rhs); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, val> _gt (const val &lhs, Dat rhs)
-      { if (MNL_LIKELY(test<Dat>(lhs))) return cast<Dat>(lhs) >  rhs; return _gt(lhs, (val)rhs); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, val> _ge (const val &lhs, Dat rhs)
-      { if (MNL_LIKELY(test<Dat>(lhs))) return cast<Dat>(lhs) >= rhs; return _ge(lhs, (val)rhs); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, val> _add(const val &lhs, Dat rhs)
-      { if (MNL_LIKELY(test<Dat>(lhs))) return aux::_add(cast<Dat>(lhs), rhs); return _add(lhs, (val)rhs); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, val> _sub(const val &lhs, Dat rhs)
-      { if (MNL_LIKELY(test<Dat>(lhs))) return aux::_sub(cast<Dat>(lhs), rhs); return _sub(lhs, (val)rhs); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, val> _mul(const val &lhs, Dat rhs)
-      { if (MNL_LIKELY(test<Dat>(lhs))) return aux::_mul(cast<Dat>(lhs), rhs); return _mul(lhs, (val)rhs); }
-
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, val> _eq (val &&lhs, Dat rhs)
-      { if (MNL_LIKELY(test<Dat>(lhs))) return cast<Dat>(lhs) == rhs; return _eq(move(lhs), (val)rhs); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, val> _ne (val &&lhs, Dat rhs)
-      { if (MNL_LIKELY(test<Dat>(lhs))) return cast<Dat>(lhs) != rhs; return _ne(move(lhs), (val)rhs); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, val> _lt (val &&lhs, Dat rhs)
-      { if (MNL_LIKELY(test<Dat>(lhs))) return cast<Dat>(lhs) <  rhs; return _lt(move(lhs), (val)rhs); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, val> _le (val &&lhs, Dat rhs)
-      { if (MNL_LIKELY(test<Dat>(lhs))) return cast<Dat>(lhs) <= rhs; return _le(move(lhs), (val)rhs); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, val> _gt (val &&lhs, Dat rhs)
-      { if (MNL_LIKELY(test<Dat>(lhs))) return cast<Dat>(lhs) >  rhs; return _gt(move(lhs), (val)rhs); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, val> _ge (val &&lhs, Dat rhs)
-      { if (MNL_LIKELY(test<Dat>(lhs))) return cast<Dat>(lhs) >= rhs; return _ge(move(lhs), (val)rhs); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, val> _add(val &&lhs, Dat rhs)
-      { if (MNL_LIKELY(test<Dat>(lhs))) return aux::_add(cast<Dat>(lhs), rhs); return _add(move(lhs), (val)rhs); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, val> _sub(val &&lhs, Dat rhs)
-      { if (MNL_LIKELY(test<Dat>(lhs))) return aux::_sub(cast<Dat>(lhs), rhs); return _sub(move(lhs), (val)rhs); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, val> _mul(val &&lhs, Dat rhs)
-      { if (MNL_LIKELY(test<Dat>(lhs))) return aux::_mul(cast<Dat>(lhs), rhs); return _mul(move(lhs), (val)rhs); }
-
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, bool> _eq (Dat lhs, const val &rhs) noexcept
-      { return  MNL_LIKELY(test<Dat>(rhs)) && lhs == cast<Dat>(rhs); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, bool> _eq (Dat lhs, val &&rhs) noexcept
-      { return  MNL_LIKELY(test<Dat>(rhs)) && lhs == cast<Dat>(rhs); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, bool> _ne (Dat lhs, const val &rhs) noexcept
-      { return !MNL_LIKELY(test<Dat>(rhs)) || lhs != cast<Dat>(rhs); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, bool> _ne (Dat lhs, val &&rhs) noexcept
-      { return !MNL_LIKELY(test<Dat>(rhs)) || lhs != cast<Dat>(rhs); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, bool> _lt (Dat lhs, const val &rhs)
-      { if (MNL_LIKELY(test<Dat>(rhs))) return lhs <  cast<Dat>(rhs); MNL_ERR(MNL_SYM("TypeMismatch")); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, bool> _lt (Dat lhs, val &&rhs)
-      { if (MNL_LIKELY(test<Dat>(rhs))) return lhs <  cast<Dat>(rhs); MNL_ERR(MNL_SYM("TypeMismatch")); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, bool> _le (Dat lhs, const val &rhs)
-      { if (MNL_LIKELY(test<Dat>(rhs))) return lhs <= cast<Dat>(rhs); MNL_ERR(MNL_SYM("TypeMismatch")); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, bool> _le (Dat lhs, val &&rhs)
-      { if (MNL_LIKELY(test<Dat>(rhs))) return lhs <= cast<Dat>(rhs); MNL_ERR(MNL_SYM("TypeMismatch")); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, bool> _gt (Dat lhs, const val &rhs)
-      { if (MNL_LIKELY(test<Dat>(rhs))) return lhs >  cast<Dat>(rhs); MNL_ERR(MNL_SYM("TypeMismatch")); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, bool> _gt (Dat lhs, val &&rhs)
-      { if (MNL_LIKELY(test<Dat>(rhs))) return lhs >  cast<Dat>(rhs); MNL_ERR(MNL_SYM("TypeMismatch")); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, bool> _ge (Dat lhs, const val &rhs)
-      { if (MNL_LIKELY(test<Dat>(rhs))) return lhs >= cast<Dat>(rhs); MNL_ERR(MNL_SYM("TypeMismatch")); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, bool> _ge (Dat lhs, val &&rhs)
-      { if (MNL_LIKELY(test<Dat>(rhs))) return lhs >= cast<Dat>(rhs); MNL_ERR(MNL_SYM("TypeMismatch")); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, Dat> _add(Dat lhs, const val &rhs)
-      { if (MNL_LIKELY(test<Dat>(rhs))) return aux::_add(lhs, cast<Dat>(rhs)); MNL_ERR(MNL_SYM("TypeMismatch")); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, Dat> _add(Dat lhs, val &&rhs)
-      { if (MNL_LIKELY(test<Dat>(rhs))) return aux::_add(lhs, cast<Dat>(rhs)); MNL_ERR(MNL_SYM("TypeMismatch")); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, Dat> _sub(Dat lhs, const val &rhs)
-      { if (MNL_LIKELY(test<Dat>(rhs))) return aux::_sub(lhs, cast<Dat>(rhs)); MNL_ERR(MNL_SYM("TypeMismatch")); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, Dat> _sub(Dat lhs, val &&rhs)
-      { if (MNL_LIKELY(test<Dat>(rhs))) return aux::_sub(lhs, cast<Dat>(rhs)); MNL_ERR(MNL_SYM("TypeMismatch")); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, Dat> _mul(Dat lhs, const val &rhs)
-      { if (MNL_LIKELY(test<Dat>(rhs))) return aux::_mul(lhs, cast<Dat>(rhs)); MNL_ERR(MNL_SYM("TypeMismatch")); }
-   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, Dat> _mul(Dat lhs, val &&rhs)
-      { if (MNL_LIKELY(test<Dat>(rhs))) return aux::_mul(lhs, cast<Dat>(rhs)); MNL_ERR(MNL_SYM("TypeMismatch")); }
-
    // Misc /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+   template<typename Lhs, typename Dat> MNL_INLINE inline
+   std::enable_if_t<std::is_same_v<Dat, sym> || std::is_same_v<Dat, std::string>, val::enable_ref<Lhs>>> _eq(Lhs &&lhs, const Dat &rhs) {
+      if (MNL_LIKELY(test<Dat>(lhs))) return cast<const Dat &>(lhs) == rhs;
+      if (!MNL_LIKELY(lhs.rep.tag() == 0x7FF8u)) return false;
+      return static_cast<val::root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs), MNL_SYM("=="), 1, &const_cast<val &>((const val &)rhs));
+   }
+   template<typename Lhs, typename Dat> MNL_INLINE inline
+   std::enable_if_t<std::is_same_v<Dat, sym> || std::is_same_v<Dat, std::string>, val::enable_ref<Lhs>>> _ne(Lhs &&lhs, const Dat &rhs) {
+      if (MNL_LIKELY(test<Dat>(lhs))) return cast<const Dat &>(lhs) != rhs;
+      if (!MNL_LIKELY(lhs.rep.tag() == 0x7FF8u)) return true;
+      return static_cast<val::root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs), MNL_SYM("<>"), 1, &const_cast<val &>((const val &)rhs));
+   }
+   template<typename Lhs, typename Dat> MNL_INLINE inline
+   std::enable_if_t<std::is_same_v<Dat, decltype(nullptr)>, val::enable_ref<Lhs>>> _eq(Lhs &&lhs, const Dat &rhs) {
+      if (MNL_LIKELY(test<>(lhs))) return true;
+      if (!MNL_LIKELY(lhs.rep.tag() == 0x7FF8u)) return false;
+      return static_cast<val::root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs), MNL_SYM("=="), 1, &const_cast<val &>((const val &)rhs));
+   }
+   template<typename Lhs, typename Dat> MNL_INLINE inline
+   std::enable_if_t<std::is_same_v<Dat, decltype(nullptr)>, val::enable_ref<Lhs>>> _ne(Lhs &&lhs, const Dat &rhs) {
+      if (MNL_LIKELY(test<>(lhs))) return false;
+      if (!MNL_LIKELY(lhs.rep.tag() == 0x7FF8u)) return true;
+      return static_cast<val::root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs), MNL_SYM("<>"), 1, &const_cast<val &>((const val &)rhs));
+   }
+
+   template<typename Rhs, typename Dat> MNL_INLINE inline
+   std::enable_if_t<std::is_same_v<Dat, sym> || std::is_same_v<Dat, std::string>, val::enable_ref<Lhs>>>
+   _eq(const Dat &lhs, Rhs &&rhs)
+   noexcept
+      { return  MNL_LIKELY(test<sym>(rhs)) && lhs == cast<const sym &>(rhs); }
+
 
    template<typename Dat> MNL_INLINE inline enable_same<Dat, sym, val> _eq(const val &lhs, const Dat &rhs)
       { if (MNL_LIKELY(test<sym>(lhs))) return cast<const sym &>(lhs) == rhs; return _eq(lhs, (val)rhs); }

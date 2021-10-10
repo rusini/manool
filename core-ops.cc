@@ -985,21 +985,21 @@ namespace aux {
 
    // IMDOOs = Intentionally Missing Dynamic Optimization Opportunities
 
-   template<> val box<string>::invoke(val &&self, const sym &op, int argc, val argv[], val *) {
+   template<> template<typename Self> val box<string>::invoke(Self &&self, const sym &op, int argc, val argv[], val *) {
       static const auto compact = [](string &dat)
          { if (MNL_UNLIKELY(dat.capacity() > dat.size() * 2)) dat.shrink_to_fit(); };
       switch (op) {
       case sym::op_apply:
          if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
          if (MNL_LIKELY(test<long long>(argv[0]))) { // String[Index]
-            if (MNL_UNLIKELY(cast<long long>(argv[0]) < 0) || MNL_UNLIKELY(cast<long long>(argv[0]) >= dat.size()))
+            if (MNL_UNLIKELY((unsigned long long)cast<long long>(argv[0]) >= dat.size()))
                MNL_ERR(MNL_SYM("IndexOutOfRange"));
             return dat[cast<long long>(argv[0])];
          }
          if (MNL_LIKELY(test<range<>>(argv[0]))) { // String[Range[Low; High]] - IMDOOs: cast<range<>>(argv[0]).lo
             if (MNL_UNLIKELY(cast<range<>>(argv[0]).lo < 0) || MNL_UNLIKELY(cast<range<>>(argv[0]).hi > dat.size()))
                MNL_ERR(MNL_SYM("IndexOutOfRange"));
-            if (MNL_LIKELY(rc() == 1) && MNL_LIKELY(!cast<range<>>(argv[0]).lo))
+            if (std::is_same_v<Self &&, val &&> && MNL_LIKELY(rc() == 1) && MNL_LIKELY(!cast<range<>>(argv[0]).lo))
                return dat.resize(cast<range<>>(argv[0]).hi), compact(dat), move(self);
             return string(dat.cbegin() + cast<range<>>(argv[0]).lo, dat.cbegin() + cast<range<>>(argv[0]).hi);
          }
@@ -1014,11 +1014,11 @@ namespace aux {
          if (MNL_LIKELY(test<long long>(argv[0]))) { // String.Repl[Index; NewElem]
             if (MNL_UNLIKELY(!test<unsigned>(argv[1])))
                MNL_ERR(MNL_SYM("TypeMismatch"));
-            if (MNL_UNLIKELY(cast<long long>(argv[0]) < 0) || MNL_UNLIKELY(cast<long long>(argv[0]) >= dat.size()))
+            if (MNL_UNLIKELY((unsigned long long)cast<long long>(argv[0]) >= dat.size()))
                MNL_ERR(MNL_SYM("IndexOutOfRange"));
             if (MNL_UNLIKELY(cast<unsigned>(argv[1]) > lim<unsigned char>::max()))
                MNL_ERR(MNL_SYM("ConstraintViolation"));
-            return MNL_LIKELY(rc() == 1)
+            return std::is_same_v<Self &&, val &&> && MNL_LIKELY(rc() == 1)
                ? (dat[cast<long long>(argv[0])] = cast<char>(argv[1]), move(self))
                : [&]()->val{ val res = dat; cast<string &>(res)[cast<long long>(argv[0])] = cast<char>(argv[1]); return res; }();
          }
@@ -1047,12 +1047,14 @@ namespace aux {
       case sym::op_add: // IMDOOs: cast<const vector<val> &>(argv[0]).empty()
          if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
          if (MNL_UNLIKELY(!test<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-         return MNL_LIKELY(rc() == 1) ? (dat += cast<const string &>(argv[0]), move(self)) : dat.empty() ? move(argv[0]) : dat + cast<const string &>(argv[0]);
+         return std::is_same_v<Self &&, val &&> && MNL_LIKELY(rc() == 1) ?
+            (dat += cast<const string &>(argv[0]), move(self)) : dat.empty() ? move(argv[0]) : dat + cast<const string &>(argv[0]);
       case sym::op_or:
          if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
          if (MNL_UNLIKELY(!test<unsigned>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
          if (MNL_UNLIKELY(cast<unsigned>(argv[0]) > lim<unsigned char>::max())) MNL_ERR(MNL_SYM("ConstraintViolation"));
-         return MNL_LIKELY(rc() == 1) ? (dat += cast<char>(argv[0]), move(self)) : dat + cast<char>(argv[0]);
+         return std::is_same_v<Self &&, val &&> && MNL_LIKELY(rc() == 1) ?
+            (dat += cast<char>(argv[0]), move(self)) : dat + cast<char>(argv[0]);
       case sym::op_elems:
          if (MNL_LIKELY(argc == 0)) return move(self); // String.Elems[]
          if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
@@ -1100,7 +1102,7 @@ namespace aux {
          }
       case sym::op_clone: case sym::op_deep_clone:
          if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-         return MNL_LIKELY(rc() == 1) ? move(self) : dat;
+         return std::is_same_v<Self &&, val &&> && MNL_LIKELY(rc() == 1) ? move(self) : dat;
       case sym::op_str:
          if (MNL_LIKELY(argc == 0)) return move(self);
          if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
@@ -1118,64 +1120,26 @@ namespace aux {
       return self.default_invoke(op, argc, argv);
    }
 
-   template<> val box<vector<val>>::_invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) {
-      static const auto compact = [](vector<val> &dat)
-         { if (MNL_UNLIKELY(dat.capacity() > dat.size() * 2)) dat.shrink_to_fit(); };
-      if (MNL_LIKELY(argc == 1)) {
-         if (MNL_LIKELY(test<long long>(argv[0]))) { // Array[Index]
-            if (MNL_UNLIKELY(cast<long long>(argv[0]) < 0) || MNL_UNLIKELY(cast<long long>(argv[0]) >= dat.size()))
-               MNL_ERR(MNL_SYM("IndexOutOfRange"));
-            return dat[cast<long long>(argv[0])];
-         }
-         if (MNL_LIKELY(test<range<>>(argv[0]))) { // Array[Range[Low; High]]
-            if (MNL_UNLIKELY(cast<range<>>(argv[0]).lo < 0) || MNL_UNLIKELY(cast<range<>>(argv[0]).hi > dat.size()))
-               MNL_ERR(MNL_SYM("IndexOutOfRange"));
-            if (MNL_LIKELY(rc() == 1)) return
-               dat.resize(cast<range<>>(argv[0]).hi), dat.erase(dat.begin(), dat.begin() + cast<range<>>(argv[0]).lo), compact(dat), move(self);
-            return vector<val>(dat.cbegin() + cast<range<>>(argv[0]).lo, dat.cbegin() + cast<range<>>(argv[0]).hi);
-         }
-         if (MNL_LIKELY(test<range<true>>(argv[0]))) { // Array[RevRange[Low; High]] - IMDOOs: all
-            if (MNL_UNLIKELY(cast<range<true>>(argv[0]).lo < 0) || MNL_UNLIKELY(cast<range<true>>(argv[0]).hi > dat.size()))
-               MNL_ERR(MNL_SYM("IndexOutOfRange"));
-            return vector<val>(dat.crend() - cast<range<true>>(argv[0]).hi, dat.crend() - cast<range<true>>(argv[0]).lo);
-         }
-         MNL_ERR(MNL_SYM("TypeMismatch"));
-      }
-      if (MNL_LIKELY(argc > 1)) { // Array[Index; ...]
-         if (MNL_UNLIKELY(cast<long long>(argv[0]) < 0) || MNL_UNLIKELY(cast<long long>(argv[0]) >= dat.size())) MNL_ERR(MNL_SYM("IndexOutOfRange"));
-         return dat[cast<long long>(argv[0])](argc - 1, argv + 1);
-      }
-      MNL_ERR(MNL_SYM("InvalidInvocation"));
-   }
-
-   template<> val box<vector<val>>::apply(const val &self, const val &a0) {
-      if (MNL_LIKELY(test<long long>(a0))) { // Array[Index]
-         if (MNL_UNLIKELY(cast<long long>(a0) < 0) || MNL_UNLIKELY(cast<long long>(a0) >= dat.size()))
-            MNL_ERR(MNL_SYM("IndexOutOfRange"));
-         return dat[cast<long long>(a0)];
-      }
-      MNL_ERR(MNL_SYM("TypeMismatch"));
-   }
-
-   template<> val box<vector<val>>::invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) { // one instance of List is Array
+   template<> template<typename Self> val box<vector<val>>::invoke(Self &&self, const sym &op, int argc, val argv[], val *argv_out) {
+      // one instance of List is Array
       static const auto compact = [](vector<val> &dat)
          { if (MNL_UNLIKELY(dat.capacity() > dat.size() * 2)) dat.shrink_to_fit(); };
       switch (op) {
       case sym::op_apply:
          if (MNL_LIKELY(argc == 1)) {
             if (MNL_LIKELY(test<long long>(argv[0]))) { // Array[Index]
-               if (MNL_UNLIKELY(cast<long long>(argv[0]) < 0) || MNL_UNLIKELY(cast<long long>(argv[0]) >= dat.size()))
+               if (MNL_UNLIKELY((unsigned long long)cast<long long>(argv[0]) >= dat.size()))
                   MNL_ERR(MNL_SYM("IndexOutOfRange"));
                return dat[cast<long long>(argv[0])];
             }
-            if (MNL_LIKELY(test<range<>>(argv[0]))) { // Array[Range[Low; High]]
+            if (MNL_LIKELY(test<range<>>(argv[0]))) { // Array[Range[Lo; Hi]]
                if (MNL_UNLIKELY(cast<range<>>(argv[0]).lo < 0) || MNL_UNLIKELY(cast<range<>>(argv[0]).hi > dat.size()))
                   MNL_ERR(MNL_SYM("IndexOutOfRange"));
-               if (MNL_LIKELY(rc() == 1)) return
+               if (MNL_LIKELY(std::is_same_v<Self &&, val &&> && rc() == 1)) return
                   dat.resize(cast<range<>>(argv[0]).hi), dat.erase(dat.begin(), dat.begin() + cast<range<>>(argv[0]).lo), compact(dat), move(self);
                return vector<val>(dat.cbegin() + cast<range<>>(argv[0]).lo, dat.cbegin() + cast<range<>>(argv[0]).hi);
             }
-            if (MNL_LIKELY(test<range<true>>(argv[0]))) { // Array[RevRange[Low; High]] - IMDOOs: all
+            if (MNL_LIKELY(test<range<true>>(argv[0]))) { // Array[RevRange[Lo; Hi]] - IMDOOs: all
                if (MNL_UNLIKELY(cast<range<true>>(argv[0]).lo < 0) || MNL_UNLIKELY(cast<range<true>>(argv[0]).hi > dat.size()))
                   MNL_ERR(MNL_SYM("IndexOutOfRange"));
                return vector<val>(dat.crend() - cast<range<true>>(argv[0]).hi, dat.crend() - cast<range<true>>(argv[0]).lo);
@@ -1183,16 +1147,16 @@ namespace aux {
             MNL_ERR(MNL_SYM("TypeMismatch"));
          }
          if (MNL_LIKELY(argc > 1)) { // Array[Index; ...]
-            if (MNL_UNLIKELY(cast<long long>(argv[0]) < 0) || MNL_UNLIKELY(cast<long long>(argv[0]) >= dat.size())) MNL_ERR(MNL_SYM("IndexOutOfRange"));
+            if (MNL_UNLIKELY(MNL_UNLIKELY((unsigned long long)cast<long long>(argv[0]) >= dat.size())) MNL_ERR(MNL_SYM("IndexOutOfRange"));
             return dat[cast<long long>(argv[0])](argc - 1, argv + 1);
          }
          MNL_ERR(MNL_SYM("InvalidInvocation"));
       case sym::op_repl:
          if (MNL_LIKELY(argc == 2)) {
             if (MNL_LIKELY(test<long long>(argv[0]))) { // Array.Repl[Index; NewElem]
-               if (MNL_UNLIKELY(cast<long long>(argv[0]) < 0) || MNL_UNLIKELY(cast<long long>(argv[0]) >= dat.size()))
+               if (MNL_UNLIKELY((unsigned long long)cast<long long>(argv[0]) >= dat.size()))
                   MNL_ERR(MNL_SYM("IndexOutOfRange"));
-               if (MNL_LIKELY(rc() == 1)) {
+               if (std::is_same_v<Self &&, val &&> && MNL_LIKELY(rc() == 1)) {
                   argv[1].swap(dat[cast<long long>(argv[0])]);
                   if (MNL_UNLIKELY(argv_out)) argv[1].swap(argv_out[1]);
                   return move(self);
@@ -1235,9 +1199,9 @@ namespace aux {
          }
          if (MNL_LIKELY(argc > 2)) { // Array.Repl[Index; ...; NewElem]
             if (MNL_UNLIKELY(!test<long long>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-            if (MNL_UNLIKELY(cast<long long>(argv[0]) < 0) || MNL_UNLIKELY(cast<long long>(argv[0]) >= dat.size())) MNL_ERR(MNL_SYM("IndexOutOfRange"));
+            if (MNL_UNLIKELY((unsigned long long)cast<long long>(argv[0]) >= dat.size())) MNL_ERR(MNL_SYM("IndexOutOfRange"));
             long index = cast<long long>(argv[0]);
-            return MNL_LIKELY(rc() == 1)
+            return std::is_same_v<Self &&, val &&> && MNL_LIKELY(rc() == 1)
                ? (dat[index] = op(argc, (argv[0].swap(dat[index]), argv), argv_out), move(self))
                : [&]()->val{ val res = dat;
                   cast<vector<val> &>(res)[index] = op(argc, (argv[0].swap(cast<vector<val> &>(res)[index]), argv), argv_out);
@@ -1251,7 +1215,7 @@ namespace aux {
       case sym::op_add: // IMDOOs: cast<const string &>(argv[0]).empty()
          if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
          if (MNL_UNLIKELY(!test<vector<val>>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-         return MNL_LIKELY(rc() == 1)
+         return std::is_same_v<Self &&, val &&> && MNL_LIKELY(rc() == 1)
             ? (dat.insert(dat.end(), cast<const vector<val> &>(argv[0]).begin(), cast<const vector<val> &>(argv[0]).end()), move(self))
             : dat.empty() ? move(argv[0])
             : [&]()->val{ val res = vector<val>{};
@@ -1263,7 +1227,7 @@ namespace aux {
             }();
       case sym::op_or:
          if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-         return MNL_LIKELY(rc() == 1)
+         return std::is_same_v<Self &&, val &&> && MNL_LIKELY(rc() == 1)
             ? (dat.push_back(move(argv[0])), move(self))
             : [&]()->val{ val res = vector<val>{};
                cast<vector<val> &>(res).reserve(dat.size() + 1);
@@ -1329,7 +1293,7 @@ namespace aux {
          }
       case sym::op_clone:
          if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-         return MNL_LIKELY(rc() == 1) ? move(self) : dat;
+         return std::is_same_v<Self &&, val &&> && MNL_LIKELY(rc() == 1) ? move(self) : dat;
       case sym::op_deep_clone:
          if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
          return [this]()->val{ val res = dat; for (auto &&el: cast<vector<val> &>(res)) el = MNL_SYM("DeepClone")(move(el)); return res; }();
@@ -1337,12 +1301,13 @@ namespace aux {
       return self.default_invoke(op, argc, argv);
    }
 
-   template<> val box<pair<vector<ast>, loc>>::invoke(val &&self, const sym &op, int argc, val argv[], val *) { // Lists annotated with locations
+   template<> template<typename Self> val box<pair<vector<ast>, loc>>::invoke(Self &&self, const sym &op, int argc, val argv[], val *) {
+      // Lists annotated with locations
       switch (MNL_DISP("Apply", "Size", "Elems", "Keys")[op]) {
       case 1: // Apply
          if (MNL_LIKELY(argc == 1)) {
             if (MNL_LIKELY(test<long long>(argv[0]))) { // Array[Index]
-               if (MNL_UNLIKELY(cast<long long>(argv[0]) < 0) || MNL_UNLIKELY(cast<long long>(argv[0]) >= dat.first.size()))
+               if (MNL_UNLIKELY((unsigned long long)cast<long long>(argv[0]) >= dat.first.size()))
                   MNL_ERR(MNL_SYM("IndexOutOfRange"));
                return dat.first[cast<long long>(argv[0])];
             }
@@ -1359,7 +1324,7 @@ namespace aux {
             MNL_ERR(MNL_SYM("TypeMismatch"));
          }
          if (MNL_LIKELY(argc > 1)) { // Array[Index; ...]
-            if (MNL_UNLIKELY(cast<long long>(argv[0]) < 0) || MNL_UNLIKELY(cast<long long>(argv[0]) >= dat.first.size())) MNL_ERR(MNL_SYM("IndexOutOfRange"));
+            if (MNL_UNLIKELY((unsigned long long)cast<long long>(argv[0]) >= dat.first.size())) MNL_ERR(MNL_SYM("IndexOutOfRange"));
             return dat.first[cast<long long>(argv[0])](argc - 1, argv + 1);
          }
          MNL_ERR(MNL_SYM("InvalidInvocation"));
