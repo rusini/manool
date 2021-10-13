@@ -1120,8 +1120,40 @@ namespace aux {
       return self.default_invoke(op, argc, argv);
    }
 
-   template<> template<typename Self> val box<vector<val>>::invoke(Self &&self, const sym &op, int argc, val argv[], val *argv_out) {
-      // one instance of List is Array
+   // one instance of List is Array
+   template<> template<typename Self, typename Arg0>
+   MNL_INLINE val box<vector<val>>::apply(Self &&self, Arg0 &&arg0) {
+      if (MNL_LIKELY(test<long long>(arg0)) && MNL_LIKELY((unsigned long long)cast<long long>(arg0) < dat.size()))
+         return dat[cast<long long>(arg0)];
+      return default_apply(std::forward(self), std::forward(arg0));
+   }
+   template<> template<typename Self, typename Arg0, typename Arg1>
+   MNL_INLINE val box<vector<val>>::apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
+      if (MNL_LIKELY(test<long long>(arg0)) && MNL_LIKELY((unsigned long long)cast<long long>(arg0) < dat.size()))
+         return dat[cast<long long>(argv[0])](std::forward(arg1));
+      return default_apply(std::forward(self), std::forward(arg0), std::forward(arg1));
+   }
+   template<> template<typename Self, typename Arg0, typename Arg1>
+   MNL_INLINE val box<vector<val>>::repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1, val *argv_out) {
+      if (MNL_LIKELY(test<long long>(arg0)) && MNL_LIKELY((unsigned long long)cast<long long>(arg0) < dat.size()))
+      if (std::is_same_v<Self &&, val &&> && MNL_LIKELY(rc() == 1)) {
+         dat[cast<long long>(arg0)].assign(std::forward(arg1));
+
+
+         // TODO: it may be a good idea to have an op in val::assign() -- works either as swap or operator=
+
+         if constexpr (std::is_same_v<Arg1 &&, val &&>) arg1.swap(dat[cast<long long>(arg0)]); else arg1 = dat[cast<long long>(arg0)];
+         if (MNL_UNLIKELY(argv_out)) argv[1].swap(argv_out[1]);
+         return move(self);
+      }
+      return default_repl(std::forward(self), std::forward(arg0), std::forward(arg1), argv_out);
+   }
+   template<> template<typename Self, typename Arg0, typename Arg1, typename Arg2>
+   MNL_INLINE val box<vector<val>>::repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1, Arg2 &&arg2, val *argv_out) {
+      return default_repl(std::forward(self), std::forward(arg0), std::forward(arg1), std::forward(arg2), argv_out);
+   }
+   template<> template<typename Self>
+   MNL_INLINE val box<vector<val>>::invoke(Self &&self, const sym &op, int argc, val argv[], val *argv_out) {
       static const auto compact = [](vector<val> &dat)
          { if (MNL_UNLIKELY(dat.capacity() > dat.size() * 2)) dat.shrink_to_fit(); };
       switch (op) {
@@ -1147,6 +1179,7 @@ namespace aux {
             MNL_ERR(MNL_SYM("TypeMismatch"));
          }
          if (MNL_LIKELY(argc > 1)) { // Array[Index; ...]
+            if (MNL_UNLIKELY(!test<long long>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
             if (MNL_UNLIKELY(MNL_UNLIKELY((unsigned long long)cast<long long>(argv[0]) >= dat.size())) MNL_ERR(MNL_SYM("IndexOutOfRange"));
             return dat[cast<long long>(argv[0])](argc - 1, argv + 1);
          }
