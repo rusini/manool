@@ -407,13 +407,15 @@ namespace aux {
 } // namespace aux
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-   val sym::operator()(int argc, val argv[], val *argv_out) const {
+   template<typename Target,
+      std::enable_if_t<std::is_same_v<Target, const sym &>, int> = int{}>
+   val _apply(Target &&target, int argc, val argv[], val *argv_out) {
       if (MNL_UNLIKELY(!argc)) MNL_ERR(MNL_SYM("InvalidInvocation"));
       switch (argv[0].rep.tag()) {
       case 0x7FF8u: // BoxPtr (fallback)
-         return static_cast<val::root *>(argv[0].rep.dat<void *>())->invoke(move(argv[0]), *this, argc - 1, argv + 1, argv_out + !!argv_out);
+         return static_cast<val::root *>(argv[0].rep.dat<void *>())->invoke(move(argv[0]), target, argc - 1, argv + 1, argv_out + !!argv_out);
       case 0x7FF9u: // Nil
-         switch (*this) {
+         switch (target) {
          case sym::op_eq:
             if (MNL_UNLIKELY(argc != 2)) MNL_ERR(MNL_SYM("InvalidInvocation"));
             return  test<>(argv[1]);
@@ -442,7 +444,7 @@ namespace aux {
          }
          MNL_ERR(MNL_SYM("UnrecognizedOperation"));
       case 0x7FFAu: // I48
-         switch (*this) {
+         switch (target) {
          case sym::op_add:
             if (MNL_UNLIKELY(argc != 2)) MNL_ERR(MNL_SYM("InvalidInvocation"));
             if (MNL_UNLIKELY(!test<long long>(argv[1]))) MNL_ERR(MNL_SYM("TypeMismatch"));
@@ -514,7 +516,7 @@ namespace aux {
          }
          MNL_ERR(MNL_SYM("UnrecognizedOperation"));
       # define MNL_M(DAT) \
-         switch (*this) { \
+         switch (target) { \
          case sym::op_add: \
             if (MNL_UNLIKELY(argc != 2)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
             if (MNL_UNLIKELY(!test<DAT>(argv[1]))) MNL_ERR(MNL_SYM("TypeMismatch")); \
@@ -701,7 +703,7 @@ namespace aux {
       default: /* F64 */ MNL_M(double) case 0x7FFCu: /* F32 */ MNL_M(float)
       # undef MNL_M
       case 0x7FFBu: // Sym
-         switch (*this) {
+         switch (target) {
          case sym::op_eq:
             if (MNL_UNLIKELY(argc != 2)) MNL_ERR(MNL_SYM("InvalidInvocation"));
             return  MNL_LIKELY(test<sym>(argv[1])) && cast<const sym &>(argv[0]) == cast<const sym &>(argv[1]);
@@ -723,7 +725,7 @@ namespace aux {
          }
          MNL_ERR(MNL_SYM("UnrecognizedOperation"));
       case 0x7FFEu: // Bool/False
-         switch (*this) {
+         switch (target) {
          case sym::op_eq:
             if (MNL_UNLIKELY(argc != 2)) MNL_ERR(MNL_SYM("InvalidInvocation"));
             return argv[1].rep.tag() == 0x7FFEu;
@@ -755,7 +757,7 @@ namespace aux {
          }
          MNL_ERR(MNL_SYM("UnrecognizedOperation"));
       case 0x7FFFu: // Bool/True
-         switch (*this) {
+         switch (target) {
          case sym::op_eq:
             if (MNL_UNLIKELY(argc != 2)) MNL_ERR(MNL_SYM("InvalidInvocation"));
             return argv[1].rep.tag() == 0x7FFFu;
@@ -790,7 +792,7 @@ namespace aux {
          }
          MNL_ERR(MNL_SYM("UnrecognizedOperation"));
       case 0x7FFDu: // U32
-         switch (*this) {
+         switch (target) {
          case sym::op_add:
             if (MNL_UNLIKELY(argc != 2)) MNL_ERR(MNL_SYM("InvalidInvocation"));
             if (MNL_UNLIKELY(!test<unsigned>(argv[1]))) MNL_ERR(MNL_SYM("TypeMismatch"));
@@ -910,6 +912,7 @@ namespace aux {
          MNL_ERR(MNL_SYM("UnrecognizedOperation"));
       }
    }
+   template val _apply(const sym &, int argc, val [], val *argv_out);
 
    val proc_Min::invoke(val &&self, const sym &op, int argc, val argv[], val *) {
       if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);

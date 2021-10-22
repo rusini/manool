@@ -20,6 +20,26 @@
 
 # include "mnl-aux-core.tcc"
 
+   struct expr_nonvalue {
+      static code compile(code &&self, const form &, const loc &) = delete;
+      MNL_INLINE static val execute(bool = {}) { MNL_UNREACHABLE(); }
+      MNL_INLINE static void exec_nores(bool = {}) { MNL_UNREACHABLE(); }
+      template<typename Val> MNL_INLINE static void exec_in(Val &&) { MNL_UNREACHABLE(); }
+      MNL_INLINE static MNL_INLINE val exec_out() { MNL_UNREACHABLE(); }
+      MNL_INLINE static bool is_rvalue() noexcept { return false; }
+      MNL_INLINE static bool is_lvalue() noexcept { return false; }
+   };
+   struct expr_rvalue: expr_nonvalue {
+      MNL_INLINE static code compile(code &&self, const form &form, const loc &loc) { return aux::compile_apply(std::move(self), form, loc); }
+      static val execute(bool = {}) = delete;
+      MNL_INLINE static void exec_nores(bool = {}) {} // may still be shadowed
+      MNL_INLINE static bool is_rvalue() { return true; }
+   };
+   struct expr_lvalue: expr_rvalue {
+      template<typename Val> static void exec_in(Val &&) = delete;
+      static val exec_out() = delete;
+      MNL_INLINE static bool is_lvalue() noexcept { return true; } // may still be shadowed
+   };
 // Macros //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 # define MNL_RVALUE() \
    MNL_INLINE static ::mnl::code compile(::mnl::code &&self, const ::mnl::form &form, const ::mnl::loc &loc) \

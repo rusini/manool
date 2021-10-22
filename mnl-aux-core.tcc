@@ -587,7 +587,7 @@ namespace aux { namespace pub {
       val _apply(val &&self, val &&arg0, val &&arg1) override { return apply(_mv(self), _mv(arg0), _mv(arg1)); }
       val _apply(val &&self, val &&arg0, const sym &arg1) override { return apply(_mv(self), _mv(arg0), arg1); }
    private:
-      // For two arguments (12 VMT entries)
+      // For two arguments (12 VMT entries) TODO: only the last key may be const sym &
       val _repl(const val &self, const val &arg0, const val &arg1, val *argv_out) override { return repl(self, arg0, arg1, argv_out); }
       val _repl(const val &self, const val &arg0, val &&arg1, val *argv_out) override { return repl(self, arg0, _mv(arg1), argv_out); }
       val _repl(const val &self, const val &arg0, const sym &arg1, val *argv_out) override { return repl(self, arg0, arg1, argv_out); }
@@ -1009,8 +1009,8 @@ namespace aux { namespace pub {
 
    template<typename Target,
       std::enable_if_t<std::is_same_v<Target, const sym &>, int> = int{}>
-   val _apply(Target &&, int argc, val [], val *argv_out = {}) = delete;
-      template<> val _apply(const sym &target, int argc, val [], val *argv_out);
+   val _apply(Target &&, int argc, val [], val *argv_out = {});
+      // extern
    template<typename Target, std::size_t Argc,
       std::enable_if_t<std::is_same_v<Target, const sym &>, int> = int{}>
    MNL_INLINE inline val _apply(Target &&target, std::array<val, Argc> &&args, val *args_out = {})
@@ -1030,7 +1030,7 @@ namespace aux { namespace pub {
       std::enable_if_t<std::is_same_v<Arg0, val> || std::is_same_v<Arg0, const val &>, int> = int{},
       std::enable_if_t<std::is_same_v<Arg1, val> || std::is_same_v<Arg1, const val &>, int> = int{}>
    MNL_INLINE inline val _apply(Target &&target, Arg0 &&arg0, Arg1 &&arg1)
-      { val argv[] = {std::forward<Arg0>(arg0), std::forward<Arg1>(arg1)}; return target(std::extent_v<decltype(argv)>, argv); }
+      { val argv[] = {std::forward<Arg0>(arg0), std::forward<Arg1>(arg1)}; return target(std::size(argv), argv); }
 
    // Repl
 
