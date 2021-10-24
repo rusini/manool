@@ -22,47 +22,25 @@
 
    struct expr_nonvalue {
       static code compile(code &&self, const form &, const loc &) = delete;
-      MNL_INLINE static val execute(bool = {}) { MNL_UNREACHABLE(); }
-      MNL_INLINE static void exec_nores(bool = {}) { MNL_UNREACHABLE(); }
-      template<typename Val> MNL_INLINE static void exec_in(Val &&) { MNL_UNREACHABLE(); }
-      MNL_INLINE static MNL_INLINE val exec_out() { MNL_UNREACHABLE(); }
+      MNL_INLINE static decltype(nullptr) execute(bool = {}) noexcept { MNL_UNREACHABLE(); }
+      MNL_INLINE static void exec_nores(bool = {}) noexcept { MNL_UNREACHABLE(); }
+      template<typename Val> MNL_INLINE static void exec_in(Val &&) noexcept { MNL_UNREACHABLE(); }
+      MNL_INLINE static MNL_INLINE decltype(nullptr) exec_out() noexcept { MNL_UNREACHABLE(); }
       MNL_INLINE static bool is_rvalue() noexcept { return false; }
       MNL_INLINE static bool is_lvalue() noexcept { return false; }
    };
    struct expr_rvalue: expr_nonvalue {
       MNL_INLINE static code compile(code &&self, const form &form, const loc &loc) { return aux::compile_apply(std::move(self), form, loc); }
-      static val execute(bool = {}) = delete;
-      MNL_INLINE static void exec_nores(bool = {}) {} // may still be shadowed
+      static decltype(nullptr) execute(bool = {}) = delete;
+      MNL_INLINE static void exec_nores(bool = {}) noexcept {} // may still be shadowed
       MNL_INLINE static bool is_rvalue() { return true; }
    };
    struct expr_lvalue: expr_rvalue {
       template<typename Val> static void exec_in(Val &&) = delete;
-      static val exec_out() = delete;
+      static decltype(nullptr) exec_out() = delete;
       MNL_INLINE static bool is_lvalue() noexcept { return true; } // may still be shadowed
    };
 // Macros //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-# define MNL_RVALUE() \
-   MNL_INLINE static ::mnl::code compile(::mnl::code &&self, const ::mnl::form &form, const ::mnl::loc &loc) \
-      { return ::mnl::aux::compile_apply(::std::move(self), form, loc); } \
-   MNL_INLINE static void        exec_in(::mnl::val &&) { MNL_UNREACHABLE(); } \
-   MNL_INLINE static ::mnl::val  exec_out()             { MNL_UNREACHABLE(); } \
-   MNL_INLINE static bool        is_rvalue() { return true; } \
-   MNL_INLINE static bool        is_lvalue() { return false; } \
-   friend ::mnl::code;
-# define MNL_LVALUE(COND) \
-   MNL_INLINE static ::mnl::code compile(::mnl::code &&self, const ::mnl::form &form, const ::mnl::loc &loc) \
-      { return ::mnl::aux::compile_apply(::std::move(self), form, loc); } \
-   MNL_INLINE static bool        is_rvalue()       { return true; } \
-   MNL_INLINE        bool        is_lvalue() const { return (COND); } \
-   friend ::mnl::code;
-# define MNL_NONVALUE() \
-   MNL_INLINE static ::mnl::val  execute(bool = false)  { MNL_UNREACHABLE(); } \
-   MNL_INLINE static void        exec_in(::mnl::val &&) { MNL_UNREACHABLE(); } \
-   MNL_INLINE static ::mnl::val  exec_out()             { MNL_UNREACHABLE(); } \
-   MNL_INLINE static bool        is_rvalue() { return false; } \
-   MNL_INLINE static bool        is_lvalue() { return false; } \
-   friend ::mnl::code;
-// end
 # define MNL_CATCH_UNEXPECTED \
    catch (decltype(::mnl::sig_state) &sig) { ::mnl::aux::panic(sig); } \
    catch (::mnl::stack_overflow &)         { ::mnl::aux::panic({MNL_SYM("StackOverflow"), {}}); } \
@@ -75,6 +53,40 @@ namespace MNL_AUX_UUID {
 
 namespace aux { namespace pub {
    // Temporary Variable Accounting ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+   inline constexpr class tv_stack {
+      inline static MNL_IF_WITH_MT(thread_local) val *base;
+      inline static MNL_IF_WITH_MT(thread_local) val *top, *limit, *frame;
+   public:
+      MNL_INLINE void extend(int size) const {
+         _extend(size);
+         auto top = this->top + size;
+         for (auto pv = this->top; pv < top;) new(pv++) val;
+         this->top = top;
+      }
+      MNL_INLINE void drop(int size) const noexcept {
+         auto top = this->top;
+         for (; size; --size) --top->~val();
+         this->top = top
+      }
+   public:
+      template<typename Val> MNL_INLINE void push(Val &&value) const { _extend(); new(top) val(std::forward<decltype(value)>(value)), ++top; }
+      MNL_INLINE val *enter() const noexcept { auto frame = this->frame; this->frame = top; return frame; }
+      MNL_INLINE void leave(val *frame) const noexcept { this->frame = frame; }
+      MNL_INLINE void finalize() const noexcept { std::free(base); }
+      MNL_INLINE val &operator[](int index) const noexcept { return frame[index]; } // the reason why everything is wrapped is a class
+   private:
+      MNL_INLINE static void _extend(int size = 1) {
+         if ((unsigned long)top + size * sizeof *top < (unsigned long)limit) return; // comparing addresses to avoid UB
+         val *base; auto top = this->top - base, limit = top + size, frame = this->frame - base;
+         if (!MNL_LIKELY(base = std::realloc(this->base, sizeof(val [limit = (limit << 1) + limit + 1 >> 1])))) throw std::bad_alloc{};
+         this->base = base; this->top = base + top, this->limit = base + limit, this->frame = base + frame;
+      }
+   } tv_stack;
+
+
+
+
 
    // Compile-time accounting
    extern MNL_IF_WITH_MT(thread_local) int      tmp_cnt; // count for current frame layout

@@ -455,9 +455,9 @@ namespace aux { namespace pub {
 
 
    private: // To be called instead of virtual functions directly (just more consistent naming)
-      template<typename ...Items> MNL_INLINE val invoke(Items &&...items) { return _invoke(std::forward<Items>(items) ...); }
-      template<typename ...Items> MNL_INLINE val apply(Items &&...items) { return _apply(std::forward<Items>(items) ...); }
-      template<typename ...Items> MNL_INLINE val repl(Items &&...items) { return _repl(std::forward<Items>(items) ...); }
+      template<typename ...It> MNL_INLINE val invoke(It &&...it) { return _invoke(std::forward<It>(it) ...); }
+      template<typename ...It> MNL_INLINE val apply(It &&...it) { return _apply(std::forward<It>(it) ...); }
+      template<typename ...It> MNL_INLINE val repl(It &&...it) { return _repl(std::forward<It>(it) ...); }
    private: // 54 VMT entries
       virtual val _invoke(const val &self, const sym &op, int argc, val [], val *argv_out) = 0;
       virtual val _invoke(val &&self, const sym &op, int argc, val [], val *argv_out) = 0;
@@ -484,43 +484,43 @@ namespace aux { namespace pub {
       virtual val _apply(val &&self, val &&, const sym &) = 0;
    private:
       // For two arguments (12 VMT entries)
-      virtual val _repl(const val &self, const val &, const val &, val *argv_out) = 0;
-      virtual val _repl(const val &self, const val &, val &&, val *argv_out) = 0;
-      virtual val _repl(const val &self, const val &, const sym &, val *argv_out) = 0;
-      virtual val _repl(const val &self, val &&, const val &, val *argv_out) = 0;
-      virtual val _repl(const val &self, val &&, val &&, val *argv_out) = 0;
-      virtual val _repl(const val &self, val &&, const sym &, val *argv_out) = 0;
-      virtual val _repl(val &&self, const val &, const val &, val *argv_out) = 0;
-      virtual val _repl(val &&self, const val &, val &&, val *argv_out) = 0;
-      virtual val _repl(val &&self, const val &, const sym &, val *argv_out) = 0;
-      virtual val _repl(val &&self, val &&, const val &, val *argv_out) = 0;
-      virtual val _repl(val &&self, val &&, val &&, val *argv_out) = 0;
-      virtual val _repl(val &&self, val &&, const sym &, val *argv_out) = 0;
+      virtual val _repl(const val &self, const val &, const val &) = 0;
+      virtual val _repl(const val &self, const val &, val &&) = 0;
+      virtual val _repl(const val &self, val &&, const val &) = 0;
+      virtual val _repl(const val &self, val &&, val &&) = 0;
+      virtual val _repl(const val &self, const sym &, const val &) = 0;
+      virtual val _repl(const val &self, const sym &, val &&) = 0;
+      virtual val _repl(val &&self, const val &, const val &) = 0;
+      virtual val _repl(val &&self, const val &, val &&) = 0;
+      virtual val _repl(val &&self, val &&, const val &) = 0;
+      virtual val _repl(val &&self, val &&, val &&) = 0;
+      virtual val _repl(val &&self, const sym &, const val &) = 0;
+      virtual val _repl(val &&self, const sym &, val &&) = 0;
       // For three arguments (24 VMT entries)
-      virtual val _repl(const val &self, const val &, const val &, const val &, val *argv_out) = 0;
-      virtual val _repl(const val &self, const val &, const val &, val &&, val *argv_out) = 0;
-      virtual val _repl(const val &self, const val &, const val &, const sym &, val *argv_out) = 0;
-      virtual val _repl(const val &self, const val &, val &&, const val &, val *argv_out) = 0;
-      virtual val _repl(const val &self, const val &, val &&, val &&, val *argv_out) = 0;
-      virtual val _repl(const val &self, const val &, val &&, const sym &, val *argv_out) = 0;
-      virtual val _repl(const val &self, val &&, const val &, const val &, val *argv_out) = 0;
-      virtual val _repl(const val &self, val &&, const val &, val &&, val *argv_out) = 0;
-      virtual val _repl(const val &self, val &&, const val &, const sym &, val *argv_out) = 0;
-      virtual val _repl(const val &self, val &&, val &&, const val &, val *argv_out) = 0;
-      virtual val _repl(const val &self, val &&, val &&, val &&, val *argv_out) = 0;
-      virtual val _repl(const val &self, val &&, val &&, const sym &, val *argv_out) = 0;
-      virtual val _repl(val &&self, const val &, const val &, const val &, val *argv_out) = 0;
-      virtual val _repl(val &&self, const val &, const val &, val &&, val *argv_out) = 0;
-      virtual val _repl(val &&self, const val &, const val &, const sym &, val *argv_out) = 0;
-      virtual val _repl(val &&self, const val &, val &&, const val &, val *argv_out) = 0;
-      virtual val _repl(val &&self, const val &, val &&, val &&, val *argv_out) = 0;
-      virtual val _repl(val &&self, const val &, val &&, const sym &, val *argv_out) = 0;
-      virtual val _repl(val &&self, val &&, const val &, const val &, val *argv_out) = 0;
-      virtual val _repl(val &&self, val &&, const val &, val &&, val *argv_out) = 0;
-      virtual val _repl(val &&self, val &&, const val &, const sym &, val *argv_out) = 0;
-      virtual val _repl(val &&self, val &&, val &&, const val &, val *argv_out) = 0;
-      virtual val _repl(val &&self, val &&, val &&, val &&, val *argv_out) = 0;
-      virtual val _repl(val &&self, val &&, val &&, const sym &, val *argv_out) = 0;
+      virtual val _repl(const val &self, const val &, const val &, const val &) = 0;
+      virtual val _repl(const val &self, const val &, const val &, val &&) = 0;
+      virtual val _repl(const val &self, const val &, val &&, const val &) = 0;
+      virtual val _repl(const val &self, const val &, val &&, val &&) = 0;
+      virtual val _repl(const val &self, const val &, const sym &, const val &) = 0;
+      virtual val _repl(const val &self, const val &, const sym &, val &&) = 0;
+      virtual val _repl(const val &self, val &&, const val &, const val &) = 0;
+      virtual val _repl(const val &self, val &&, const val &, val &&) = 0;
+      virtual val _repl(const val &self, val &&, val &&, const val &) = 0;
+      virtual val _repl(const val &self, val &&, val &&, val &&) = 0;
+      virtual val _repl(const val &self, val &&, const sym &, const val &) = 0;
+      virtual val _repl(const val &self, val &&, const sym &, val &&) = 0;
+      virtual val _repl(val &&self, const val &, const val &, const val &) = 0;
+      virtual val _repl(val &&self, const val &, const val &, val &&) = 0;
+      virtual val _repl(val &&self, const val &, val &&, const val &) = 0;
+      virtual val _repl(val &&self, const val &, val &&, val &&) = 0;
+      virtual val _repl(val &&self, const val &, const sym &, const val &) = 0;
+      virtual val _repl(val &&self, const val &, const sym &, val &&) = 0;
+      virtual val _repl(val &&self, val &&, const val &, const val &) = 0;
+      virtual val _repl(val &&self, val &&, const val &, val &&) = 0;
+      virtual val _repl(val &&self, val &&, val &&, const val &) = 0;
+      virtual val _repl(val &&self, val &&, val &&, val &&) = 0;
+      virtual val _repl(val &&self, val &&, const sym &, const val &) = 0;
+      virtual val _repl(val &&self, val &&, const sym &, val &&) = 0;
 
 
    public:
@@ -588,43 +588,43 @@ namespace aux { namespace pub {
       val _apply(val &&self, val &&arg0, const sym &arg1) override { return apply(_mv(self), _mv(arg0), arg1); }
    private:
       // For two arguments (12 VMT entries) TODO: only the last key may be const sym &
-      val _repl(const val &self, const val &arg0, const val &arg1, val *argv_out) override { return repl(self, arg0, arg1, argv_out); }
-      val _repl(const val &self, const val &arg0, val &&arg1, val *argv_out) override { return repl(self, arg0, _mv(arg1), argv_out); }
-      val _repl(const val &self, const val &arg0, const sym &arg1, val *argv_out) override { return repl(self, arg0, arg1, argv_out); }
-      val _repl(const val &self, val &&arg0, const val &arg1, val *argv_out) override { return repl(self, _mv(arg0), arg1, argv_out); }
-      val _repl(const val &self, val &&arg0, val &&arg1, val *argv_out) override { return repl(self, _mv(arg0), _mv(arg1), argv_out); }
-      val _repl(const val &self, val &&arg0, const sym &arg1, val *argv_out) override { return repl(self, _mv(arg0), arg1, argv_out); }
-      val _repl(val &&self, const val &arg0, const val &arg1, val *argv_out) override { return repl(_mv(self), arg0, arg1, argv_out); }
-      val _repl(val &&self, const val &arg0, val &&arg1, val *argv_out) override { return repl(_mv(self), arg0, _mv(arg1), argv_out); }
-      val _repl(val &&self, const val &arg0, const sym &arg1, val *argv_out) override { return repl(_mv(self), arg0, arg1, argv_out); }
-      val _repl(val &&self, val &&arg0, const val &arg1, val *argv_out) override { return repl(_mv(self), _mv(arg0), arg1, argv_out); }
-      val _repl(val &&self, val &&arg0, val &&arg1, val *argv_out) override { return repl(_mv(self), _mv(arg0), _mv(arg1), argv_out); }
-      val _repl(val &&self, val &&arg0, const sym &arg1, val *argv_out) override { return repl(_mv(self), _mv(arg0), arg1, argv_out); }
+      val _repl(const val &self, const val &arg0, const val &arg1) override { return repl(self, arg0, arg1); }
+      val _repl(const val &self, const val &arg0, val &&arg1) override { return repl(self, arg0, _mv(arg1)); }
+      val _repl(const val &self, val &&arg0, const val &arg1) override { return repl(self, _mv(arg0), arg1); }
+      val _repl(const val &self, val &&arg0, val &&arg1) override { return repl(self, _mv(arg0), _mv(arg1)); }
+      val _repl(const val &self, const sym &arg0, const val &arg1) override { return repl(self, arg0, arg1); }
+      val _repl(const val &self, const sym &arg0, val &&arg1) override { return repl(self, arg0, _mv(arg1)); }
+      val _repl(val &&self, const val &arg0, const val &arg1) override { return repl(_mv(self), arg0, arg1); }
+      val _repl(val &&self, const val &arg0, val &&arg1) override { return repl(_mv(self), arg0, _mv(arg1)); }
+      val _repl(val &&self, val &&arg0, const val &arg1) override { return repl(_mv(self), _mv(arg0), arg1); }
+      val _repl(val &&self, val &&arg0, val &&arg1) override { return repl(_mv(self), _mv(arg0), _mv(arg1)); }
+      val _repl(val &&self, const sym &arg0, const val &arg1) override { return repl(_mv(self), arg0, arg1); }
+      val _repl(val &&self, const sym &arg0, val &&arg1) override { return repl(_mv(self), arg0, _mv(arg1)); }
       // For three arguments (24 VMT entries)
-      val _repl(const val &self, const val &arg0, const val &arg1, const val &arg2, val *argv_out) override { return repl(self, arg0, arg1, arg2, argv_out); }
-      val _repl(const val &self, const val &arg0, const val &arg1, val &&arg2, val *argv_out) override { return repl(self, arg0, arg1, _mv(arg2), argv_out); }
-      val _repl(const val &self, const val &arg0, const val &arg1, const sym &arg2, val *argv_out) override { return repl(self, arg0, arg1, arg2, argv_out); }
-      val _repl(const val &self, const val &arg0, val &&arg1, const val &arg2, val *argv_out) override { return repl(self, arg0, _mv(arg1), arg2, argv_out); }
-      val _repl(const val &self, const val &arg0, val &&arg1, val &&arg2, val *argv_out) override { return repl(self, arg0, _mv(arg1), _mv(arg2), argv_out); }
-      val _repl(const val &self, const val &arg0, val &&arg1, const sym &arg2, val *argv_out) override { return repl(self, arg0, _mv(arg1), arg2, argv_out); }
-      val _repl(const val &self, val &&arg0, const val &arg1, const val &arg2, val *argv_out) override { return repl(self, _mv(arg0), arg1, arg2, argv_out); }
-      val _repl(const val &self, val &&arg0, const val &arg1, val &&arg2, val *argv_out) override { return repl(self, _mv(arg0), arg1, _mv(arg2), argv_out); }
-      val _repl(const val &self, val &&arg0, const val &arg1, const sym &arg2, val *argv_out) override { return repl(self, _mv(arg0), arg1, arg2, argv_out); }
-      val _repl(const val &self, val &&arg0, val &&arg1, const val &arg2, val *argv_out) override { return repl(self, _mv(arg0), _mv(arg1), arg2, argv_out); }
-      val _repl(const val &self, val &&arg0, val &&arg1, val &&arg2, val *argv_out) override { return repl(self, _mv(arg0), _mv(arg1), _mv(arg2), argv_out); }
-      val _repl(const val &self, val &&arg0, val &&arg1, const sym &arg2, val *argv_out) override { return repl(self, _mv(arg0), _mv(arg1), arg2, argv_out); }
-      val _repl(val &&self, const val &arg0, const val &arg1, const val &arg2, val *argv_out) override { return repl(_mv(self), arg0, arg1, arg2, argv_out); }
-      val _repl(val &&self, const val &arg0, const val &arg1, val &&arg2, val *argv_out) override { return repl(_mv(self), arg0, arg1, _mv(arg2), argv_out); }
-      val _repl(val &&self, const val &arg0, const val &arg1, const sym &arg2, val *argv_out) override { return repl(_mv(self), arg0, arg1, arg2, argv_out); }
-      val _repl(val &&self, const val &arg0, val &&arg1, const val &arg2, val *argv_out) override { return repl(_mv(self), arg0, _mv(arg1), arg2, argv_out); }
-      val _repl(val &&self, const val &arg0, val &&arg1, val &&arg2, val *argv_out) override { return repl(_mv(self), arg0, _mv(arg1), _mv(arg2), argv_out); }
-      val _repl(val &&self, const val &arg0, val &&arg1, const sym &arg2, val *argv_out) override { return repl(_mv(self), arg0, _mv(arg1), arg2, argv_out); }
-      val _repl(val &&self, val &&arg0, const val &arg1, const val &arg2, val *argv_out) override { return repl(_mv(self), _mv(arg0), arg1, arg2, argv_out); }
-      val _repl(val &&self, val &&arg0, const val &arg1, val &&arg2, val *argv_out) override { return repl(_mv(self), _mv(arg0), arg1, _mv(arg2), argv_out); }
-      val _repl(val &&self, val &&arg0, const val &arg1, const sym &arg2, val *argv_out) override { return repl(_mv(self), _mv(arg0), arg1, arg2, argv_out); }
-      val _repl(val &&self, val &&arg0, val &&arg1, const val &arg2, val *argv_out) override { return repl(_mv(self), _mv(arg0), _mv(arg1), arg2, argv_out); }
-      val _repl(val &&self, val &&arg0, val &&arg1, val &&arg2, val *argv_out) override { return repl(_mv(self), _mv(arg0), _mv(arg1), _mv(arg2), argv_out); }
-      val _repl(val &&self, val &&arg0, val &&arg1, const sym &arg2, val *argv_out) override { return repl(_mv(self), _mv(arg0), _mv(arg1), arg2, argv_out); }
+      val _repl(const val &self, const val &arg0, const val &arg1, const val &arg2) override { return repl(self, arg0, arg1, arg2); }
+      val _repl(const val &self, const val &arg0, const val &arg1, val &&arg2) override { return repl(self, arg0, arg1, _mv(arg2)); }
+      val _repl(const val &self, const val &arg0, val &&arg1, const val &arg2) override { return repl(self, arg0, _mv(arg1), arg2); }
+      val _repl(const val &self, const val &arg0, val &&arg1, val &&arg2) override { return repl(self, arg0, _mv(arg1), _mv(arg2)); }
+      val _repl(const val &self, const val &arg0, const sym &arg1, const val &arg2) override { return repl(self, arg0, arg1, arg2); }
+      val _repl(const val &self, const val &arg0, const sym &arg1, val &&arg2) override { return repl(self, arg0, arg1, _mv(arg2)); }
+      val _repl(const val &self, val &&arg0, const val &arg1, const val &arg2) override { return repl(self, _mv(arg0), arg1, arg2); }
+      val _repl(const val &self, val &&arg0, const val &arg1, val &&arg2) override { return repl(self, _mv(arg0), arg1, _mv(arg2)); }
+      val _repl(const val &self, val &&arg0, val &&arg1, const val &arg2) override { return repl(self, _mv(arg0), _mv(arg1), arg2); }
+      val _repl(const val &self, val &&arg0, val &&arg1, val &&arg2) override { return repl(self, _mv(arg0), _mv(arg1), _mv(arg2)); }
+      val _repl(const val &self, val &&arg0, const sym &arg1, const val &arg2) override { return repl(self, _mv(arg0), arg1, arg2); }
+      val _repl(const val &self, val &&arg0, const sym &arg1, val &&arg2) override { return repl(self, _mv(arg0), arg1, _mv(arg2)); }
+      val _repl(val &&self, const val &arg0, const val &arg1, const val &arg2) override { return repl(_mv(self), arg0, arg1, arg2); }
+      val _repl(val &&self, const val &arg0, const val &arg1, val &&arg2) override { return repl(_mv(self), arg0, arg1, _mv(arg2)); }
+      val _repl(val &&self, const val &arg0, val &&arg1, const val &arg2) override { return repl(_mv(self), arg0, _mv(arg1), arg2); }
+      val _repl(val &&self, const val &arg0, val &&arg1, val &&arg2) override { return repl(_mv(self), arg0, _mv(arg1), _mv(arg2)); }
+      val _repl(val &&self, const val &arg0, const sym &arg1, const val &arg2) override { return repl(_mv(self), arg0, arg1, arg2); }
+      val _repl(val &&self, const val &arg0, const sym &arg1, val &&arg2) override { return repl(_mv(self), arg0, arg1, _mv(arg2)); }
+      val _repl(val &&self, val &&arg0, const val &arg1, const val &arg2) override { return repl(_mv(self), _mv(arg0), arg1, arg2); }
+      val _repl(val &&self, val &&arg0, const val &arg1, val &&arg2) override { return repl(_mv(self), _mv(arg0), arg1, _mv(arg2)); }
+      val _repl(val &&self, val &&arg0, val &&arg1, const val &arg2) override { return repl(_mv(self), _mv(arg0), _mv(arg1), arg2); }
+      val _repl(val &&self, val &&arg0, val &&arg1, val &&arg2) override { return repl(_mv(self), _mv(arg0), _mv(arg1), _mv(arg2)); }
+      val _repl(val &&self, val &&arg0, const sym &arg1, const val &arg2) override { return repl(_mv(self), _mv(arg0), arg1, arg2); }
+      val _repl(val &&self, val &&arg0, const sym &arg1, val &&arg2) override { return repl(_mv(self), _mv(arg0), arg1, _mv(arg2)); }
    private:
       template<typename Rhs> MNL_INLINE auto _mv(Rhs &&rhs) noexcept { return std::move(rhs); }
    private: // Overrideable via template specialization

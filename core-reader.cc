@@ -50,8 +50,6 @@ namespace aux { namespace {
       curr_ast;
    MNL_IF_WITH_MT(thread_local) loc
       curr_loc;
-   MNL_IF_WITH_MT(thread_local) decltype(curr_typ)
-      prev_typ;
    MNL_IF_WITH_MT(thread_local) decltype(curr_loc._final)
       prev_loc_final;
 
@@ -72,9 +70,11 @@ namespace aux { namespace {
       if (curr_typ != typ) err_syntax_error();
       auto res = move(curr_ast);
       prev_loc_final = curr_loc._final;
-      prev_typ = curr_typ, scan();
+      scan();
       return res;
    }
+
+   MNL_IF_WITH_MT(thread_local) bool after_lpar;
 
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -104,7 +104,8 @@ namespace aux { namespace {
    ast parse_factor() { // NEARLY factor: prim | "<pref-op>" factor
       if (curr_typ != tk_pref) return parse_prim();
       auto start = curr_loc._start;
-      if (prev_typ != tk_lpar) return {{parse(), parse_factor()}, {curr_loc.origin, start, prev_loc_final}};
+      if (!after_lpar) return {{parse(), parse_factor()}, {curr_loc.origin, start, prev_loc_final}};
+      after_lpar = false;
       return [&]()->ast{ auto res = parse();
          if (curr_typ == tk_rpar) return res;
          res = {{move(res), parse_factor()}, {curr_loc.origin, start, prev_loc_final}}; return res; }();
@@ -138,7 +139,7 @@ namespace aux { namespace {
       case tk_lpar:
          switch (parse(), curr_typ) case tk_equ: case tk_rel: case tk_add: case tk_mul: case tk_post:
             return []()->ast{ auto res = parse(); parse(tk_rpar); return res; }();
-         return []()->ast{ auto res = parse_datum(); parse(tk_rpar); return res; }();
+         return []()->ast{ auto res = (after_lpar = true, parse_datum()); parse(tk_rpar); return res; }();
       }
       err_syntax_error(); // WARNING: control reaches end of non-void function
    }
@@ -200,7 +201,7 @@ namespace aux { namespace {
    void scan_startup(const string &source, string &&origin) {
       pc = source.c_str();
       curr_loc.origin = make_shared<string>(move(origin)), curr_loc._final = {1, 1};
-      prev_typ = tk_end, scan();
+      scan();
    }
    void scan_cleanup() noexcept {
       curr_ast = {}, curr_loc.origin.reset();
