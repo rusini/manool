@@ -455,9 +455,9 @@ namespace aux { namespace pub {
 
 
    private: // To be called instead of virtual functions directly (just more consistent naming)
-      template<typename ...It> MNL_INLINE val invoke(It &&...it) { return _invoke(std::forward<It>(it) ...); }
-      template<typename ...It> MNL_INLINE val apply(It &&...it) { return _apply(std::forward<It>(it) ...); }
-      template<typename ...It> MNL_INLINE val repl(It &&...it) { return _repl(std::forward<It>(it) ...); }
+      template<typename ...Items> MNL_INLINE val invoke(Items &&...items) { return _invoke(std::forward<Items>(items) ...); }
+      template<typename ...Items> MNL_INLINE val apply(Items &&...items) { return _apply(std::forward<Items>(items) ...); }
+      template<typename ...Items> MNL_INLINE val repl(Items &&...items) { return _repl(std::forward<Items>(items) ...); }
    private: // 54 VMT entries
       virtual val _invoke(const val &self, const sym &op, int argc, val [], val *argv_out) = 0;
       virtual val _invoke(val &&self, const sym &op, int argc, val [], val *argv_out) = 0;
@@ -627,37 +627,37 @@ namespace aux { namespace pub {
       val _repl(val &&self, val &&arg0, const sym &arg1, val &&arg2) override { return repl(_mv(self), _mv(arg0), arg1, _mv(arg2)); }
    private:
       template<typename Rhs> MNL_INLINE auto _mv(Rhs &&rhs) noexcept { return std::move(rhs); }
-   private: // Overrideable via template specialization
+   private: // User-specializable
       template<typename Self> MNL_INLINE val invoke(Self &&self, const sym &op, int argc, val argv[], val *argv_out)
          { return dat.invoke(std::forward<Self>(self), op, argc, argv, argv_out); }
       template<typename Self, typename Arg0> MNL_INLINE val apply(Self &&self, Arg0 &&arg0)
          { return default_apply(std::forward<Self>(self), std::forward<Arg0>(arg0)); }
       template<typename Self, typename Arg0, typename Arg1> MNL_INLINE val apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1)
          { return default_apply(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1)); }
-      template<typename Self, typename Arg0, typename Arg1> MNL_INLINE val repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1, val *argv_out)
-         { return default_repl(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), argv_out); }
-      template<typename Self, typename Arg0, typename Arg1, typename Arg2> MNL_INLINE val repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1, Arg2 &&arg2, val *argv_out)
-         { return default_repl(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::forward<Arg2>(arg2), argv_out); }
+      template<typename Self, typename Arg0, typename Arg1> MNL_INLINE val repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1)
+         { return default_repl(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1)); }
+      template<typename Self, typename Arg0, typename Arg1, typename Arg2> MNL_INLINE val repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1, Arg2 &&arg2)
+         { return default_repl(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::forward<Arg2>(arg2)); }
    private: // Utilities for forwarding to "invoke"
       template<typename Self, typename Arg0>
       MNL_INLINE val default_apply(Self &&self, Arg0 &&arg0) {
          return _invoke(std::forward<Self>(self), MNL_SYM("Apply"), 1,
-            &const_cast<val &>((const val &)std::conditional_t<std::is_convertible_v<Arg0 &&, val &&>, val &&, val>(arg0)), {});
+            &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Arg0, val>, val &, val>)arg0), {});
       }
       template<typename Self, typename Arg0, typename Arg1>
       MNL_INLINE val default_apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
          val argv[] = {std::forward<Arg0>(arg0), std::forward<Arg1>(arg1)};
-         return _invoke(std::forward<Self>(self), MNL_SYM("Apply"), std::extent_v<decltype(argv)>, argv, {});
+         return _invoke(std::forward<Self>(self), MNL_SYM("Apply"), std::size(argv), argv, {});
       }
       template<typename Self, typename Arg0, typename Arg1>
-      MNL_INLINE val default_repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1, val *argv_out) {
+      MNL_INLINE val default_repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
          val argv[] = {std::forward<Arg0>(arg0), std::forward<Arg1>(arg1)};
-         return _invoke(std::forward<Self>(self), MNL_SYM("Repl"), std::extent_v<decltype(argv)>, argv, argv_out);
+         return _invoke(std::forward<Self>(self), MNL_SYM("Repl"), std::size(argv), argv, {});
       }
       template<typename Self, typename Arg0, typename Arg1, typename Arg2>
-      MNL_INLINE val default_repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1, Arg2 &&arg2, val *argv_out) {
+      MNL_INLINE val default_repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1, Arg2 &&arg2) {
          val argv[] = {std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::forward<Arg2>(arg2)};
-         return _invoke(std::forward<Self>(self), MNL_SYM("Repl"), std::extent_v<decltype(argv)>, argv, argv_out);
+         return _invoke(std::forward<Self>(self), MNL_SYM("Repl"), std::size(argv), argv, {});
       }
    };
    template<> class box<decltype(nullptr)>; // to be left incomplete to improve diagnostics
@@ -853,7 +853,7 @@ namespace aux { namespace pub {
       MNL_INLINE friend bool operator==(const code &lhs, const code &rhs) noexcept { return lhs.rep == rhs.rep; }
       MNL_INLINE explicit operator bool() const noexcept { return rep; }
    public: // Construction -- Implicit conversion (to) + Compilation/execution operations
-      template<typename Dat> code(Dat dat): rep(new box<Dat>{(move)(dat)}) {}
+      template<typename Dat> code(Dat dat): rep(new box<Dat>{std::move(dat)}) {}
       MNL_INLINE code compile(const form &form, const loc &loc) && { return rep->compile(move(*this), form, loc); }
       MNL_INLINE val  execute(bool fast_sig = {}) const { return rep->execute(fast_sig); }
       MNL_INLINE void exec_in(const val &val) const { rep->exec_in(mnl::val(val)); }
@@ -863,26 +863,50 @@ namespace aux { namespace pub {
       MNL_INLINE bool is_lvalue() const noexcept { return rep->is_lvalue(); } // implies is_rvalue()
    public: // Extraction
       template<typename Dat> MNL_INLINE friend bool test(const code &rhs) noexcept
-         { return typeid(*rhs.rep) == typeid(box<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type>); }
+         { return rhs.rep->tag == &box<std::remove_cv_t<std::remove_reference_t<Dat>>>::tag; }
       template<typename Dat> MNL_INLINE friend Dat  cast(const code &rhs) noexcept
-         { return static_cast<box<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type> *>(rhs.rep)->dat; }
+         { return static_cast<box<std::remove_cv_t<std::remove_reference_t<Dat>>> *>(rhs.rep)->dat; }
+   public: // Mandatory bases for Dat
+      struct nonvalue; struct rvalue; struct lvalue;
    private: // Concrete representation
       class root { public:
          /*atomic*/ long rc = 1;
+         const void *const tag; // dynamic type identification
+         MNL_INLINE explicit root(decltype(tag) tag) noexcept: tag(tag) {}
+         root(root &&) = delete; // can only be constructed/destructed (not movied or copied)
          virtual ~root() = default;
          virtual code compile(code &&self, const form &, const loc &) const = 0;
          virtual val  execute(bool fast_sig) const = 0;
-         virtual void exec_in(val &&) const = 0;
+         virtual void exec_nores(bool fast_sig) const = 0;
+         virtual void exec_in(const val &) const = 0;
+         virtual void exec_in(decltype(nullptr)) const = 0;
+         virtual void exec_in(long long) const = 0;
+         virtual void exec_in(double) const = 0;
+         virtual void exec_in(float) const = 0;
+         virtual void exec_in(const sym &) const = 0;
+         virtual void exec_in(bool) const = 0;
+         virtual void exec_in(unsigned) const = 0;
          virtual val  exec_out() const = 0;
          virtual bool is_rvalue() const noexcept = 0;
          virtual bool is_lvalue() const noexcept = 0; // shall imply is_rvalue()
-      } *rep{};
+      } *rep = {};
       template<typename Dat> class box final: public root { public:
          const Dat dat;
-         explicit box(Dat dat): dat((move)(dat)) {}
+         static constexpr unsigned char tag = {}; // dynamic type identification
+         static_assert(std::is_base_of_v<nonvalue, Dat>);
+         explicit box(Dat dat) noexcept: root{&tag}, dat(std::move(dat)) {}
          code compile(code &&self, const form &form, const loc &loc) const override { return dat.compile(move(self), form, loc); }
          val  execute(bool fast_sig) const override { return dat.execute(fast_sig); }
-         void exec_in(val &&val) const override { dat.exec_in(move(val)); }
+         void exec_nores(bool fast_sig) const override { dat.execute(fast_sig); }
+         void exec_in(const val &val) const override { dat.exec_in(val); }
+         void exec_in(val &&val) const override { dat.exec_in(std::move(val)); }
+         void exec_in(decltype(nullptr)) const override { dat.exec_in(val); }
+         void exec_in(long long val) const override { dat.exec_in(val); }
+         void exec_in(double val) const override { dat.exec_in(val); }
+         void exec_in(float val) const override { dat.exec_in(val); }
+         void exec_in(const sym &val) const override { dat.exec_in(val); }
+         void exec_in(bool val) const override { dat.exec_in(val); }
+         void exec_in(unsigned val) const override { dat.exec_in(val); }
          val  exec_out() const override { return dat.exec_out(); }
          bool is_rvalue() const noexcept override { return dat.is_rvalue(); }
          bool is_lvalue() const noexcept override { return dat.is_lvalue(); } // shall imply is_rvalue()
