@@ -138,7 +138,7 @@ namespace aux {
          { execute(); }
    };
 
-   template<class Target = code, class Arg0 = code, class Arg1 = code, class Arg2 = code> struct apply3: code::lvalue {
+   template<class Target = code, class Arg0 = code, class Arg1 = code, class Arg2 = code> struct apply3: code::lvalue { // 3-arg application
       Target target; Arg0 arg0; Arg1 arg1; Arg2 arg2; loc _loc;
    public:
       MNL_INLINE val execute(bool = {}) const {
@@ -167,7 +167,7 @@ namespace aux {
       }
    };
 
-   template<class Target = code, class Arg0 = code, class Arg1 = code, class Arg2 = code, class Arg3 = code> struct apply4: code::lvalue {
+   template<class Target = code, class Arg0 = code, class Arg1 = code, class Arg2 = code, class Arg3 = code> struct apply4: code::lvalue { // 4-arg application
       Target target; Arg0 arg0; Arg1 arg1; Arg2 arg2; Arg3 arg3; loc _loc;
    public:
       MNL_INLINE val execute(bool = {}) const {
@@ -228,7 +228,7 @@ namespace aux {
       template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
          auto &&cond = this->cond.execute();
          if (MNL_UNLIKELY(!test<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
-         (cast<bool>(cond) ? body1 : body2).exec_in(std::forward<decltype(value)>(value));
+         (cast<bool>(cond) ? body1 : body2).exec_in(std::forward<Val>(value));
       }
       MNL_INLINE val exec_out() const {
          auto &&cond = this->cond.execute();
