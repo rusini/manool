@@ -20,25 +20,14 @@ namespace MNL_AUX_UUID {
 
 namespace aux {
 
-   template<typename Expr> MNL_INLINE inline bool match(code &expr)
-      { Expr res; return match(expr, res) && (expr = res, true); }
-
-   template<typename Expr> MNL_NOINLINE inline bool match(const code &expr, Expr &res)
-      { return test<Expr>(expr) ? (res = cast<const Expr &>(expr), true) : res.match(expr); }
-   MNL_NOINLINE inline bool match(const code &expr, code &res)
-      { return res = expr, true; }
-
-
-
-
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   template<typename Val = const val &> struct expr_lit: expr_rvalue { // literal
+   template<typename Val = const val &> struct expr_lit/*eral*/: code::rvalue { // constant value known by MANOOL translator at compile time
       std::remove_cv_t<std::remove_reference_t<Val>> value;
       MNL_INLINE Val execute(bool = {}) const noexcept { return value; }
       template<Val> struct _const;
-   private:
-      static_assert(
+   private: // What types actually make sense and do not eventually cause more run-time performance problems than they solve
+      static_assert( // (this also corresponds to the set of overloads for `exec_in` in `code::root`)
          std::is_same_v<Val, const val &> ||
          std::is_same_v<Val, decltype(nullptr)> ||
          std::is_same_v<Val, long long> ||
@@ -48,26 +37,26 @@ namespace aux {
          std::is_same_v<Val, bool> ||
          std::is_same_v<Val, unsigned>);
    };
-   template<typename Val> template<Val Value> struct expr_lit<Val>::_const: expr_rvalue {
-      MNL_INLINE static Val execute(bool = {}) const noexcept { return Value; }
+   template<typename Val> template<Val Value> struct expr_lit<Val>::_const/*ant*/: code::rvalue { // to produce value-specialized code paths in the translator
+      MNL_INLINE static Val execute(bool = {}) noexcept { return Value; }
    };
 
-   struct expr_tv: expr_lvalue { // temporary variable
+   struct expr_tv: code::lvalue { // "temporary variable"
       int offset;
       MNL_INLINE const val &execute(bool = {}) const noexcept { return tv_stack[offset]; }
-      template<typename Val> MNL_INLINE void exec_in(Val &&value) const noexcept { tv_stack[offset].assign(std::forward<decltype(value)>(value); }
+      template<typename Val> MNL_INLINE void exec_in(Val &&value) const noexcept { tv_stack[offset].assign(std::forward<Val>(value); }
       MNL_INLINE val exec_out() const noexcept { return std::move(tv_stack[offset]); }
    };
 
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   template<typename Target = code> struct expr_apply0: expr_rvalue {
+   template<class Target = code> struct expr_apply0: code::rvalue { // application specialized for 0 arguments
       Target target; loc _loc;
       MNL_INLINE val execute(bool = {}) const { return target.execute()(trace_execute, _loc); }
       MNL_INLINE void exec_nores(bool = {}) const { execute(); }
    };
 
-   template<typename Target = code, typename Arg0 = code> struct expr_apply1: expr_lvalue {
+   template<class Target = code, class Arg0 = code> struct expr_apply1: code::lvalue { // application specialized for 1 argument
       Target target; Arg0 arg0; loc _loc;
    public:
       MNL_INLINE val execute(bool = {}) const {
@@ -78,15 +67,14 @@ namespace aux {
          execute();
       }
       template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
-         target.exec_in([&]()MNL_INLINE{
+         target.exec_in([&]() MNL_INLINE{
             auto &&arg0 = this->arg0.execute();
-            return target.exec_out().repl(trace_exec_in, _loc, std::forward<decltype(arg0)>(arg0),
-               std::forward<decltype(value)>(value));
+            return target.exec_out().repl(trace_exec_in, _loc, std::forward<decltype(arg0)>(arg0), std::forward<Val>(value));
          }());
       }
       MNL_INLINE val exec_out() const {
          val argv_out[2];
-         target.exec_in([&]()MNL_INLINE{
+         target.exec_in([&]() MNL_INLINE{
             val argv[std::size(argv_out)] = {arg0.execute()};
             return target.exec_out().repl(trace_exec_out, _loc, std::size(argv), argv, argv_out);
          }());
@@ -98,9 +86,9 @@ namespace aux {
    public:
       template<typename Res, Res (void (const loc &), const loc &, decltype(std::declval<Arg0>().execute()))> struct _op;
    };
-   template<typename Target, typename Arg0>
+   template<class Target, class Arg0>
    template<typename Res, Res Op(void (const loc &), const loc &, decltype(std::declval<Arg0>().execute()))>
-   struct expr_apply1<Target, Arg0>::_op: expr_rvalue {
+   struct expr_apply1<Target, Arg0>::_op/*erator*/: code::rvalue { // to produce operator-specialized code paths in the translator
       Arg0 arg0; loc _loc;
    public:
       MNL_INLINE auto execute(bool = {}) const
@@ -109,7 +97,7 @@ namespace aux {
          { execute(); }
    };
 
-   template<typename Target = code, typename Arg0 = code, typename Arg1 = code> struct expr_apply2: expr_lvalue {
+   template<class Target = code, class Arg0 = code, class Arg1 = code> struct expr_apply2: code::lvalue { // application specialized for 2 arguments
       Target target; Arg0 arg0; Arg1 arg1; loc _loc;
    public:
       MNL_INLINE val execute(bool = {}) const {
@@ -120,15 +108,14 @@ namespace aux {
          execute();
       }
       template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
-         target.exec_in([&]()MNL_INLINE{
+         target.exec_in([&]() MNL_INLINE{
             auto &&arg0 = this->arg0.execute(); auto &&arg1 = this->arg1.execute();
-            return target.exec_out().repl(trace_exec_in, _loc, std::forward<decltype(arg0)>(arg0), std::forward<decltype(arg1)>(arg1),
-               std::forward<decltype(value)>(value));
+            return target.exec_out().repl(trace_exec_in, _loc, std::forward<decltype(arg0)>(arg0), std::forward<decltype(arg1)>(arg1), std::forward<Val>(value));
          }());
       }
       MNL_INLINE val exec_out() const {
          val argv_out[3];
-         target.exec_in([&]()MNL_INLINE{
+         target.exec_in([&]() MNL_INLINE{
             val argv[std::size(argv_out)] = {arg0.execute(), arg1.execute()};
             return target.exec_out().repl(trace_exec_out, _loc, std::size(argv), argv, argv_out);
          }());
@@ -140,9 +127,9 @@ namespace aux {
    public:
       template<typename Res, Res (void (const loc &), const loc &, decltype(std::declval<Arg0>().execute()), decltype(std::declval<Arg1>().execute()))> struct _op;
    };
-   template<typename Target, typename Arg0, typename Arg1>
+   template<class Target, class Arg0, class Arg1>
    template<typename Res, Res Op(void (const loc &), const loc &, decltype(std::declval<Arg0>().execute()), decltype(std::declval<Arg1>().execute()))>
-   struct expr_apply1<Target, Arg0, Arg1>::_op: expr_rvalue {
+   struct expr_apply1<Target, Arg0, Arg1>::_op/*erator*/: code::rvalue { // to produce operator-specialized code paths in the translator
       Arg0 arg0; Arg0 arg1; loc _loc;
    public:
       MNL_INLINE auto execute(bool = {}) const
@@ -151,7 +138,7 @@ namespace aux {
          { execute(); }
    };
 
-   template<typename Target = code, typename Arg0 = code, typename Arg1 = code, typename Arg2 = code> struct expr_apply3: expr_lvalue {
+   template<class Target = code, class Arg0 = code, class Arg1 = code, class Arg2 = code> struct apply3: code::lvalue {
       Target target; Arg0 arg0; Arg1 arg1; Arg2 arg2; loc _loc;
    public:
       MNL_INLINE val execute(bool = {}) const {
@@ -162,14 +149,14 @@ namespace aux {
          execute();
       }
       template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
-         target.exec_in([&]()MNL_INLINE{
-            val argv[] = {arg0.execute(), arg1.execute(), arg2.execute(), std::forward<decltype(value)>(value)};
+         target.exec_in([&]() MNL_INLINE{
+            val argv[] = {arg0.execute(), arg1.execute(), arg2.execute(), std::forward<Val>(value)};
             return target.exec_out().repl(trace_exec_in, _loc, std::size(argv), argv);
          }());
       }
       MNL_INLINE val exec_out() const {
          val argv_out[4];
-         target.exec_in([&]()MNL_INLINE{
+         target.exec_in([&]() MNL_INLINE{
             val argv[std::size(argv_out)] = {arg0.execute(), arg1.execute(), arg2.execute()};
             return target.exec_out().repl(trace_exec_out, _loc, std::size(argv), argv, argv_out);
          }());
@@ -180,7 +167,7 @@ namespace aux {
       }
    };
 
-   template<typename Target = code, typename Arg0 = code, typename Arg1 = code, typename Arg2 = code, typename Arg3 = code> struct expr_apply4: expr_lvalue {
+   template<class Target = code, class Arg0 = code, class Arg1 = code, class Arg2 = code, class Arg3 = code> struct apply4: code::lvalue {
       Target target; Arg0 arg0; Arg1 arg1; Arg2 arg2; Arg3 arg3; loc _loc;
    public:
       MNL_INLINE val execute(bool = {}) const {
@@ -191,14 +178,14 @@ namespace aux {
          execute();
       }
       template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
-         target.exec_in([&]()MNL_INLINE{
-            val argv[] = {arg0.execute(), arg1.execute(), arg2.execute(), arg3.execute(), std::forward<decltype(value)>(value)};
+         target.exec_in([&]() MNL_INLINE{
+            val argv[] = {arg0.execute(), arg1.execute(), arg2.execute(), arg3.execute(), std::forward<Val>(value)};
             return target.exec_out().repl(trace_exec_in, _loc, std::size(argv), argv);
          }());
       }
       MNL_INLINE val exec_out() const {
          val argv_out[5];
-         target.exec_in([&]()MNL_INLINE{
+         target.exec_in([&]() MNL_INLINE{
             val argv[std::size(argv_out)] = {arg0.execute(), arg1.execute(), arg2.execute(), arg3.execute()};
             return target.exec_out().repl(trace_exec_out, _loc, std::size(argv), argv, argv_out);
          }());
@@ -211,13 +198,13 @@ namespace aux {
 
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   template<typename Dest = code, typename Src = code> struct expr_set: expr_rvalue {
+   template<class Dest = code, class Src = code> struct expr_set: code::rvalue {
       Dest dest; Src src;
       MNL_INLINE decltype(nullptr) execute(bool = {}) const { dest.exec_in(src.execute()); return {}; }
       MNL_INLINE void exec_nores(bool = {}) const { execute(); }
    };
 
-   template<typename Dest = code> struct expr_move: expr_rvalue {
+   template<class Dest = code> struct expr_move: code::rvalue {
       Dest dest;
       MNL_INLINE val execute(bool = {}) const { return dest.exec_out(); }
       MNL_INLINE void exec_nores(bool = {}) const { execute; }
@@ -225,7 +212,7 @@ namespace aux {
 
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   template<typename Cond = code> struct expr_ifelse: expr_lvalue {
+   template<class Cond = code> struct expr_ifelse: code::lvalue {
       Cond cond; code body1, body2; loc _loc;
    public:
       MNL_INLINE val execute(bool fast_sig = false) const {
@@ -248,11 +235,12 @@ namespace aux {
          if (MNL_UNLIKELY(!test<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
          return (cast<bool>(cond) ? body1 : body2).exec_out();
       }
-   public:
-      MNL_INLINE bool is_lvalue() const noexcept { return body1.is_lvalue() && body2.is_lvalue(); }
+      MNL_INLINE bool is_lvalue() const noexcept {
+         return body1.is_lvalue() && body2.is_lvalue();
+      }
    };
 
-   template<typename Cond = code> struct expr_if: expr_rvalue {
+   template<class Cond = code> struct expr_if: code::rvalue {
       Cond cond; code body; loc _loc;
    public:
       MNL_INLINE decltype(nullptr) execute(bool fast_sig = false) const {
@@ -268,8 +256,7 @@ namespace aux {
       }
    };
 
-   template<typename Arg0 = code> struct expr_and {
-      MNL_RVALUE()
+   template<class Arg0 = code> struct expr_and: code::rvalue {
       Arg0 arg0; code arg1; loc _loc;
    public:
       MNL_INLINE val execute(bool = {}) const {
@@ -286,8 +273,7 @@ namespace aux {
       }
    };
 
-   template<typename Arg0 = code> struct expr_or {
-      MNL_RVALUE()
+   template<class Arg0 = code> struct expr_or: code::rvalue {
       Arg0 arg0; code arg1; loc _loc;
    public:
       MNL_INLINE val execute(bool = {}) const {
@@ -303,7 +289,7 @@ namespace aux {
       }
    };
 
-   template<typename Cond = code> struct expr_while: expr_rvalue {
+   template<class Cond = code> struct expr_while: code::rvalue {
       Cond cond; code body; loc _loc;
    public:
       MNL_INLINE decltype(nullptr) execute(bool fast_sig = false) const {
@@ -324,8 +310,7 @@ namespace aux {
       }
    };
 
-   template<typename Key = code> struct expr_on {
-      MNL_RVALUE()
+   template<class Key = code> struct expr_on: code::rvalue {
       Key key; code trap, body; loc _loc;
    public:
       MNL_INLINE val execute(bool fast_sig = false) const {
