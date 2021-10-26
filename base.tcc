@@ -83,12 +83,17 @@ namespace aux {
       MNL_INLINE bool is_lvalue() const noexcept {
          return target.is_lvalue();
       }
+   };
+   template<class Arg0> class expr_apply1<void, Arg0> {
    public:
+      expr_apply1() = delete;
+      expr_apply1(expr_apply1 &&) = delete;
+      ~expr_apply1() = delete;
       template<typename Res, Res (void (const loc &), const loc &, decltype(std::declval<Arg0>().execute()))> struct _op;
    };
-   template<class Target, class Arg0>
+   template<class Arg0>
    template<typename Res, Res Op(void (const loc &), const loc &, decltype(std::declval<Arg0>().execute()))>
-   struct expr_apply1<Target, Arg0>::_op/*erator*/: code::rvalue { // to produce operator-specialized code paths in the translator
+   struct expr_apply1<void, Arg0>::_op/*erator*/: code::rvalue { // to produce operator-specialized code paths in the translator
       Arg0 arg0; loc _loc;
    public:
       MNL_INLINE auto execute(bool = {}) const
@@ -124,12 +129,17 @@ namespace aux {
       MNL_INLINE bool is_lvalue() const noexcept {
          return target.is_lvalue();
       }
+   };
+   template<class Arg0, class Arg1> class expr_apply2<void, Arg0, Arg1> {
    public:
+      expr_apply2() = delete;
+      expr_apply2(expr_apply2 &&) = delete;
+      ~expr_apply2() = delete;
       template<typename Res, Res (void (const loc &), const loc &, decltype(std::declval<Arg0>().execute()), decltype(std::declval<Arg1>().execute()))> struct _op;
    };
-   template<class Target, class Arg0, class Arg1>
+   template<class Arg0, class Arg1>
    template<typename Res, Res Op(void (const loc &), const loc &, decltype(std::declval<Arg0>().execute()), decltype(std::declval<Arg1>().execute()))>
-   struct expr_apply1<Target, Arg0, Arg1>::_op/*erator*/: code::rvalue { // to produce operator-specialized code paths in the translator
+   struct expr_apply2<void, Arg0, Arg1>::_op/*erator*/: code::rvalue { // to produce operator-specialized code paths in the translator
       Arg0 arg0; Arg0 arg1; loc _loc;
    public:
       MNL_INLINE auto execute(bool = {}) const
@@ -202,6 +212,31 @@ namespace aux {
       Dest dest; Src src;
       MNL_INLINE decltype(nullptr) execute(bool = {}) const { dest.exec_in(src.execute()); return {}; }
       MNL_INLINE void exec_nores(bool = {}) const { execute(); }
+   public:
+      template<typename Res, Res Op(void (const loc &), const loc &, decltype(std::declval<Dest>().execute()), decltype(std::declval<Src>().execute()))>
+         struct _update;
+      template<typename Res, Res Op(void (const loc &), const loc &, decltype(std::declval<Src>().execute())), decltype(std::declval<Dest>().execute())>
+         struct _update_rhs;
+   };
+   template<class Src>
+   template<typename Res, Res Op(void (const loc &), const loc &, decltype(std::declval<Dest>().execute()), decltype(std::declval<Src>().execute()))>
+   struct expr_set<expr_tv, Src>::_update: code::rvalue {
+      expr_tv dest; Src src;
+   public:
+      MNL_INLINE decltype(nullptr) execute(bool = {}) const
+         { auto &&src = this->src.execute(); dest.exec_in(Op(trace_execute, _loc, dest.execute(), std::forward<decltype(src)>(src))); return {}; }
+      MNL_INLINE void exec_nores(bool = {}) const
+         { execute(); }
+   };
+   template<class Src>
+   template<typename Res, Res Op(void (const loc &), const loc &, decltype(std::declval<Src>().execute())), decltype(std::declval<Dest>().execute())>
+   struct expr_set<Src, expr_tv>::_update_rhs: code::rvalue {
+      expr_tv dest; Src src;
+   public:
+      MNL_INLINE decltype(nullptr) execute(bool = {}) const
+         { auto &&src = this->src.execute(); dest.exec_in(Op(trace_execute, _loc, std::forward<decltype(src)>(src)), dest.execute()); return {}; }
+      MNL_INLINE void exec_nores(bool = {}) const
+         { execute(); }
    };
 
    template<class Dest = code> struct expr_move: code::rvalue {
