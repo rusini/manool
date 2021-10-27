@@ -297,7 +297,7 @@ namespace aux {
       MNL_INLINE val execute(bool = {}) const {
          {  auto &&arg0 = this->arg0.execute();
             if (MNL_LIKELY(!test<bool>(arg0)))
-               { val argv[] = {(move)(arg0), arg1.execute()}; return MNL_SYM("&")(trace_execute, _loc, std::size(argv), argv); }
+               { val argv[] = {std::move(arg0), arg1.execute()}; return MNL_SYM("&")(trace_execute, _loc, std::size(argv), argv); }
             if (!cast<bool>(arg0)) return false;
          }
          return [&]()MNL_INLINE{ // RVO
@@ -313,7 +313,8 @@ namespace aux {
    public:
       MNL_INLINE val execute(bool = {}) const {
          {  auto &&arg0 = this->arg0.execute();
-            if (MNL_LIKELY(!test<bool>(arg0))) { val argv[]{(move)(arg0), arg1.execute()}; return MNL_SYM("|")(_loc, 2, argv); }
+            if (MNL_LIKELY(!test<bool>(arg0)))
+               { val argv[] = {std::move(arg0), arg1.execute()}; return MNL_SYM("|")(trace_execute, _loc, std::size(argv), argv); }
             if (cast<bool>(arg0)) return true;
          }
          return [&]()->val{ // RVO
