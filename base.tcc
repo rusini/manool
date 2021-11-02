@@ -296,12 +296,15 @@ namespace aux {
    public:
       MNL_INLINE val execute(bool = {}) const {
          {  auto &&arg0 = this->arg0.execute();
-            if (MNL_LIKELY(!test<bool>(arg0)))
-               { val argv[] = {std::move(arg0), arg1.execute()}; return MNL_SYM("&")(trace_execute, _loc, std::size(argv), argv); }
-            if (!cast<bool>(arg0)) return false;
+            if (MNL_LIKELY(!test<bool>(arg0))) {
+               val argv[] = {std::move(arg0), arg1.execute()};
+               return MNL_SYM("&")(trace_execute, _loc, std::size(argv), argv);
+            }
+            if (!cast<bool>(arg0))
+               return false;
          }
          return [&]()MNL_INLINE{ // RVO
-            auto arg1 = this->arg1.execute(); // NRVO
+            val arg1 = this->arg1.execute(); // NRVO
             if (MNL_UNLIKELY(!test<bool>(arg1))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
             return arg1;
          }();
@@ -313,12 +316,15 @@ namespace aux {
    public:
       MNL_INLINE val execute(bool = {}) const {
          {  auto &&arg0 = this->arg0.execute();
-            if (MNL_LIKELY(!test<bool>(arg0)))
-               { val argv[] = {std::move(arg0), arg1.execute()}; return MNL_SYM("|")(trace_execute, _loc, std::size(argv), argv); }
-            if (cast<bool>(arg0)) return true;
+            if (MNL_LIKELY(!test<bool>(arg0))) {
+               val argv[] = {std::move(arg0), arg1.execute()};
+               return MNL_SYM("|")(trace_execute, _loc, std::size(argv), argv);
+            }
+            if (cast<bool>(arg0))
+               return true;
          }
-         return [&]()->val{ // RVO
-            auto arg1 = this->arg1.execute(); // NRVO
+         return [&]()MNL_INLINE{ // RVO
+            val arg1 = this->arg1.execute(); // NRVO
             if (MNL_UNLIKELY(!test<bool>(arg1))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
             return arg1;
          }();
@@ -328,20 +334,18 @@ namespace aux {
    template<class Cond = code> struct expr_while: code::rvalue {
       Cond cond; code body; loc _loc;
    public:
-      MNL_INLINE decltype(nullptr) execute(bool fast_sig = false) const {
+      MNL_INLINE decltype(nullptr) execute(bool fast_sh = false) const {
          for (;;) {
-            auto &&cond = this->cond.execute(); // no prediction for "cond" on purpose - we admit here performing zero iterations for while-loops may be useful
+            auto &&cond = this->cond.execute(); // no prediction for condition - performing zero iterations for while-loops may be useful
             if (MNL_UNLIKELY(!test<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
-            if (!cast<bool>(cond) || MNL_UNLIKELY(body.exec_nores(fast_sig), sig_state.first)) return {};
-
-            if (!cast<bool>(cond) || MNL_UNLIKELY(body.exec_nores(fast_sig), sig_raised)) return {};
+            if (!cast<bool>(cond) || MNL_UNLIKELY(body.exec_nores(fast_sh), sig_state)) return {};
          }
       }
-      MNL_INLINE void exec_nores(bool fast_sig = false) const {
+      MNL_INLINE void exec_nores(bool fast_sh = false) const {
          for (;;) {
-            auto &&cond = this->cond.execute(); // no prediction for "cond" on purpose - we admit here performing zero iterations for while-loops may be useful
+            auto &&cond = this->cond.execute(); // no prediction for condition - performing zero iterations for while-loops may be useful
             if (MNL_UNLIKELY(!test<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
-            if (!cast<bool>(cond) || MNL_UNLIKELY(body.exec_nores(fast_sig), sig_state.first)) return;
+            if (!cast<bool>(cond) || MNL_UNLIKELY(body.exec_nores(fast_sh), sig_state)) return;
          }
       }
    };
@@ -353,16 +357,22 @@ namespace aux {
          auto &&key = this->key.execute();
          if (MNL_UNLIKELY(!test<sym>(key))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
          auto res = [&]()->val{ try { return body.execute(true); } // res for NRVO
-            catch (decltype(sig_state) &sig) { sig_state = move(sig); }
-            catch (stack_overflow &)         { sig_state = {MNL_SYM("StackOverflow"), {}}; }
+            catch (std::pair<sym, val> &sig) { sig_state.raise(move(sig)); }
+            catch (stack_overflow &)         { sig_state.raise({MNL_SYM("StackOverflow"), {}}); }
             catch (heap_exhausted &)         { sig_state = {MNL_SYM("HeapExhausted"), {}}; }
             catch (std::bad_alloc &)         { sig_state = {MNL_SYM("LimitExceeded"), {}}; }
             catch (std::system_error &)      { sig_state = {MNL_SYM("SystemError"),   {}}; }
             return {};
          }();
-         if (MNL_LIKELY(!sig_state.first)) return res; // no signal
-         if (MNL_UNLIKELY(sig_state.first == cast<const sym &>(key))) { // caught!
-            sig_state.first = {}; auto arg = move(sig_state.second); sig_trace.clear();
+         if (MNL_LIKELY(!sig_state)) return res; // no signal
+         if (MNL_UNLIKELY(sig_state.sig().first == cast<const sym &>(tag))) { // caught!
+            val arg = std::move(sig_state.pending().second); sig_state.cancel(); sig_trace.clear();
+            tv_stack.push(std::move(arg)); struct _ { MNL_INLINE ~_() { tv_stack.drop(); } } _;
+            res = trap.execute(fast_sh); return res;
+
+
+
+            auto arg = std::move(sig_state.pending().second); sig_state.clear(); sig_trace.clear();
             tmp_stk.push_back(arg); struct _ { MNL_INLINE ~_() { tmp_stk.pop_back(); } } _;
             res = trap.execute(fast_sig); return res;
          }
