@@ -821,19 +821,21 @@ namespace aux { namespace pub {
 namespace aux { namespace pub {
    inline constexpr class sig_state {
    public:
-      template<typename Sig> MNL_INLINE void raise(Sig &&sig) const noexcept
-         { raised = true, this->sig = std::forward<Sig>(sig); }
-      template<typename Tag, typename Val> MNL_INLINE void raise(Tag &&tag, Val &&val) const noexcept
-         { raise(std::pair(std::forward<Tag>(tag), std::forward<Val>(val))); }
-      MNL_INLINE bool pending() const noexcept
-         { return raised; }
-      MNL_INLINE auto &signal() const noexcept
-         { return sig; }
-      MNL_INLINE void cancel() const noexcept
-         { pend = false, curr = {}; }
+      MNL_INLINE void raise(const sym &tag) const noexcept
+         { pending = true, signal.first = tag; }
+      template<typename Arg> MNL_INLINE void raise(const sym &tag, Arg &&arg) const noexcept
+         { pending = true, signal.first = tag, signal.second.assign(std::forward<Arg>(arg)); }
+      MNL_INLINE void raise(std::pair<sym, val> &&signal) const noexcept
+         { pending = true, signal = std::move(signal); }
+      MNL_INLINE operator bool() const noexcept
+         { return pending; }
+      MNL_INLINE const sym &tag() const noexcept
+         { return signal.first; }
+      MNL_INLINE std::pair<sym, val> cancel() const noexcept
+         { std::pair<sym, val> signal; pending = false, signal.swap(this->signal); return signal; }
    private:
-      inline static MNL_IF_WITH_MT(thread_local) bool pend;
-      inline static MNL_IF_WITH_MT(thread_local) sig  curr;
+      inline static MNL_IF_WITH_MT(thread_local) bool                pending; // inexpensive
+      inline static MNL_IF_WITH_MT(thread_local) std::pair<sym, val> signal;  // more expensive
    } sig_state;
 
 
