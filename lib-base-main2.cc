@@ -174,14 +174,19 @@ namespace aux { namespace {
       }
    };
 
-   class comp_signal { MNL_NONVALUE()
+   class comp_signal: code::nonvalue {
+      friend code;
       MNL_INLINE static code compile(code &&, const form &form, const loc &_loc) {
-         struct expr { MNL_RVALUE()
-            code key, value; loc _loc;
-            MNL_INLINE val execute(bool fast_sig) const {
-               sig_state = {safe_cast<const sym &>(_loc, this->key.execute()), value.execute()};
-               if (MNL_LIKELY(fast_sig)) return {}; // fast unwinding
-               auto sig = move(sig_state); sig_state.first = {}; throw move(sig); // slow unwinding
+         struct expr: code::rvalue {
+            code tag, arg; loc _loc;
+            MNL_INLINE val execute(bool fast_sh) const {
+               auto &&tag = 
+               sig_state.raise({safe_cast<sym &&>(_loc, tag.execute()), arg.execute()});
+               if (MNL_LIKELY(fast_sh)) return {}; // fast propagation
+               throw sig_state.cancel(); // slow propagation
+            }
+            MNL_INLINE void exec_nores(bool fast_sh) const {
+               execute();
             }
          };
       opt1: // {signal K with V}

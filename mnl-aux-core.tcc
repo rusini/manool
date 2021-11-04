@@ -205,12 +205,16 @@ namespace aux { namespace pub {
       MNL_INLINE val &operator=(val &&rhs) noexcept { release(), rep = rhs.rep, rhs.rep = {0x7FF9u}; return *this; }
       MNL_INLINE void swap(val &rhs) noexcept { using std::swap; swap(rep, rhs.rep); }
       MNL_INLINE explicit operator bool() const noexcept { return *this != nullptr; }
+   public:
+      MNL_INLINE val &assign(val &&rhs) noexcept { swap(rhs); return *this; }
+      template<typename Rhs> MNL_INLINE val &assign(Rhs &&rhs) noexcept { return *this = rhs; }
    public: // Construction -- Implicit conversion (to)
       MNL_INLINE val(long long dat) noexcept: rep{0x7FFAu, dat} {} // valid range: min_i48 .. max_i48
       MNL_INLINE val(int dat) noexcept:       val((long long)dat) {}
       MNL_INLINE val(double dat) noexcept: rep(dat) { assume_f64(); }
       MNL_INLINE val(float dat) noexcept: rep{0x7FFCu, dat} {}
       MNL_INLINE val(const sym &dat) noexcept: rep{0x7FFBu, dat} {}
+      MNL_INLINE val(sym &&dat) noexcept: rep{0x7FFBu, std::move(dat)} {}
       MNL_INLINE val(bool dat) noexcept: rep{0x7FFEu | dat} {}
       MNL_INLINE val(unsigned dat) noexcept: rep{0x7FFDu, dat} {}
       MNL_INLINE val(char dat) noexcept:     val((unsigned)(unsigned char)dat) {}
@@ -251,6 +255,7 @@ namespace aux { namespace pub {
          MNL_INLINE explicit rep(unsigned tag) noexcept: _tag(tag) {}
          explicit rep(double) noexcept;
          explicit rep(unsigned tag, const sym &) noexcept;
+         explicit rep(unsigned tag, sym &&) noexcept;
       public:
          MNL_INLINE rep &operator=(unsigned tag) noexcept { _tag = tag; return *this; }
          MNL_INLINE unsigned tag() const noexcept { return _tag; }
@@ -418,6 +423,8 @@ namespace aux { namespace pub {
       { memcpy(this, &dat, sizeof dat); }
    MNL_INLINE inline val::rep::rep(unsigned tag, const sym &dat) noexcept
       : _tag(tag), _sym(dat) {}
+   MNL_INLINE inline val::rep::rep(unsigned tag, sym &&dat) noexcept
+      : _tag(tag), _sym(std::move(dat)) {}
 
 // Bit-Layout Management -- Data Read //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    template<typename Dat> MNL_INLINE inline Dat val::rep::dat() const noexcept {
@@ -899,6 +906,7 @@ namespace aux { namespace pub {
          virtual val  execute(bool fast_sig) const = 0;
          virtual void exec_nores(bool fast_sig) const = 0;
          virtual void exec_in(const val &) const = 0;
+         virtual void exec_in(val &&) const = 0;
          virtual void exec_in(decltype(nullptr)) const = 0;
          virtual void exec_in(long long) const = 0;
          virtual void exec_in(double) const = 0;

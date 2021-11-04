@@ -44,7 +44,8 @@ namespace aux {
    struct expr_tv: code::lvalue { // "temporary variable"
       int offset;
       MNL_INLINE const val &execute(bool = {}) const noexcept { return tv_stack[offset]; }
-      template<typename Val> MNL_INLINE void exec_in(Val &&value) const noexcept { tv_stack[offset].assign(std::forward<Val>(value); }
+      template<typename Val> MNL_INLINE void exec_in(Val &&value) const noexcept { tv_stack[offset] = std::forward<Val>(value); }
+      MNL_INLINE void exec_in(val &&value) const noexcept { tv_stack[offset].swap(value); }
       MNL_INLINE val exec_out() const noexcept { return std::move(tv_stack[offset]); }
    };
 
@@ -302,7 +303,7 @@ namespace aux {
          }
          if (!cast<bool>(arg0))
             return false;
-         return [&]()MNL_INLINE{ // RVO
+         return [&]() MNL_INLINE{ // RVO
             val arg1 = this->arg1.execute(); // NRVO
             if (MNL_UNLIKELY(!test<bool>(arg1))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
             return arg1;
@@ -321,7 +322,7 @@ namespace aux {
          }
          if (cast<bool>(arg0))
             return true;
-         return [&]()MNL_INLINE{ // RVO
+         return [&]() MNL_INLINE{ // RVO
             val arg1 = this->arg1.execute(); // NRVO
             if (MNL_UNLIKELY(!test<bool>(arg1))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
             return arg1;
@@ -390,6 +391,20 @@ namespace aux {
          }
          if (MNL_LIKELY(fast_sh)) return; // fast propagation
          throw sig_state.cancel(); // slow propagation
+      }
+   };
+
+   template<class Tag = code> struct expr_signal: code::rvalue {
+      Tag tag; code arg; loc _loc;
+      MNL_INLINE val execute(bool fast_sh) const {
+         auto &&tag = this->tag.execute();
+         if (MNL_UNLIKELY(!test<sym>(tag))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
+         sig_state.raise(cast<const sym &>(tag), arg.execute());
+         if (MNL_LIKELY(fast_sh)) return {}; // fast propagation
+         throw sig_state.cancel(); // slow propagation
+      }
+      MNL_INLINE void exec_nores(bool fast_sh) const {
+         execute();
       }
    };
 
