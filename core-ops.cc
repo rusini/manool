@@ -1426,7 +1426,7 @@ namespace aux {
          return std::move(self);
       }
       return [&]() MNL_INLINE{ val res = *this;
-         cast<vector<val> &>(res)[cast<const sym &>(arg0)].assign(std::move(arg1));
+         cast<_record &>(res)[cast<const sym &>(arg0)].assign(std::move(arg1));
          return res;
       }();
    }
@@ -1449,12 +1449,12 @@ namespace aux {
          if (MNL_LIKELY(argc == 2)) { // Record.Repl[Key; NewComp]
             if (MNL_UNLIKELY(!test<sym>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
             if (MNL_UNLIKELY(!has(cast<const sym &>(argv[0])))) MNL_ERR(MNL_SYM("KeyLookupFailed"));
-            if (MNL_LIKELY(self.rc() == 1)) {
+            if (std::is_same_v<Self, val> && MNL_LIKELY(self.rc() == 1)) {
                argv[1].swap((*this)[cast<const sym &>(argv[0])]);
                if (MNL_UNLIKELY(argv_out)) argv[1].swap(argv_out[1]);
                return move(self);
             }
-            return [&]()->val{ val res = *this;
+            return [&]() MNL_INLINE{ val res = *this;
                argv[1].swap(cast<_record &>(res)[cast<const sym &>(argv[0])]);
                if (MNL_UNLIKELY(argv_out)) argv[1].swap(argv_out[1]);
                return res;
@@ -1464,7 +1464,7 @@ namespace aux {
             if (MNL_UNLIKELY(!test<sym>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
             if (MNL_UNLIKELY(!has(cast<const sym &>(argv[0])))) MNL_ERR(MNL_SYM("KeyLookupFailed"));
             auto key = cast<const sym &>(argv[0]);
-            return MNL_LIKELY(self.rc() == 1)
+            return std::is_same_v<Self, val> && MNL_LIKELY(self.rc() == 1)
                ? ((*this)[key] = op(argc, (argv[0].swap((*this)[key]), argv), argv_out), move(self))
                : [&]()->val{ val res = *this;
                   cast<_record &>(res)[key] = op(argc, (argv[0].swap(cast<_record &>(res)[key]), argv), argv_out);
