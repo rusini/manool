@@ -1126,34 +1126,43 @@ namespace aux {
    // one instance of List is Array
    template<> template<typename Self, typename Arg0>
    MNL_INLINE val box<vector<val>>::apply(Self &&self, Arg0 &&arg0) {
-      if (MNL_LIKELY(test<long long>(arg0)) && MNL_LIKELY((unsigned long long)cast<long long>(arg0) < dat.size()))
-         return dat[cast<long long>(arg0)];
-      return default_apply(std::forward(self), std::forward(arg0));
+      if (!MNL_LIKELY(test<long long>(arg0)) || !MNL_LIKELY((unsigned long long)cast<long long>(arg0) < dat.size()))
+         return default_apply(std::forward<Self>(self), std::forward<Arg0>(arg0));
+      return dat[cast<long long>(arg0)];
    }
    template<> template<typename Self, typename Arg0, typename Arg1>
    MNL_INLINE val box<vector<val>>::apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
-      if (MNL_LIKELY(test<long long>(arg0)) && MNL_LIKELY((unsigned long long)cast<long long>(arg0) < dat.size()))
-         return dat[cast<long long>(argv[0])](std::forward(arg1));
-      return default_apply(std::forward(self), std::forward(arg0), std::forward(arg1));
+      if (!MNL_LIKELY(test<long long>(arg0)) || !MNL_LIKELY((unsigned long long)cast<long long>(arg0) < dat.size()))
+         return default_apply(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1));
+      return dat[cast<long long>(argv0)](std::forward<Arg1>(arg1));
+   }
+   template<> template<typename Self, typename Arg0>
+   MNL_INLINE val box<vector<val>>::repl(Self &&self, Arg0 &&arg0, val &&arg1) {
+      if (!MNL_LIKELY(test<long long>(arg0)) || !MNL_LIKELY((unsigned long long)cast<long long>(arg0) < dat.size()))
+         return default_repl(std::forward<Self>(self), std::forward<Arg0>(arg0), std::move(arg1));
+      if (std::is_same_v<Self, val> && MNL_LIKELY(rc() == 1)) {
+         dat[cast<long long>(arg0)].assign(std::move(arg1));
+         return std::move(self);
+      }
+      return [&]() MNL_INLINE{ val res = dat;
+         cast<vector<val> &>(res)[cast<long long>(arg0)].assign(std::move(arg1));
+         return res;
+      }();
    }
    template<> template<typename Self, typename Arg0, typename Arg1>
-   MNL_INLINE val box<vector<val>>::repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1, val *argv_out) {
-      if (MNL_LIKELY(test<long long>(arg0)) && MNL_LIKELY((unsigned long long)cast<long long>(arg0) < dat.size()))
-      if (std::is_same_v<Self &&, val &&> && MNL_LIKELY(rc() == 1)) {
-         dat[cast<long long>(arg0)].assign(std::forward(arg1));
-
-
-         // TODO: it may be a good idea to have an op in val::assign() -- works either as swap or operator=
-
-         if constexpr (std::is_same_v<Arg1 &&, val &&>) arg1.swap(dat[cast<long long>(arg0)]); else arg1 = dat[cast<long long>(arg0)];
-         if (MNL_UNLIKELY(argv_out)) argv[1].swap(argv_out[1]);
-         return move(self);
+   MNL_INLINE val box<vector<val>>::repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1, val &&arg2) {
+      if (!MNL_LIKELY(test<long long>(arg0)) || !MNL_LIKELY((unsigned long long)cast<long long>(arg0) < dat.size()))
+         return default_repl(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::move(arg2));
+      if (std::is_same_v<Self, val> && MNL_LIKELY(rc() == 1)) {
+         dat[cast<long long>(arg0)].assign(
+            repl(std::move(dat[cast<long long>(arg0)]), std::forward<Arg1>(arg1), std::move(arg2)));
+         return std::move(self);
       }
-      return default_repl(std::forward(self), std::forward(arg0), std::forward(arg1), argv_out);
-   }
-   template<> template<typename Self, typename Arg0, typename Arg1, typename Arg2>
-   MNL_INLINE val box<vector<val>>::repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1, Arg2 &&arg2, val *argv_out) {
-      return default_repl(std::forward(self), std::forward(arg0), std::forward(arg1), std::forward(arg2), argv_out);
+      return [&]() MNL_INLINE{ val res = dat;
+         cast<vector<val> &>(res)[cast<long long>(arg0)].assign(
+            repl(std::move(cast<vector<val> &>(res)[cast<long long>(arg0)]), std::forward<Arg1>(arg1), std::move(arg2)));
+         return res;
+      }();
    }
    template<> template<typename Self>
    MNL_INLINE val box<vector<val>>::invoke(Self &&self, const sym &op, int argc, val argv[], val *argv_out) {
@@ -1402,7 +1411,27 @@ namespace aux {
    }
 
 // Record Composite ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-   template<int Size> val _record<Size>::invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) {
+   template<int Size> template<typename Self, typename Arg0>
+   MNL_INLINE val _record<Size>::apply(Self &&self, Arg0 &&arg0) {
+      if (!MNL_LIKELY(test<sym>(arg0)) || !MNL_LIKELY(has(cast<const sym &>(arg0))))
+         return default_apply(std::forward<Self>(self), std::forward<Arg0>(arg0));
+      return (*this)[cast<const sym &>(arg0)];
+   }
+   template<int Size> template<typename Self, typename Arg0>
+   MNL_INLINE val _record<Size>::repl(Self &&self, Arg0 &&arg0, val &&arg1) {
+      if (!MNL_LIKELY(test<sym>(arg0)) || !MNL_LIKELY(has(cast<const sym &>(arg0))))
+         return default_apply(std::forward<Self>(self), std::forward<Arg0>(arg0));
+      if (std::is_same_v<Self, val> && MNL_LIKELY(rc() == 1)) {
+         (*this)[cast<const sym &>(arg0)].assign(std::move(arg1));
+         return std::move(self);
+      }
+      return [&]() MNL_INLINE{ val res = *this;
+         cast<vector<val> &>(res)[cast<const sym &>(arg0)].assign(std::move(arg1));
+         return res;
+      }();
+   }
+   template<int Size> template<typename Self>
+   MNL_INLINE val _record<Size>::invoke(Self &&self, const sym &op, int argc, val argv[], val *argv_out) {
       switch (op) {
       case sym::op_apply:
          if (MNL_LIKELY(argc == 1)) { // Record[Key]
