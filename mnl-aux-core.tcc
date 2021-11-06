@@ -357,7 +357,7 @@ namespace aux { namespace pub {
          friend val _apply(Target &&, int argc, val [], val *argv_out);
       template<typename Target,
          std::enable_if_t<std::is_same_v<Target, val> || std::is_same_v<Target, const val &>, int> = int{}>
-         friend val _apply(Target &&, int argc, val argv[], val *argv_out);
+         friend val _apply(Target &&, int argc, val [], val *argv_out);
       template<typename Target, typename Arg0,
          std::enable_if_t<std::is_same_v<Target, val> || std::is_same_v<Target, const val &>, int> = int{},
          std::enable_if_t<std::is_same_v<Arg0, val> || std::is_same_v<Arg0, const val &>, int> = int{}>
@@ -369,7 +369,7 @@ namespace aux { namespace pub {
          friend val _apply(Target &&, Arg0 &&, Arg1 &&);
       template<typename Target,
          std::enable_if_t<std::is_same_v<Target, val> || std::is_same_v<Target, const val &>, int> = int{}>
-         friend val _repl(Target &&, int argc, val argv[]);
+         friend val _repl(Target &&, int argc, val []);
       template<typename Target, typename Arg0, typename Arg1,
          std::enable_if_t<std::is_same_v<Target, val> || std::is_same_v<Target, const val &>, int> = int{},
          std::enable_if_t<std::is_same_v<Arg0, val> || std::is_same_v<Arg0, const val &>, int> = int{},
@@ -556,42 +556,81 @@ namespace aux { namespace pub {
    public: // Friendship
       friend sym;
       friend val;
-      template<typename Lhs, typename Rhs> friend enable_ref<Lhs, enable_ref<Rhs>>  _eq(Lhs &&, Rhs &&);
-      template<typename Lhs, typename Rhs> friend enable_ref<Lhs, enable_ref<Rhs>>  _ne(Lhs &&, Rhs &&);
-      template<typename Lhs, typename Rhs> friend enable_ref<Lhs, enable_ref<Rhs>>  _lt(Lhs &&, Rhs &&);
-      template<typename Lhs, typename Rhs> friend enable_ref<Lhs, enable_ref<Rhs>>  _le(Lhs &&, Rhs &&);
-      template<typename Lhs, typename Rhs> friend enable_ref<Lhs, enable_ref<Rhs>>  _gt(Lhs &&, Rhs &&);
-      template<typename Lhs, typename Rhs> friend enable_ref<Lhs, enable_ref<Rhs>>  _ge(Lhs &&, Rhs &&);
-      template<typename Lhs, typename Rhs> friend enable_ref<Lhs, enable_ref<Rhs>> _add(Lhs &&, Rhs &&);
-      template<typename Lhs, typename Rhs> friend enable_ref<Lhs, enable_ref<Rhs>> _sub(Lhs &&, Rhs &&);
-      template<typename Lhs, typename Rhs> friend enable_ref<Lhs, enable_ref<Rhs>> _mul(Lhs &&, Rhs &&);
-      template<typename Rhs> friend enable_ref<Rhs> _neg(Rhs &&);
-      template<typename Rhs> friend enable_ref<Rhs> _abs(Rhs &&);
-      template<typename Lhs, typename Rhs> friend enable_ref<Lhs, enable_ref<Rhs>> _xor(Lhs &&, Rhs &&);
-      template<typename Rhs> friend enable_ref<Rhs> _not(Rhs &&);
    public:
-      template<typename Lhs, typename Dat> friend enable_ref<Lhs, enable_corenum<Dat>>  _eq(Lhs &&, Dat);
-      template<typename Lhs, typename Dat> friend enable_ref<Lhs, enable_corenum<Dat>>  _ne(Lhs &&, Dat);
-      template<typename Lhs, typename Dat> friend enable_ref<Lhs, enable_corenum<Dat>>  _lt(Lhs &&, Dat);
-      template<typename Lhs, typename Dat> friend enable_ref<Lhs, enable_corenum<Dat>>  _le(Lhs &&, Dat);
-      template<typename Lhs, typename Dat> friend enable_ref<Lhs, enable_corenum<Dat>>  _gt(Lhs &&, Dat);
-      template<typename Lhs, typename Dat> friend enable_ref<Lhs, enable_corenum<Dat>>  _ge(Lhs &&, Dat);
-      template<typename Lhs, typename Dat> friend enable_ref<Lhs, enable_corenum<Dat>> _add(Lhs &&, Dat);
-      template<typename Lhs, typename Dat> friend enable_ref<Lhs, enable_corenum<Dat>> _sub(Lhs &&, Dat);
-      template<typename Lhs, typename Dat> friend enable_ref<Lhs, enable_corenum<Dat>> _mul(Lhs &&, Dat);
+      // apply/repl
+      template<typename Target,
+         std::enable_if_t<std::is_same_v<Target, const sym &>, int> = int{}>
+         friend val _apply(Target &&, int argc, val [], val *argv_out);
+      template<typename Target,
+         std::enable_if_t<std::is_same_v<Target, val> || std::is_same_v<Target, const val &>, int> = int{}>
+         friend val _apply(Target &&, int argc, val [], val *argv_out);
+      template<typename Target, typename Arg0,
+         std::enable_if_t<std::is_same_v<Target, val> || std::is_same_v<Target, const val &>, int> = int{},
+         std::enable_if_t<std::is_same_v<Arg0, val> || std::is_same_v<Arg0, const val &>, int> = int{}>
+         friend val _apply(Target &&, Arg0 &&);
+      template<typename Target, typename Arg0, typename Arg1,
+         std::enable_if_t<std::is_same_v<Target, val> || std::is_same_v<Target, const val &>, int> = int{},
+         std::enable_if_t<std::is_same_v<Arg0, val> || std::is_same_v<Arg0, const val &>, int> = int{},
+         std::enable_if_t<std::is_same_v<Arg1, val> || std::is_same_v<Arg1, const val &>, int> = int{}>
+         friend val _apply(Target &&, Arg0 &&, Arg1 &&);
+      template<typename Target,
+         std::enable_if_t<std::is_same_v<Target, val> || std::is_same_v<Target, const val &>, int> = int{}>
+         friend val _repl(Target &&, int argc, val []);
+      template<typename Target, typename Arg0, typename Arg1,
+         std::enable_if_t<std::is_same_v<Target, val> || std::is_same_v<Target, const val &>, int> = int{},
+         std::enable_if_t<std::is_same_v<Arg0, val> || std::is_same_v<Arg0, const val &>, int> = int{},
+         std::enable_if_t<std::is_same_v<Arg1, val> || std::is_same_v<Arg1, const val &>, int> = int{}>
+         friend val _repl(Target &&, Arg0 &&, Arg1 &&);
+      template<typename Target, typename Arg0, typename Arg1, typename Arg2,
+         std::enable_if_t<std::is_same_v<Target, val> || std::is_same_v<Target, const val &>, int> = int{},
+         std::enable_if_t<std::is_same_v<Arg0, val> || std::is_same_v<Arg0, const val &>, int> = int{},
+         std::enable_if_t<std::is_same_v<Arg1, val> || std::is_same_v<Arg1, const val &>, int> = int{},
+         std::enable_if_t<std::is_same_v<Arg2, val> || std::is_same_v<Arg2, const val &>, int> = int{}>
+         friend val _repl(Target &&, Arg0 &&, Arg1 &&, Arg2 &&);
+      // op
+   # define MNL_M(ID) \
+      template<typename Lhs, typename Rhs, \
+         std::enable_if_t<std::is_same_v<Lhs, val> || std::is_same_v<Lhs, const val &>, int> = int{}, \
+         std::enable_if_t<std::is_same_v<Rhs, val> || std::is_same_v<Rhs, const val &>, int> = int{}> \
+         friend val ID(Lhs &&, Rhs &&); \
+   // end # define MNL_M(ID)
+      MNL_M(_eq) MNL_M(_ne) MNL_M(_lt) MNL_M(_le) MNL_M(_gt) MNL_M(_ge)
+      MNL_M(_add) MNL_M(_sub) MNL_M(_mul) MNL_M(_xor)
+   # undef MNL_M
+   # define MNL_M(ID) \
+      template<typename Rhs, \
+         std::enable_if_t<std::is_same_v<Rhs, val> || std::is_same_v<Rhs, const val &>, int> = int{}> \
+         friend val ID(Rhs &&); \
+   // end # define MNL_M(ID)
+      MNL_M(_neg) MNL_M(_abs) MNL_M(_not)
+   # undef MNL_M
+      // op (const)
+   # define MNL_M(ID) \
+      template<typename Lhs, typename Dat, \
+         std::enable_if_t<std::is_same_v<Lhs, val> || std::is_same_v<Lhs, const val &>, int> = int{}, \
+         std::enable_if_t<std::is_same_v<Dat, int> || std::is_same_v<Dat, double> || std::is_same_v<Dat, float> || std::is_same_v<Dat, unsigned>, int> = int{}> \
+         friend val ID(Lhs &&, Dat); \
+   // end # define MNL_M(ID)
+      MNL_M(_eq) MNL_M(_ne) MNL_M(_lt) MNL_M(_le) MNL_M(_gt) MNL_M(_ge)
+      MNL_M(_add) MNL_M(_sub) MNL_M(_mul)
+   # undef MNL_M
+   # define MNL_M(ID) \
+      template<typename Lhs, typename Dat, \
+         std::enable_if_t<std::is_same_v<Lhs, val> || std::is_same_v<Lhs, const val &>, int> = int{}, \
+         std::enable_if_t<std::is_same_v<Dat, const sym &>, int> = int{}> \
+         friend val ID(Lhs &&, Dat); \
+      template<typename Lhs, typename Dat, \
+         std::enable_if_t<std::is_same_v<Lhs, val> || std::is_same_v<Lhs, const val &>, int> = int{}, \
+         std::enable_if_t<std::is_same_v<Dat, decltype(nullptr)>, int> = int{}> \
+         friend val ID(Lhs &&, Dat); \
+   // end # define MNL_M(ID)
+      MNL_M(_eq) MNL_M(_ne)
    };
    template<typename Dat> class box final: val::root {
       Dat dat;
       explicit box(Dat &&dat): dat(std::move(dat)) {}
       ~box() {}
-      val _invoke(const val &self, const sym &op, int argc, val argv[], val *argv_out) override { return invoke(self, op, argc, argv, argv_out); }
-      val _invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) override { return invoke(std::move(self), op, argc, argv, argv_out); }
-      template<typename Self> MNL_INLINE val invoke(Self &&self, const sym &op, int argc, val argv[], val *argv_out)
-         { return dat.invoke(std::forward<Val>(self), op, argc, argv, argv_out); }
       friend val;
-
-
-
    private: // 38 VMT entries
       MNL_NOINLINE val _invoke(const val &self, const sym &op, int argc, val argv[], val *argv_out) override { return invoke(self, op, argv, argv_out); }
       MNL_NOINLINE val _invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) override { return invoke(_mv(self), op, argv, argv_out); }
