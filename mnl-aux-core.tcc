@@ -228,7 +228,6 @@ namespace aux { namespace pub {
          { return rhs.cast<Dat>(); }
    public: // Misc essentials
       static constexpr auto max_argc = sym::max_argc;
-      val operator()(int argc, val argv[], val *argv_out = {}) &&; // functional application - !argc => !argv && !argv_out
       val default_invoke(const sym &op, int argc, val argv[]);
       long rc /*reference counter*/() const noexcept;
       int default_order(const val &) const noexcept; // actually from MANOOL API
@@ -280,49 +279,20 @@ namespace aux { namespace pub {
       template<typename Dat = decltype(nullptr)> Dat  cast() const noexcept(std::is_nothrow_copy_constructible<Dat>::value);
       MNL_IF_CLANG(public:)
       class root; template<typename> friend class mnl::box;
-   public: // Convenience -- Functional application
+   public: // Convenience -- Functional application - !argc => !argv && !argv_out
       template<typename ...It> MNL_INLINE val operator()(It &&...it) const & { return _apply(*this, std::forward<It>(it) ...); }
       template<typename ...It> MNL_INLINE val operator()(It &&...it) && { return _apply(std::move(*this), std::forward<It>(it) ...); }
       template<typename ...It> MNL_INLINE val repl(It &&...it) const & { return _repl(*this, std::forward<It>(it) ...); }
       template<typename ...It> MNL_INLINE val repl(It &&...it) && { return _repl(std::move(*this), std::forward<It>(it) ...); }
-      template<typename ...It> MNL_INLINE val operator()(const loc &loc, It &&...it) const & { return _apply(loc, *this, std::forward<It>(it) ...); }
-      template<typename ...It> MNL_INLINE val operator()(const loc &loc, It &&...it) && { return _apply(loc, std::move(*this), std::forward<It>(it) ...); }
-      template<typename ...It> MNL_INLINE val repl(const loc &loc, It &&...it) const & { return _repl(loc, *this, std::forward<It>(it) ...); }
-      template<typename ...It> MNL_INLINE val repl(const loc &loc, It &&...it) && { return _repl(loc, std::move(*this), std::forward<It>(it) ...); }
-
-
-
-      /* val operator()(int argc, val argv[], val *argv_out = {}) &&; // essential form */
-      MNL_INLINE val operator()(const val &arg, val *arg_out = {}) && { return move(*this)(val(arg), arg_out); }
-      MNL_INLINE val operator()(val &&arg, val *arg_out = {}) && { return move(*this)(1, &arg, arg_out); }
-      template<size_t Argc> MNL_INLINE val operator()(args<Argc> &&args, val *args_out = {}) && { return move(*this)((int)Argc, args.data(), args_out); }
-      MNL_INLINE val operator()() && { return move(*this)(0, {}); }
-      MNL_INLINE val operator()(int argc, val argv[], val *argv_out = {}) const & { return val(*this)(argc, argv, argv_out); }
-      MNL_INLINE val operator()(const val &arg, val *arg_out = {}) const & { return val(*this)(arg, arg_out); }
-      MNL_INLINE val operator()(val &&arg, val *arg_out = {}) const & { return val(*this)(move(arg), arg_out); }
-      template<size_t Argc> MNL_INLINE val operator()(args<Argc> &&args, val *args_out = {}) const & { return val(*this)(move(args), args_out); }
-      MNL_INLINE val operator()() const & { return val(*this)(); }
-      // ...and their tracing counterparts:
-      MNL_INLINE val operator()(const loc &loc, int argc, val argv[], val *argv_out = {}) &&
-         { try { return move(*this)(argc, argv, argv_out); } catch (...) { MNL_NORETURN void trace_execute(const mnl::loc &); trace_execute(loc); } }
-      MNL_INLINE val operator()(const loc &loc, const val &arg, val *arg_out = {}) &&
-         { try { return move(*this)(arg, arg_out); } catch (...) { MNL_NORETURN void trace_execute(const mnl::loc &); trace_execute(loc); } }
-      MNL_INLINE val operator()(const loc &loc, val &&arg, val *arg_out = {}) &&
-         { try { return move(*this)(move(arg), arg_out); } catch (...) { MNL_NORETURN void trace_execute(const mnl::loc &); trace_execute(loc); } }
-      template<size_t Argc> MNL_INLINE val operator()(const loc &loc, args<Argc> &&args, val *args_out = {}) &&
-         { try { return move(*this)(move(args), args_out); } catch (...) { MNL_NORETURN void trace_execute(const mnl::loc &); trace_execute(loc); } }
-      MNL_INLINE val operator()(const loc &loc) &&
-         { try { return move(*this)(); } catch (...) { MNL_NORETURN void trace_execute(const mnl::loc &); trace_execute(loc); } }
-      MNL_INLINE val operator()(const loc &loc, int argc, val argv[], val *argv_out = {}) const &
-         { return val(*this)(loc, argc, argv, argv_out); }
-      MNL_INLINE val operator()(const loc &loc, const val &arg, val *arg_out = {}) const &
-         { return val(*this)(loc, arg, arg_out); }
-      MNL_INLINE val operator()(const loc &loc, val &&arg, val *arg_out = {}) const &
-         { return val(*this)(loc, move(arg), arg_out); }
-      template<size_t Argc> MNL_INLINE val operator()(const loc &loc, args<Argc> &&args, val *args_out = {}) const &
-         { return val(*this)(loc, move(args), args_out); }
-      MNL_INLINE val operator()(const loc &loc) const &
-         { return val(*this)(loc); }
+   public:
+      template<typename ...It> MNL_INLINE val operator()(void trace(const loc &), const loc &loc, It &&...it) const &
+         { return _apply(trace, loc, *this, std::forward<It>(it) ...); }
+      template<typename ...It> MNL_INLINE val operator()(void trace(const loc &), const loc &loc, It &&...it) &&
+         { return _apply(trace, loc, std::move(*this), std::forward<It>(it) ...); }
+      template<typename ...It> MNL_INLINE val repl(void trace(const loc &), const loc &loc, It &&...it) const &
+         { return _repl(trace, loc, *this, std::forward<It>(it) ...); }
+      template<typename ...It> MNL_INLINE val repl(void trace(const loc &), const loc &loc, It &&...it) &&
+         { return _repl(trace, loc, std::move(*this), std::forward<It>(it) ...); }
    public: // Convenience -- Direct comparison with other types
       bool operator==(decltype(nullptr)) const noexcept, operator==(const sym &) const noexcept;
       MNL_INLINE bool operator!=(decltype(nullptr)) const noexcept { return !(*this == nullptr); }
@@ -925,10 +895,11 @@ namespace aux { namespace pub {
       MNL_INLINE explicit operator bool() const noexcept { return rep; }
    public: // Construction -- Implicit conversion (to) + Compilation/execution operations
       template<typename Dat> code(Dat dat): rep(new box<Dat>{std::move(dat)}) {}
-      MNL_INLINE code compile(const form &form, const loc &loc) && { return rep->compile(move(*this), form, loc); }
-      MNL_INLINE val  execute(bool fast_sig = {}) const { return rep->execute(fast_sig); }
-      MNL_INLINE void exec_in(const val &val) const { rep->exec_in(mnl::val(val)); }
-      MNL_INLINE void exec_in(val &&val) const { rep->exec_in(move(val)); }
+      MNL_INLINE code compile(const form &form, const loc &loc) && { return rep->compile(std::move(*this), form, loc); }
+      MNL_INLINE val  execute(bool fast_sh = {}) const { return rep->execute(fast_sh); }
+      MNL_INLINE void exec_nores(bool fast_sh = {}) const { return rep->exec_nores(fast_sh); }
+      MNL_INLINE void exec_in(const val &value) const { exec_in((val)value); }
+      MNL_INLINE void exec_in(val &&value) const { rep->exec_in(std::move(value)); }
       MNL_INLINE val  exec_out() const { return rep->exec_out(); }
       MNL_INLINE bool is_rvalue() const noexcept { return rep->is_rvalue(); }
       MNL_INLINE bool is_lvalue() const noexcept { return rep->is_lvalue(); } // implies is_rvalue()
@@ -947,17 +918,9 @@ namespace aux { namespace pub {
          root(root &&) = delete; // can only be constructed/destructed (not movied or copied)
          virtual ~root() = default;
          virtual code compile(code &&self, const form &, const loc &) const = 0;
-         virtual val  execute(bool fast_sig) const = 0;
-         virtual void exec_nores(bool fast_sig) const = 0;
-         virtual void exec_in(const val &) const = 0;
-         virtual void exec_in(val &&) const = 0;
-         virtual void exec_in(decltype(nullptr)) const = 0;
-         virtual void exec_in(long long) const = 0;
-         virtual void exec_in(double) const = 0;
-         virtual void exec_in(float) const = 0;
-         virtual void exec_in(const sym &) const = 0;
-         virtual void exec_in(bool) const = 0;
-         virtual void exec_in(unsigned) const = 0;
+         virtual val  execute(bool fast_sh) const = 0;
+         virtual void exec_nores(bool fast_sh) const = 0;
+         virtual void exec_in(val &&) const = 0; // concrete dat (e.g., expr_tv) may have Dat::exec_in(long long) etc. for optimization purposes
          virtual val  exec_out() const = 0;
          virtual bool is_rvalue() const noexcept = 0;
          virtual bool is_lvalue() const noexcept = 0; // shall imply is_rvalue()
@@ -968,17 +931,9 @@ namespace aux { namespace pub {
          static_assert(std::is_base_of_v<nonvalue, Dat>);
          explicit box(Dat dat) noexcept: root{&tag}, dat(std::move(dat)) {}
          code compile(code &&self, const form &form, const loc &loc) const override { return dat.compile(move(self), form, loc); }
-         val  execute(bool fast_sig) const override { return dat.execute(fast_sig); }
-         void exec_nores(bool fast_sig) const override { dat.execute(fast_sig); }
-         void exec_in(const val &val) const override { dat.exec_in(val); }
-         void exec_in(val &&val) const override { dat.exec_in(std::move(val)); }
-         void exec_in(decltype(nullptr)) const override { dat.exec_in(val); }
-         void exec_in(long long val) const override { dat.exec_in(val); }
-         void exec_in(double val) const override { dat.exec_in(val); }
-         void exec_in(float val) const override { dat.exec_in(val); }
-         void exec_in(const sym &val) const override { dat.exec_in(val); }
-         void exec_in(bool val) const override { dat.exec_in(val); }
-         void exec_in(unsigned val) const override { dat.exec_in(val); }
+         val  execute(bool fast_sh) const override { return dat.execute(fast_sh); }
+         void exec_nores(bool fast_sh) const override { dat.exec_nores(fast_sh); }
+         void exec_in(val &&value) const override { dat.exec_in(std::move(value)); }
          val  exec_out() const override { return dat.exec_out(); }
          bool is_rvalue() const noexcept override { return dat.is_rvalue(); }
          bool is_lvalue() const noexcept override { return dat.is_lvalue(); } // shall imply is_rvalue()
@@ -1001,6 +956,29 @@ namespace aux { namespace pub {
    extern MNL_IF_WITH_MT(thread_local) sym::tab<> symtab;
    code compile(const form &, const loc & = MNL_IF_GCC5(loc)MNL_IF_GCC6(loc){});
    MNL_NORETURN void err_compile(const char *msg, const loc &);
+
+
+   struct expr_nonvalue {
+      static code compile(code &&self, const form &, const loc &) = delete;
+      MNL_INLINE static decltype(nullptr) execute(bool fast_sh) noexcept { MNL_UNREACHABLE(); }
+      MNL_INLINE static void exec_nores(bool fast_sh) noexcept { MNL_UNREACHABLE(); }
+      MNL_INLINE static void exec_in(val &&) noexcept { MNL_UNREACHABLE(); }
+      MNL_INLINE static MNL_INLINE decltype(nullptr) exec_out() noexcept { MNL_UNREACHABLE(); }
+      MNL_INLINE static bool is_rvalue() noexcept { return false; }
+      MNL_INLINE static bool is_lvalue() noexcept { return false; }
+   };
+   struct expr_rvalue: expr_nonvalue {
+      MNL_INLINE static code compile(code &&self, const form &form, const loc &loc) { return aux::compile_apply(std::move(self), form, loc); }
+      static decltype(nullptr) execute(bool fast_sh) = delete;
+      MNL_INLINE static void exec_nores(bool fast_sh) noexcept {} // may still be shadowed
+      MNL_INLINE static bool is_rvalue() { return true; }
+   };
+   struct expr_lvalue: expr_rvalue {
+      static void exec_in(val &&) = delete;
+      static decltype(nullptr) exec_out() = delete;
+      MNL_INLINE static bool is_lvalue() noexcept { return true; } // may still be shadowed
+   };
+
 }} // namespace aux::pub
 
 // Primitive Operations ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

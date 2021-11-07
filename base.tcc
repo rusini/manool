@@ -44,8 +44,7 @@ namespace aux {
    struct expr_tv: code::lvalue { // "temporary variable"
       int offset;
       MNL_INLINE const val &execute(bool = {}) const noexcept { return tv_stack[offset]; }
-      template<typename Val> MNL_INLINE void exec_in(Val &&value) const noexcept { tv_stack[offset] = std::forward<Val>(value); }
-      MNL_INLINE void exec_in(val &&value) const noexcept { tv_stack[offset].swap(value); }
+      template<typename Val> MNL_INLINE void exec_in(Val &&value) const noexcept { tv_stack[offset].assign(std::forward<Val>(value)); }
       MNL_INLINE val exec_out() const noexcept { return std::move(tv_stack[offset]); }
    };
 
@@ -67,10 +66,10 @@ namespace aux {
       MNL_INLINE void exec_nores(bool = {}) const {
          execute();
       }
-      template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
+      MNL_INLINE void exec_in(val &&value) const {
          target.exec_in([&]() MNL_INLINE{
             auto &&arg0 = this->arg0.execute();
-            return target.exec_out().repl(trace_exec_in, _loc, std::forward<decltype(arg0)>(arg0), std::forward<Val>(value));
+            return target.exec_out().repl(trace_exec_in, _loc, std::forward<decltype(arg0)>(arg0), std::move(value));
          }());
       }
       MNL_INLINE val exec_out() const {
@@ -113,10 +112,10 @@ namespace aux {
       MNL_INLINE void exec_nores(bool = {}) const {
          execute();
       }
-      template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
+      MNL_INLINE void exec_in(val &&value) const {
          target.exec_in([&]() MNL_INLINE{
             auto &&arg0 = this->arg0.execute(); auto &&arg1 = this->arg1.execute();
-            return target.exec_out().repl(trace_exec_in, _loc, std::forward<decltype(arg0)>(arg0), std::forward<decltype(arg1)>(arg1), std::forward<Val>(value));
+            return target.exec_out().repl(trace_exec_in, _loc, std::forward<decltype(arg0)>(arg0), std::forward<decltype(arg1)>(arg1), std::move(value));
          }());
       }
       MNL_INLINE val exec_out() const {
@@ -159,9 +158,9 @@ namespace aux {
       MNL_INLINE void exec_nores(bool = {}) const {
          execute();
       }
-      template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
+      MNL_INLINE void exec_in(val &&value) const {
          target.exec_in([&]() MNL_INLINE{
-            val argv[] = {arg0.execute(), arg1.execute(), arg2.execute(), std::forward<Val>(value)};
+            val argv[] = {arg0.execute(), arg1.execute(), arg2.execute(), std::move(value)};
             return target.exec_out().repl(trace_exec_in, _loc, std::size(argv), argv);
          }());
       }
@@ -188,9 +187,9 @@ namespace aux {
       MNL_INLINE void exec_nores(bool = {}) const {
          execute();
       }
-      template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
+      MNL_INLINE void exec_in(val &&value) const {
          target.exec_in([&]() MNL_INLINE{
-            val argv[] = {arg0.execute(), arg1.execute(), arg2.execute(), arg3.execute(), std::forward<Val>(value)};
+            val argv[] = {arg0.execute(), arg1.execute(), arg2.execute(), arg3.execute(), std::move(value)};
             return target.exec_out().repl(trace_exec_in, _loc, std::size(argv), argv);
          }());
       }
@@ -261,10 +260,10 @@ namespace aux {
          if (MNL_UNLIKELY(!test<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
          (cast<bool>(cond) ? body1 : body2).exec_nores(fast_sh);
       }
-      template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
+      MNL_INLINE void exec_in(val &&value) const {
          auto &&cond = this->cond.execute();
          if (MNL_UNLIKELY(!test<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
-         (cast<bool>(cond) ? body1 : body2).exec_in(std::forward<Val>(value));
+         (cast<bool>(cond) ? body1 : body2).exec_in(std::move(value));
       }
       MNL_INLINE val exec_out() const {
          auto &&cond = this->cond.execute();
