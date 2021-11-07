@@ -987,91 +987,64 @@ namespace aux { namespace pub { constexpr auto max_i48 = (1ll << 48 - 1) - 1, mi
 
 namespace aux {
 
-   template<typename Type> using lim = std::numeric_limits<Type>;
-
-   template<typename Lhs, typename Rhs, typename Res = Lhs> using enable_same =
-      typename std::enable_if<std::is_same<Lhs, Rhs>::value, Res>::type;
-   template<typename Dat, typename Res = Dat> using enable_core_numeric  = typename std::enable_if<
-      std::is_same<Dat, long long>::value || std::is_same<Dat, double>::value || std::is_same<Dat, float>::value || std::is_same<Dat, unsigned>::value, Res >::type;
-   template<typename Dat, typename Res = Dat> using enable_core_binfloat = typename std::enable_if<
-      std::is_same<Dat, double>::value || std::is_same<Dat, float>::value, Res >::type;
-
    // I48 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, long long>, long long> _add(Dat lhs, Dat rhs)
-      { auto res = lhs + rhs; if (MNL_LIKELY((unsigned long long)res - min_i48 <= max_i48 - min_i48)) return res; MNL_ERR(MNL_SYM("Overflow")); }
-   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, long long>, long long> _sub(Dat lhs, Dat rhs)
-      { auto res = lhs - rhs; if (MNL_LIKELY((unsigned long long)res - min_i48 <= max_i48 - min_i48)) return res; MNL_ERR(MNL_SYM("Overflow")); }
-
-   template<typename Dat> MNL_INLINE static inline enable_same<Dat, long long> _neg(Dat rhs) {
-      return -rhs;
-   }
-   template<typename Dat> MNL_INLINE static inline enable_same<Dat, long long> _abs(Dat rhs) {
-      return abs(rhs);
-   }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _neg(Dat rhs) {
-      return -rhs;
-   }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _abs(Dat rhs) {
-      return abs(rhs);
-   }
-   template<typename Dat> MNL_INLINE static inline enable_same<Dat, unsigned> _neg(Dat rhs) { return -rhs; }
-   template<typename Dat> MNL_INLINE static inline enable_same<Dat, unsigned> _abs(Dat rhs) { return +rhs; }
-
-   template<typename Dat> MNL_INLINE inline enable_same<Dat, long long> _mul(Dat lhs, Dat rhs) {
-   # if __x86_64__ // according to tests, the asm version is slightly faster (in GCC case), for unknown reason
-      unsigned char overflow; __asm ("imulq %2, %0; setob %1" : "+r" (lhs), "=r" (overflow) : "rme" (rhs));
-      if (MNL_LIKELY(!overflow) && MNL_LIKELY(lhs >= min_i48) && MNL_LIKELY(lhs <= max_i48)) return lhs;
+   template<typename Dat, std::enable_if_t<std::is_same_v<Dat, long long>, int> = int{}>
+   MNL_INLINE inline Dat _add(Dat lhs, Dat rhs) {
+      Dat res = lhs + rhs; if (MNL_LIKELY((unsigned long long)res - min_i48 <= max_i48 - min_i48)) return res;
       MNL_ERR(MNL_SYM("Overflow"));
-   # elif __aarch64__ && (!__clang__ ? __GNUC__ >= 5 : __clang_major__ * 100 + __clang_minor__ >= 308)
-      if (MNL_LIKELY(!__builtin_mul_overflow(lhs, rhs, &lhs)) && MNL_LIKELY(lhs >= min_i48) && MNL_LIKELY(lhs <= max_i48)) return lhs;
-      MNL_ERR(MNL_SYM("Overflow"));
-   # else
-      if (MNL_LIKELY(lhs > lim<int>::min()) && MNL_LIKELY(lhs <= lim<int>::max()) && MNL_LIKELY(rhs > lim<int>::min()) && MNL_LIKELY(rhs <= lim<int>::max())) {
-         if (lhs *= rhs, MNL_LIKELY(lhs >= min_i48) && MNL_LIKELY(lhs <= max_i48)) return lhs;
-         MNL_ERR(MNL_SYM("Overflow"));
-      }
-      long long res;
-      { // 64-bit multiplication with overflow detection
-         unsigned long long
-            a = abs(lhs),
-            b = abs(rhs);
-         unsigned
-            a0 = a, a1 = a >> 32,
-            b0 = b, b1 = b >> 32;
-         unsigned long long c;
-         if (MNL_LIKELY(!a1))
-            c = (unsigned long long)a0 * b1;
-         else
-         if (MNL_LIKELY(!b1))
-            c = (unsigned long long)b0 * a1;
-         else
-            MNL_ERR(MNL_SYM("Overflow"));
-         if (MNL_UNLIKELY(c & 0xFFFFFFFF00000000)) MNL_ERR(MNL_SYM("Overflow"));
-         c <<= 32;
-         unsigned long long d = c + (unsigned long long)a0 * b0;
-         if (MNL_UNLIKELY(d < c) || MNL_UNLIKELY(d & 0x8000000000000000)) MNL_ERR(MNL_SYM("Overflow"));
-         res = MNL_UNLIKELY(lhs < 0 ^ rhs < 0) ? -(long long)d : (long long)d;
-      }
-      if (MNL_UNLIKELY(res < min_i48) || MNL_UNLIKELY(res > max_i48)) MNL_ERR(MNL_SYM("Overflow"));
-      return res;
-   # endif // # if __x86_64__
    }
+   template<typename Dat, std::enable_if_t<std::is_same_v<Dat, long long>, int> = int{}>
+   MNL_INLINE inline Dat _sub(Dat lhs, Dat rhs) {
+      Dat res = lhs - rhs; if (MNL_LIKELY((unsigned long long)res - min_i48 <= max_i48 - min_i48)) return res;
+      MNL_ERR(MNL_SYM("Overflow"));
+   }
+   template<typename Dat, std::enable_if_t<std::is_same_v<Dat, long long>, int> = int{}>
+   MNL_INLINE inline Dat _mul(Dat lhs, Dat rhs) {
+      if (MNL_LIKELY(!__builtin_mul_overflow(lhs, rhs, &lhs)) && MNL_LIKELY((unsigned long long)res - min_i48 <= max_i48 - min_i48)) return lhs;
+      MNL_ERR(MNL_SYM("Overflow"));
+   }
+
+   template<typename Dat, std::enable_if_t<std::is_same_v<Dat, long long>, int> = int{}>
+      MNL_INLINE inline Dat _neg(Dat rhs) noexcept { return -rhs; }
+   template<typename Dat, std::enable_if_t<std::is_same_v<Dat, long long>, int> = int{}>
+      MNL_INLINE inline Dat _abs(Dat rhs) noexcept { return std::abs(rhs); }
 
    // F64, F32 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   template<typename Dat> MNL_INLINE inline enable_core_binfloat<Dat> _add(Dat lhs, Dat rhs)
-      { auto res = lhs + rhs; if (MNL_LIKELY(!isinf(res))) return res; MNL_ERR(MNL_SYM("Overflow")); }
-   template<typename Dat> MNL_INLINE inline enable_core_binfloat<Dat> _sub(Dat lhs, Dat rhs)
-      { auto res = lhs - rhs; if (MNL_LIKELY(!isinf(res))) return res; MNL_ERR(MNL_SYM("Overflow")); }
-   template<typename Dat> MNL_INLINE inline enable_core_binfloat<Dat> _mul(Dat lhs, Dat rhs)
-      { auto res = lhs * rhs; if (MNL_LIKELY(!isinf(res))) return res; MNL_ERR(MNL_SYM("Overflow")); }
+   template<typename Dat, std::enable_if_t<std::is_same_v<Dat, double> || std::is_same_v<Dat, float>, int> = int{}>
+   MNL_INLINE inline Dat _add(Dat lhs, Dat rhs) {
+      Dat res = lhs + rhs; if (MNL_LIKELY(!std::isinf(res))) return res;
+      MNL_ERR(MNL_SYM("Overflow"));
+   }
+   template<typename Dat, std::enable_if_t<std::is_same_v<Dat, double> || std::is_same_v<Dat, float>, int> = int{}>
+   MNL_INLINE inline Dat _sub(Dat lhs, Dat rhs) {
+      Dat res = lhs - rhs; if (MNL_LIKELY(!std::isinf(res))) return res;
+      MNL_ERR(MNL_SYM("Overflow"));
+   }
+   template<typename Dat, std::enable_if_t<std::is_same_v<Dat, double> || std::is_same_v<Dat, float>, int> = int{}>
+   MNL_INLINE inline Dat _mul(Dat lhs, Dat rhs) {
+      Dat res = lhs * rhs; if (MNL_LIKELY(!std::isinf(res))) return res;
+      MNL_ERR(MNL_SYM("Overflow"));
+   }
+
+   template<typename Dat, std::enable_if_t<std::is_same_v<Dat, double> || std::is_same_v<Dat, float>, int> = int{}>
+      MNL_INLINE inline Dat _neg(Dat rhs) noexcept { return -rhs; }
+   template<typename Dat, std::enable_if_t<std::is_same_v<Dat, double> || std::is_same_v<Dat, float>, int> = int{}>
+      MNL_INLINE inline Dat _abs(Dat rhs) noexcept { return std::abs(rhs); }
 
    // U32 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   template<typename Dat> MNL_INLINE inline enable_same<Dat, unsigned> _add(Dat lhs, Dat rhs) { return lhs + rhs; }
-   template<typename Dat> MNL_INLINE inline enable_same<Dat, unsigned> _sub(Dat lhs, Dat rhs) { return lhs - rhs; }
-   template<typename Dat> MNL_INLINE inline enable_same<Dat, unsigned> _mul(Dat lhs, Dat rhs) { return lhs * rhs; }
+   template<typename Dat, std::enable_if_t<std::is_same_v<Dat, unsigned>, int> = int{}>
+      MNL_INLINE inline Dat _add(Dat lhs, Dat rhs) noexcept { return lhs + rhs; }
+   template<typename Dat, std::enable_if_t<std::is_same_v<Dat, unsigned>, int> = int{}>
+      MNL_INLINE inline Dat _sub(Dat lhs, Dat rhs) noexcept { return lhs - rhs; }
+   template<typename Dat, std::enable_if_t<std::is_same_v<Dat, unsigned>, int> = int{}>
+      MNL_INLINE inline Dat _mul(Dat lhs, Dat rhs) noexcept { return lhs * rhs; }
+   template<typename Dat, std::enable_if_t<std::is_same_v<Dat, unsigned>, int> = int{}>
+      MNL_INLINE inline Dat _neg(Dat rhs) noexcept { return -rhs; }
+   template<typename Dat, std::enable_if_t<std::is_same_v<Dat, unsigned>, int> = int{}>
+      MNL_INLINE inline Dat _abs(Dat rhs) noexcept { return +rhs; }
 
 } // namespace aux
 
@@ -1368,7 +1341,7 @@ namespace aux { namespace pub {
    template<typename Lhs, typename Dat,
       std::enable_if_t<std::is_same_v<Lhs, val> || std::is_same_v<Lhs, const val &>, int> = int{},
       std::enable_if_t<std::is_same_v<Dat, int> || std::is_same_v<Dat, double> || std::is_same_v<Dat, float> || std::is_same_v<Dat, unsigned>, int> = int{}>
-   MNL_INLINE inline val _eq(Lhs &&lhs, Dat rhs) {
+   MNL_NODISCARD MNL_INLINE inline val _eq(Lhs &&lhs, Dat rhs) {
       if (MNL_LIKELY(test<Dat>(lhs))) return cast<Dat>(lhs) == rhs;
       if (!MNL_LIKELY(lhs.rep.tag() == 0x7FF8u)) return false;
       return static_cast<val::root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs), MNL_SYM("=="), 1, &const_cast<val &>((const val &)rhs));
@@ -1376,7 +1349,7 @@ namespace aux { namespace pub {
    template<typename Lhs, typename Dat,
       std::enable_if_t<std::is_same_v<Lhs, val> || std::is_same_v<Lhs, const val &>, int> = int{},
       std::enable_if_t<std::is_same_v<Dat, int> || std::is_same_v<Dat, double> || std::is_same_v<Dat, float> || std::is_same_v<Dat, unsigned>, int> = int{}>
-   MNL_INLINE inline val _ne(Lhs &&lhs, Dat rhs) {
+   MNL_NODISCARD MNL_INLINE inline val _ne(Lhs &&lhs, Dat rhs) {
       if (MNL_LIKELY(test<Dat>(lhs))) return cast<Dat>(lhs) != rhs;
       if (!MNL_LIKELY(lhs.rep.tag() == 0x7FF8u)) return true;
       return static_cast<val::root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs), MNL_SYM("<>"), 1, &const_cast<val &>((const val &)rhs));
@@ -1385,7 +1358,7 @@ namespace aux { namespace pub {
    template<typename Lhs, typename Dat, \
       std::enable_if_t<std::is_same_v<Lhs, val> || std::is_same_v<Lhs, const val &>, int> = int{}, \
       std::enable_if_t<std::is_same_v<Dat, int> || std::is_same_v<Dat, double> || std::is_same_v<Dat, float> || std::is_same_v<Dat, unsigned>, int> = int{}> \
-   MNL_INLINE inline val ID(Lhs &&lhs, Dat rhs) { \
+   MNL_NODISCARD MNL_INLINE inline val ID(Lhs &&lhs, Dat rhs) { \
       if (MNL_LIKELY(test<Dat>(lhs))) return cast<Dat>(lhs) OP rhs; \
       if (!MNL_LIKELY(lhs.rep.tag() == 0x7FF8u)) return [&]()MNL_NORETURN{ return ID(std::forward<Lhs>(lhs), (val)rhs); }(); \
       return static_cast<val::root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs), MNL_SYM(#OP), 1, &const_cast<val &>((const val &)rhs)); \
@@ -1397,7 +1370,7 @@ namespace aux { namespace pub {
    template<typename Lhs, typename Dat, \
       std::enable_if_t<std::is_same_v<Lhs, val> || std::is_same_v<Lhs, const val &>, int> = int{}, \
       std::enable_if_t<std::is_same_v<Dat, int> || std::is_same_v<Dat, double> || std::is_same_v<Dat, float> || std::is_same_v<Dat, unsigned>, int> = int{}> \
-   MNL_INLINE inline val ID(Lhs &&lhs, Dat rhs) { \
+   MNL_NODISCARD MNL_INLINE inline val ID(Lhs &&lhs, Dat rhs) { \
       if (MNL_LIKELY(test<Dat>(lhs))) return aux::ID(cast<Dat>(lhs), rhs); \
       if (!MNL_LIKELY(lhs.rep.tag() == 0x7FF8u)) return [&]()MNL_NORETURN{ return ID(std::forward<Lhs>(lhs), (val)rhs); }(); \
       return static_cast<val::root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs), MNL_SYM(SYM), 1, &const_cast<val &>((const val &)rhs)); \
@@ -1409,18 +1382,18 @@ namespace aux { namespace pub {
    template<typename Rhs, typename Dat,
       std::enable_if_t<std::is_same_v<Rhs, val> || std::is_same_v<Rhs, const val &>, int> = int{},
       std::enable_if_t<std::is_same_v<Dat, int> || std::is_same_v<Dat, double> || std::is_same_v<Dat, float> || std::is_same_v<Dat, unsigned>, int> = int{}>
-   MNL_INLINE inline bool _eq(Dat lhs, Rhs &&rhs) noexcept
+   MNL_NODISCARD MNL_INLINE inline bool _eq(Dat lhs, Rhs &&rhs) noexcept
       { return  MNL_LIKELY(test<Dat>(rhs)) && lhs == cast<Dat>(rhs); }
    template<typename Rhs, typename Dat,
       std::enable_if_t<std::is_same_v<Rhs, val> || std::is_same_v<Rhs, const val &>, int> = int{},
       std::enable_if_t<std::is_same_v<Dat, int> || std::is_same_v<Dat, double> || std::is_same_v<Dat, float> || std::is_same_v<Dat, unsigned>, int> = int{}>
-   MNL_INLINE inline bool _ne(Dat lhs, Rhs &&rhs) noexcept
+   MNL_NODISCARD MNL_INLINE inline bool _ne(Dat lhs, Rhs &&rhs) noexcept
       { return !MNL_LIKELY(test<Dat>(rhs)) || lhs != cast<Dat>(rhs); }
 # define MNL_M(ID, OP) \
    template<typename Rhs, typename Dat,
       std::enable_if_t<std::is_same_v<Rhs, val> || std::is_same_v<Rhs, const val &>, int> = int{},
       std::enable_if_t<std::is_same_v<Dat, int> || std::is_same_v<Dat, double> || std::is_same_v<Dat, float> || std::is_same_v<Dat, unsigned>, int> = int{}>
-   MNL_INLINE inline bool ID(Dat lhs, Rhs &&rhs)
+   MNL_NODISCARD MNL_INLINE inline bool ID(Dat lhs, Rhs &&rhs)
       { if (MNL_LIKELY(test<Dat>(rhs))) return lhs OP cast<Dat>(rhs); MNL_ERR(MNL_SYM("TypeMismatch")); } \
 // end # define MNL_M(ID, OP)
    MNL_M(_lt, <) MNL_M(_le, <=) MNL_M(_gt, >) MNL_M(_ge, >=)
@@ -1429,7 +1402,7 @@ namespace aux { namespace pub {
    template<typename Rhs, typename Dat,
       std::enable_if_t<std::is_same_v<Rhs, val> || std::is_same_v<Rhs, const val &>, int> = int{},
       std::enable_if_t<std::is_same_v<Dat, int> || std::is_same_v<Dat, double> || std::is_same_v<Dat, float> || std::is_same_v<Dat, unsigned>, int> = int{}>
-   MNL_INLINE inline Dat ID(Dat lhs, Rhs &&rhs)
+   MNL_NODISCARD MNL_INLINE inline Dat ID(Dat lhs, Rhs &&rhs)
       { if (MNL_LIKELY(test<Dat>(rhs))) return aux::ID(lhs, cast<Dat>(rhs)); MNL_ERR(MNL_SYM("TypeMismatch")); } \
 // end # define MNL_M(ID)
    MNL_M(_add) MNL_M(_sub) MNL_M(_mul)
@@ -1440,7 +1413,7 @@ namespace aux { namespace pub {
    template<typename Lhs, typename Dat,
       std::enable_if_t<std::is_same_v<Lhs, val> || std::is_same_v<Lhs, const val &>, int> = int{},
       std::enable_if_t<std::is_same_v<Dat, const sym &>, int> = int{}>
-   MNL_INLINE inline val _eq(Lhs &&lhs, Dat rhs) {
+   MNL_NODISCARD MNL_INLINE inline val _eq(Lhs &&lhs, Dat rhs) {
       if (MNL_LIKELY(test<Dat>(lhs))) return cast<const Dat &>(lhs) == rhs;
       if (!MNL_LIKELY(lhs.rep.tag() == 0x7FF8u)) return false;
       return static_cast<val::root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs), MNL_SYM("=="), 1, &const_cast<val &>((const val &)rhs));
@@ -1448,7 +1421,7 @@ namespace aux { namespace pub {
    template<typename Lhs, typename Dat,
       std::enable_if_t<std::is_same_v<Lhs, val> || std::is_same_v<Lhs, const val &>, int> = int{},
       std::enable_if_t<std::is_same_v<Dat, const sym &>, int> = int{}>
-   MNL_INLINE inline val _ne(Lhs &&lhs, Dat rhs) {
+   MNL_NODISCARD MNL_INLINE inline val _ne(Lhs &&lhs, Dat rhs) {
       if (MNL_LIKELY(test<Dat>(lhs))) return cast<const Dat &>(lhs) != rhs;
       if (!MNL_LIKELY(lhs.rep.tag() == 0x7FF8u)) return true;
       return static_cast<val::root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs), MNL_SYM("<>"), 1, &const_cast<val &>((const val &)rhs));
@@ -1456,7 +1429,7 @@ namespace aux { namespace pub {
    template<typename Lhs, typename Dat,
       std::enable_if_t<std::is_same_v<Lhs, val> || std::is_same_v<Lhs, const val &>, int> = int{},
       std::enable_if_t<std::is_same_v<Dat, decltype(nullptr)>, int> = int{}>
-   MNL_INLINE inline val _eq(Lhs &&lhs, Dat rhs) {
+   MNL_NODISCARD MNL_INLINE inline val _eq(Lhs &&lhs, Dat rhs) {
       if (MNL_LIKELY(test<>(lhs))) return true;
       if (!MNL_LIKELY(lhs.rep.tag() == 0x7FF8u)) return false;
       return static_cast<val::root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs), MNL_SYM("=="), 1, &const_cast<val &>((const val &)rhs));
@@ -1464,7 +1437,7 @@ namespace aux { namespace pub {
    template<typename Lhs, typename Dat,
       std::enable_if_t<std::is_same_v<Lhs, val> || std::is_same_v<Lhs, const val &>, int> = int{},
       std::enable_if_t<std::is_same_v<Dat, decltype(nullptr)>, int> = int{}>
-   MNL_INLINE inline val _ne(Lhs &&lhs, Dat rhs) {
+   MNL_NODISCARD MNL_INLINE inline val _ne(Lhs &&lhs, Dat rhs) {
       if (MNL_LIKELY(test<>(lhs))) return false;
       if (!MNL_LIKELY(lhs.rep.tag() == 0x7FF8u)) return true;
       return static_cast<val::root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs), MNL_SYM("<>"), 1, &const_cast<val &>((const val &)rhs));
@@ -1473,22 +1446,22 @@ namespace aux { namespace pub {
    template<typename Rhs, typename Dat,
       std::enable_if_t<std::is_same_v<Rhs, val> || std::is_same_v<Rhs, const val &>, int> = int{},
       std::enable_if_t<std::is_same_v<Dat, const sym &>, int> = int{}>
-   MNL_INLINE inline bool _eq(Dat lhs, Rhs &&rhs) noexcept
+   MNL_NODISCARD MNL_INLINE inline bool _eq(Dat lhs, Rhs &&rhs) noexcept
       { return  MNL_LIKELY(test<Dat>(rhs)) && lhs == cast<Dat>(rhs); }
    template<typename Rhs, typename Dat,
       std::enable_if_t<std::is_same_v<Rhs, val> || std::is_same_v<Rhs, const val &>, int> = int{},
       std::enable_if_t<std::is_same_v<Dat, const sym &>, int> = int{}>
-   MNL_INLINE inline bool _ne(Dat lhs, Rhs &&rhs) noexcept
+   MNL_NODISCARD MNL_INLINE inline bool _ne(Dat lhs, Rhs &&rhs) noexcept
       { return !MNL_LIKELY(test<Dat>(rhs)) || lhs != cast<Dat>(rhs); }
    template<typename Rhs, typename Dat,
       std::enable_if_t<std::is_same_v<Rhs, val> || std::is_same_v<Rhs, const val &>, int> = int{},
       std::enable_if_t<std::is_same_v<Dat, decltype(nullptr)>, int> = int{}>
-   MNL_INLINE inline bool _eq(Dat lhs, Rhs &&rhs) noexcept
+   MNL_NODISCARD MNL_INLINE inline bool _eq(Dat lhs, Rhs &&rhs) noexcept
       { return  test<>(rhs); }
    template<typename Rhs, typename Dat,
       std::enable_if_t<std::is_same_v<Rhs, val> || std::is_same_v<Rhs, const val &>, int> = int{},
       std::enable_if_t<std::is_same_v<Dat, decltype(nullptr)>, int> = int{}>
-   MNL_INLINE inline bool _ne(Dat lhs, Rhs &&rhs) noexcept
+   MNL_NODISCARD MNL_INLINE inline bool _ne(Dat lhs, Rhs &&rhs) noexcept
       { return !test<>(rhs); }
 
    // Tracing //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
