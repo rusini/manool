@@ -991,12 +991,12 @@ namespace aux {
 
    template<typename Dat, std::enable_if_t<std::is_same_v<Dat, long long>, int> = int{}>
    MNL_INLINE inline Dat _add(Dat lhs, Dat rhs) {
-      Dat res = lhs + rhs; if (MNL_LIKELY((unsigned long long)res - min_i48 <= max_i48 - min_i48)) return res;
+      if (MNL_LIKELY((unsigned long long)(lhs += rhs) - min_i48 <= max_i48 - min_i48)) return lhs;
       MNL_ERR(MNL_SYM("Overflow"));
    }
    template<typename Dat, std::enable_if_t<std::is_same_v<Dat, long long>, int> = int{}>
    MNL_INLINE inline Dat _sub(Dat lhs, Dat rhs) {
-      Dat res = lhs - rhs; if (MNL_LIKELY((unsigned long long)res - min_i48 <= max_i48 - min_i48)) return res;
+      if (MNL_LIKELY((unsigned long long)(lhs -= rhs) - min_i48 <= max_i48 - min_i48)) return lhs;
       MNL_ERR(MNL_SYM("Overflow"));
    }
    template<typename Dat, std::enable_if_t<std::is_same_v<Dat, long long>, int> = int{}>
@@ -1014,17 +1014,17 @@ namespace aux {
 
    template<typename Dat, std::enable_if_t<std::is_same_v<Dat, double> || std::is_same_v<Dat, float>, int> = int{}>
    MNL_INLINE inline Dat _add(Dat lhs, Dat rhs) {
-      Dat res = lhs + rhs; if (MNL_LIKELY(!std::isinf(res))) return res;
+      if (MNL_LIKELY(!std::isinf(lhs += rhs))) return lhs;
       MNL_ERR(MNL_SYM("Overflow"));
    }
    template<typename Dat, std::enable_if_t<std::is_same_v<Dat, double> || std::is_same_v<Dat, float>, int> = int{}>
    MNL_INLINE inline Dat _sub(Dat lhs, Dat rhs) {
-      Dat res = lhs - rhs; if (MNL_LIKELY(!std::isinf(res))) return res;
+      if (MNL_LIKELY(!std::isinf(lhs -= rhs))) return lhs;
       MNL_ERR(MNL_SYM("Overflow"));
    }
    template<typename Dat, std::enable_if_t<std::is_same_v<Dat, double> || std::is_same_v<Dat, float>, int> = int{}>
    MNL_INLINE inline Dat _mul(Dat lhs, Dat rhs) {
-      Dat res = lhs * rhs; if (MNL_LIKELY(!std::isinf(res))) return res;
+      if (MNL_LIKELY(!std::isinf(lhs *= rhs))) return lhs;
       MNL_ERR(MNL_SYM("Overflow"));
    }
 
