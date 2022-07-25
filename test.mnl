@@ -27,44 +27,33 @@
   B[22; 43] = 1
   B[19; 44] = 1
   -- end of initialization
-  /*Out.WriteLine["Before:"]; Display[B]*/
+  Out.WriteLine["Before:"]; Display[B]
 
   { var { NextB = B } in
   : repeat G do
   : do {if ~AllocOpt then (B = NextB)' else {assign B = NextB; NextB = B}'}% after
+
   : for { I = Range[N]$ } do
   : var { Up = {if I <> 0 then I - 1 else (N - 1)$}; Down = {if I <> (N - 1)$ then I + 1 else 0} } in
   : for { J = Range[M]$ } do
   : var { Left = {if J <> 0 then J - 1 else (M - 1)$}; Right = {if J <> (M - 1)$ then J + 1 else 0} } in
-  : var
-    { Count =
-      B[Up  ; Left ] +
-      B[Up  ; J    ] +
-      B[Up  ; Right] +
-      B[I   ; Right] +
-      B[Down; Right] +
-      B[Down; J    ] +
-      B[Down; Left ] +
-      B[I   ; Left ]
-    }
+
+  : var { Count =
+     B[Up  ; Left ] +
+     B[Up  ; J    ] +
+     B[Up  ; Right] +
+     B[I   ; Right] +
+     B[Down; Right] +
+     B[Down; J    ] +
+     B[Down; Left ] +
+     B[I   ; Left ] }
     in
+
     NextB[I; J] =
     { if Count == 2 then B[I; J] else
     : if Count == 3 then 1 else
       0
     }
   }
-  /*Out.WriteLine["After " G " generations:"]; Display[B]*/
-  { var { ExpectedB = {array N of: array M of 0} } in
-    ExpectedB[20; 39] = 1
-    ExpectedB[20; 40] = 1
-    ExpectedB[20; 41] = 1
-    ExpectedB[21; 39] = 1
-    ExpectedB[21; 42] = 1
-    ExpectedB[22; 39] = 1
-    ExpectedB[22; 43] = 1
-    ExpectedB[23; 40] = 1
-    ExpectedB[23; 42] = 1
-    Out.WriteLine[{if B == ExpectedB then "Success" else "Fail"}]
-  }
+  Out.WriteLine["After " G " generations:"]; Display[B]
 }

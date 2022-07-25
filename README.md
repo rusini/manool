@@ -70,7 +70,7 @@ you. E.g., in brief:
 * First-class value bindings involve compile-time evaluation, and similarly you can use handful syntactic sugar to specify constant values, e.g.: `F64["1.1"]$`,
   `D128["1.10"]$`, `Sqrt[F64[2]]$`.
 
-* You can write the whole program unit in some domain-specific language instead of standard MANOOL; just replace `(extern "...")` at program-unit level (see
+* You can write the whole program unit in some domain-specific language instead of standard MANOOL; just replace `{extern "..."}` at program-unit level (see
   complete examples below) with the reference to a different module.
 
 * On the other hand, macro bindings have limited scope (like any other kind of bindings):
@@ -103,7 +103,7 @@ A "Hello World" program might look like
 
     {{extern "manool.org.18/std/1.0/all"} in Out.WriteLine["Hello, world!"]}
 
-and in the following sample program a recursive factorial function is defined and invoked:
+and in the following sample program, a recursive factorial function is defined and invoked:
 
     { {extern "manool.org.18/std/1.0/all"} in
     : let rec { Fact = {proc {N} as:
