@@ -286,7 +286,7 @@ int main(int argc, char *argv[]) {
       "MNL_PATH  ':'-separated list of directories in which to look for extern entities\n\n"
       "mnlexec (MANOOL) 0.6.0\n"
       "Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)\nLicense GPLv3: GNU GPL version 3 <https://gnu.org/licenses/gpl-3.0.html>\n"
-      "This is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n\n"
+      "This is free software: you are free to modify and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n\n"
       "Report bugs to: bugs@manool.org\nMANOOL home page: <https://manool.org>\n\n"), EXIT_SUCCESS;
    if (::setenv("MNL_MNLEXEC", *argv++, true))
       return perror("Cannot setenv"), EXIT_FAILURE;

@@ -602,8 +602,8 @@ namespace aux { namespace pub {
       ~box() {}
       friend val;
    private: // 38 VMT entries
-      MNL_NOINLINE val _invoke(const val &self, const sym &op, int argc, val argv[], val *argv_out) override { return invoke(self, op, argv, argv_out); }
-      MNL_NOINLINE val _invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) override { return invoke(_mv(self), op, argv, argv_out); }
+      MNL_NOINLINE val _invoke(const val &self, const sym &op, int argc, val argv[], val *argv_out = {}) override { return invoke(self, op, argv, argv_out); }
+      MNL_NOINLINE val _invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out = {}) override { return invoke(_mv(self), op, argv, argv_out); }
    private:
       // For one argument (6 VMT entries)
       val _apply(const val &self, const val &arg0) override { return apply(self, arg0); }
@@ -663,22 +663,22 @@ namespace aux { namespace pub {
       template<typename Self, typename Arg0>
       MNL_INLINE val default_apply(Self &&self, Arg0 &&arg0) {
          return _invoke(std::forward<Self>(self), MNL_SYM("Apply"), 1,
-            &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Arg0, val>, val &, val>)arg0), {});
+            &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Arg0, val>, val &, val>)arg0));
       }
       template<typename Self, typename Arg0, typename Arg1>
       MNL_INLINE val default_apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
          val argv[] = {std::forward<Arg0>(arg0), std::forward<Arg1>(arg1)};
-         return _invoke(std::forward<Self>(self), MNL_SYM("Apply"), std::size(argv), argv, {});
+         return _invoke(std::forward<Self>(self), MNL_SYM("Apply"), std::size(argv), argv);
       }
       template<typename Self, typename Arg0, typename Arg1>
       MNL_INLINE val default_repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
          val argv[] = {std::forward<Arg0>(arg0), std::forward<Arg1>(arg1)};
-         return _invoke(std::forward<Self>(self), MNL_SYM("Repl"), std::size(argv), argv, {});
+         return _invoke(std::forward<Self>(self), MNL_SYM("Repl"), std::size(argv), argv);
       }
       template<typename Self, typename Arg0, typename Arg1, typename Arg2>
       MNL_INLINE val default_repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1, Arg2 &&arg2) {
          val argv[] = {std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::forward<Arg2>(arg2)};
-         return _invoke(std::forward<Self>(self), MNL_SYM("Repl"), std::size(argv), argv, {});
+         return _invoke(std::forward<Self>(self), MNL_SYM("Repl"), std::size(argv), argv);
       }
    };
    template<> class box<decltype(nullptr)>; // to be left incomplete to improve diagnostics
