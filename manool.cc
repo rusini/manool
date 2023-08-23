@@ -48,52 +48,60 @@ namespace MNL_AUX_UUID { using namespace aux;
       {  vector<code> args; args.reserve(form.size() - 1);
          for (auto &&el: form + 1) args.push_back(compile_rval(el, _loc));
 
-         struct expr_apply5 { MNL_LVALUE(target.is_lvalue())
+         struct expr_apply5: code::lvalue {
             code target, a0, a1, a2, a3, a4; loc _loc;
          public:
             MNL_INLINE val execute(bool) const {
-               val argv[]{a0.execute(), a1.execute(), a2.execute(), a3.execute(), a4.execute()}, target = this->target.execute();
-               try { return move(target)(std::extent<decltype(argv)>::value, argv); } catch (...) { trace_execute(_loc); }
+               val argv[] = {a0.execute(), a1.execute(), a2.execute(), a3.execute(), a4.execute()};
+               return target.execute()(trace_execute, _loc, std::size(argv), argv);
+            }
+            MNL_INLINE void exec_nores(bool = {}) const {
+               execute();
             }
             MNL_INLINE void exec_in(val &&value) const {
-               target.exec_in([&]()->val{
-                  val argv[]{move(value), a0.execute(), a1.execute(), a2.execute(), a3.execute(), a4.execute(), target.exec_out()};
-                  argv->swap(argv[std::extent<decltype(argv)>::value - 1]);
-                  try { return MNL_SYM("Repl")(std::extent<decltype(argv)>::value, argv); } catch (...) { trace_exec_in(_loc); }
+               target.exec_in([&]() MNL_INLINE{
+                  val argv[] = {a0.execute(), a1.execute(), a2.execute(), a3.execute(), a4.execute(), std::move(value)};
+                  return target.exec_out().repl(trace_exec_in, _loc, std::size(argv), argv);
+               }());
+            }
+            MNL_INLINE val exec_out() const {
+               val argv_out[6];
+               target.exec_in([&]() MNL_INLINE{
+                  val argv[std::size(argv_out)] = {a0.execute(), a1.execute(), a2.execute(), a3.execute(), a4.execute()};
+                  return target.exec_out().repl(trace_exec_out, _loc, std::size(argv), argv, argv_out);
+               }());
+               return std::move(argv_out[std::size(argv_out) - 1]);
+            }
+            MNL_INLINE bool is_lvalue() const noexcept {
+               return target.is_lvalue();
+            }
+         };
+         struct expr_apply6: code::lvalue {
+            code target, a0, a1, a2, a3, a4, a5; loc _loc;
+         public:
+            MNL_INLINE val execute(bool) const {
+               val argv[] = {a0.execute(), a1.execute(), a2.execute(), a3.execute(), a4.execute(), a5.execute()};
+               return target.execute()(trace_execute, _loc, std::size(argv), argv);
+            }
+            MNL_INLINE void exec_nores(bool = {}) const {
+               execute();
+            }
+            MNL_INLINE void exec_in(val &&value) const {
+               target.exec_in([&]() MNL_INLINE{
+                  val argv[] = {a0.execute(), a1.execute(), a2.execute(), a3.execute(), a4.execute(), a5.execute(), std::move(value)};
+                  return target.exec_out().repl(trace_exec_in, _loc, std::size(argv), argv);
                }());
             }
             MNL_INLINE val exec_out() const {
                val argv_out[7];
-               target.exec_in([&]()->val{
-                  val argv[]{{}, a0.execute(), a1.execute(), a2.execute(), a3.execute(), a4.execute(), target.exec_out()};
-                  argv->swap(argv[std::extent<decltype(argv)>::value - 1]);
-                  try { return MNL_SYM("Repl")(std::extent<decltype(argv)>::value, argv, argv_out); } catch (...) { trace_exec_out(_loc); }
+               target.exec_in([&]() MNL_INLINE{
+                  val argv[std::size(argv_out)] = {a0.execute(), a1.execute(), a2.execute(), a3.execute(), a4.execute(), a5.execute()};
+                  return target.exec_out().repl(trace_exec_out, _loc, std::size(argv), argv, argv_out);
                }());
-               return move(argv_out[std::extent<decltype(argv_out)>::value - 1]);
+               return std::move(argv_out[std::size(argv_out) - 1]);
             }
-         };
-         struct expr_apply6 { MNL_LVALUE(target.is_lvalue())
-            code target, a0, a1, a2, a3, a4, a5; loc _loc;
-         public:
-            MNL_INLINE val execute(bool) const {
-               val argv[]{a0.execute(), a1.execute(), a2.execute(), a3.execute(), a4.execute(), a5.execute()}, target = this->target.execute();
-               try { return move(target)(std::extent<decltype(argv)>::value, argv); } catch (...) { trace_execute(_loc); }
-            }
-            MNL_INLINE void exec_in(val &&value) const {
-               target.exec_in([&]()->val{
-                  val argv[]{move(value), a0.execute(), a1.execute(), a2.execute(), a3.execute(), a4.execute(), a5.execute(), target.exec_out()};
-                  argv->swap(argv[std::extent<decltype(argv)>::value - 1]);
-                  try { return MNL_SYM("Repl")(std::extent<decltype(argv)>::value, argv); } catch (...) { trace_exec_in(_loc); }
-               }());
-            }
-            MNL_INLINE val exec_out() const {
-               val argv_out[8];
-               target.exec_in([&]()->val{
-                  val argv[]{{}, a0.execute(), a1.execute(), a2.execute(), a3.execute(), a4.execute(), a5.execute(), target.exec_out()};
-                  argv->swap(argv[std::extent<decltype(argv)>::value - 1]);
-                  try { return MNL_SYM("Repl")(std::extent<decltype(argv)>::value, argv, argv_out); } catch (...) { trace_exec_out(_loc); }
-               }());
-               return move(argv_out[std::extent<decltype(argv_out)>::value - 1]);
+            MNL_INLINE bool is_lvalue() const noexcept {
+               return target.is_lvalue();
             }
          };
          switch (args.size()) {
@@ -105,7 +113,7 @@ namespace MNL_AUX_UUID { using namespace aux;
          case 5: return expr_apply5{move(target), move(args[0]), move(args[1]), move(args[2]), move(args[3]), move(args[4]), _loc};
          case 6: return expr_apply6{move(target), move(args[0]), move(args[1]), move(args[2]), move(args[3]), move(args[4]), move(args[5]), _loc};
          }
-         struct expr_apply { MNL_LVALUE(target.is_lvalue())
+         struct expr_apply: code::lvalue {
             code target; vector<code> args; loc _loc; // implementation-defined destruction order for "args"
          public:
             MNL_INLINE val execute(bool) const {
@@ -113,6 +121,9 @@ namespace MNL_AUX_UUID { using namespace aux;
                val argv[argc];
                for (int sn = 0; sn < argc; ++sn) args[sn].execute().swap(argv[sn]); val target = this->target.execute();
                try { return move(target)(argc, argv); } catch (...) { trace_execute(_loc); }
+            }
+            MNL_INLINE void exec_nores(bool = {}) const {
+               execute();
             }
             MNL_INLINE void exec_in(val &&value) const {
                int argc = args.size(); auto args = this->args.data();
@@ -131,6 +142,9 @@ namespace MNL_AUX_UUID { using namespace aux;
                   try { return MNL_SYM("Repl")(argc, argv, argv_out); } catch (...) { trace_exec_out(_loc); }
                }());
                return move(argv_out[argc + 1]);
+            }
+            MNL_INLINE bool is_lvalue() const noexcept {
+               return target.is_lvalue();
             }
          };
          return expr_apply{move(target), move(args), _loc};

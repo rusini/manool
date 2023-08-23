@@ -89,7 +89,8 @@ namespace aux {
       expr_apply1() = delete;
       expr_apply1(expr_apply1 &&) = delete;
       ~expr_apply1() = delete;
-      template<typename Res, Res (void (const loc &), const loc &, decltype(std::declval<Arg0>().execute()))> struct _op;
+      template<typename Res,
+         Res (void (const loc &), const loc &, decltype(std::declval<Arg0>().execute()))> struct _op;
    };
    template<class Arg0>
    template<typename Res, Res Op(void (const loc &), const loc &, decltype(std::declval<Arg0>().execute()))>
@@ -135,7 +136,8 @@ namespace aux {
       expr_apply2() = delete;
       expr_apply2(expr_apply2 &&) = delete;
       ~expr_apply2() = delete;
-      template<typename Res, Res (void (const loc &), const loc &, decltype(std::declval<Arg0>().execute()), decltype(std::declval<Arg1>().execute()))> struct _op;
+      template<typename Res,
+         Res (void (const loc &), const loc &, decltype(std::declval<Arg0>().execute()), decltype(std::declval<Arg1>().execute()))> struct _op;
    };
    template<class Arg0, class Arg1>
    template<typename Res, Res Op(void (const loc &), const loc &, decltype(std::declval<Arg0>().execute()), decltype(std::declval<Arg1>().execute()))>
