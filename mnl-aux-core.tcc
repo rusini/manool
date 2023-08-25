@@ -105,6 +105,39 @@ namespace aux { namespace pub {
       template<typename ...It> MNL_INLINE val operator()(const loc &loc, It &&...it) const & { return _apply(loc, *this, std::forward<It>(it) ...); }
       template<typename ...It> MNL_INLINE val repl(const loc &loc, It &&...it) const & { return _repl(loc, *this, std::forward<It>(it) ...); }
 
+   public:
+      MNL_INLINE val operator()(const val &target, int argc, val argv[], val *argv_out = {}) const & { return _apply(*this, target, argc, argv, argv_out); }
+      MNL_INLINE val operator()(val &&target, int argc, val argv[], val *argv_out = {}) const & { return _apply(*this, _mv(target), argc, argv, argv_out); }
+
+      template<std::size_t Argc> MNL_INLINE val operator()(const val &target, std::array<val, Argc> &&args, val *argv_out = {}) const &
+         { return _apply(*this, target, Argc, args.data(), argv_out); }
+      template<std::size_t Argc> MNL_INLINE val operator()(val &&target, std::array<val, Argc> &&args, val *argv_out = {}) const &
+         { return _apply(*this, _mv(target), Argc, args.data(), argv_out); }
+
+      MNL_INLINE val operator()(int argc, val argv[], val *argv_out = {}) const & { return _apply(*this, _mv(*argv), argc - 1, argv + 1, argv_out + 1); }
+
+      template<std::size_t Argc> MNL_INLINE val operator()(std::array<val, Argc> &&args, val *args_out = {}) const &
+         { return _apply(*this, Argc, args.data(), args_out); }
+
+      MNL_INLINE val operator()(const val &a0) const & { return _apply(*this, a0); }
+      MNL_INLINE val operator()(val &&a0) const & { return _apply(*this, _mv(a0)); }
+      MNL_INLINE val operator()(const sym &a0) const & { return _apply(*this, a0); }
+
+      MNL_INLINE val operator()(const val &a0, const val &a1) const & { return _apply(*this, a0, a1); }
+      MNL_INLINE val operator()(const val &a0, val &&a1) const & { return _apply(*this, a0, _mv(a1)); }
+      MNL_INLINE val operator()(const val &a0, const sym &a1) const & { return _apply(*this, a0, a1); }
+      MNL_INLINE val operator()(val &&a0, const val &a1) const & { return _apply(*this, _mv(a0), a1); }
+      MNL_INLINE val operator()(val &&a0, val &&a1) const & { return _apply(*this, _mv(a0), _mv(a1)); }
+      MNL_INLINE val operator()(val &&a0, const sym &a1) const & { return _apply(*this, _mv(a0), a1); }
+
+   private:
+      // _apply
+      template<typename Op, typename Target>          static val _apply(Op &&, Target &&, int argc, val [], val *argv_out);
+      template<typename Op>                           static val _apply(Op &&, int argc, val [], val *argv_out);
+      template<typename Op, typename A0>              static val _apply(Op &&, A0 &&);
+      template<typename Op, typename A0, typename A1> static val _apply(Op &&, A0 &&, A1 &&);
+
+
    private: // Concrete representation
       enum rep: unsigned short;
       enum rep rep; // "enum" is required as per ISO/IEC 14882:2011 S3.3.7 P1, although some C++ compilers do not issue any diagnostic message
@@ -280,19 +313,124 @@ namespace aux::pub {
    public:
       class root;
    public: // Convenience -- Functional application - !argc => !argv && !argv_out
-      template<typename ...It> MNL_INLINE val operator()(It &&...it) const & { return _apply(*this, std::forward<It>(it) ...); }
-      template<typename ...It> MNL_INLINE val operator()(It &&...it) && { return _apply(std::move(*this), std::forward<It>(it) ...); }
-      template<typename ...It> MNL_NODISCARD MNL_INLINE val repl(It &&...it) const & { return _repl(*this, std::forward<It>(it) ...); }
-      template<typename ...It> MNL_NODISCARD MNL_INLINE val repl(It &&...it) && { return _repl(std::move(*this), std::forward<It>(it) ...); }
+      template<typename ...It> MNL_INLINE val operator()(It &&...it) const & { return aux::_apply(*this, std::forward<It>(it) ...); }
+      template<typename ...It> MNL_INLINE val operator()(It &&...it) && { return aux::_apply(std::move(*this), std::forward<It>(it) ...); }
+      template<typename ...It> MNL_NODISCARD MNL_INLINE val repl(It &&...it) const & { return aux::_repl(*this, std::forward<It>(it) ...); }
+      template<typename ...It> MNL_NODISCARD MNL_INLINE val repl(It &&...it) && { return aux::_repl(std::move(*this), std::forward<It>(it) ...); }
    public:
       template<typename ...It> MNL_INLINE val operator()(void trace(const loc &), const loc &loc, It &&...it) const &
-         { return _apply(trace, loc, *this, std::forward<It>(it) ...); }
+         { try { return (*this)(std::forward<It>(it) ...); } catch (...) { trace(loc); } }
       template<typename ...It> MNL_INLINE val operator()(void trace(const loc &), const loc &loc, It &&...it) &&
-         { return _apply(trace, loc, std::move(*this), std::forward<It>(it) ...); }
-      template<typename ...It> MNL_INLINE val repl(void trace(const loc &), const loc &loc, It &&...it) const &
-         { return _repl(trace, loc, *this, std::forward<It>(it) ...); }
-      template<typename ...It> MNL_INLINE val repl(void trace(const loc &), const loc &loc, It &&...it) &&
-         { return _repl(trace, loc, std::move(*this), std::forward<It>(it) ...); }
+         { try { return std::move(*this)(std::forward<It>(it) ...); } catch (...) { trace(loc); } }
+      template<typename ...It> MNL_NODISCARD MNL_INLINE val repl(void trace(const loc &), const loc &loc, It &&...it) const &
+         { try { return (*this).repl(std::forward<It>(it) ...); } catch (...) { trace(loc); } }
+      template<typename ...It> MNL_NODISCARD MNL_INLINE val repl(void trace(const loc &), const loc &loc, It &&...it) &&
+         { try { return std::move(*this).repl(std::forward<It>(it) ...); } catch (...) { trace(loc); } }
+
+
+   public:
+      template<typename Arg0 = val,
+         std::enable_if_t<std::is_same_v<Arg0, val> || std::is_same_v<Arg0, const val &> || std::is_same_v<Arg0, const sym &>, int> = int{}>
+      MNL_INLINE val operator()(Arg0 &&arg0) const & { return _apply(*this, std::forward<Arg0>(arg0)); }
+      template<typename Arg0 = val,
+         std::enable_if_t<std::is_same_v<Arg0, val> || std::is_same_v<Arg0, const val &> || std::is_same_v<Arg0, const sym &>, int> = int{}>
+      MNL_INLINE val operator()(Arg0 &&arg0) && { return _apply(std::move(*this), std::forward<Arg0>(arg0)); }
+      template<typename Arg0 = val, typename Arg1 = val,
+         std::enable_if_t<std::is_same_v<Arg0, val> || std::is_same_v<Arg0, const val &>,                                      int> = int{}>
+         std::enable_if_t<std::is_same_v<Arg1, val> || std::is_same_v<Arg1, const val &> || std::is_same_v<Arg1, const sym &>, int> = int{}>
+      MNL_INLINE val operator()(Arg0 &&arg0) const & { return _apply(*this, std::forward<Arg0>(arg0), std::forward<Arg1>(arg1)); }
+      template<typename Arg0 = val, typename Arg1 = val,
+         std::enable_if_t<std::is_same_v<Arg0, val> || std::is_same_v<Arg0, const val &>,                                      int> = int{}>
+         std::enable_if_t<std::is_same_v<Arg1, val> || std::is_same_v<Arg1, const val &> || std::is_same_v<Arg1, const sym &>, int> = int{}>
+      MNL_INLINE val operator()(Arg0 &&arg0) && { return _apply(std::move(*this), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1))); }
+
+
+
+
+      MNL_INLINE val operator()(int argc, val argv[], val *argv_out = {}) const & { return _apply(*this, argc, argv, argv_out); }
+      MNL_INLINE val operator()(int argc, val argv[], val *argv_out = {}) && { return _apply(_mv(*this), argc, argv, argv_out); }
+
+      template<std::size_t Argc>
+      MNL_INLINE val operator()(std::array<val, Argc> &&args, val *args_out = {}) const & { return _apply(*this, Argc, args.data(), args_out); }
+      template<std::size_t Argc>
+      MNL_INLINE val operator()(std::array<val, Argc> &&args, val *args_out = {}) && { return _apply(_mv(*this), Argc, args.data(), args_out); }
+
+      MNL_INLINE val operator()() const & { return _apply(*this, 0, {}); }
+      MNL_INLINE val operator()() && { return _apply(_mv(*this), 0, {}); }
+
+      MNL_INLINE val operator()(const val &a0) const & { return _apply(*this, a0); }
+      MNL_INLINE val operator()(val &&a0) const & { return _apply(*this, _mv(a0)); }
+      MNL_INLINE val operator()(const sym &a0) const & { return _apply(*this, a0); }
+      MNL_INLINE val operator()(const val &a0) && { return _apply(_mv(*this), a0); }
+      MNL_INLINE val operator()(val &&a0) && { return _apply(_mv(*this), _mv(a0)); }
+      MNL_INLINE val operator()(const sym &a0) && { return _apply(_mv(*this), a0); }
+
+      MNL_INLINE val operator()(const val &a0, const val &a1) const & { return _apply(*this, a0, a1); }
+      MNL_INLINE val operator()(const val &a0, val &&a1) const & { return _apply(*this, a0, _mv(a1)); }
+      MNL_INLINE val operator()(const val &a0, const sym &a1) const & { return _apply(*this, a0, a1); }
+      MNL_INLINE val operator()(val &&a0, const val &a1) const & { return _apply(*this, _mv(a0), a1); }
+      MNL_INLINE val operator()(val &&a0, val &&a1) const & { return _apply(*this, _mv(a0), _mv(a1)); }
+      MNL_INLINE val operator()(val &&a0, const sym &a1) const & { return _apply(*this, _mv(a0), a1); }
+      MNL_INLINE val operator()(const val &a0, const val &a1) && { return _apply(_mv(*this), a0, a1); }
+      MNL_INLINE val operator()(const val &a0, val &&a1) && { return _apply(_mv(*this), a0, _mv(a1)); }
+      MNL_INLINE val operator()(const val &a0, const sym &a1) && { return _apply(_mv(*this), a0, a1); }
+      MNL_INLINE val operator()(val &&a0, const val &a1) && { return _apply(_mv(*this), _mv(a0), a1); }
+      MNL_INLINE val operator()(val &&a0, val &&a1) && { return _apply(_mv(*this), _mv(a0), _mv(a1)); }
+      MNL_INLINE val operator()(val &&a0, const sym &a1) && { return _apply(_mv(*this), _mv(a0), a1); }
+
+      MNL_INLINE val repl(const val &a0, const val &a1) const & { return _repl(*this, a0, a1); }
+      MNL_INLINE val repl(const val &a0, val &&a1) const & { return _repl(*this, a0, _mv(a1)); }
+      MNL_INLINE val repl(val &&a0, const val &a1) const & { return _repl(*this, _mv(a0), a1); }
+      MNL_INLINE val repl(val &&a0, val &&a1) const & { return _repl(*this, _mv(a0), _mv(a1)); }
+      MNL_INLINE val repl(const sym &a0, const val &a1) const & { return _repl(*this, a0, a1); }
+      MNL_INLINE val repl(const sym &a0, val &&a1) const & { return _repl(*this, a0, _mv(a1)); }
+      MNL_INLINE val repl(const val &a0, const val &a1) && { return _repl(_mv(*this), a0, a1); }
+      MNL_INLINE val repl(const val &a0, val &&a1) && { return _repl(_mv(*this), a0, _mv(a1)); }
+      MNL_INLINE val repl(val &&a0, const val &a1) && { return _repl(_mv(*this), _mv(a0), a1); }
+      MNL_INLINE val repl(val &&a0, val &&a1) && { return _repl(_mv(*this), _mv(a0), _mv(a1)); }
+      MNL_INLINE val repl(const sym &a0, const val &a1) && { return _repl(_mv(*this), a0, a1); }
+      MNL_INLINE val repl(const sym &a0, val &&a1) && { return _repl(_mv(*this), a0, _mv(a1)); }
+
+      MNL_INLINE val repl(const val &a0, const val &a1, const val &a2) const & { return _repl(*this, a0, a1, a2); }
+      MNL_INLINE val repl(const val &a0, const val &a1, val &&a2) const & { return _repl(*this, a0, a1, _mv(a2)); }
+      MNL_INLINE val repl(const val &a0, val &&a1, const val &a2) const & { return _repl(*this, a0, _mv(a1), a2); }
+      MNL_INLINE val repl(const val &a0, val &&a1, val &&a2) const & { return _repl(*this, a0, _mv(a1), _mv(a2)); }
+      MNL_INLINE val repl(const val &a0, const sym &a1, const val &a2) const & { return _repl(*this, a0, a1, a2); }
+      MNL_INLINE val repl(const val &a0, const sym &a1, val &&a2) const & { return _repl(*this, a0, a1, _mv(a2)); }
+      MNL_INLINE val repl(val &&a0, const val &a1, const val &a2) const & { return _repl(*this, _mv(a0), a1, a2); }
+      MNL_INLINE val repl(val &&a0, const val &a1, val &&a2) const & { return _repl(*this, _mv(a0), a1, _mv(a2)); }
+      MNL_INLINE val repl(val &&a0, val &&a1, const val &a2) const & { return _repl(*this, _mv(a0), _mv(a1), a2); }
+      MNL_INLINE val repl(val &&a0, val &&a1, val &&a2) const & { return _repl(*this, _mv(a0), _mv(a1), _mv(a2)); }
+      MNL_INLINE val repl(val &&a0, const sym &a1, const val &a2) const & { return _repl(*this, _mv(a0), a1, a2); }
+      MNL_INLINE val repl(val &&a0, const sym &a1, val &&a2) const & { return _repl(*this, _mv(a0), a1, _mv(a2)); }
+      MNL_INLINE val repl(const val &a0, const val &a1, const val &a2) && { return _repl(_mv(*this), a0, a1, a2); }
+      MNL_INLINE val repl(const val &a0, const val &a1, val &&a2) && { return _repl(_mv(*this), a0, a1, _mv(a2)); }
+      MNL_INLINE val repl(const val &a0, val &&a1, const val &a2) && { return _repl(_mv(*this), a0, _mv(a1), a2); }
+      MNL_INLINE val repl(const val &a0, val &&a1, val &&a2) && { return _repl(_mv(*this), a0, _mv(a1), _mv(a2)); }
+      MNL_INLINE val repl(const val &a0, const sym &a1, const val &a2) && { return _repl(_mv(*this), a0, a1, a2); }
+      MNL_INLINE val repl(const val &a0, const sym &a1, val &&a2) && { return _repl(_mv(*this), a0, a1, _mv(a2)); }
+      MNL_INLINE val repl(val &&a0, const val &a1, const val &a2) && { return _repl(_mv(*this), _mv(a0), a1, a2); }
+      MNL_INLINE val repl(val &&a0, const val &a1, val &&a2) && { return _repl(_mv(*this), _mv(a0), a1, _mv(a2)); }
+      MNL_INLINE val repl(val &&a0, val &&a1, const val &a2) && { return _repl(_mv(*this), _mv(a0), _mv(a1), a2); }
+      MNL_INLINE val repl(val &&a0, val &&a1, val &&a2) && { return _repl(_mv(*this), _mv(a0), _mv(a1), _mv(a2)); }
+      MNL_INLINE val repl(val &&a0, const sym &a1, const val &a2) && { return _repl(_mv(*this), _mv(a0), a1, a2); }
+      MNL_INLINE val repl(val &&a0, const sym &a1, val &&a2) && { return _repl(_mv(*this), _mv(a0), a1, _mv(a2)); }
+
+   private:
+      // _apply
+      template<typename Target>                           static val _apply(Target &&, int argc, val [], val *argv_out);
+      template<typename Target, typename A0>              static val _apply(Target &&, A0 &&);
+      template<typename Target, typename A0, typename A1> static val _apply(Target &&, A0 &&, A1 &&);
+      // _repl
+      template<typename Target, typename A0, typename A1>              static val _repl(Target &&, A0 &&, A1 &&);
+      template<typename Target, typename A0, typename A1, typename A2> static val _repl(Target &&, A0 &&, A1 &&, A2 &&);
+
+   public: // TODO: not needed
+
+      template<typename Arg1, typename Arg2> MNL_INLINE val operator()(It &&...it) const & { return aux::_apply(*this, std::forward<It>(it) ...); }
+      template<typename ...It> MNL_INLINE val operator()(It &&...it) && { return aux::_apply(std::move(*this), std::forward<It>(it) ...); }
+
+
    public: // Convenience -- Direct comparison with other types
       bool operator==(decltype(nullptr)) const noexcept, operator==(const sym &) const noexcept;
       MNL_INLINE bool operator!=(decltype(nullptr)) const noexcept { return !(*this == nullptr); }
@@ -898,9 +1036,9 @@ namespace aux { namespace pub {
    public: // Construction -- Implicit conversion (to) + Compilation/execution operations
       template<typename Dat> code(Dat dat): rep(new box<Dat>{std::move(dat)}) {}
       MNL_INLINE code compile(const form &form, const loc &loc) && { return rep->compile(std::move(*this), form, loc); }
-      MNL_INLINE val  execute(bool fast_sh = {}) const { return rep->execute(fast_sh); }
-      MNL_INLINE void exec_nores(bool fast_sh = {}) const { rep->exec_nores(fast_sh); }
-      MNL_INLINE void exec_in(const val &value) const { exec_in((val)value); }
+      MNL_INLINE val  execute(bool fast_sig = {}) const { return rep->execute(fast_sig); }
+      MNL_INLINE void exec_nores(bool fast_sig = {}) const { rep->exec_nores(fast_sig); }
+      MNL_INLINE void exec_in(const val &value) const { rep->exec_in(value); }
       MNL_INLINE void exec_in(val &&value) const { rep->exec_in(std::move(value)); }
       MNL_INLINE val  exec_out() const { return rep->exec_out(); }
       MNL_INLINE bool is_rvalue() const noexcept { return rep->is_rvalue(); }
@@ -920,9 +1058,10 @@ namespace aux { namespace pub {
          root(root &&) = delete; // can only be constructed/destructed (not movied or copied)
          virtual ~root() = default;
          virtual code compile(code &&self, const form &, const loc &) const = 0;
-         virtual val  execute(bool fast_sh) const = 0;
-         virtual void exec_nores(bool fast_sh) const = 0;
-         virtual void exec_in(val &&) const = 0; // concrete dat (e.g., expr_tv) may have Dat::exec_in(long long) etc. for optimization purposes
+         virtual val  execute(bool fast_sig) const = 0;
+         virtual void exec_nores(bool fast_sig) const = 0;
+         virtual void exec_in(const val &) const = 0;            // concrete dat (e.g., expr_tv) may have Dat::exec_in(long long) etc. for optimization purposes
+         virtual void exec_in(val &&) const = 0;
          virtual val  exec_out() const = 0;
          virtual bool is_rvalue() const noexcept = 0;
          virtual bool is_lvalue() const noexcept = 0; // shall imply is_rvalue()
@@ -933,8 +1072,9 @@ namespace aux { namespace pub {
          static_assert(std::is_base_of_v<nonvalue, Dat>);
          explicit box(Dat dat) noexcept: root{&tag}, dat(std::move(dat)) {}
          code compile(code &&self, const form &form, const loc &loc) const override { return dat.compile(move(self), form, loc); }
-         MNL_HOT val  execute(bool fast_sh) const override { return dat.execute(fast_sh); }
-         MNL_HOT void exec_nores(bool fast_sh) const override { dat.exec_nores(fast_sh); }
+         MNL_HOT val  execute(bool fast_sig) const override { return dat.execute(fast_sig); }
+         MNL_HOT void exec_nores(bool fast_sig) const override { dat.exec_nores(fast_sig); }
+         MNL_HOT void exec_in(const val &value) const override { dat.exec_in(value); }
          MNL_HOT void exec_in(val &&value) const override { dat.exec_in(std::move(value)); }
          MNL_HOT val  exec_out() const override { return dat.exec_out(); }
          bool is_rvalue() const noexcept override { return dat.is_rvalue(); }
@@ -962,8 +1102,8 @@ namespace aux { namespace pub {
 
    struct expr_nonvalue {
       static code compile(code &&self, const form &, const loc &) = delete;
-      MNL_INLINE static decltype(nullptr) execute(bool fast_sh) noexcept { MNL_UNREACHABLE(); }
-      MNL_INLINE static void exec_nores(bool fast_sh) noexcept { MNL_UNREACHABLE(); }
+      MNL_INLINE static decltype(nullptr) execute(bool fast_sig) noexcept { MNL_UNREACHABLE(); }
+      MNL_INLINE static void exec_nores(bool fast_sig) noexcept { MNL_UNREACHABLE(); }
       MNL_INLINE static void exec_in(val &&) noexcept { MNL_UNREACHABLE(); }
       MNL_INLINE static MNL_INLINE decltype(nullptr) exec_out() noexcept { MNL_UNREACHABLE(); }
       MNL_INLINE static bool is_rvalue() noexcept { return false; }

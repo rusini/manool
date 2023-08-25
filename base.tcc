@@ -35,7 +35,7 @@ namespace aux {
          std::is_same_v<Val, float> ||
          std::is_same_v<Val, const sym &> ||
          std::is_same_v<Val, bool> ||
-         std::is_same_v<Val, unsigned>);
+         std::is_same_v<Val, unsigned> );
    };
    template<typename Val> template<Val Value> struct expr_lit<Val>::_const/*ant*/: code::rvalue { // to produce value-specialized code paths in the translator
       MNL_INLINE static Val execute(bool = {}) noexcept { return Value; }
@@ -44,7 +44,8 @@ namespace aux {
    struct expr_tv: code::lvalue { // "temporary variable"
       int offset;
       MNL_INLINE const val &execute(bool = {}) const noexcept { return tv_stack[offset]; }
-      template<typename Val> MNL_INLINE void exec_in(Val &&value) const noexcept { tv_stack[offset].assign(std::forward<Val>(value)); }
+      MNL_INLINE void exec_in(const val &value) const noexcept { exec_in((val)value); }
+      MNL_INLINE void exec_in(val &&value) const noexcept { tv_stack[offset].swap(value); }
       MNL_INLINE val exec_out() const noexcept { return std::move(tv_stack[offset]); }
    };
 
@@ -59,30 +60,32 @@ namespace aux {
    template<class Target = code, class Arg0 = code> struct expr_apply1: code::lvalue { // application specialized for 1 argument
       Target target; Arg0 arg0; loc _loc;
    public:
-      MNL_INLINE val execute(bool = {}) const {
+      MNL_INLINE auto execute(bool = {}) const {
          auto &&arg0 = this->arg0.execute();
          return target.execute()(trace_execute, _loc, std::forward<decltype(arg0)>(arg0));
       }
       MNL_INLINE void exec_nores(bool = {}) const {
          execute();
       }
-      MNL_INLINE void exec_in(val &&value) const {
-         target.exec_in([&]() MNL_INLINE{
+      template<typename Val = decltype(nullptr)> MNL_INLINE void exec_in(Val &&value) const {
+         target.exec_in( [&]() MNL_INLINE{
             auto &&arg0 = this->arg0.execute();
-            return target.exec_out().repl(trace_exec_in, _loc, std::forward<decltype(arg0)>(arg0), std::move(value));
-         }());
+            return target.exec_out().repl(trace_exec_in, _loc, _fwd<decltype(arg0)>(arg0), _fwd<Val>(value) );
+         }() );
       }
       MNL_INLINE val exec_out() const {
          val argv_out[2];
-         target.exec_in([&]() MNL_INLINE{
+         target.exec_in( [&]() MNL_INLINE{
             val argv[std::size(argv_out)] = {arg0.execute()};
             return target.exec_out().repl(trace_exec_out, _loc, std::size(argv), argv, argv_out);
-         }());
+         }() );
          return std::move(argv_out[std::size(argv_out) - 1]);
       }
       MNL_INLINE bool is_lvalue() const noexcept {
          return target.is_lvalue();
       }
+   private:
+      template<typename Rhs> MNL_INLINE auto _fwd(Rhs &&rhs) noexcept { return std::forward<Rhs>(rhs); }
    };
    template<class Arg0> class expr_apply1<void, Arg0> {
    public:
@@ -106,25 +109,27 @@ namespace aux {
    template<class Target = code, class Arg0 = code, class Arg1 = code> struct expr_apply2: code::lvalue { // application specialized for 2 arguments
       Target target; Arg0 arg0; Arg1 arg1; loc _loc;
    public:
-      MNL_INLINE val execute(bool = {}) const {
+      MNL_INLINE auto execute(bool = {}) const {
          auto &&arg0 = this->arg0.execute(); auto &&arg1 = this->arg1.execute();
          return target.execute()(trace_execute, _loc, std::forward<decltype(arg0)>(arg0), std::forward<decltype(arg1)>(arg1));
       }
       MNL_INLINE void exec_nores(bool = {}) const {
          execute();
       }
-      MNL_INLINE void exec_in(val &&value) const {
-         target.exec_in([&]() MNL_INLINE{
-            auto &&arg0 = this->arg0.execute(); auto &&arg1 = this->arg1.execute();
-            return target.exec_out().repl(trace_exec_in, _loc, std::forward<decltype(arg0)>(arg0), std::forward<decltype(arg1)>(arg1), std::move(value));
-         }());
+      template<typename Val = val &&> MNL_INLINE void exec_in(Val &&value) const {
+         if (MNL_IS_CTFOLDABLE(target.is_lvalue()) && !target.is_lvalue()) MNL_UNREACHABLE();
+         target.exec_in( [&]() MNL_INLINE{
+            auto &&a0 = arg0.execute(); auto &&a1 = arg1.execute();
+            return target.exec_out().repl(trace_exec_in, _loc, std::forward<decltype(a0)>(a0), std::forward<decltype(a1)>(a1), std::forward<Val>(value));
+         }() );
       }
       MNL_INLINE val exec_out() const {
+         if (MNL_IS_CTFOLDABLE(target.is_lvalue()) && !target.is_lvalue()) MNL_UNREACHABLE();
          val argv_out[3];
-         target.exec_in([&]() MNL_INLINE{
+         target.exec_in( [&]() MNL_INLINE{
             val argv[std::size(argv_out)] = {arg0.execute(), arg1.execute()};
             return target.exec_out().repl(trace_exec_out, _loc, std::size(argv), argv, argv_out);
-         }());
+         }() );
          return std::move(argv_out[std::size(argv_out) - 1]);
       }
       MNL_INLINE bool is_lvalue() const noexcept {
