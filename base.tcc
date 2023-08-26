@@ -53,7 +53,7 @@ namespace aux {
 
    template<class Target = code> struct expr_apply0: code::rvalue { // application specialized for 0 arguments
       Target target; loc _loc;
-      MNL_INLINE val execute(bool = {}) const { return target.execute()(trace_execute, _loc); }
+      MNL_INLINE val execute(bool = {}) const { return MNL_SYM("Apply")(trace_execute, _loc, target.execute(), 0 , {}); }
       MNL_INLINE void exec_nores(bool = {}) const { execute(); }
    };
 
@@ -128,7 +128,7 @@ namespace aux {
          val argv_out[3];
          target.exec_in( [&]() MNL_INLINE{
             val argv[std::size(argv_out)] = {arg0.execute(), arg1.execute()};
-            return target.exec_out().repl(trace_exec_out, _loc, std::size(argv), argv, argv_out);
+            return MNL_SYM("Repl")(trace_exec_out, _loc, target.exec_out(), std::size(argv), argv, argv_out);
          }() );
          return std::move(argv_out[std::size(argv_out) - 1]);
       }
@@ -160,7 +160,12 @@ namespace aux {
    public:
       MNL_INLINE val execute(bool = {}) const {
          val argv[] = {arg0.execute(), arg1.execute(), arg2.execute()};
-         return target.execute()(trace_execute, _loc, std::size(argv), argv);
+         return MNL_SYM("Apply")(trace_execute, _loc, target.execute(), std::size(argv), argv);
+         //for target.execute() : const sym &:
+         val argv[] = {arg1.execute(), arg2.execute()};
+         return target.execute()(trace_execute, _loc, arg0.execute(), std::size(argv), argv);
+         // we cannot unify here, but: in practice we do not specialize by ArgN, so general code is used and so a general application interface is fine here for
+         // for target.execute() : const sym &
       }
       MNL_INLINE void exec_nores(bool = {}) const {
          execute();
@@ -168,14 +173,14 @@ namespace aux {
       MNL_INLINE void exec_in(val &&value) const {
          target.exec_in([&]() MNL_INLINE{
             val argv[] = {arg0.execute(), arg1.execute(), arg2.execute(), std::move(value)};
-            return target.exec_out().repl(trace_exec_in, _loc, std::size(argv), argv);
+            return MNL_SYM("Repl")(trace_exec_in, _loc, target.exec_out(), std::size(argv), argv, argv_out);
          }());
       }
       MNL_INLINE val exec_out() const {
          val argv_out[4];
          target.exec_in([&]() MNL_INLINE{
             val argv[std::size(argv_out)] = {arg0.execute(), arg1.execute(), arg2.execute()};
-            return target.exec_out().repl(trace_exec_out, _loc, std::size(argv), argv, argv_out);
+            return MNL_SYM("Repl")(trace_exec_out, _loc, target.exec_out(), std::size(argv), argv, argv_out);
          }());
          return std::move(argv_out[std::size(argv_out) - 1]);
       }
@@ -189,7 +194,7 @@ namespace aux {
    public:
       MNL_INLINE val execute(bool = {}) const {
          val argv[] = {arg0.execute(), arg1.execute(), arg2.execute(), arg3.execute()};
-         return target.execute()(trace_execute, _loc, std::size(argv), argv);
+         return MNL_SYM("Apply")(trace_execute, _loc, target.execute(), std::size(argv), argv);
       }
       MNL_INLINE void exec_nores(bool = {}) const {
          execute();
@@ -197,14 +202,14 @@ namespace aux {
       MNL_INLINE void exec_in(val &&value) const {
          target.exec_in([&]() MNL_INLINE{
             val argv[] = {arg0.execute(), arg1.execute(), arg2.execute(), arg3.execute(), std::move(value)};
-            return target.exec_out().repl(trace_exec_in, _loc, std::size(argv), argv);
+            return MNL_SYM("Repl")(trace_exec_in, _loc, target.exec_out(), std::size(argv), argv, argv_out);
          }());
       }
       MNL_INLINE val exec_out() const {
          val argv_out[5];
          target.exec_in([&]() MNL_INLINE{
             val argv[std::size(argv_out)] = {arg0.execute(), arg1.execute(), arg2.execute(), arg3.execute()};
-            return target.exec_out().repl(trace_exec_out, _loc, std::size(argv), argv, argv_out);
+            return MNL_SYM("Repl")(trace_exec_out, _loc, target.exec_out(), std::size(argv), argv, argv_out);
          }());
          return std::move(argv_out[std::size(argv_out) - 1]);
       }

@@ -621,46 +621,46 @@ namespace aux::pub {
       virtual val _invoke(val &&me, const sym &op, int argc, val [], val *argv_out) = 0;
    private:
       // For one argument (6 VMT entries)
-      virtual val _apply(const val &self, const val &) = 0;
-      virtual val _apply(const val &self, val &&) = 0;
-      virtual val _apply(const val &self, const sym &) = 0;
-      virtual val _apply(val &&self, const val &) = 0;
-      virtual val _apply(val &&self, val &&) = 0;
-      virtual val _apply(val &&self, const sym &) = 0;
+      virtual val _apply(const val &me, const val &) = 0;
+      virtual val _apply(const val &me, val &&) = 0;
+      virtual val _apply(const val &me, const sym &) = 0;
+      virtual val _apply(val &&me, const val &) = 0;
+      virtual val _apply(val &&me, val &&) = 0;
+      virtual val _apply(val &&me, const sym &) = 0;
       // For two arguments (12 VMT entries)
-      virtual val _apply(const val &self, const val &, const val &) = 0;
-      virtual val _apply(const val &self, const val &, val &&) = 0;
-      virtual val _apply(const val &self, const val &, const sym &) = 0;
-      virtual val _apply(const val &self, val &&, const val &) = 0;
-      virtual val _apply(const val &self, val &&, val &&) = 0;
-      virtual val _apply(const val &self, val &&, const sym &) = 0;
-      virtual val _apply(val &&self, const val &, const val &) = 0;
-      virtual val _apply(val &&self, const val &, val &&) = 0;
-      virtual val _apply(val &&self, const val &, const sym &) = 0;
-      virtual val _apply(val &&self, val &&, const val &) = 0;
-      virtual val _apply(val &&self, val &&, val &&) = 0;
-      virtual val _apply(val &&self, val &&, const sym &) = 0;
+      virtual val _apply(const val &me, const val &, const val &) = 0;
+      virtual val _apply(const val &me, const val &, val &&) = 0;
+      virtual val _apply(const val &me, const val &, const sym &) = 0;
+      virtual val _apply(const val &me, val &&, const val &) = 0;
+      virtual val _apply(const val &me, val &&, val &&) = 0;
+      virtual val _apply(const val &me, val &&, const sym &) = 0;
+      virtual val _apply(val &&me, const val &, const val &) = 0;
+      virtual val _apply(val &&me, const val &, val &&) = 0;
+      virtual val _apply(val &&me, const val &, const sym &) = 0;
+      virtual val _apply(val &&me, val &&, const val &) = 0;
+      virtual val _apply(val &&me, val &&, val &&) = 0;
+      virtual val _apply(val &&me, val &&, const sym &) = 0;
    private:
       // For two arguments (6 VMT entries)
-      virtual val _repl(const val &self, const val &, val &&) = 0;
-      virtual val _repl(const val &self, val &&, val &&) = 0;
-      virtual val _repl(const val &self, const sym &, val &&) = 0;
-      virtual val _repl(val &&self, const val &, val &&) = 0;
-      virtual val _repl(val &&self, val &&, val &&) = 0;
-      virtual val _repl(val &&self, const sym &, val &&) = 0;
+      virtual val _repl(val &&me, const val &, const val &) = 0;
+      virtual val _repl(val &&me, const val &, val &&) = 0;
+      virtual val _repl(val &&me, val &&, const val &) = 0;
+      virtual val _repl(val &&me, val &&, val &&) = 0;
+      virtual val _repl(val &&me, const sym &, const val &) = 0;
+      virtual val _repl(val &&me, const sym &, val &&) = 0;
       // For three arguments (12 VMT entries)
-      virtual val _repl(const val &self, const val &, const val &, val &&) = 0;
-      virtual val _repl(const val &self, const val &, val &&, val &&) = 0;
-      virtual val _repl(const val &self, const val &, const sym &, val &&) = 0;
-      virtual val _repl(const val &self, val &&, const val &, val &&) = 0;
-      virtual val _repl(const val &self, val &&, val &&, val &&) = 0;
-      virtual val _repl(const val &self, val &&, const sym &, val &&) = 0;
-      virtual val _repl(val &&self, const val &, const val &, val &&) = 0;
-      virtual val _repl(val &&self, const val &, val &&, val &&) = 0;
-      virtual val _repl(val &&self, const val &, const sym &, val &&) = 0;
-      virtual val _repl(val &&self, val &&, const val &, val &&) = 0;
-      virtual val _repl(val &&self, val &&, val &&, val &&) = 0;
-      virtual val _repl(val &&self, val &&, const sym &, val &&) = 0;
+      virtual val _repl(val &&me, const val &, const val &, const val &) = 0;
+      virtual val _repl(val &&me, const val &, const val &, val &&) = 0;
+      virtual val _repl(val &&me, const val &, val &&, const val &) = 0;
+      virtual val _repl(val &&me, const val &, val &&, val &&) = 0;
+      virtual val _repl(val &&me, const val &, const sym &, const val &) = 0;
+      virtual val _repl(val &&me, const val &, const sym &, val &&) = 0;
+      virtual val _repl(val &&me, val &&, const val &, const val &) = 0;
+      virtual val _repl(val &&me, val &&, const val &, val &&) = 0;
+      virtual val _repl(val &&me, val &&, val &&, const val &) = 0;
+      virtual val _repl(val &&me, val &&, val &&, val &&) = 0;
+      virtual val _repl(val &&me, val &&, const sym &, const val &) = 0;
+      virtual val _repl(val &&me, val &&, const sym &, val &&) = 0;
    public: // Friendship
       friend sym;
       friend val;
@@ -740,52 +740,52 @@ namespace aux::pub {
       ~box() {}
       friend val;
    private: // 38 VMT entries
-      MNL_NOINLINE MNL_HOT val _invoke(const val &self, const sym &op, int argc, val argv[], val *argv_out = {}) override
-         { return invoke(self, op, argv, argv_out); }
-      MNL_NOINLINE MNL_HOT val _invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out = {}) override
-         { return invoke(_mv(self), op, argv, argv_out); }
+      MNL_NOINLINE MNL_HOT val _invoke(const val &me, const sym &op, int argc, val argv[], val *argv_out = {}) override
+         { return invoke(me, op, argv, argv_out); }
+      MNL_NOINLINE MNL_HOT val _invoke(val &&me, const sym &op, int argc, val argv[], val *argv_out = {}) override
+         { return invoke(_mv(me), op, argv, argv_out); }
    private:
       // For one argument (6 VMT entries)
-      MNL_HOT val _apply(const val &self, const val &arg0) override { return apply(self, arg0); }
-      MNL_HOT val _apply(const val &self, val &&arg0) override { return apply(self, _mv(arg0)); }
-      MNL_HOT val _apply(const val &self, const sym &arg0) override { return apply(self, arg0); }
-      MNL_HOT val _apply(val &&self, const val &arg0) override { return apply(_mv(self), arg0); }
-      MNL_HOT val _apply(val &&self, val &&arg0) override { return apply(_mv(self), _mv(arg0)); }
-      MNL_HOT val _apply(val &&self, const sym &arg0) override { return apply(_mv(self), arg0); }
+      MNL_HOT val _apply(const val &me, const val &a0) override { return apply(me, a0); }
+      MNL_HOT val _apply(const val &me, val &&a0) override { return apply(me, _mv(a0)); }
+      MNL_HOT val _apply(const val &me, const sym &a0) override { return apply(me, a0); }
+      MNL_HOT val _apply(val &&me, const val &a0) override { return apply(_mv(me), a0); }
+      MNL_HOT val _apply(val &&me, val &&a0) override { return apply(_mv(me), _mv(a0)); }
+      MNL_HOT val _apply(val &&me, const sym &a0) override { return apply(_mv(me), a0); }
       // For two arguments (12 VMT entries)
-      MNL_HOT val _apply(const val &self, const val &arg0, const val &arg1) override { return apply(self, arg0, arg1); }
-      MNL_HOT val _apply(const val &self, const val &arg0, val &&arg1) override { return apply(self, arg0, _mv(arg1)); }
-      MNL_HOT val _apply(const val &self, const val &arg0, const sym &arg1) override { return apply(self, arg0, arg1); }
-      MNL_HOT val _apply(const val &self, val &&arg0, const val &arg1) override { return apply(self, _mv(arg0), arg1); }
-      MNL_HOT val _apply(const val &self, val &&arg0, val &&arg1) override { return apply(self, _mv(arg0), _mv(arg1)); }
-      MNL_HOT val _apply(const val &self, val &&arg0, const sym &arg1) override { return apply(self, _mv(arg0), arg1); }
-      MNL_HOT val _apply(val &&self, const val &arg0, const val &arg1) override { return apply(_mv(self), arg0, arg1); }
-      MNL_HOT val _apply(val &&self, const val &arg0, val &&arg1) override { return apply(_mv(self), arg0, _mv(arg1)); }
-      MNL_HOT val _apply(val &&self, const val &arg0, const sym &arg1) override { return apply(_mv(self), arg0, arg1); }
-      MNL_HOT val _apply(val &&self, val &&arg0, const val &arg1) override { return apply(_mv(self), _mv(arg0), arg1); }
-      MNL_HOT val _apply(val &&self, val &&arg0, val &&arg1) override { return apply(_mv(self), _mv(arg0), _mv(arg1)); }
-      MNL_HOT val _apply(val &&self, val &&arg0, const sym &arg1) override { return apply(_mv(self), _mv(arg0), arg1); }
+      MNL_HOT val _apply(const val &me, const val &a0, const val &a1) override { return apply(me, a0, a1); }
+      MNL_HOT val _apply(const val &me, const val &a0, val &&a1) override { return apply(me, a0, _mv(a1)); }
+      MNL_HOT val _apply(const val &me, const val &a0, const sym &a1) override { return apply(me, a0, a1); }
+      MNL_HOT val _apply(const val &me, val &&a0, const val &a1) override { return apply(me, _mv(a0), a1); }
+      MNL_HOT val _apply(const val &me, val &&a0, val &&a1) override { return apply(me, _mv(a0), _mv(a1)); }
+      MNL_HOT val _apply(const val &me, val &&a0, const sym &a1) override { return apply(me, _mv(a0), a1); }
+      MNL_HOT val _apply(val &&me, const val &a0, const val &a1) override { return apply(_mv(me), a0, a1); }
+      MNL_HOT val _apply(val &&me, const val &a0, val &&a1) override { return apply(_mv(me), a0, _mv(a1)); }
+      MNL_HOT val _apply(val &&me, const val &a0, const sym &a1) override { return apply(_mv(me), a0, a1); }
+      MNL_HOT val _apply(val &&me, val &&a0, const val &a1) override { return apply(_mv(me), _mv(a0), a1); }
+      MNL_HOT val _apply(val &&me, val &&a0, val &&a1) override { return apply(_mv(me), _mv(a0), _mv(a1)); }
+      MNL_HOT val _apply(val &&me, val &&a0, const sym &a1) override { return apply(_mv(me), _mv(a0), a1); }
    private:
-      // For two arguments (6 VMT entries) TODO: maybe we do need const val &arg1 for the case of strings etc???
-      MNL_HOT val _repl(const val &self, const val &arg0, val &&arg1) override { return repl(self, arg0, _mv(arg1)); }
-      MNL_HOT val _repl(const val &self, val &&arg0, val &&arg1) override { return repl(self, _mv(arg0), _mv(arg1)); }
-      MNL_HOT val _repl(const val &self, const sym &arg0, val &&arg1) override { return repl(self, arg0, _mv(arg1)); }
-      MNL_HOT val _repl(val &&self, const val &arg0, val &&arg1) override { return repl(_mv(self), arg0, _mv(arg1)); }
-      MNL_HOT val _repl(val &&self, val &&arg0, val &&arg1) override { return repl(_mv(self), _mv(arg0), _mv(arg1)); }
-      MNL_HOT val _repl(val &&self, const sym &arg0, val &&arg1) override { return repl(_mv(self), arg0, _mv(arg1)); }
+      // For two arguments (6 VMT entries)
+      MNL_HOT val _repl(val &&me, const val &a0, const val &a1) override { return repl(_mv(me), a0, a1); }
+      MNL_HOT val _repl(val &&me, const val &a0, val &&a1) override { return repl(_mv(me), a0, _mv(a1)); }
+      MNL_HOT val _repl(val &&me, val &&a0, const val &a1) override { return repl(_mv(me), _mv(a0), a1); }
+      MNL_HOT val _repl(val &&me, val &&a0, val &&a1) override { return repl(_mv(me), _mv(a0), _mv(a1)); }
+      MNL_HOT val _repl(val &&me, const sym &a0, const val &a1) override { return repl(_mv(me), a0, a1); }
+      MNL_HOT val _repl(val &&me, const sym &a0, val &&a1) override { return repl(_mv(me), a0, _mv(a1)); }
       // For three arguments (12 VMT entries)
-      MNL_HOT val _repl(const val &self, const val &arg0, const val &arg1, val &&arg2) override { return repl(self, arg0, arg1, _mv(arg2)); }
-      MNL_HOT val _repl(const val &self, const val &arg0, val &&arg1, val &&arg2) override { return repl(self, arg0, _mv(arg1), _mv(arg2)); }
-      MNL_HOT val _repl(const val &self, const val &arg0, const sym &arg1, val &&arg2) override { return repl(self, arg0, arg1, _mv(arg2)); }
-      MNL_HOT val _repl(const val &self, val &&arg0, const val &arg1, val &&arg2) override { return repl(self, _mv(arg0), arg1, _mv(arg2)); }
-      MNL_HOT val _repl(const val &self, val &&arg0, val &&arg1, val &&arg2) override { return repl(self, _mv(arg0), _mv(arg1), _mv(arg2)); }
-      MNL_HOT val _repl(const val &self, val &&arg0, const sym &arg1, val &&arg2) override { return repl(self, _mv(arg0), arg1, _mv(arg2)); }
-      MNL_HOT val _repl(val &&self, const val &arg0, const val &arg1, val &&arg2) override { return repl(_mv(self), arg0, arg1, _mv(arg2)); }
-      MNL_HOT val _repl(val &&self, const val &arg0, val &&arg1, val &&arg2) override { return repl(_mv(self), arg0, _mv(arg1), _mv(arg2)); }
-      MNL_HOT val _repl(val &&self, const val &arg0, const sym &arg1, val &&arg2) override { return repl(_mv(self), arg0, arg1, _mv(arg2)); }
-      MNL_HOT val _repl(val &&self, val &&arg0, const val &arg1, val &&arg2) override { return repl(_mv(self), _mv(arg0), arg1, _mv(arg2)); }
-      MNL_HOT val _repl(val &&self, val &&arg0, val &&arg1, val &&arg2) override { return repl(_mv(self), _mv(arg0), _mv(arg1), _mv(arg2)); }
-      MNL_HOT val _repl(val &&self, val &&arg0, const sym &arg1, val &&arg2) override { return repl(_mv(self), _mv(arg0), arg1, _mv(arg2)); }
+      MNL_HOT val _repl(val &&me, const val &a0, const val &a1, const val &a2) override { return repl(_mv(me), a0, a1, a2); }
+      MNL_HOT val _repl(val &&me, const val &a0, const val &a1, val &&a2) override { return repl(_mv(me), a0, a1, _mv(a2)); }
+      MNL_HOT val _repl(val &&me, const val &a0, val &&a1, const val &a2) override { return repl(_mv(me), a0, _mv(a1), a2); }
+      MNL_HOT val _repl(val &&me, const val &a0, val &&a1, val &&a2) override { return repl(_mv(me), a0, _mv(a1), _mv(a2)); }
+      MNL_HOT val _repl(val &&me, const val &a0, const sym &a1, const val &a2) override { return repl(_mv(me), a0, a1, a2); }
+      MNL_HOT val _repl(val &&me, const val &a0, const sym &a1, val &&a2) override { return repl(_mv(me), a0, a1, _mv(a2)); }
+      MNL_HOT val _repl(val &&me, val &&a0, const val &a1, const val &a2) override { return repl(_mv(me), _mv(a0), a1, a2); }
+      MNL_HOT val _repl(val &&me, val &&a0, const val &a1, val &&a2) override { return repl(_mv(me), _mv(a0), a1, _mv(a2)); }
+      MNL_HOT val _repl(val &&me, val &&a0, val &&a1, const val &a2) override { return repl(_mv(me), _mv(a0), _mv(a1), a2); }
+      MNL_HOT val _repl(val &&me, val &&a0, val &&a1, val &&a2) override { return repl(_mv(me), _mv(a0), _mv(a1), _mv(a2)); }
+      MNL_HOT val _repl(val &&me, val &&a0, const sym &a1, const val &a2) override { return repl(_mv(me), _mv(a0), a1, a2); }
+      MNL_HOT val _repl(val &&me, val &&a0, const sym &a1, val &&a2) override { return repl(_mv(me), _mv(a0), a1, _mv(a2)); }
    private:
       template<typename Rhs> MNL_INLINE auto _mv(Rhs &&rhs) noexcept { return std::move(rhs); }
    private: // User-specializable
