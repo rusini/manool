@@ -22,23 +22,19 @@ namespace aux {
 
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   template<typename Val = val> struct expr_lit/*eral*/: code::rvalue { // constant value evaluated before evaluation of an expression, during its compilation
-      Val value;
-   public:
-      MNL_INLINE std::conditional_t<
-         std::is_trivially_copy_constructible_v<Val> &&
-         std::is_trivially_copyable_v<Val> && sizeof(Val) <= 2 * sizeof(long),
-         Val, const Val & >
-      execute(bool = {}) const noexcept { return value; }
+   template<typename Val = const val &, typename Value = std::remove_cv_t<std::remove_reference_t<Val>>>
+   struct expr_lit/*eral*/: code::rvalue { // constant value evaluated before evaluation of an expression, during its compilation
+      Value value;
+      MNL_INLINE Val execute(bool = {}) const noexcept(noexcept(Val(value))) { return value; }
    };
    template<typename Val = decltype(nullptr)> expr_lit(Val)->expr_lit<Val>;
 
-   struct expr_tv: code::lvalue { // "temporary variable"
+   struct expr_tvar: code::lvalue { // "temporary variable"
       int offset;
-      MNL_INLINE const val &execute(bool = {}) const noexcept { return tv_stack[offset]; }
+      MNL_INLINE const val &execute(bool = {}) const noexcept { return tvar_stack[offset]; }
       MNL_INLINE void exec_in(const val &value) const noexcept { exec_in((val)value); }
-      MNL_INLINE void exec_in(val &&value) const noexcept { tv_stack[offset].swap(value); }
-      MNL_INLINE val exec_out() const noexcept { return std::move(tv_stack[offset]); }
+      MNL_INLINE void exec_in(val &&value) const noexcept { tvar_stack[offset].swap(value); }
+      MNL_INLINE val exec_out() const noexcept { return std::move(tvar_stack[offset]); }
    };
 
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
