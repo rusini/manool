@@ -22,24 +22,16 @@ namespace aux {
 
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   template<typename Val = const val &> struct expr_lit/*eral*/: code::rvalue { // constant value known by MANOOL translator at compile time
-      std::remove_cv_t<std::remove_reference_t<Val>> value;
-      MNL_INLINE Val execute(bool = {}) const noexcept { return value; }
-      template<Val> struct _const;
-   private: // What types actually make sense and do not eventually cause more run-time performance problems than they solve
-      static_assert( // (this also corresponds to the set of overloads for `exec_in` in `code::root`)
-         std::is_same_v<Val, const val &> ||
-         std::is_same_v<Val, decltype(nullptr)> ||
-         std::is_same_v<Val, long long> ||
-         std::is_same_v<Val, double> ||
-         std::is_same_v<Val, float> ||
-         std::is_same_v<Val, const sym &> ||
-         std::is_same_v<Val, bool> ||
-         std::is_same_v<Val, unsigned> );
+   template<typename Val = val> struct expr_lit/*eral*/: code::rvalue { // constant value evaluated before evaluation of an expression, during its compilation
+      Val value;
+   public:
+      MNL_INLINE std::conditional_t<
+         std::is_trivially_copy_constructible_v<Val> &&
+         std::is_trivially_copyable_v<Val> && sizeof(Val) <= 2 * sizeof(long),
+         Val, const Val & >
+      execute(bool = {}) const noexcept { return value; }
    };
-   template<typename Val> template<Val Value> struct expr_lit<Val>::_const/*ant*/: code::rvalue { // to produce value-specialized code paths in the translator
-      MNL_INLINE static Val execute(bool = {}) noexcept { return Value; }
-   };
+   template<typename Val = decltype(nullptr)> expr_lit(Val)->expr_lit<Val>;
 
    struct expr_tv: code::lvalue { // "temporary variable"
       int offset;
@@ -70,7 +62,7 @@ namespace aux {
          execute();
       }
       template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
-         if (!target.maybe_lvalue())) MNL_UNREACHABLE();
+         if constexpr (!maybe_lvalue) MNL_UNREACHABLE();
          target.exec_in( [&]() MNL_INLINE{
             auto &&arg0 = this->arg0.execute(); val target = this->target.exec_out();
             try {
@@ -79,7 +71,7 @@ namespace aux {
          }() );
       }
       MNL_INLINE val exec_out() const {
-         if (MNL_IS_CTFOLDABLE(target.is_lvalue()) && !target.is_lvalue()) MNL_UNREACHABLE();
+         if constexpr (!maybe_lvalue) MNL_UNREACHABLE();
          val argv_out[2 + 1];
          target.exec_in( [&]() MNL_INLINE{
             val argv[std::size(argv_out) - 1] = {arg0.execute()}, target = this->target.exec_out();
@@ -89,9 +81,8 @@ namespace aux {
          }() );
          return std::move(argv_out[std::size(argv_out) - 1]);
       }
-      MNL_INLINE bool is_lvalue() const noexcept {
-         return target.is_lvalue();
-      }
+      static constexpr bool maybe_lvalue = Target::maybe_lvalue;
+      MNL_INLINE bool is_lvalue() const noexcept { return target.is_lvalue(); }
    };
    template<class Arg0> class expr_apply1<void, Arg0> {
    public:
@@ -128,7 +119,7 @@ namespace aux {
       MNL_INLINE void exec_in(val &&value) const { _exec_in(std::move(value)); }
    private:
       template<typename Val> MNL_INLINE void _exec_in(Val &&value) const {
-         if constexpr (!Target::maybe_lvalue) MNL_UNREACHABLE();
+         if (!std::is_member_function_pointer_v<decltype(&is_lvalue<>) && !is_lvalue()) MNL_UNREACHABLE();
          Target::exec_in( [&]() MNL_INLINE{
             auto &&arg0 = this->arg0.execute(); auto &&arg1 = this->arg1.execute(); val target = Target::exec_out();
             try { return std::move(target).repl(std::forward<decltype(arg0)>(arg0), std::forward<decltype(arg1)>(arg1), std::forward<Val>(value)); }
@@ -137,7 +128,7 @@ namespace aux {
       }
    public:
       MNL_INLINE val exec_out() const {
-         if constexpr (!Target::maybe_lvalue) MNL_UNREACHABLE();
+         if (!std::is_member_function_pointer_v<decltype(&is_lvalue<>) && !is_lvalue()) MNL_UNREACHABLE();
          val argv_out[3 + 1];
          Target::exec_in( [&]() MNL_INLINE{
             val argv[std::size(argv_out) - 1] = {arg0.execute(), arg1.execute()}, target = Target::exec_out();
@@ -147,8 +138,10 @@ namespace aux {
          return std::move(argv_out[std::size(argv_out) - 1]);
       }
    public:
-      static constexpr bool maybe_lvalue = Target::maybe_lvalue;
-      MNL_INLINE bool is_lvalue() const noexcept { return target.is_lvalue(); }
+      template<class T = Target>
+         std::enable_if_t< std::is_member_function_pointer_v<decltype(&T::is_lvalue<>)>, bool> is_lvalue() noexcept { return target.is_lvalue(); };
+      template<class T = Target> static constexpr
+         std::enable_if_t<!std::is_member_function_pointer_v<decltype(&T::is_lvalue<>)>, bool> is_lvalue() noexcept { return Target::is_lvalue(); };
    };
 
 
