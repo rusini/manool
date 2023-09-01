@@ -27,7 +27,8 @@ namespace aux {
       Value value;
       MNL_INLINE Val execute(bool = {}) const noexcept(noexcept(Val(value))) { return value; }
    };
-   template<typename Val = decltype(nullptr)> expr_lit(Val)->expr_lit<Val>;
+   template<typename Val = decltype(nullptr)> expr_lit(Val)->expr_lit<std::conditional_t<
+      std::is_trivially_copy_constructible_v<Val> && std::is_trivially_copyable_v<Val> && sizeof(Val) <= 2 * sizeof(long), Val, const Val & >>;
 
    struct expr_tvar: code::lvalue { // "temporary variable"
       int offset;
@@ -45,7 +46,10 @@ namespace aux {
       MNL_INLINE void exec_nores(bool = {}) const { execute(); }
    };
 
-   template<class Target = code, class Arg0 = code> struct expr_apply1: code::lvalue { // application specialized for 1 argument
+   struct _op {}; // to mark operator mixins, e.g.: struct _add: _op { ... };
+
+   template<class Target = code, class Arg0 = code, bool Is_op = std::is_base_of_v<code::op, Target>>
+   struct expr_apply1: code::lvalue { // application specialized for 1 argument
       Target target; Arg0 arg0; loc _loc;
    public:
       MNL_INLINE auto execute(bool = {}) const {
@@ -80,26 +84,24 @@ namespace aux {
       static constexpr bool maybe_lvalue = Target::maybe_lvalue;
       MNL_INLINE bool is_lvalue() const noexcept { return target.is_lvalue(); }
    };
-   template<class Arg0> class expr_apply1<void, Arg0> {
-   public:
-      expr_apply1() = delete;
-      expr_apply1(expr_apply1 &&) = delete;
-      ~expr_apply1() = delete;
-      template<typename Res,
-         Res (void (const loc &), const loc &, decltype(std::declval<Arg0>().execute()))> struct _op;
-   };
-   template<class Arg0>
-   template<typename Res, Res Op(void (const loc &), const loc &, decltype(std::declval<Arg0>().execute()))>
-   struct expr_apply1<void, Arg0>::_op/*erator*/: code::rvalue { // to produce operator-specialized code paths in the translator
+   template<class Target, class Arg0>
+      expr_apply2(Target, Arg0)->expr_apply1<Target, Arg0>;
+   template<class Op, class Arg0>
+   struct expr_apply2<Op, Arg0, true>: code::rvalue, Op {
       Arg0 arg0; loc _loc;
    public:
-      MNL_INLINE auto execute(bool = {}) const
-         { return Op(trace_execute, _loc, arg0.execute()); }
-      MNL_INLINE void exec_nores(bool = {}) const
-         { execute(); }
+      MNL_INLINE auto execute(bool = {}) const {
+         auto &&arg0 = this->arg0.execute();
+         try { return Op::apply(std::forward<decltype(arg0)>(arg0)); }
+         catch (...) { trace_execute(_loc); }
+      }
+      MNL_INLINE void exec_nores(bool = {}) const {
+         execute();
+      }
    };
 
-   template<class Target = code, class Arg0 = code, class Arg1 = code> struct expr_apply2: code::lvalue { // application specialized for 2 arguments
+   template<class Target = code, class Arg0 = code, class Arg1 = code, bool Is_op = std::is_base_of_v<code::op, Target>>
+   struct expr_apply2: code::lvalue { // application specialized for 2 arguments
       Target target; Arg0 arg0; Arg1 arg1; loc _loc;
    public:
       MNL_INLINE auto execute(bool = {}) const {
@@ -139,26 +141,20 @@ namespace aux {
       template<class T = Target> static constexpr
          std::enable_if_t<!std::is_member_function_pointer_v<decltype(&T::is_lvalue<>)>, bool> is_lvalue() noexcept { return Target::is_lvalue(); };
    };
-
-
-
-   template<class Arg0, class Arg1> class expr_apply2<void, Arg0, Arg1> {
-   public:
-      expr_apply2() = delete;
-      expr_apply2(expr_apply2 &&) = delete;
-      ~expr_apply2() = delete;
-      template<typename Res,
-         Res (void (const loc &), const loc &, decltype(std::declval<Arg0>().execute()), decltype(std::declval<Arg1>().execute()))> struct _op;
-   };
-   template<class Arg0, class Arg1>
-   template<typename Res, Res Op(void (const loc &), const loc &, decltype(std::declval<Arg0>().execute()), decltype(std::declval<Arg1>().execute()))>
-   struct expr_apply2<void, Arg0, Arg1>::_op/*erator*/: code::rvalue { // to produce operator-specialized code paths in the translator
+   template<class Target, class Arg0, class Arg1>
+      expr_apply2(Target, Arg0, Arg1)->expr_apply2<Target, Arg0, Arg1>;
+   template<class Op, class Arg0, class Arg1>
+   struct expr_apply2<Op, Arg0, Arg1, true>: code::rvalue, Op {
       Arg0 arg0; Arg0 arg1; loc _loc;
    public:
-      MNL_INLINE auto execute(bool = {}) const
-         { auto &&arg0 = this->arg0.execute(); return Op(trace_execute, _loc, std::forward<decltype(arg0)>(arg0), arg1.execute()); }
-      MNL_INLINE void exec_nores(bool = {}) const
-         { execute(); }
+      MNL_INLINE auto execute(bool = {}) const {
+         auto &&arg0 = this->arg0.execute(); auto &&arg1 = this->arg1.execute();
+         try { return Op::apply(std::forward<decltype(arg0)>(arg0), std::forward<decltype(arg1)>(arg1)); }
+         catch (...) { trace_execute(_loc); }
+      }
+      MNL_INLINE void exec_nores(bool = {}) const {
+         execute();
+      }
    };
 
    template<class Target = code> struct apply3: code::lvalue { // application specialized for 3 arguments (args intentionally not parameterized)
