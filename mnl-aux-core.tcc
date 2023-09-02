@@ -1092,28 +1092,23 @@ namespace aux { namespace pub {
 
    struct expr_nonvalue {
       static code compile(code &&self, const form &, const loc &) = delete;
-      MNL_INLINE static decltype(nullptr) execute(bool fast_sig) noexcept { MNL_UNREACHABLE(); }
-      MNL_INLINE static void exec_nores(bool fast_sig) noexcept { MNL_UNREACHABLE(); }
+      MNL_INLINE static val execute(bool fast_sig = {}) noexcept { MNL_UNREACHABLE(); }
+      MNL_INLINE static void exec_nores(bool fast_sig = {}) noexcept { MNL_UNREACHABLE(); }
       MNL_INLINE static void exec_in(const val &) noexcept { MNL_UNREACHABLE(); }
-      MNL_INLINE static void exec_in(val &&) noexcept { MNL_UNREACHABLE(); }
       MNL_INLINE static val exec_out() noexcept { MNL_UNREACHABLE(); }
-      static constexpr bool maybe_rvalue = false;
-      static constexpr bool maybe_lvalue = false;
       MNL_INLINE static bool is_rvalue() noexcept { return false; }
       MNL_INLINE static bool is_lvalue() noexcept { return false; }
    };
    struct expr_rvalue: expr_nonvalue {
       MNL_INLINE static code compile(code &&self, const form &form, const loc &loc) { return aux::compile_apply(std::move(self), form, loc); }
-      static decltype(nullptr) execute(bool fast_sh) = delete;
-      MNL_INLINE static void exec_nores(bool fast_sh) noexcept {} // may still be shadowed
-      static constexpr bool maybe_rvalue = true;
-      MNL_INLINE static bool is_rvalue() { return true; }
+      static val execute(bool fast_sig = {}) = delete;
+      MNL_INLINE static void exec_nores(bool fast_sig = {}) noexcept {} // may still be shadowed
+      MNL_INLINE static bool is_rvalue() noexcept { return true; }
    };
    struct expr_lvalue: expr_rvalue {
-      static void exec_in(val &&) = delete;
-      static decltype(nullptr) exec_out() = delete;
-      static constexpr bool maybe_lvalue = true;
-      MNL_INLINE static bool is_lvalue() noexcept { return true; } // may still be shadowed
+      static void exec_in(const val &) = delete;
+      static val exec_out() = delete;
+      MNL_INLINE static bool is_lvalue() noexcept { return true; }
    };
 
 }} // namespace aux::pub

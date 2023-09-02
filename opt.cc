@@ -67,75 +67,89 @@
          {  auto optimize = [&](auto op) MNL_INLINE{
                if (auto arg0_p = as_p<expr_lit<long long>>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // Ls[L*; T]
-                  return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // Ls[L*; E]
+                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // O[L*; T]
+                  return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // O[L*; E]
                }
                if (auto arg0_p = as_p<expr_lit<double>>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // Ls[L*; T]
-                  return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // Ls[L*; E]
+                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // O[L*; T]
+                  return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // O[L*; E]
                }
                if (auto arg0_p = as_p<expr_lit<float>>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // Ls[L*; T]
-                  return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // Ls[L*; E]
+                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // O[L*; T]
+                  return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // O[L*; E]
                }
                if (auto arg0_p = as_p<expr_lit<const sym &>>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // Ls[L*; T]
-                  return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // Ls[L*; E]
+                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // O[L*; T]
+                  return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // O[L*; E]
                }
                if (auto arg0_p = as_p<expr_lit<bool>>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // Ls[L*; T]
-                  return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // Ls[L*; E]
+                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // O[L*; T]
+                  return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // O[L*; E]
                }
                if (auto arg0_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // Ls[L*; T]
-                  return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // Ls[L*; E]
+                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // O[L*; T]
+                  return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // O[L*; E]
                }
                if (auto arg0_p = as_p<expr_lit<unsigned>>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // Ls[L*; T]
-                  return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // Ls[L*; E]
-               if (auto arg0_p = as_p<expr_lit<>>(expr.arg0)) if (is<std::string>(arg0_p->value)) {
+                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // O[L*; T]
+                  return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // O[L*; E]
+               }
+               if (auto arg0_p = as_p<expr_lit<>>(expr.arg0)) {
+                  if (is<std::string>(arg0_p->value)) {
+                     if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
+                        return expr_apply2{{}, op, expr_lit{as<std::string>(arg0_p->value)}, *arg1_p}; // O[L*; T]
+                     return expr_apply2{{}, op, expr_lit{as<std::string>(arg0_p->value)}, std::move(expr.arg1)}; // O[L*; E]
+                  }
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply2{{}, op, expr_lit{as<std::string>(arg0_p->value)}, *arg1_p}; // Ls[L*; T]
-                  return expr_apply2{{}, op, expr_lit{as<std::string>(arg0_p->value)}, std::move(expr.arg1)}; // Ls[L*; E]
+                     return expr_apply2{{}, *target, *arg0_p, *arg1_p}; // Ls[L; T]
+                  return expr_apply2{{}, *target, *arg0_p, std::move(expr.arg1)}; // Ls[L; E]
                }
                if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1))
-                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // Ls[T; L*]
+                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // O[T; L*]
                   if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1))
-                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // Ls[T; L*]
+                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // O[T; L*]
                   if (auto arg1_p = as_p<expr_lit<float>>(expr.arg1))
-                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // Ls[T; L*]
+                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // O[T; L*]
                   if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1))
-                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // Ls[T; L*]
+                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // O[T; L*]
+                  if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1))
+                     return expr_apply2{{}, *target, *arg0_p, *arg1_p}; // Ls[T; L*]
                   if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1))
-                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // Ls[T; L*]
+                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // O[T; L*]
                   if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1))
-                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // Ls[T; L*]
+                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // O[T; L*]
+                  if (auto arg1_p = as_p<expr_lit<>>(expr.arg1))
+                     return expr_apply2{{}, *target, *arg0_p, *arg1_p}; // Ls[T; L]
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // Ls[T; T]
-                  return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // Ls[T; E]
+                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // O[T; T]
+                  return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // O[T; E]
                }
                if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1))
-                  return expr_apply2{{}, op, std::move(expr.arg0), *arg1_p}; // Ls[E; L*]
+                  return expr_apply2{{}, op, std::move(expr.arg0), *arg1_p}; // O[E; L*]
                if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1))
-                  return expr_apply2{{}, op, std::move(expr.arg0), *arg1_p}; // Ls[E; L*]
+                  return expr_apply2{{}, op, std::move(expr.arg0), *arg1_p}; // O[E; L*]
                if (auto arg1_p = as_p<expr_lit<float>>(expr.arg1))
-                  return expr_apply2{{}, op, std::move(expr.arg0), *arg1_p}; // Ls[E; L*]
+                  return expr_apply2{{}, op, std::move(expr.arg0), *arg1_p}; // O[E; L*]
                if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1))
-                  return expr_apply2{{}, op, std::move(expr.arg0), *arg1_p}; // Ls[E; L*]
+                  return expr_apply2{{}, op, std::move(expr.arg0), *arg1_p}; // O[E; L*]
+               if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1))
+                  return expr_apply2{{}, *target, std::move(expr.arg0), *arg1_p}; // Ls[E; L*]
                if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1))
-                  return expr_apply2{{}, op, std::move(expr.arg0), *arg1_p}; // Ls[E; L*]
+                  return expr_apply2{{}, op, std::move(expr.arg0), *arg1_p}; // O[E; L*]
                if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1))
-                  return expr_apply2{{}, op, std::move(expr.arg0), *arg1_p}; // Ls[E; L*]
+                  return expr_apply2{{}, op, std::move(expr.arg0), *arg1_p}; // O[E; L*]
+               if (auto arg1_p = as_p<expr_lit<>>(expr.arg1))
+                  return expr_apply2{{}, *target, std::move(expr.arg0), *arg1_p}; // Ls[E; L]
                if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                  return expr_apply2{{}, op, std::move(expr.arg0), *arg1_p}; // Ls[E; T]
-               return expr_apply2{{}, op, std::move(expr.arg0), std::move(expr.arg1)}; // Ls[E; E]
+                  return expr_apply2{{}, op, std::move(expr.arg0), *arg1_p}; // O[E; T]
+               return expr_apply2{{}, op, std::move(expr.arg0), std::move(expr.arg1)}; // O[E; E]
             };
             if (MNL_UNLIKELY(target_p->value == MNL_SYM("=="))) return optimize(_eq{});
             if (MNL_UNLIKELY(target_p->value == MNL_SYM("<>"))) return optimize(_ne{});
@@ -144,47 +158,69 @@
          {  auto optimize = [&](auto op) MNL_INLINE{
                if (auto arg0_p = as_p<expr_lit<long long>>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // Ls[L*; T]
-                  return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // Ls[L*; E]
+                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // O[L*; T]
+                  return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // O[L*; E]
                }
                if (auto arg0_p = as_p<expr_lit<double>>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // Ls[L*; T]
-                  return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // Ls[L*; E]
+                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // O[L*; T]
+                  return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // O[L*; E]
                }
                if (auto arg0_p = as_p<expr_lit<float>>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // Ls[L*; T]
-                  return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // Ls[L*; E]
+                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // O[L*; T]
+                  return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // O[L*; E]
                }
                if (auto arg0_p = as_p<expr_lit<unsigned>>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // Ls[L*; T]
-                  return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // Ls[L*; E]
+                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // O[L*; T]
+                  return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // O[L*; E]
+               }
+               if (auto arg0_p = as_p<expr_lit<>>(expr.arg0)) {
+                  if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
+                     return expr_apply2{{}, *target, *arg0_p, *arg1_p}; // Ls[L; T]
+                  return expr_apply2{{}, *target, *arg0_p, std::move(expr.arg1)}; // Ls[L; E]
+               }
                if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1))
-                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // Ls[T; L*]
+                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // O[T; L*]
                   if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1))
-                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // Ls[T; L*]
+                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // O[T; L*]
                   if (auto arg1_p = as_p<expr_lit<float>>(expr.arg1))
-                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // Ls[T; L*]
+                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // O[T; L*]
+                  if (auto arg1_p = as_p<expr_lit<const sym *>>(expr.arg1))
+                     return expr_apply2{{}, *target, *arg0_p, *arg1_p}; // Ls[T; L*]
+                  if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1))
+                     return expr_apply2{{}, *target, *arg0_p, *arg1_p}; // Ls[T; L*]
+                  if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1))
+                     return expr_apply2{{}, *target, *arg0_p, *arg1_p}; // Ls[T; L*]
                   if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1))
-                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // Ls[T; L*]
+                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // O[T; L*]
+                  if (auto arg1_p = as_p<expr_lit<>>(expr.arg1))
+                     return expr_apply2{{}, *target, *arg0_p, *arg1_p}; // Ls[T; L]
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // Ls[T; T]
-                  return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // Ls[T; E]
+                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // O[T; T]
+                  return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // O[T; E]
                }
                if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1))
-                  return expr_apply2{{}, op, std::move(expr.arg0), *arg1_p}; // Ls[E; L*]
+                  return expr_apply2{{}, op, std::move(expr.arg0), *arg1_p}; // O[E; L*]
                if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1))
-                  return expr_apply2{{}, op, std::move(expr.arg0), *arg1_p}; // Ls[E; L*]
+                  return expr_apply2{{}, op, std::move(expr.arg0), *arg1_p}; // O[E; L*]
                if (auto arg1_p = as_p<expr_lit<float>>(expr.arg1))
-                  return expr_apply2{{}, op, std::move(expr.arg0), *arg1_p}; // Ls[E; L*]
+                  return expr_apply2{{}, op, std::move(expr.arg0), *arg1_p}; // O[E; L*]
+               if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1))
+                  return expr_apply2{{}, *target, std::move(expr.arg0), *arg1_p}; // Ls[E; L*]
+               if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1))
+                  return expr_apply2{{}, *target, std::move(expr.arg0), *arg1_p}; // Ls[E; L*]
+               if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1))
+                  return expr_apply2{{}, *target, std::move(expr.arg0), *arg1_p}; // Ls[E; L*]
                if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1))
-                  return expr_apply2{{}, op, std::move(expr.arg0), *arg1_p}; // Ls[E; L*]
+                  return expr_apply2{{}, op, std::move(expr.arg0), *arg1_p}; // O[E; L*]
+               if (auto arg1_p = as_p<expr_lit<>>(expr.arg1))
+                  return expr_apply2{{}, *target, std::move(expr.arg0), *arg1_p}; // Ls[E; L]
                if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                  return expr_apply2{{}, op, std::move(expr.arg0), *arg1_p}; // Ls[E; T]
-               return expr_apply2{{}, op, std::move(expr.arg0), std::move(expr.arg1)}; // Ls[E; E]
+                  return expr_apply2{{}, op, std::move(expr.arg0), *arg1_p}; // O[E; T]
+               return expr_apply2{{}, op, std::move(expr.arg0), std::move(expr.arg1)}; // O[E; E]
             };
             if (MNL_UNLIKELY(target_p->value == MNL_SYM("<" ))) return optimize(_lt {});
             if (MNL_UNLIKELY(target_p->value == MNL_SYM("<="))) return optimize(_le {});
@@ -198,42 +234,114 @@
          {  auto optimize = [&](auto op) MNL_INLINE{
                if (auto arg0_p = as_p<expr_lit<bool>>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // Ls[L*; T]
-                  return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // Ls[L*; E]
+                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // O[L*; T]
+                  return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // O[L*; E]
                }
                if (auto arg0_p = as_p<expr_lit<unsigned>>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // Ls[L*; T]
-                  return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // Ls[L*; E]
+                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // O[L*; T]
+                  return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // O[L*; E]
+               }
+               if (auto arg0_p = as_p<expr_lit<>>(expr.arg0)) {
+                  if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
+                     return expr_apply2{{}, *target, *arg0_p, *arg1_p}; // O[L; T]
+                  return expr_apply2{{}, *target, *arg0_p, std::move(expr.arg1)}; // O[L; E]
                }
                if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1))
-                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // Ls[T; L*]
+                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // O[T; L*]
+                  if (auto arg1_p = as_p<expr_lit<>>(expr.arg1))
+                     return expr_apply2{{}, *target, *arg0_p, *arg1_p}; // O[T; L]
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // Ls[T; T]
-                  return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // Ls[T; E]
+                     return expr_apply2{{}, op, *arg0_p, *arg1_p}; // O[T; T]
+                  return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // O[T; E]
                }
                if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1))
-                  return expr_apply2{{}, op, std::move(expr.arg0), *arg1_p}; // Ls[E; L*]
+                  return expr_apply2{{}, op, std::move(expr.arg0), *arg1_p}; // O[E; L*]
+               if (auto arg1_p = as_p<expr_lit<>>(expr.arg1))
+                  return expr_apply2{{}, *target, std::move(expr.arg0), *arg1_p}; // Ls[E; L]
                if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                  return expr_apply2{{}, op, std::move(expr.arg0), *arg1_p}; // Ls[E; T]
-               return expr_apply2{{}, op, std::move(expr.arg0), std::move(expr.arg1)}; // Ls[E; E]
+                  return expr_apply2{{}, op, std::move(expr.arg0), *arg1_p}; // O[E; T]
+               return expr_apply2{{}, op, std::move(expr.arg0), std::move(expr.arg1)}; // O[E; E]
             };
             if (MNL_UNLIKELY(target_p->value == MNL_SYM("Xor"))) return optimize(_xor{});
          }
-         // assuming a binary operation with no essential side effects
+         // assuming a binary operation with no observable side effects
+         if (auto arg0_p = as_p<expr_lit<long long>>(expr.arg0)) {
+            if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
+               return expr_apply2{{}, *target, expr_lit<>{arg0_p->value}, *arg1_p}; // Ls[L; T]
+            return expr_apply2{{}, *target, expr_lit<>{arg0_p->value}, std::move(expr.arg1)}; // Ls[L; E]
+         }
+         if (auto arg0_p = as_p<expr_lit<double>>(expr.arg0)) {
+            if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
+               return expr_apply2{{}, *target, expr_lit<>{arg0_p->value}, *arg1_p}; // Ls[L; T]
+            return expr_apply2{{}, *target, expr_lit<>{arg0_p->value}, std::move(expr.arg1)}; // Ls[L; E]
+         }
+         if (auto arg0_p = as_p<expr_lit<float>>(expr.arg0)) {
+            if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
+               return expr_apply2{{}, *target, expr_lit<>{arg0_p->value}, *arg1_p}; // Ls[L; T]
+            return expr_apply2{{}, *target, expr_lit<>{arg0_p->value}, std::move(expr.arg1)}; // Ls[L; E]
+         }
+         if (auto arg0_p = as_p<expr_lit<const sym &>>(expr.arg0)) {
+            if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
+               return expr_apply2{{}, *target, expr_lit<>{arg0_p->value}, *arg1_p}; // Ls[L; T]
+            return expr_apply2{{}, *target, expr_lit<>{arg0_p->value}, std::move(expr.arg1)}; // Ls[L; E]
+         }
+         if (auto arg0_p = as_p<expr_lit<bool>>(expr.arg0)) {
+            if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
+               return expr_apply2{{}, *target, expr_lit<>{arg0_p->value}, *arg1_p}; // Ls[L; T]
+            return expr_apply2{{}, *target, expr_lit<>{arg0_p->value}, std::move(expr.arg1)}; // Ls[L; E]
+         }
+         if (auto arg0_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg0)) {
+            if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
+               return expr_apply2{{}, *target, expr_lit<>{arg0_p->value}, *arg1_p}; // Ls[L; T]
+            return expr_apply2{{}, *target, expr_lit<>{arg0_p->value}, std::move(expr.arg1)}; // Ls[L; E]
+         }
+         if (auto arg0_p = as_p<expr_lit<unsigned>>(expr.arg0)) {
+            if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
+               return expr_apply2{{}, *target, expr_lit<>{arg0_p->value}, *arg1_p}; // Ls[L*; T]
+            return expr_apply2{{}, *target, expr_lit<>{arg0_p->value}, std::move(expr.arg1)}; // Ls[L; E]
+         }
          if (auto arg0_p = as_p<expr_lit<>>(expr.arg0)) {
             if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
                return expr_apply2{{}, *target, *arg0_p, *arg1_p}; // Ls[L; T]
             return expr_apply2{{}, *target, *arg0_p, std::move(expr.arg1)}; // Ls[L; E]
          }
          if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) {
+            if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1))
+               return expr_apply2{{}, *target, *arg0_p, *arg1_p}; // Ls[T; L*]
+            if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1))
+               return expr_apply2{{}, *target, *arg0_p, *arg1_p}; // Ls[T; L*]
+            if (auto arg1_p = as_p<expr_lit<float>>(expr.arg1))
+               return expr_apply2{{}, *target, *arg0_p, *arg1_p}; // Ls[T; L*]
+            if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1))
+               return expr_apply2{{}, *target, *arg0_p, *arg1_p}; // Ls[T; L*]
+            if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1))
+               return expr_apply2{{}, *target, *arg0_p, *arg1_p}; // Ls[T; L*]
+            if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1))
+               return expr_apply2{{}, *target, *arg0_p, *arg1_p}; // Ls[T; L*]
+            if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1))
+               return expr_apply2{{}, *target, *arg0_p, *arg1_p}; // Ls[T; L*]
             if (auto arg1_p = as_p<expr_lit<>>(expr.arg1))
                return expr_apply2{{}, *target, *arg0_p, *arg1_p}; // Ls[T; L]
             if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
                return expr_apply2{{}, *target, *arg0_p, *arg1_p}; // Ls[T; T]
             return expr_apply2{{}, *target, *arg0_p, std::move(expr.arg1)}; // Ls[T; E]
          }
+         if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1))
+            return expr_apply2{{}, *target, std::move(expr.arg0), *arg1_p}; // Ls[E; L*]
+         if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1))
+            return expr_apply2{{}, *target, std::move(expr.arg0), *arg1_p}; // Ls[E; L*]
+         if (auto arg1_p = as_p<expr_lit<float>>(expr.arg1))
+            return expr_apply2{{}, *target, std::move(expr.arg0), *arg1_p}; // Ls[E; L*]
+         if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1))
+            return expr_apply2{{}, *target, std::move(expr.arg0), *arg1_p}; // Ls[E; L*]
+         if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1))
+            return expr_apply2{{}, *target, std::move(expr.arg0), *arg1_p}; // Ls[E; L*]
+         if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1))
+            return expr_apply2{{}, *target, std::move(expr.arg0), *arg1_p}; // Ls[E; L*]
+         if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1))
+            return expr_apply2{{}, *target, std::move(expr.arg0), *arg1_p}; // Ls[E; L*]
          if (auto arg1_p = as_p<expr_lit<>>(expr.arg1))
             return expr_apply2{{}, *target, std::move(expr.arg0), *arg1_p}; // Ls[E; L]
          if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
