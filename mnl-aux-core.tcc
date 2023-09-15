@@ -113,14 +113,21 @@ namespace aux { namespace pub {
    public: // Essential for performance (argv_out[-1] corresponds to self; !argc => !argv && !argv_out)
       MNL_INLINE val operator()(const val &self, int argc, val argv[], val *argv_out = {}) const & { return _apply(*this, self, argc, argv, argv_out); }
       MNL_INLINE val operator()(val &&self, int argc, val argv[], val *argv_out = {}) const & { return _apply(*this, _mv(self), argc, argv, argv_out); }
+
+      MNL_INLINE val operator()(int argc, val argv[], val *argv_out = {}) const &
+
+      template<typename Self> val _apply(Self &&self, int argc, val argv[], val *argv_out = {}) const &;
+
+
+
    public: // Essential for metaprogramming
       // For one argument
       MNL_INLINE val operator()(const val &arg0) const & { return (*this)(arg0, 0, {}); }
       MNL_INLINE val operator()(val &&arg0) const & { return (*this)(_mv(arg0), 0, {}); }
       // For two arguments
-      MNL_INLINE val operator()(const val &arg0, const val &arg1) const & { return (*this)(arg0, 1, (val)arg1); }
+      MNL_INLINE val operator()(const val &arg0, const val &arg1) const & { return (*this)(arg0, (val)arg1); }
       MNL_INLINE val operator()(const val &arg0, val &&arg1) const & { return (*this)(arg0, 1, &arg1); }
-      MNL_INLINE val operator()(val &&arg0, const val &arg1) const & { return (*this)(_mv(arg0), 1, (val)arg1); }
+      MNL_INLINE val operator()(val &&arg0, const val &arg1) const & { return (*this)(_mv(arg0), (val)arg1); }
       MNL_INLINE val operator()(val &&arg0, val &&arg1) const & { return (*this)(_mv(arg0), 1, &arg1); }
       // For multiple arguments
       MNL_INLINE val operator()(int argc, val argv[], val *argv_out = {}) const & {
@@ -161,7 +168,7 @@ namespace aux { namespace pub {
          friend val _apply(Target &&, int argc, val [], val *argv_out);
    public: // Related stuff
       template<typename = class code> class tab/*le*/; // do not: move "= class code" to the definition below (compiler bug)
-      friend val;
+      friend val;                                  // addref/release
       friend box<string>; friend box<vector<val>>; // direct access to "enum rep" members required, for performance reasons
       template<int> friend struct aux::_record;    // ditto
       friend range<false>; friend range<true>;     // ditto
@@ -172,6 +179,11 @@ namespace aux { namespace pub {
    MNL_INLINE inline bool operator> (const sym &lhs, const sym &rhs) noexcept { return std::rel_ops::operator> (lhs, rhs); }
    MNL_INLINE inline bool operator<=(const sym &lhs, const sym &rhs) noexcept { return std::rel_ops::operator<=(lhs, rhs); }
    MNL_INLINE inline bool operator>=(const sym &lhs, const sym &rhs) noexcept { return std::rel_ops::operator>=(lhs, rhs); }
+
+
+   extern template val sym::operator()(const val &self, int argc, val argv[], val *argv_out = {}) const &; // really needed?
+   extern template val sym::operator()(val &&self, int argc, val argv[], val *argv_out = {}) const &;
+
 
    template<typename Val> class sym::tab {
    public: // Standard operations
@@ -1705,5 +1717,76 @@ namespace aux { namespace pub {
 }} // namespace aux::pub
    extern template class box<range<>>;
    extern template class box<range<true>>;
+
+
+
+
+
+// part of public interface, like val::operator(), val::repl, etc (kind of argument-simmetric and ADL-able under some circumstances):
+// should not have templated params to be ADL-safe (assuming rhs might be an std::type at some point in the future)
+
+namespace aux::mnl {
+# define MNL_M(OP1, OP2) \
+   MNL_INLINE inline val aux::pub::OP1(const val &lhs,  long long rhs)   { return val::OP2(lhs, rhs); } \
+   MNL_INLINE inline val aux::pub::OP1(const val &lhs,  double    rhs)   { return val::OP2(lhs, rhs); } \
+   MNL_INLINE inline val aux::pub::OP1(const val &lhs,  float     rhs)   { return val::OP2(lhs, rhs); } \
+   MNL_INLINE inline val aux::pub::OP1(const val &lhs,  unsigned  rhs)   { return val::OP2(lhs, rhs); } \
+   MNL_INLINE inline val aux::pub::OP1(const val &lhs,  const val &rhs)  { return val::OP2(lhs, rhs); } \
+   MNL_INLINE inline val aux::pub::OP1(const val &lhs,  val       &&rhs) { return val::OP2(lhs, std::move(rhs)); } \
+   MNL_INLINE inline val aux::pub::OP1(val       &&lhs, long long rhs)   { return val::OP2(std::move(lhs), rhs); } \
+   MNL_INLINE inline val aux::pub::OP1(val       &&lhs, double    rhs)   { return val::OP2(std::move(lhs), rhs); } \
+   MNL_INLINE inline val aux::pub::OP1(val       &&lhs, float     rhs)   { return val::OP2(std::move(lhs), rhs); } \
+   MNL_INLINE inline val aux::pub::OP1(val       &&lhs, unsigned  rhs)   { return val::OP2(std::move(lhs), rhs); } \
+   MNL_INLINE inline val aux::pub::OP1(val       &&lhs, const val &rhs)  { return val::OP2(std::move(lhs), rhs); } \
+   MNL_INLINE inline val aux::pub::OP1(val       &&lhs, val       &&rhs) { return val::OP2(std::move(lhs), std::move(rhs)); } \
+// end MNL_M
+   MNL_M(operator+, _add) MNL_M(operator-, _sub) MNL_M(operator*, _mul)
+   MNL_M(operator<, _lt) MNL_M(operator<=, _le) MNL_M(operator>, _gt) MNL_M(operator>=, _ge)
+# undef MNL_M
+# define MNL_M(OP1, OP2) \
+   MNL_INLINE inline val aux::pub::OP1(const val &lhs, long long rhs)     { return val::OP2(lhs, rhs); } \
+   MNL_INLINE inline val aux::pub::OP1(const val &lhs, double    rhs)     { return val::OP2(lhs, rhs); } \
+   MNL_INLINE inline val aux::pub::OP1(const val &lhs, float     rhs)     { return val::OP2(lhs, rhs); } \
+   MNL_INLINE inline val aux::pub::OP1(const val &lhs, const sym &rhs)    { return val::OP2(lhs, rhs); } \
+   MNL_INLINE inline val aux::pub::OP1(const val &lhs, bool      rhs)     { return val::OP2(lhs, rhs); } \
+   MNL_INLINE inline val aux::pub::OP1(const val &lhs, decltype(nullptr)) { return val::OP2(lhs, nullptr); } \
+   MNL_INLINE inline val aux::pub::OP1(const val &lhs, unsigned  rhs)     { return val::OP2(lhs, rhs); } \
+   MNL_INLINE inline val aux::pub::OP1(const val &lhs, const val &rhs)    { return val::OP2(lhs, rhs); } \
+   MNL_INLINE inline val aux::pub::OP1(const val &lhs, val       &&rhs)   { return val::OP2(lhs, std::move(rhs)); } \
+   MNL_INLINE inline val aux::pub::OP1(val &&lhs, long long rhs)     { return val::OP2(std::move(lhs), rhs); } \
+   MNL_INLINE inline val aux::pub::OP1(val &&lhs, double    rhs)     { return val::OP2(std::move(lhs), rhs); } \
+   MNL_INLINE inline val aux::pub::OP1(val &&lhs, float     rhs)     { return val::OP2(std::move(lhs), rhs); } \
+   MNL_INLINE inline val aux::pub::OP1(val &&lhs, const sym &rhs)    { return val::OP2(std::move(lhs), rhs); } \
+   MNL_INLINE inline val aux::pub::OP1(val &&lhs, bool      rhs      { return val::OP2(std::move(lhs), rhs); } \
+   MNL_INLINE inline val aux::pub::OP1(val &&lhs, decltype(nullptr)) { return val::OP2(std::move(lhs), nullptr); } \
+   MNL_INLINE inline val aux::pub::OP1(val &&lhs, unsigned  rhs)     { return val::OP2(std::move(lhs), rhs); } \
+   MNL_INLINE inline val aux::pub::OP1(val &&lhs, const val &rhs)    { return val::OP2(std::move(lhs), rhs); } \
+   MNL_INLINE inline val aux::pub::OP1(val &&lhs, val       &&rhs)   { return val::OP2(std::move(lhs), std::move(rhs)); } \
+// end MNL_M
+   MNL_M(operator==, _eq) MNL_M(operator!=, _ne)
+# undef MNL_M
+
+// OR, maybe member functions is more appropriate?? (since the idea here is dispatching by the first argument)
+
+}
+
+   class val {
+      ...
+   public: // public, but the combination of Dat, Val exists for optimizations, not so as a "public" API
+      template<typename Lhs, typename Rhs> static val _add(Lhs &&, Rhs &&); // use if constexpr in the definition
+
+
+   };
+
+
+
+
+
+
+
+
+
+
+
 
 } // namespace MNL_AUX_UUID

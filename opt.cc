@@ -6,15 +6,15 @@
          return expr_lit{as<double>(expr.value)};
       if (is<float>(expr.value))
          return expr_lit{as<float>(expr.value)};
-      if (is<const sym &>(expr.value))
+      if (is<sym>(expr.value))
          return expr_lit{std::move(as<sym &>(expr.value))};
       if (is<bool>(expr.value))
          return expr_lit{as<bool>(expr.value)};
       if (is<decltype(nullptr)>(expr.value))
-         return expr_lit{as<decltype(nullptr)>(expr.value)};
+         return expr_lit{nullptr};
       if (is<unsigned>(expr.value))
          return expr_lit{as<unsigned>(expr.value)};
-      return std::move(expr);
+      return std::move(expr); // NOTE: the stored value will have the only possible type tag - "boxed" - could be used for (very advanced) optimization
    }
    auto mnl::aux::optimize(expr_apply0<> expr)->code {
       if (auto target_p = as_p<expr_lit<>>(expr.target))
@@ -25,6 +25,7 @@
    }
    auto mnl::aux::optimize(expr_apply1<> expr)->code {
       if (auto target_p = as_p<expr_lit<const sym &>>(expr.target)) {
+         // trivial unary operators
          if (target_p->value == MNL_SYM("~")) {
             if (auto arg0_p = as_p<expr_tvar>(expr.arg0))
                return expr_op1{{}, _not{}, *arg0_p}; // ~T
@@ -40,31 +41,37 @@
                return expr_op1{{}, _abs{}, *arg0_p}; // Abs[T]
             return expr_op1{{}, _abs{}, std::move(expr.arg0)}; // Abs[E]
          }
-         return expr_apply1{{}, *target_p, std::move(expr.arg0)};
+         // assuming a unary operation with no observable side effects
+         if (auto arg0_p = as_p<expr_tvar>(expr.arg0))
+            return expr_apply1{{}, *target_p, *arg0_p}; // Ls[T]
+         return expr_apply1{{}, *target_p, std::move(expr.arg0)}; // Ls[E]
       }
+      // assuming indexing into fast containers
       if (auto target_p = as_p<expr_lit<>>(expr.target)) {
+         if (auto arg0_p = as_p<expr_lit<const sym &>>(expr.arg0))
+            return expr_apply1{{}, *target_p, *arg0_p}; // L[Ls]
          if (auto arg0_p = as_p<expr_tvar>(expr.arg0))
             return expr_apply1{{}, *target_p, *arg0_p}; // L[T]
          return expr_apply1{{}, *target_p, std::move(expr.arg0)}; // L[E]
       }
       if (auto target_p = as_p<expr_tvar>(expr.target)) {
          if (auto arg0_p = as_p<expr_lit<const sym &>>(expr.arg0))
-            return expr_apply1{{}, *target_p, *arg0_p}; // T[LK]
+            return expr_apply1{{}, *target_p, *arg0_p}; // T[Ls]
          if (auto arg0_p = as_p<expr_tvar>(expr.arg0))
             return expr_apply1{{}, *target_p, *arg0_p}; // T[T]
          return expr_apply1{{}, *target_p, std::move(expr.arg0)}; // T[E]
       }
       if (auto arg0_p = as_p<expr_lit<const sym &>>(expr.arg0))
-         return expr_apply1{{}, *target_p, *arg0_p}; // E[LK]
+         return expr_apply1{{}, *target_p, *arg0_p}; // E[Ls]
       if (auto arg0_p = as_p<expr_tvar>(expr.arg0))
-         return expr_apply1{{}, *target_p, *arg0_p}; // E[LK]
-      return std::move(expr); // E
+         return expr_apply1{{}, *target_p, *arg0_p}; // E[T]
+      return std::move(expr); // E[E]
    }
 
    auto mnl::aux::optimize(expr_apply2<> expr)->code {
       if (auto target_p = as_p<expr_lit<const sym &>>(expr.target)) {
-         // (in)equality
-         {  auto optimize = [&](auto op) MNL_INLINE{
+         // (in)equality, except where belongs to (*)
+         {  auto optimize = [&](auto op) MNL_INLINE->code{
                if (auto arg0_p = as_p<expr_lit<long long>>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
                      return expr_apply2{{}, op, *arg0_p, *arg1_p}; // Ls*[L*; T]
@@ -85,7 +92,7 @@
                      return expr_apply2{{}, op, *arg0_p, *arg1_p}; // Ls*[L*; T]
                   return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // Ls*[L*; E]
                }
-               if (auto arg0_p = as_p<expr_lit<bool>>(expr.arg0)) {
+               if (auto arg0_p = as_p<expr_lit<bool>>(expr.arg0)) { // False == V, True <> V might be faster than Not[V]
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
                      return expr_apply2{{}, op, *arg0_p, *arg1_p}; // Ls*[L*; T]
                   return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // Ls*[L*; E]
@@ -154,8 +161,8 @@
             if (MNL_UNLIKELY(target_p->value == MNL_SYM("=="))) return optimize(_eq{});
             if (MNL_UNLIKELY(target_p->value == MNL_SYM("<>"))) return optimize(_ne{});
          }
-         // all numeric
-         {  auto optimize = [&](auto op) MNL_INLINE{
+         // all numeric, except where belongs to (*)
+         {  auto optimize = [&](auto op) MNL_INLINE->code{
                if (auto arg0_p = as_p<expr_lit<long long>>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
                      return expr_apply2{{}, op, *arg0_p, *arg1_p}; // Ls*[L*; T]
@@ -230,9 +237,9 @@
             if (MNL_UNLIKELY(target_p->value == MNL_SYM("-" ))) return optimize(_sub{});
             if (MNL_UNLIKELY(target_p->value == MNL_SYM("*" ))) return optimize(_mul{});
          }
-         // exclussive-or
-         {  auto optimize = [&](auto op) MNL_INLINE{
-               if (auto arg0_p = as_p<expr_lit<bool>>(expr.arg0)) {
+         // exclussive-or, except where belongs to (*)
+         {  auto optimize = [&](auto op) MNL_INLINE->code{
+               if (auto arg0_p = as_p<expr_lit<bool>>(expr.arg0)) { // True.Xor[V] might be faster than Not[V]
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
                      return expr_apply2{{}, op, *arg0_p, *arg1_p}; // Ls*[L*; T]
                   return expr_apply2{{}, op, *arg0_p, std::move(expr.arg1)}; // Ls*[L*; E]
@@ -290,7 +297,7 @@
             };
             if (MNL_UNLIKELY(target_p->value == MNL_SYM("Xor"))) return optimize(_xor{});
          }
-         // assuming a binary operation with no observable side effects
+         // assuming a binary operation with no observable side effects (*)
          if (auto arg0_p = as_p<expr_lit<long long>>(expr.arg0)) {
             if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
                return expr_apply2{{}, *target_p, expr_lit<>{arg0_p->value}, *arg1_p}; // Ls[L; T]

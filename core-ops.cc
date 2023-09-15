@@ -407,9 +407,10 @@ namespace aux {
 } // namespace aux
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-   template<typename Target,
-      std::enable_if_t<std::is_same_v<Target, const sym &>, int> = int{}>
-   val _apply(Target &&target, int argc, val argv[], val *argv_out) {
+   template val sym::operator()(const sym &, const val &, int argc, val [], val *);
+   template val sym::operator()(const sym &, val &&, int argc, val [], val *);
+
+   template<typename Self> val sym::operator()(const sym &target, Self &&self, int argc, val argv[], val *argv_out) {
       if (MNL_UNLIKELY(!argc)) MNL_ERR(MNL_SYM("InvalidInvocation"));
       switch (argv[0].rep.tag()) {
       case 0x7FF8u: // BoxPtr (fallback)
