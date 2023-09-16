@@ -142,7 +142,8 @@ namespace aux { namespace pub {
       template<std::size_t Argc> MNL_INLINE val operator()(std::array<val, Argc> &&args, val *args_out = {}) const &
          { return (*this)(Argc, args.data(), args_out); }
    private: // Implementation for the above
-      template<typename Self> static val _apply(const sym &op, Self &&, int argc, val [], val *argv_out);
+      template<typename Self> val _apply(Self &&, int argc, val [], val *argv_out) const; // to enhance diagnostics:
+      template<typename Self> std::enable_if_t<!std::is_same_v<Self, val> && !std::is_same_v<Self, const val &>, val> _apply(Self &&, int, val [], val *);
 
    private: // Concrete representation
       enum rep: unsigned short;
@@ -618,50 +619,50 @@ namespace aux::pub {
       template<typename Self, typename Arg0, typename Arg1> MNL_INLINE val _repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1, const val &arg2)
          { return _repl(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), (val)arg2); }
    private: // 38 VMT entries
-      virtual val _invoke(const val &self, const sym &op, int argc, val [], val *argv_out) = 0; // argv_out[-1] corresponds to self
-      virtual val _invoke(val &&self, const sym &op, int argc, val [], val *argv_out) = 0;      // ditto
+      MNL_NOINLINE MNL_HOT virtual val _invoke(const val &self, const sym &op, int argc, val [], val *argv_out) = 0; // argv_out[-1] corresponds to self
+      MNL_NOINLINE MNL_HOT virtual val _invoke(val &&self, const sym &op, int argc, val [], val *argv_out) = 0;      // ditto
    private:
       // For one argument (6 VMT entries)
-      virtual val _apply(const val &self, const val &) = 0;
-      virtual val _apply(const val &self, val &&) = 0;
-      virtual val _apply(const val &self, const sym &) = 0;
-      virtual val _apply(val &&self, const val &) = 0;
-      virtual val _apply(val &&self, val &&) = 0;
-      virtual val _apply(val &&self, const sym &) = 0;
+      MNL_HOT virtual val _apply(const val &self, const val &) = 0;
+      MNL_HOT virtual val _apply(const val &self, val &&) = 0;
+      MNL_HOT virtual val _apply(const val &self, const sym &) = 0;
+      MNL_HOT virtual val _apply(val &&self, const val &) = 0;
+      MNL_HOT virtual val _apply(val &&self, val &&) = 0;
+      MNL_HOT virtual val _apply(val &&self, const sym &) = 0;
       // For two arguments (12 VMT entries)
-      virtual val _apply(const val &self, const val &, const val &) = 0;
-      virtual val _apply(const val &self, const val &, val &&) = 0;
-      virtual val _apply(const val &self, const val &, const sym &) = 0;
-      virtual val _apply(const val &self, val &&, const val &) = 0;
-      virtual val _apply(const val &self, val &&, val &&) = 0;
-      virtual val _apply(const val &self, val &&, const sym &) = 0;
-      virtual val _apply(val &&self, const val &, const val &) = 0;
-      virtual val _apply(val &&self, const val &, val &&) = 0;
-      virtual val _apply(val &&self, const val &, const sym &) = 0;
-      virtual val _apply(val &&self, val &&, const val &) = 0;
-      virtual val _apply(val &&self, val &&, val &&) = 0;
-      virtual val _apply(val &&self, val &&, const sym &) = 0;
+      MNL_HOT virtual val _apply(const val &self, const val &, const val &) = 0;
+      MNL_HOT virtual val _apply(const val &self, const val &, val &&) = 0;
+      MNL_HOT virtual val _apply(const val &self, const val &, const sym &) = 0;
+      MNL_HOT virtual val _apply(const val &self, val &&, const val &) = 0;
+      MNL_HOT virtual val _apply(const val &self, val &&, val &&) = 0;
+      MNL_HOT virtual val _apply(const val &self, val &&, const sym &) = 0;
+      MNL_HOT virtual val _apply(val &&self, const val &, const val &) = 0;
+      MNL_HOT virtual val _apply(val &&self, const val &, val &&) = 0;
+      MNL_HOT virtual val _apply(val &&self, const val &, const sym &) = 0;
+      MNL_HOT virtual val _apply(val &&self, val &&, const val &) = 0;
+      MNL_HOT virtual val _apply(val &&self, val &&, val &&) = 0;
+      MNL_HOT virtual val _apply(val &&self, val &&, const sym &) = 0;
    private:
       // For two arguments (6 VMT entries)
-      virtual val _repl(val &&self, const val &, const val &) = 0;
-      virtual val _repl(val &&self, const val &, val &&) = 0;
-      virtual val _repl(val &&self, val &&, const val &) = 0;
-      virtual val _repl(val &&self, val &&, val &&) = 0;
-      virtual val _repl(val &&self, const sym &, const val &) = 0;
-      virtual val _repl(val &&self, const sym &, val &&) = 0;
+      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, const val &, const val &) = 0;
+      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, const val &, val &&) = 0;
+      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, val &&, const val &) = 0;
+      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, val &&, val &&) = 0;
+      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, const sym &, const val &) = 0;
+      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, const sym &, val &&) = 0;
       // For three arguments (12 VMT entries)
-      virtual val _repl(val &&self, const val &, const val &, const val &) = 0;
-      virtual val _repl(val &&self, const val &, const val &, val &&) = 0;
-      virtual val _repl(val &&self, const val &, val &&, const val &) = 0;
-      virtual val _repl(val &&self, const val &, val &&, val &&) = 0;
-      virtual val _repl(val &&self, const val &, const sym &, const val &) = 0;
-      virtual val _repl(val &&self, const val &, const sym &, val &&) = 0;
-      virtual val _repl(val &&self, val &&, const val &, const val &) = 0;
-      virtual val _repl(val &&self, val &&, const val &, val &&) = 0;
-      virtual val _repl(val &&self, val &&, val &&, const val &) = 0;
-      virtual val _repl(val &&self, val &&, val &&, val &&) = 0;
-      virtual val _repl(val &&self, val &&, const sym &, const val &) = 0;
-      virtual val _repl(val &&self, val &&, const sym &, val &&) = 0;
+      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, const val &, const val &, const val &) = 0;
+      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, const val &, const val &, val &&) = 0;
+      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, const val &, val &&, const val &) = 0;
+      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, const val &, val &&, val &&) = 0;
+      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, const val &, const sym &, const val &) = 0;
+      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, const val &, const sym &, val &&) = 0;
+      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, val &&, const val &, const val &) = 0;
+      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, val &&, const val &, val &&) = 0;
+      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, val &&, val &&, const val &) = 0;
+      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, val &&, val &&, val &&) = 0;
+      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, val &&, const sym &, const val &) = 0;
+      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, val &&, const sym &, val &&) = 0;
    public: // Friendship
       friend sym;
       friend val;
