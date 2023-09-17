@@ -111,14 +111,8 @@ namespace aux { namespace pub {
 
 
    public: // Essential for performance (argv_out[-1] corresponds to self; !argc => !argv && !argv_out)
-      MNL_INLINE val operator()(const val &self, int argc, val argv[], val *argv_out = {}) const & { return _apply(*this, self, argc, argv, argv_out); }
-      MNL_INLINE val operator()(val &&self, int argc, val argv[], val *argv_out = {}) const & { return _apply(*this, _mv(self), argc, argv, argv_out); }
-
-      MNL_INLINE val operator()(int argc, val argv[], val *argv_out = {}) const &
-
-      template<typename Self> val _apply(Self &&self, int argc, val argv[], val *argv_out = {}) const &;
-
-
+      MNL_INLINE val operator()(const val &self, int argc, val argv[], val *argv_out = {}) const;
+      MNL_INLINE val operator()(val &&self, int argc, val argv[], val *argv_out = {}) const;
 
    public: // Essential for metaprogramming
       // For one argument
@@ -142,8 +136,7 @@ namespace aux { namespace pub {
       template<std::size_t Argc> MNL_INLINE val operator()(std::array<val, Argc> &&args, val *args_out = {}) const &
          { return (*this)(Argc, args.data(), args_out); }
    private: // Implementation for the above
-      template<typename Self> val _apply(Self &&, int argc, val [], val *argv_out) const; // to enhance diagnostics:
-      template<typename Self> std::enable_if_t<!std::is_same_v<Self, val> && !std::is_same_v<Self, const val &>, val> _apply(Self &&, int, val [], val *);
+      template<typename Self> val _apply(Self &&, int argc, val [], val *argv_out) const; // Self == const val & || Self == val
 
    private: // Concrete representation
       enum rep: unsigned short;
@@ -242,19 +235,19 @@ namespace aux::pub {
 
    class val/*ue*/ {
    public: // Standard operations
-      MNL_INLINE val(decltype(nullptr) = {}) noexcept: rep{0x7FF9u} {}
+      MNL_INLINE val(decltype(nullptr) = {}) noexcept: rep{rep::tag_nil} {}
       MNL_INLINE val(const val &rhs) noexcept: rep(rhs.rep) { addref(); }
-      MNL_INLINE val(val &&rhs) noexcept: rep(rhs.rep) { rhs.rep = {0x7FF9u}; }
+      MNL_INLINE val(val &&rhs) noexcept: rep(rhs.rep) { rhs.rep = {rep::tag_nil}; }
       MNL_INLINE ~val() { release(); }
       MNL_INLINE val &operator=(const val &rhs) noexcept { rhs.addref(), release(), rep = rhs.rep; return *this; }
-      MNL_INLINE val &operator=(val &&rhs) noexcept { release(), rep = rhs.rep, rhs.rep = {0x7FF9u}; return *this; }
-      MNL_INLINE void swap(val &rhs) noexcept { using std::swap; swap(rep, rhs.rep); }
+      MNL_INLINE val &operator=(val &&rhs) noexcept { release(), rep = rhs.rep, rhs.rep = {rep::tag_nil}; return *this; }
+      MNL_INLINE void swap(val &rhs) noexcept { std::swap(rep, rhs.rep); }
       MNL_INLINE explicit operator bool() const noexcept { return *this != nullptr; }
    public: // using swap for (faster) assignment
-      template<typename Rhs> MNL_INLINE val &assign(Rhs &&rhs) noexcept(noexcept(*this = std::forward<Rhs>(rhs))) { return *this = std::forward<Rhs>(rhs); }
-      MNL_INLINE val &assign(val &&rhs) noexcept { swap(rhs); return *this; }
+      //template<typename Rhs> MNL_INLINE val &assign(Rhs &&rhs) noexcept(noexcept(*this = std::forward<Rhs>(rhs))) { return *this = std::forward<Rhs>(rhs); }
+      //MNL_INLINE val &assign(val &&rhs) noexcept { swap(rhs); return *this; }
    public: // Construction -- Implicit conversion (to)
-      MNL_INLINE val(long long dat) noexcept: rep{0x7FFAu, dat} {} // valid range: min_i48 .. max_i48
+      MNL_INLINE val(long long dat) noexcept: rep{rep::tag_i48, dat} {} // valid range: min_i48 .. max_i48
       MNL_INLINE val(int dat) noexcept:       val((long long)dat) {}
       MNL_INLINE val(double dat) noexcept: rep(dat) { assume_f64(); }
       MNL_INLINE val(float dat) noexcept: rep{0x7FFCu, dat} {}
@@ -314,6 +307,10 @@ namespace aux::pub {
          # endif
             (this, &rhs, sizeof *this); // updates sym::rep (AND rep::tag at once), in case of _sym (corner case of ISO/IEC 14882:2011)
          }
+         static constexpr decltype(_tag) tag_base = 0x7FF8,
+            tag_box = tag_base | 0x0, tag_nil = tag_base | 0x1, tag_i48 = tag_base | 0x2, tag_f32 = tag_base | 0x4,
+            tag_sym = tag_base | 0x3, tag_false = tag_base | 0x6, tag_true = tag_false | true, tag_u32 = tag_base | 0x5;
+         static_assert(!(tag_false & true));
       } rep;
       static_assert(sizeof rep == 8, "sizeof rep == 8");                                                             // paranoid check
       static_assert(std::is_standard_layout<decltype(rep)>::value, "std::is_standard_layout<decltype(rep)>::value"); // ditto
@@ -537,6 +534,28 @@ namespace aux::pub {
    template<typename Dat> Dat  cast(const val &) noexcept(std::is_nothrow_copy_constructible<Dat>::value);
 
    // Forward-declared as members of class sym
+   MNL_INLINE val sym::operator()(const val &self, int argc, val argv[], val *argv_out = {}) const
+      { return val::_invoke(self, *this, argc, argv, argv_out); }
+   MNL_INLINE val sym::operator()(val &&self, int argc, val argv[], val *argv_out = {}) const
+      { return val::_invoke(std::move(self), *this, argc, argv, argv_out); }
+   // For one argument
+   MNL_INLINE val sym::operator()(const val &arg0) const & { return (*this)(arg0, 0, {}); }
+   MNL_INLINE val sym::operator()(val &&arg0) const & { return (*this)(std::move(arg0), 0, {}); }
+   // For two arguments
+   MNL_INLINE val sym::operator()(const val &arg0, const val &arg1) const & { return (*this)(arg0, (val)arg1); }
+   MNL_INLINE val sym::operator()(const val &arg0, val &&arg1) const & { return (*this)(arg0, 1, &arg1); }
+   MNL_INLINE val sym::operator()(val &&arg0, const val &arg1) const & { return (*this)(std::move(arg0), (val)arg1); }
+   MNL_INLINE val sym::operator()(val &&arg0, val &&arg1) const & { return (*this)(std::move(arg0), 1, &arg1); }
+   // For multiple arguments
+   MNL_INLINE val sym::operator()(int argc, val argv[], val *argv_out = {}) const & {
+      if (MNL_UNLIKELY(!argc)) []() MNL_NORETURN{ MNL_ERR(MNL_SYM("InvalidInvocation")); }();
+      return (*this)(_mv(*argv), argc - 1, argv + 1, argv_out + !!argv_out); // TODO: here, argc might become 0, but not argv!
+   }
+
+
+
+
+
    /* val sym::operator()(int argc, val argv[], val *argv_out = {}) const; // essential form */
    MNL_INLINE inline val sym::operator()(const val &arg, val *arg_out) const { return (*this)(val(arg), arg_out); }
    MNL_INLINE inline val sym::operator()(val &&arg, val *arg_out) const { return (*this)(1, &arg, arg_out); }

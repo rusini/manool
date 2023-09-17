@@ -128,7 +128,7 @@ namespace MNL_AUX_UUID { using namespace aux;
       MNL_M
    # undef MNL_S
    };
-   std::remove_extent<decltype(sym::rc)>::type sym::rc[lim<unsigned short>::max() + 1]{
+    std::remove_extent<decltype(sym::rc)>::type sym::rc[lim<unsigned short>::max() + 1]{
    # define MNL_S(ID, TXT) 1,
       MNL_M
    # undef MNL_S
@@ -140,7 +140,17 @@ namespace MNL_AUX_UUID { using namespace aux;
 namespace aux {
    // I48 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    template<typename Dat> MNL_INLINE static inline enable_same<Dat, long long> _div(Dat lhs, Dat rhs) {
+
+      if (MNL_UNLIKELY(!rhs)) lhs ? MNL_ERR("DivisionByZero") : MNL_ERR("Undefined"); // COLDPATH: actually constructs the sym here, to avoid pointless massive startup initialization
+
+      if (MNL_UNLIKELY(!rhs)) MNL_ERR(lhs ? MNL_ERR("DivisionByZero") : MNL_SYM("Undefined"), lhs); // BUT: what if the symbol space becomes full?
+
+
+
       if (MNL_UNLIKELY(!rhs)) MNL_ERR(lhs ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"));
+
+      if (MNL_UNLIKELY(!rhs)) [lhs]() MNL_NORETURN{ throw std::pair{lhs ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), val{}}; }();
+
       return
       # if !__x86_64__ && !__aarch64__ // MAYBE using a 32-bit integer ALU
          MNL_LIKELY(lhs > lim<int>::min()) && MNL_LIKELY(lhs <= lim<int>::max()) && MNL_LIKELY(rhs >= lim<int>::min()) && MNL_LIKELY(rhs <= lim<int>::max()) ?
@@ -412,12 +422,12 @@ namespace aux {
 
    template<typename Self> MNL_HOT val sym::_apply(Self &&self, int argc, val argv[], val *argv_out) const {
       switch (self.rep.tag()) {
-      case 0x7FF8u: // BoxPtr (fallback)
+      case val::rep::tag_box: //////////////////////////////////////////////////////////////////////////////////////////////////////////////
          return static_cast<val::root *>(self.rep.dat<void *>())->invoke(std::forward<Self>(self), *this, argc, argv, argv_out);
-      case 0x7FF9u: // Nil
+      case val::rep::tag_nil: //////////////////////////////////////////////////////////////////////////////////////////////////////////////
          switch (*this) {
          case sym::op_eq:
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+            if (MNL_UNLIKELY(argc != 1)) []() MNL_NORETURN{ sig(MNL_SYM("InvalidInvocation")); }();
             return  is<>(argv[0]);
          case sym::op_ne:
             if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
@@ -443,7 +453,7 @@ namespace aux {
             return {};
          }
          MNL_ERR(MNL_SYM("UnrecognizedOperation"));
-      case 0x7FFAu: // I48
+      case val::rep::tag_i48: //////////////////////////////////////////////////////////////////////////////////////////////////////////////
          switch (*this) {
          case sym::op_add:
             if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
@@ -508,13 +518,19 @@ namespace aux {
          case sym::op_clone: case sym::op_deep_clone:
             if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
             return as<long long>(self);
-         case sym::op_str:
-            if (MNL_LIKELY(argc == 0)) return aux::_str(as<long long>(self));
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            if (MNL_UNLIKELY(!is<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-            return aux::_str(as<long long>(self), as<const string &>(argv[0]));
+         case sym::op_str: // TODO: we could even group slow ops together
+            return [&self, argc, argv]() MNL_NOINLINE->val{
+               if (MNL_LIKELY(argc == 0)) return aux::_str(as<long long>(self));
+               if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+               if (MNL_UNLIKELY(!is<std::string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
+               return aux::_str(as<long long>(self), as<const string &>(argv[0]));
+            }();
          }
-         MNL_ERR(MNL_SYM("UnrecognizedOperation"));
+         return [this, &self, argc, argv]() MNL_NOINLINE->val{
+            switch (*this) {
+            }
+            MNL_ERR(MNL_SYM("UnrecognizedOperation"));
+         }();
       # define MNL_M(DAT) \
          switch (*this) { \
          case sym::op_add: \
