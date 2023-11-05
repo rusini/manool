@@ -975,10 +975,13 @@ namespace aux::pub {
    template<> MNL_INLINE inline long long val::cast() const noexcept { return rep.dat<long long>(); }
    template<> MNL_INLINE inline int       val::cast() const noexcept { return cast<long long>(); }
 
-   template<> MNL_INLINE inline bool val::test<double>() const noexcept { return (rep.tag() & 0x7FF8u) != 0x7FF8u; }
-   template<> MNL_INLINE inline double val::cast() const noexcept { return rep.dat<double>(); }
+   template<> MNL_INLINE inline bool val::is<double>() const noexcept         { return (rep.tag() & 0x7FF8u) != 0x7FF8u; }
+   template<> MNL_INLINE inline bool val::is<const double &>() const noexcept { return is<double>(); }
+   template<> MNL_INLINE inline double val::as() const noexcept                 { return rep.dat<double>(); }
+   template<> MNL_INLINE inline double val::as<const double &>() const noexcept { return as<double>(); }
 
-   template<> MNL_INLINE inline bool val::test<float>() const noexcept { return rep.tag() == 0x7FFCu; }
+   template<> MNL_INLINE inline bool val::is<float>() const noexcept         { return rep.tag() == 0x7FFCu; }
+   template<> MNL_INLINE inline bool val::is<const float &>() const noexcept { return is<float>(); }
    template<> MNL_INLINE inline float val::cast() const noexcept { return rep.dat<float>(); }
 
    template<> MNL_INLINE inline bool val::test<const sym &>() const noexcept { return rep.tag() == 0x7FFBu; }

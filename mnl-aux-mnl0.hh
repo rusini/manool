@@ -63,9 +63,11 @@
 # if MNL_USE_INLINE
    # define MNL_INLINE   __attribute__((__always_inline__))
    # define MNL_NOINLINE __attribute__((__noinline__))
+   # define MNL_HOT      __attribute__((__hot__, __flatten__))
 # else
    # define MNL_INLINE
    # define MNL_NOINLINE
+   # define MNL_HOT
 # endif
 #
 # define MNL_NORETURN      __attribute__((__noreturn__, __noinline__, __cold__))

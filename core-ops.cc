@@ -232,29 +232,29 @@ namespace aux {
    MNL_M(double, /*empty*/) MNL_M(float, f)
 # undef MNL_M
 
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _div(Dat lhs, Dat rhs) {
+   template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _div(Val lhs, Val rhs) {
       auto res = lhs / rhs;
       if (MNL_LIKELY(isfinite(res))) return res;
-      MNL_ERR(!isnan(res) ? rhs == 0 ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow") : MNL_SYM("Undefined"));
+      MNL_ERR(!isnan(res) ? rhs == 0 ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow") : MNL_SYM("Undefined"), res, rhs);
    }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _rem(Dat lhs, Dat rhs) {
+   template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _rem(Val lhs, Val rhs) {
       auto res = fmod(lhs, rhs);
       if (MNL_LIKELY(!isnan(res))) return res;
-      MNL_ERR(MNL_SYM("Undefined"));
+      err_Undefined();
    }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _fma(Dat a1, Dat a2, Dat a3) {
+   template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _fma(Val a1, Val a2, Val a3) {
       auto res = fma(a1, a2, a3);
       if (MNL_LIKELY(!isinf(res))) return res;
-      MNL_ERR(MNL_SYM("Overflow"));
+      err_Overflow();
    }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _sign(Dat rhs) {
+   template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _sign(Val rhs) {
       return rhs > 0 ? +1 : rhs < 0 ? -1 : rhs;
    }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _sign(Dat lhs, Dat rhs) {
+   template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _sign(Val lhs, Val rhs) {
    # if !__aarch64__
       return copysign(lhs, rhs);
-   # else // g++ (v7-8) crashes with "internal compiler error: Segmentation fault"
-      return copysign(MNL_IF_GCC7((double))MNL_IF_GCC8((double))lhs, rhs);
+   # else // g++ v8 crashes with "internal compiler error: Segmentation fault"
+      return copysign(MNL_IF_GCC8((double))lhs, rhs);
    # endif
    }
    template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _exp(Val rhs) {
@@ -270,25 +270,28 @@ namespace aux {
    template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _log(Val rhs) {
       auto res = log(rhs);
       if (MNL_LIKELY(isfinite(res))) return res;
-      MNL_ERR(!isnan(res) ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res); // as per IEEE 754 log never results in overflow
+      MNL_ERR(!isnan(res) ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res); // as per C99 and IEEE Std 1003.1 (POSIX) log never results in overflow
    }
    template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _log(Val lhs, Val rhs) {
-      auto tmp = _log(lhs); return _div(_log(rhs), tmp);
+      auto res = log2(lhs);
+      if (MNL_UNLIKELY(isinf(res)) err_Undefined()
+      if (MNL_LIKELY(isfinite(res = log2(rhs) / res))) return res; // Undefined raised for 0/1 bases (not DivisionByZero)
+      MNL_ERR(!isnan(res) && lhs != 1 ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res, lhs);
    }
    template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _log1p(Val rhs) {
       auto res = log1p(rhs);
       if (MNL_LIKELY(isfinite(res))) return res;
-      MNL_ERR(!isnan(res) ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res);
+      MNL_ERR(!isnan(res) ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res); // same as for log
    }
    template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _log10(Val rhs) {
       auto res = log10(rhs);
       if (MNL_LIKELY(isfinite(res))) return res;
-      MNL_ERR(!isnan(res) ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res); // as per IEEE 754 log never results in overflow
+      MNL_ERR(!isnan(res) ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res); // as per C99 and IEEE Std 1003.1 (POSIX) log never results in overflow
    }
    template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _log2(Val rhs) {
       auto res = log2(rhs);
       if (MNL_LIKELY(isfinite(res))) return res;
-      MNL_ERR(!isnan(res) ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res); // as per IEEE 754 log never results in overflow
+      MNL_ERR(!isnan(res) ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res); // as per C99 and IEEE Std 1003.1 (POSIX) log never results in overflow
    }
    template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _sqr(Val rhs) {
       return _mul(rhs, rhs);
@@ -307,7 +310,7 @@ namespace aux {
       return cbrt(rhs);
    }
    template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _pow(Val lhs, Val rhs) {
-      auto res = pow(lhs, rhs);
+      auto res = pow(lhs, rhs); // IEEE 754 "pow"
       if (MNL_LIKELY(isfinite(res))) return res;
       MNL_ERR(!isnan(res) ? lhs == 0 ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow") : MNL_SYM("Undefined"), res, lhs);
    }
@@ -334,7 +337,7 @@ namespace aux {
       return atan(rhs);
    }
    template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _atan(Val lhs, Dat rhs) {
-      return atan2(lhs, rhs); // as per IEEE 754, IEEE Std 1003.1 (POSIX), and MSDN atan2(0., 0.) == 0.
+      return atan2(lhs, rhs); // as per IEEE 754 and IEEE Std 1003.1 (POSIX) atan2(0, 0) = 0
    }
    template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _sinh(Val rhs) {
       auto res = sinh(rhs);
@@ -360,31 +363,33 @@ namespace aux {
    template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _atanh(Val rhs) {
       auto res = atanh(rhs);
       if (MNL_LIKELY(isfinite(res))) return res;
-      MNL_ERR(!isnan(res) ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res);
+      MNL_ERR(!isnan(res) ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res); // no overflow as for IEEE 754 log
    }
    template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _erf(Val rhs) {
-      return erf(rhs);
+      return erf(rhs);  // specified by C99/POSIX (not by IEEE 754)
    }
    template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _erfc(Val rhs) {
-      return erfc(rhs);
+      return erfc(rhs); // ditto
    }
    template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _gamma(Val rhs) {
-      auto res = tgamma(rhs);
+      auto res = tgamma(rhs); // specified by C99, and more in detail by POSIX (not by IEEE 754)
       if (MNL_LIKELY(isfinite(res))) return res;
-      MNL_ERR(rhs <= 0 && trunc(rhs) == rhs ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow"), rhs);
+      MNL_ERR(rhs <= 0 && trunc(rhs) == rhs ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow"), rhs); // pole error for negative integers (contrary to POSIX)
    }
    template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _lgamma(Dat rhs) {
-      int _; auto res = aux::lgamma_r(rhs, &_);
+      int _; auto res = (lgamma_r)(rhs, &_); // introduced by POSIX (std::lgamma not thread-safe under POSIX)
       if (MNL_LIKELY(!isinf(res))) return res;
-      MNL_ERR(rhs <= 0 && trunc(rhs) == rhs ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow"), rhs);
+      MNL_ERR(rhs <= 0 && trunc(rhs) == rhs ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow"), rhs); // pole error for nonpositive integers as per POSIX
    }
    template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _jn(long long _n, Val rhs) {
+      // specified by POSIX, and in more detail by glibc (not in C99/11)
       if (MNL_UNLIKELY((int)_n != _n)) MNL_ERR(MNL_SYM("LimitExceeded"));
-      return (int)_n == 0 ? ::j0(rhs) : (int)_n == 1 ? ::j1(rhs) : ::jn(_n, rhs); // dynamic specialization
+      return (int)_n == 0 ? (j0)(rhs) : (int)_n == 1 ? (j1)(rhs) : (jn)(_n, rhs); // dynamic specialization
    }
    template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _yn(long long _n, Val rhs) {
+      // specified by POSIX, and in more detail by glibc (not in C99/11)
       if (MNL_UNLIKELY((int)_n != _n)) MNL_ERR(MNL_SYM("LimitExceeded"));
-      auto res = (int)_n == 0 ? ::y0(rhs) : (int)_n == 1 ? ::y1(rhs) : ::yn(_n, rhs); // dynamic specialization
+      auto res = (int)_n == 0 ? (y0)(rhs) : (int)_n == 1 ? (y1)(rhs) : (yn)(_n, rhs); // dynamic specialization
       if (MNL_LIKELY(isfinite(res))) return res;
       MNL_ERR(!isnan(res) ? rhs == 0 ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow") : MNL_SYM("Undefined"), res, rhs);
    }
@@ -447,76 +452,84 @@ namespace aux {
          static constexpr auto err_InvalidInvocation     = []() MNL_INLINE{ MNL_ERR(MNL_SYM("InvalidInvocation"));     };
          static constexpr auto err_TypeMismatch          = []() MNL_INLINE{ MNL_ERR(MNL_SYM("TypeMismatch"));          };
          static constexpr auto err_UnrecognizedOperation = []() MNL_INLINE{ MNL_ERR(MNL_SYM("UnrecognizedOperation")); };
+
+         static constexpr auto _op1 = [](auto op, auto &self, auto &argc, auto &argv) MNL_INLINE{
+            if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
+            return op(self);
+         };
+         static constexpr auto _op2 = [](auto op, auto &self, auto &argc, auto &argv) MNL_INLINE{
+            if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
+            if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) err_TypeMismatch();
+            return op(self, as<decltype(self)>(argv[0]));
+         };
+         static constexpr auto _eq = [](auto &self, auto &argc, auto &argv) MNL_INLINE{
+            if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
+            return  MNL_LIKELY(is<decltype(self)>(argv[0])) && self == as<decltype(self)>(argv[0]);
+         };
+         static constexpr auto _ne = [](auto &self, auto &argc, auto &argv) MNL_INLINE{
+            if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
+            return !MNL_LIKELY(is<decltype(self)>(argv[0])) || self != as<decltype(self)>(argv[0]);
+         };
       case rep::tag_box: ///////////////////////////////////////////////////////////////////////////////////////////////// BoxPtr (fallback)
          return static_cast<root *>(self.rep.dat<void *>())->invoke(std::forward<Self>(self), op, argc, argv, argv_out);
       case rep::tag_nil: /////////////////////////////////////////////////////////////////////////////////////////////////////////////// Nil
          {  switch (op) {
-            case sym::op_eq/*(==)*/:
+            case sym::id("=="):
                if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
                return  is<>(argv[0]);
-            case sym::op_ne/*(<>)*/:
+            case sym::id("<>"):
                if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
                return !is<>(argv[0]);
-            case sym::op_Order:
+            case sym::id("Order"):
                if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
                return self.default_order(argv[0]);
-            case sym::op_Clone: case sym::op_DeepClone:
+            case sym::id("Clone"): case sym::op("DeepClone"):
                if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
                return {};
-            case sym::op_Str:
+            case sym::id("Str"):
                if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-               return "Nil";
-            case sym::op_caret/*(^)*/:
-               if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-               static constexpr auto err_IndirectionByNil = []() MNL_INLINE{ MNL_ERR(MNL_SYM("IndirectionByNil")); };
-               err_IndirectionByNil();
-            case sym::op_Set:
-               if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-               err_IndirectionByNil();
-            case sym::op_Weak:
+               return MNL_EARLY((val)"Nil");
+            case sym::id("Weak"):
                if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
                return {};
             }
-            MNL_ERR(MNL_SYM("UnrecognizedOperation"));
+            return [&op, argc]() MNL_NOINLINE->val{
+               switch (MNL_EARLY(sym::disp{"^", "Set"})[op]) {
+               case 0/*^*/:
+                  if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
+                  MNL_ERR(MNL_SYM("IndirectionByNil"));
+               case 1/*Set*/:
+                  if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
+                  MNL_ERR(MNL_SYM("IndirectionByNil"));
+               }
+               err_UnrecognizedOperation();
+            }();
          }
       case rep::tag_i48: /////////////////////////////////////////////////////////////////////////////////////////////////////////////// I48
-         {  const auto op1 = [&](long long op(long long)) MNL_INLINE{
-               if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-               return op(as<long long>(self));
-            };
-            const auto op2 = [&](long long op(long long, long long)) MNL_INLINE{
-               if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-               if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
-               return op(as<long long>(self), as<long long>(argv[0]));
-            };
-            const auto cmp = [&](bool op(long long, long long)) MNL_INLINE{
-               if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-               if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) err_TypeMismatch();
-               return op(as<long long>(self), as<long long>(argv[0]));
-            };
+         {  const auto op1 = [&](long long op(long long)) MNL_INLINE{ return _op1(op, as<long long>(self), argc, argv); };
+            const auto op2 = [&](long long op(long long, long long)) MNL_INLINE{ return _op2(op, as<long long>(self), argc, argv); };
+            const auto cmp = [&](auto op) MNL_INLINE{ return _op2(op, as<long long>(self), argc, argv); };
             switch (op) {
             case sym::op_add/*(+)*/:
-               return op2(_add);
+               return op2(aux::_add);
             case sym::op_sub/*(-)*/:
-               return op2(_sub);
+               return op2(aux::_sub);
             case sym::op_mul/*(*)*/:
-               return op2(_mul);
+               return op2(aux::_mul);
             case sym::op_div/*(/)*/:
-               return op2(_div);
+               return op2(aux::_div);
             case sym::op_Rem:
-               return op2(_rem);
+               return op2(aux::_rem);
             case sym::op_Div:
-               return op2(_div_f);
+               return op2(aux::_div_f);
             case sym::op_Mod:
-               return op2(_mod);
+               return op2(aux::_mod);
             case sym::op_neg: case sym::op_not/*(~)*/:
-               return op1(_neg);
+               return op1(aux::_neg);
             case sym::op_eq/*(==)*/:
-               if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-               return  MNL_LIKELY(is<long long>(argv[0])) && as<long long>(self) == as<long long>(argv[0]);
+               return _eq(as<long long>(self), argc, argv);
             case sym::op_ne/*(<>)*/:
-               if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-               return !MNL_LIKELY(is<long long>(argv[0])) || as<long long>(self) != as<long long>(argv[0]);
+               return _ne(as<long long>(self), argc, argv);
             case sym::op_lt/*(<)*/:
                return cmp([](auto lhs, auto rhs) MNL_INLINE{ return lhs <  rhs; });
             case sym::op_le/*(<=)*/:
@@ -530,169 +543,149 @@ namespace aux {
                if (MNL_UNLIKELY(!is<long long>(argv[0]))) return self.default_order(argv[0]);
                return (as<long long>(self) > as<long long>(argv[0])) - (as<long long>(self) < as<long long>(argv[0]));
             case sym::op_Abs:
-               return op1(_abs);
+               return op1(aux::_abs);
             case sym::op_Clone: case sym::op_DeepClone:
-               if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-               return as<long long>(self);
+               return op1([](auto rhs) MNL_INLINE{ return rhs; });
             }
             return [&self, &op, argc, argv]() MNL_NOINLINE->val{
                switch (op) {
                case sym::op_Str:
-                  if (MNL_LIKELY(argc == 0)) return (_str)(as<long long>(self));
+                  if (MNL_LIKELY(argc == 0)) return aux::_str(as<long long>(self));
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
                   if (MNL_UNLIKELY(!is<std::string>(argv[0]))) err_TypeMismatch();
-                  return (_str)(as<long long>(self), as<const std::string &>(argv[0]));
+                  return aux::_str(as<long long>(self), as<const std::string &>(argv[0]));
                }
                err_UnrecognizedOperation();
             }();
          }
          /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// F64/F32
-         static constexpr auto disp_f64_f32 = [](auto self, const sym &op, int argc, val argv[]) MNL_INLINE->val{
-            const auto op1 = [&](decltype(self) op(decltype(self))) MNL_INLINE{
-               if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-               return op(self);
-            };
-            const auto op2 = [&](decltype(self) op(decltype(self), decltype(self))) MNL_INLINE{
-               if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-               if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) err_TypeMismatch();
-               return op(self, as<decltype(self)>(argv[0]));
-            };
-            const auto cmp = [&](auto op) MNL_INLINE{
-               if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-               if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) err_TypeMismatch();
-               return op(self, as<decltype(self)>(argv[0]));
-            };
+         static constexpr auto disp_f64_f32 = [](auto self, auto &op, auto &argc, auto &argv) MNL_INLINE->val{
+            const auto op1 = [&](decltype(self) op(decltype(self))) MNL_INLINE{ return _op1(op, self, argc, argv); };
+            const auto op2 = [&](decltype(self) op(decltype(self), decltype(self))) MNL_INLINE{ return _op2(op, self, argc, argv); };
+            const auto cmp = [&](auto op) MNL_INLINE{ return _op2(op, self, argc, argv); };
             switch (op) {
-            case sym::op_add/*(+)*/:
-               return op2(_add);
-            case sym::op_sub/*(-)*/:
-               return op2(_sub);
-            case sym::op_mul/*(*)*/:
-               return op2(_mul);
-            case sym::op_div/*(/)*/:
-               return op2(_div);
-            case sym::op_Neg: case sym::op_not/*(~)*/:
-               return op1(_neg);
-            case sym::op_eq/*(==)*/:
-               if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-               return  MNL_LIKELY(is<decltype(self)>(argv[0])) && self == as<decltype(self)>(argv[0]);
-            case sym::op_ne/*(<>)*/:
-               if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-               return !MNL_LIKELY(is<decltype(self)>(argv[0])) || self != as<decltype(self)>(argv[0]);
-            case sym::op_lt/*(<)*/:
+            case sym::id("+"):
+               return op2(aux::_add);
+            case sym::id("-"):
+               return op2(aux::_sub);
+            case sym::id("*"):
+               return op2(aux::_mul);
+            case sym::id("/"):
+               return op2(aux::_div);
+            case sym::id("Neg"): case sym::id("~"):
+               return op1(aux::_neg);
+            case sym::id("=="):
+               return _eq(self, argc, argv);
+            case sym::id("<>"):
+               return _ne(self, argc, argv);
+            case sym::id("<"):
                return cmp([](auto lhs, auto rhs) MNL_INLINE{ return lhs <  rhs; });
-            case sym::op_le/*(<=)*/:
+            case sym::id("<="):
                return cmp([](auto lhs, auto rhs) MNL_INLINE{ return lhs <= rhs; });
-            case sym::op_gt/*(>)*/:
+            case sym::id(">"):
                return cmp([](auto lhs, auto rhs) MNL_INLINE{ return lhs >  rhs; });
-            case sym::op_ge/*(>=)*/:
+            case sym::id(">="):
                return cmp([](auto lhs, auto rhs) MNL_INLINE{ return lhs >= rhs; });
             case sym::op_Order:
                if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
                if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) return self.default_order(argv[0]);
                return signbit(self) ^ signbit(as<decltype(self)>(argv[0])) ? signbit(as<decltype(self)>(argv[0])) - signbit(self) :
                   self < as<decltype(self)>(argv[0]) ? -1 : self != as<decltype(self)>(argv[0]);
-            case sym::op_Abs:
-               return op1(_abs);
-            case sym::op_Sign:
-               return MNL_LIKELY(!argc) ? (_sign)(self) : op2(_sign);
-            case sym::op_Sqr:
-               return op1([](auto rhs) MNL_INLINE{ return rhs * rhs; });
-            case sym::op_Sqrt:
-               return op1(_sqrt);
-            case sym::op_Trunc:
-               return op1(_trunc);
-            case sym::op_Round:
-               return op1(_round);
-            case sym::op_Floor:
-               return op1(_floor);
-            case sym::op_Ceil:
-               return op1(_ceil);
-            case sym::op_Clone: case sym::op_DeepClone:
-               return op1([](auto rhs) MNL_INLINE{ return rhs; });
-            case sym::op_Int:
-               return op1(_int);
+            case sym::id("Abs"):
+               return op1(aux::_abs);
+            case sym::id("Sign"):
+               return MNL_LIKELY(!argc) ? aux::_sign(self) : op2(aux::_sign);
+            case sym::id("Sqr"):
+               return op1([](auto rhs) MNL_INLINE{ return aux::_mul(rhs, rhs); });
+            case sym::id("Sqrt"):
+               return op1(aux::_sqrt);
+            case sym::id("Trunc"):
+               return op1(aux::_trunc);
+            case sym::id("Round"):
+               return op1(aux::_round);
+            case sym::id("Floor"):
+               return op1(aux::_floor);
+            case sym::id("Ceil"):
+               return op1(aux::_ceil);
+            case sym::id("Clone"): case sym::id("DeepClone"):
+               return op1(identity);
+            case sym::id("Int"):
+               return op1(aux::_int);
             }
             return [self, &op, argc, argv]() MNL_NOINLINE->val{
-               const auto op1 = [&](decltype(self) op(decltype(self))) MNL_INLINE{
-                  if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-                  return op(self);
-               };
-               const auto op2 = [&](decltype(self) op(decltype(self), decltype(self))) MNL_INLINE{
-                  if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-                  if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) err_TypeMismatch();
-                  return op(self, as<decltype(self)>(argv[0]));
-               };
-               switch (op) {
-               case sym::op_Rem:
-                  return op2(_rem);
-               case sym::op_Fma:
+               const auto op1 = [&](decltype(self) op(decltype(self))) MNL_INLINE{ return _op1(op, self, argc, argv); };
+               const auto op2 = [&](decltype(self) op(decltype(self), decltype(self))) MNL_INLINE{ return _op2(op, self, argc, argv); };
+               switch (MNL_EARLY(disp{"Rem", "Fma", "Exp", "Expm1", "Log", "Log1p", "Log10", "Log2", "Hypot", "Cbrt", "Pow", "Sin", "Cos", "Tan",
+                  "Asin", "Acos", "Atan", "Sinh", "Cosh", "Tanh", "Asinh", "Acosh", "Atanh", "Erf", "Erfc", "Gamma", "Lgamma", "Jn", "Yn", "Str"})[op]) {
+               case  0/*Rem*/:
+                  return op2(aux::_rem);
+               case  1/*Fma*/:
                   if (MNL_UNLIKELY(argc != 2)) err_InvalidInvocation();
                   if (MNL_UNLIKELY(!is<decltype(self)>(argv[0])) || MNL_UNLIKELY(!is<decltype(self)>(argv[1]))) err_TypeMismatch();
-                  return (_fma)(as<decltype(self)>(argv[0]), as<decltype(self)>(argv[1]), self);
-               case sym::op_Exp:
-                  return op1(_exp);
-               case sym::op_Expm1:
-                  return op1(_expm1);
-               case sym::op_Log:
-                  return MNL_LIKELY(!argc) ? (_log)(self) : op2(_log);
-               case sym::op_Log1p:
-                  return op1(_log1p);
-               case sym::op_Log10:
-                  return op1(_log10);
-               case sym::op_Log2:
-                  return op1(_log2);
-               case sym::op_Hypot:
-                  return op2(_hypot);
-               case sym::op_Cbrt:
-                  return op1(_cbrt);
-               case sym::op_Pow:
-                  return op2(_pow);
-               case sym::op_Sin:
-                  return op1(_sin);
-               case sym::op_Cos:
-                  return op1(_cos);
-               case sym::op_Tan:
-                  return op1(_tan);
-               case sym::op_Asin:
-                  return op1(_asin);
-               case sym::op_Acos:
-                  return op1(_acos);
-               case sym::op_Atan:
-                  return MNL_LIKELY(!argc) ? (_atan)(self) : op2(_atan);
-               case sym::op_Sinh:
-                  return op1(_sinh);
-               case sym::op_Cosh:
-                  return op1(_cosh);
-               case sym::op_Tanh:
-                  return op1(_tanh);
-               case sym::op_Asinh:
-                  return op1(_asinh);
-               case sym::op_Acosh:
-                  return op1(_acosh);
-               case sym::op_Atanh:
-                  return op1(_atanh);
-               case sym::op_Erf:
-                  return op1(_erf);
-               case sym::op_Erfc:
-                  return op1(_erfc);
-               case sym::op_Gamma:
-                  return op1(_gamma);
-               case sym::op_Lgamma:
-                  return op1(_lgamma);
-               case sym::op_Jn:
+                  return aux::_fma(as<decltype(self)>(argv[0]), as<decltype(self)>(argv[1]), self);
+               case  2/*Exp*/:
+                  return op1(aux::_exp);
+               case  3/*Expm1*/:
+                  return op1(aux::_expm1);
+               case  4/*Log*/:
+                  return MNL_LIKELY(!argc) ? aux::_log(self) : op2(aux::_log);
+               case  5/*Log1p*/:
+                  return op1(aux::_log1p);
+               case  6/*Log10*/:
+                  return op1(aux::_log10);
+               case  7/*Log2*/:
+                  return op1(aux::_log2);
+               case  8/*Hypot*/:
+                  return op2(aux::_hypot);
+               case  9/*Cbrt*/:
+                  return op1(aux::_cbrt);
+               case 10/*Pow*/:
+                  return op2(aux::_pow);
+               case 11/*Sin*/:
+                  return op1(aux::_sin);
+               case 12/*Cos*/:
+                  return op1(aux::_cos);
+               case 13/*Tan*/:
+                  return op1(aux::_tan);
+               case 14/*Asin*/:
+                  return op1(aux::_asin);
+               case 15/*Acos*/:
+                  return op1(aux::_acos);
+               case 16/*Atan*/:
+                  return MNL_LIKELY(!argc) ? aux::_atan(self) : op2(aux::_atan);
+               case 17/*Sinh*/:
+                  return op1(aux::_sinh);
+               case 18/*Cosh*/:
+                  return op1(aux::_cosh);
+               case 19/*Tanh*/:
+                  return op1(aux::_tanh);
+               case 20/*Asinh*/:
+                  return op1(aux::_asinh);
+               case 21/*Acosh*/:
+                  return op1(aux::_acosh);
+               case 22/*Atanh*/:
+                  return op1(aux::_atanh);
+               case 23/*Erf*/:
+                  return op1(aux::_erf);
+               case 24/*Erfc*/:
+                  return op1(aux::_erfc);
+               case 25/*Gamma*/:
+                  return op1(aux::_gamma);
+               case 26/*Lgamma*/:
+                  return op1(aux::_lgamma);
+               case 27/*Jn*/:
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
                   if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
-                  return (_jn)(as<long long>(argv[0]), self);
-               case sym::op_Yn:
+                  return aux::_jn(as<long long>(argv[0]), self);
+               case 28/*Yn*/:
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
                   if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
-                  return (_yn)(as<long long>(argv[0]), self);
-               case sym::op_Str:
-                  if (MNL_LIKELY(argc == 0)) return (_str)(self);
+                  return aux::_yn(as<long long>(argv[0]), self);
+               case 29/*Str*/:
+                  if (MNL_LIKELY(argc == 0)) return aux::_str(self);
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
                   if (MNL_UNLIKELY(!is<std::string>(argv[0]))) err_TypeMismatch();
-                  return (_str)(self, as<const std::string &>(argv[0]));
+                  return aux::_str(self, as<const std::string &>(argv[0]));
                }
                err_UnrecognizedOperation();
             }();
@@ -701,215 +694,31 @@ namespace aux {
          disp_f64_f32(as<double>(self), op, argc, argv);
       case val::tag_f32:
          disp_f64_f32(as<float >(self), op, argc, argv);
-      # define MNL_M(DAT) \
-         switch (op) { \
-         case sym::op_add: /* + */ \
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            if (MNL_UNLIKELY(!is<DAT>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-            return aux::_add(as<DAT>(self), as<DAT>(argv[0])); \
-         case sym::op_sub: /* - */ \
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            if (MNL_UNLIKELY(!is<DAT>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-            return aux::_sub(as<DAT>(self), as<DAT>(argv[0])); \
-         case sym::op_mul: /* * */ \
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            if (MNL_UNLIKELY(!is<DAT>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-            return aux::_mul(as<DAT>(self), as<DAT>(argv[0])); \
-         case sym::op_div: /* / */ \
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            if (MNL_UNLIKELY(!is<DAT>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-            return aux::_div(as<DAT>(self), as<DAT>(argv[0])); \
-         case sym::op_rem: /* Rem */ \
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            if (MNL_UNLIKELY(!is<DAT>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-            return aux::_rem(as<DAT>(self), as<DAT>(argv[0])); \
-         case sym::op_neg: case sym::op_not: /* Neg; ~ */ \
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return aux::_neg(as<DAT>(self)); \
-         case sym::op_fma: \
-            if (MNL_UNLIKELY(argc != 2)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            if (MNL_UNLIKELY(!is<DAT>(argv[0])) || MNL_UNLIKELY(!is<DAT>(argv[1]))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-            return aux::_fma(as<DAT>(argv[0]), as<DAT>(argv[1]), as<DAT>(self)); \
-         case sym::op_eq: \
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return  MNL_LIKELY(is<DAT>(argv[0])) && as<DAT>(self) == as<DAT>(argv[0]); \
-         case sym::op_ne: \
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return !MNL_LIKELY(is<DAT>(argv[0])) || as<DAT>(self) != as<DAT>(argv[0]); \
-         case sym::op_lt: \
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            if (MNL_UNLIKELY(!is<DAT>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-            return as<DAT>(self) <  as<DAT>(argv[0]); \
-         case sym::op_le: \
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            if (MNL_UNLIKELY(!is<DAT>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-            return as<DAT>(self) <= as<DAT>(argv[0]); \
-         case sym::op_gt: \
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            if (MNL_UNLIKELY(!is<DAT>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-            return as<DAT>(self) >  as<DAT>(argv[0]); \
-         case sym::op_ge: \
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            if (MNL_UNLIKELY(!is<DAT>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-            return as<DAT>(self) >= as<DAT>(argv[0]); \
-         case sym::op_order: \
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            if (MNL_UNLIKELY(!is<DAT>(argv[0]))) return self.default_order(argv[0]); \
-            return signbit(as<DAT>(self)) ^ signbit(as<DAT>(argv[0])) ? signbit(as<DAT>(argv[0])) - signbit(as<DAT>(self)) : \
-               as<DAT>(self) < as<DAT>(argv[0]) ? -1 : as<DAT>(self) != as<DAT>(argv[0]); \
-         case sym::op_abs: \
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return aux::_abs(as<DAT>(self)); \
-         case sym::op_sign: \
-            if (MNL_LIKELY(argc == 0)) return aux::_sign(as<DAT>(self)); \
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            if (MNL_UNLIKELY(!is<DAT>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-            return aux::_sign(as<DAT>(self), as<DAT>(argv[0])); \
-         case sym::op_exp: \
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return aux::_exp(as<DAT>(self)); \
-         case sym::op_expm1: \
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return aux::_expm1(as<DAT>(self)); \
-         case sym::op_log: \
-            if (MNL_LIKELY(argc == 0)) return aux::_log(as<DAT>(self)); \
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            if (MNL_UNLIKELY(!is<DAT>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-            return aux::_log(as<DAT>(self), as<DAT>(argv[0])); \
-         case sym::op_log1p: \
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return aux::_log1p(as<DAT>(self)); \
-         case sym::op_log10: \
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return aux::_log10(as<DAT>(self)); \
-         case sym::op_log2: \
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return aux::_log2(as<DAT>(self)); \
-         case sym::op_sqr: \
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return aux::_sqr(as<DAT>(self)); \
-         case sym::op_sqrt: \
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return aux::_sqrt(as<DAT>(self)); \
-         case sym::op_hypot: \
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            if (MNL_UNLIKELY(!is<DAT>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-            return aux::_hypot(as<DAT>(self), as<DAT>(argv[0])); \
-         case sym::op_cbrt: \
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return aux::_cbrt(as<DAT>(self)); \
-         case sym::op_pow: \
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            if (MNL_UNLIKELY(!is<DAT>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-            return aux::_pow(as<DAT>(self), as<DAT>(argv[0])); \
-         case sym::op_sin: \
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return aux::_sin(as<DAT>(self)); \
-         case sym::op_cos: \
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return aux::_cos(as<DAT>(self)); \
-         case sym::op_tan: \
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return aux::_tan(as<DAT>(self)); \
-         case sym::op_asin: \
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return aux::_asin(as<DAT>(self)); \
-         case sym::op_acos: \
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return aux::_acos(as<DAT>(self)); \
-         case sym::op_atan: \
-            if (MNL_LIKELY(argc == 0)) return aux::_atan(as<DAT>(self)); \
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            if (MNL_UNLIKELY(!is<DAT>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-            return aux::_atan(as<DAT>(self), as<DAT>(argv[0])); \
-         case sym::op_sinh: \
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return aux::_sinh(as<DAT>(self)); \
-         case sym::op_cosh: \
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return aux::_cosh(as<DAT>(self)); \
-         case sym::op_tanh: \
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return aux::_tanh(as<DAT>(self)); \
-         case sym::op_asinh: \
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return aux::_asinh(as<DAT>(self)); \
-         case sym::op_acosh: \
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return aux::_acosh(as<DAT>(self)); \
-         case sym::op_atanh: \
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return aux::_atanh(as<DAT>(self)); \
-         case sym::op_erf: \
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return aux::_erf(as<DAT>(self)); \
-         case sym::op_erfc: \
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return aux::_erfc(as<DAT>(self)); \
-         case sym::op_gamma: \
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return aux::_gamma(as<DAT>(self)); \
-         case sym::op_lgamma: \
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return aux::_lgamma(as<DAT>(self)); \
-         case sym::op_jn: \
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            if (MNL_UNLIKELY(!is<long long>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-            return aux::_jn(as<long long>(argv[0]), as<DAT>(self)); \
-         case sym::op_yn: \
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            if (MNL_UNLIKELY(!is<long long>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-            return aux::_yn(as<long long>(argv[0]), as<DAT>(self)); \
-         case sym::op_trunc: \
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return aux::_trunc(as<DAT>(self)); \
-         case sym::op_round: \
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return aux::_round(as<DAT>(self)); \
-         case sym::op_floor: \
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return aux::_floor(as<DAT>(self)); \
-         case sym::op_ceil: \
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return aux::_ceil(as<DAT>(self)); \
-         case sym::op_clone: case sym::op_deep_clone: \
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return as<DAT>(self); \
-         case sym::op_str: \
-            if (MNL_LIKELY(argc == 0)) return aux::_str(as<DAT>(self)); \
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            if (MNL_UNLIKELY(!is<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch")); \
-            return aux::_str(as<DAT>(self), as<const string &>(argv[0])); \
-         case sym::op_int: \
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-            return aux::_int(as<DAT>(self)); \
-         } \
-         MNL_ERR(MNL_SYM("UnrecognizedOperation")); \
-      // end # define MNL_M(DAT)
-      default: /* F64 */ MNL_M(double) case 0x7FFCu: /* F32 */ MNL_M(float)
-      # undef MNL_M
-      case 0x7FFBu: // Sym
-         switch (*this) {
-         case sym::op_eq:
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            return  MNL_LIKELY(is<sym>(argv[0])) && as<const sym &>(self) == as<const sym &>(argv[0]);
-         case sym::op_ne:
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            return !MNL_LIKELY(is<sym>(argv[0])) || as<const sym &>(self) != as<const sym &>(argv[0]);
-         case sym::op_order:
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            if (MNL_UNLIKELY(!is<sym>(argv[0]))) return self.default_order(argv[0]);
-            return (as<sym>(self) > as<sym>(argv[0])) - (as<sym>(self) < as<sym>(argv[0]));
-         case sym::op_apply:
-            return as<const sym &>(self)(*argv, argc - 1, argv + 1, argv_out + !!argv_out); // TODO: also a convenience/unification func exists for that
-         case sym::op_clone: case sym::op_deep_clone:
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            return move(self);
-         case sym::op_str:
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            return (string)as<const sym &>(self);
+      case val::tag_sym: /////////////////////////////////////////////////////////////////////////////////////////////////////////////// Sym
+         {  switch (op) {
+            case sym::op_eq/*(==)*/:
+               return _eq(as<const sym &>(self), argc, argv);
+            case sym::op_ne/*(<>)*/:
+               return _ne(as<const sym &>(self), argc, argv);
+            case sym::op_Order:
+               if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
+               if (MNL_UNLIKELY(!is<sym>(argv[0]))) return self.default_order(argv[0]);
+               return (as<sym>(self) > as<sym>(argv[0])) - (as<sym>(self) < as<sym>(argv[0]));
+            case sym::op_Apply:
+               return as<const sym &>(self)(*argv, argc - 1, argv + 1, argv_out + !!argv_out); // TODO: also a convenience/unification func exists for that
+            case sym::op_Clone: case sym::op_DeepClone:
+               if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
+               return std::move(self);
+            }
+            return [&op, argc]() MNL_NOINLINE->val{
+               switch (op) {
+               case sym::op_Str:
+                  if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
+                  return (string)as<const sym &>(self);
+               }
+               err_UnrecognizedOperation();
+            }();
          }
-         MNL_ERR(MNL_SYM("UnrecognizedOperation"));
       case 0x7FFEu: // Bool/False
          switch (*this) {
          case sym::op_eq:
@@ -977,125 +786,108 @@ namespace aux {
             return "True";
          }
          MNL_ERR(MNL_SYM("UnrecognizedOperation"));
-      case 0x7FFDu: // U32
-         switch (*this) {
-         case sym::op_add:
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-            return as<unsigned>(self) + as<unsigned>(argv[0]);
-         case sym::op_sub:
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-            return as<unsigned>(self) - as<unsigned>(argv[0]);
-         case sym::op_mul:
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-            return as<unsigned>(self) * as<unsigned>(argv[0]);
-         case sym::op_div: case sym::op_divf:
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-            if (MNL_UNLIKELY(!as<unsigned>(argv[0]))) MNL_ERR(MNL_SYM("ConstraintViolation"));
-            return as<unsigned>(self) / as<unsigned>(argv[0]);
-         case sym::op_rem: case sym::op_mod:
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-            if (MNL_UNLIKELY(!as<unsigned>(argv[0]))) MNL_ERR(MNL_SYM("ConstraintViolation"));
-            return as<unsigned>(self) % as<unsigned>(argv[0]);
-         case sym::op_neg:
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            return -as<unsigned>(self);
-         case sym::op_eq:
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            return  MNL_LIKELY(is<unsigned>(argv[0])) && as<unsigned>(self) == as<unsigned>(argv[0]);
-         case sym::op_ne:
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            return !MNL_LIKELY(is<unsigned>(argv[0])) || as<unsigned>(self) != as<unsigned>(argv[0]);
-         case sym::op_lt:
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-            return as<unsigned>(self) <  as<unsigned>(argv[0]);
-         case sym::op_le:
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-            return as<unsigned>(self) <= as<unsigned>(argv[0]);
-         case sym::op_gt:
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-            return as<unsigned>(self) >  as<unsigned>(argv[0]);
-         case sym::op_ge:
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-            return as<unsigned>(self) >= as<unsigned>(argv[0]);
-         case sym::op_order:
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) return self.default_order(argv[0]);
-            return (as<unsigned>(self) > as<unsigned>(argv[0])) - (as<unsigned>(self) < as<unsigned>(argv[0]));
-         case sym::op_abs:
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            return +as<unsigned>(self);
-         case sym::op_and:
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-            return as<unsigned>(self) & as<unsigned>(argv[0]);
-         case sym::op_or:
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-            return as<unsigned>(self) | as<unsigned>(argv[0]);
-         case sym::op_not:
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            return ~as<unsigned>(self);
-         case sym::op_xor:
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-            return as<unsigned>(self) ^ as<unsigned>(argv[0]);
-         case sym::op_shl:
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-            return MNL_LIKELY(as<unsigned>(argv[0]) < 32) ? as<unsigned>(self) << as<unsigned>(argv[0]) : 0;
-         case sym::op_shr:
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-            return MNL_LIKELY(as<unsigned>(argv[0]) < 32) ? as<unsigned>(self) >> as<unsigned>(argv[0]) : 0;
-         case sym::op_ashr: // relies on implementation-specific behavior of C++ implementation but that's OK for our target platforms
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-            return MNL_LIKELY(as<unsigned>(argv[0]) < 32) ? (unsigned)((int)as<unsigned>(self) >> (int)as<unsigned>(argv[0])) : 0;
-         case sym::op_rotl:
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-            return as<unsigned>(self) << (as<unsigned>(argv[0]) & 0x1F) | as<unsigned>(self) >> (-(as<unsigned>(argv[0]) & 0x1F) & 0x1F);
-         case sym::op_rotr:
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-            return as<unsigned>(self) >> (as<unsigned>(argv[0]) & 0x1F) | as<unsigned>(self) << (-(as<unsigned>(argv[0]) & 0x1F) & 0x1F);
-         case sym::op_ctz:
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            if (MNL_UNLIKELY(!as<unsigned>(self))) MNL_ERR(MNL_SYM("ConstraintViolation"));
-            return (unsigned)__builtin_ctz(as<unsigned>(self));
-         case sym::op_clz:
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            if (MNL_UNLIKELY(!as<unsigned>(self))) MNL_ERR(MNL_SYM("ConstraintViolation"));
-            return (unsigned)__builtin_clz(as<unsigned>(self));
-         case sym::op_log2:
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            if (MNL_UNLIKELY(!as<unsigned>(self))) MNL_ERR(MNL_SYM("ConstraintViolation"));
-            return 31 - (unsigned)__builtin_clz(as<unsigned>(self));
-         case sym::op_c1s:
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            return (unsigned)__builtin_popcount(as<unsigned>(self));
-         case sym::op_clone: case sym::op_deep_clone:
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            return as<unsigned>(self);
-         case op_str:
-            if (MNL_LIKELY(argc == 0)) { char res[sizeof(unsigned) * 2 + sizeof "0x"]; return sprintf(res, "0x%08X", as<unsigned>(self)), res; }
-            if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            if (MNL_UNLIKELY(!is<string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-            return aux::_str(as<unsigned>(self), as<const string &>(argv[0]));
-         case op_int:
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            return (long long)as<unsigned>(self);
+      case rep::tag_u32: /////////////////////////////////////////////////////////////////////////////////////////////////////////////// U32
+         {  const auto op1 = [&](unsigned op(unsigned)) MNL_INLINE{
+               if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
+               return op(as<unsigned>(self));
+            };
+            const auto op2 = [&](long long op(long long, long long)) MNL_INLINE{
+               if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
+               if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
+               return op(as<long long>(self), as<long long>(argv[0]));
+            };
+            const auto cmp = [&](bool op(long long, long long)) MNL_INLINE{
+               if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
+               if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) err_TypeMismatch();
+               return op(as<long long>(self), as<long long>(argv[0]));
+            };
+            const auto op1 = [&](auto op) MNL_INLINE{ return _op1(op, self, argc, argv); };
+            const auto op2 = [&](auto op) MNL_INLINE{ return _op2(op, self, argc, argv); };
+
+            switch (op) {
+            case sym::op_add/*(+)*/:
+               return op2(std::plus/*+*/<>{});
+            case sym::op_sub/*(-)*/:
+               return op2(std::minus/*-*/<>{});
+            case sym::op_mul/*(*)*/:
+               return op2(std::multiplies/***/<>{});
+            case sym::op_div/*(/)*/: case sym::op_Div:
+               return op2(std::divides/*/*/<>{});
+            case sym::op_Rem: case sym::op_Mod:
+               return op2(std::modulus/*%*/<>{});
+            case sym::op_Neg:
+               return op1(std::negate/*-*/<>{});
+            case sym::op_eq/*(==)*/:
+               return _eq(as<unsigned>(self), argc, argv);
+            case sym::op_ne/*(<>)*/:
+               return _ne(as<unsigned>(self), argc, argv);
+            case sym::op_lt/*(<)*/:
+               return op2([](auto lhs, auto rhs) MNL_INLINE{ return lhs <  rhs; });
+            case sym::op_le/*(<=)*/:
+               return op2([](auto lhs, auto rhs) MNL_INLINE{ return lhs <= rhs; });
+            case sym::op_gt/*(>)*/:
+               return op2([](auto lhs, auto rhs) MNL_INLINE{ return lhs >  rhs; });
+            case sym::op_ge/*(>=)*/:
+               return op2([](auto lhs, auto rhs) MNL_INLINE{ return lhs >= rhs; });
+            case sym::op_Order:
+               if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+               if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) return self.default_order(argv[0]);
+               return (as<unsigned>(self) > as<unsigned>(argv[0])) - (as<unsigned>(self) < as<unsigned>(argv[0]));
+            case sym::op_abs:
+               return op1([](auto rhs) MNL_INLINE{ return +rhs; });
+            case sym::op_and/*(&)*/:
+               return op2([](auto lhs, auto rhs) MNL_INLINE{ return lhs & rhs; });
+            case sym::op_or/*(|)*/:
+               return op2([](auto lhs, auto rhs) MNL_INLINE{ return lhs | rhs; });
+            case sym::op_not/*(~)*/:
+               return op1([](auto rhs) MNL_INLINE{ return ~rhs; });
+            case sym::op_Xor:
+               return op2([](auto lhs, auto rhs) MNL_INLINE{ return lhs ^ rhs; });
+            case sym::op_Shl:
+               return op2([](auto lhs, auto rhs) MNL_INLINE{ return MNL_LIKELY(rhs < 32) ? lhs << rhs : 0; });
+            case sym::op_Shr:
+               return op2([](auto lhs, auto rhs) MNL_INLINE{ return MNL_LIKELY(rhs < 32) ? lhs >> rhs : 0; });
+            case sym::op_Ashr: // relies on implementation-specific behavior of C++ implementation but that's OK for our target platforms
+               return op2([](auto lhs, auto rhs) MNL_INLINE{ return MNL_LIKELY(rhs < 32) ? (unsigned)((int)lhs >> (int)rhs) : 0; });
+            case sym::op_Rotl:
+               return op2([](unsigned lhs, unsigned rhs) MNL_INLINE{ return lhs << (rhs & 0x1F) | lhs >> (-rhs & 0x1F); });
+            case sym::op_Rotr:
+               return op2([](unsigned lhs, unsigned rhs) MNL_INLINE{ return lhs >> (rhs & 0x1F) | lhs << (-rhs & 0x1F); });
+            case sym::op_Ctz:
+               static constexpr auto err_ConstraintViolation =
+                  []() MNL_INLINE{ MNL_ERR(MNL_SYM("ConstraintViolation")); };
+               return op1( [](unsigned rhs) MNL_INLINE{
+                  if (MNL_UNLIKELY(!rhs)) err_ConstraintViolation();
+                  return (unsigned)__builtin_ctz(rhs); } );
+            case sym::op_Clz:
+               return op1( [](unsigned rhs) MNL_INLINE{
+                  if (MNL_UNLIKELY(!rhs)) err_ConstraintViolation();
+                  return (unsigned)__builtin_clz(rhs); } );
+            case sym::op_Log2:
+               return op1( [](unsigned rhs) MNL_INLINE{
+                  if (MNL_UNLIKELY(!rhs)) err_ConstraintViolation();
+                  return 31 - (unsigned)__builtin_clz(rhs); } );
+            case sym::op_C1s:
+               return op1( [](unsigned rhs) MNL_INLINE{
+                  return (unsigned)__builtin_popcount(rhs); } );
+            case sym::op_clone: case sym::op_deep_clone:
+               if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+               return as<unsigned>(self);
+            case op_int:
+               if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+               return (long long)as<unsigned>(self);
+            }
+            return [&op, argc]() MNL_NOINLINE->val{
+               switch (op) {
+               case op_str:
+                  if (MNL_LIKELY(argc == 0)) { char res[sizeof(unsigned) * 2 + sizeof "0x"]; return sprintf(res, "0x%08X", as<unsigned>(self)), res; }
+                  if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
+                  if (MNL_UNLIKELY(!is<std::string>(argv[0]))) err_TypeMismatch();
+                  return aux::_str(as<unsigned>(self), as<const string &>(argv[0]));
+               }
+               err_UnrecognizedOperation();
+            }();
          }
-         MNL_ERR(MNL_SYM("UnrecognizedOperation"));
       }
    }
 

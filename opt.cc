@@ -25,7 +25,7 @@
    }
    auto mnl::aux::optimize(expr_apply1<> expr)->code {
       if (auto target_p = as_p<expr_lit<const sym &>>(expr.target)) {
-         // trivial unary operators
+         // possibly trivial unary operations
          if (target_p->value == MNL_SYM("~")) {
             if (auto arg0_p = as_p<expr_tvar>(expr.arg0))
                return expr_op1{{}, _not{}, *arg0_p}; // ~T
