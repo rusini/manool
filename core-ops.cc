@@ -212,13 +212,12 @@ namespace aux {
    // F64, F32 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    // FP classification by preference (number of instructions for x86+sse2): isnan, isinf, isfinite
    // However, tests for inf go before tests for nan since this is how complex numbers are dealt with
-   inline namespace _std {
-      using std::isnan; using std::isfinite; using std::fmod;   using std::fma;   using std::copysign; using std::signbit; // <cmath>
-      using std::exp;   using std::expm1;    using std::log;    using std::log1p; using std::log10;    using std::log2; // <cmath>
-      using std::sqrt;  using std::hypot;    using std::cbrt;   using std::pow; // <cmath>
-      using std::sin;   using std::cos;      using std::tan;    using std::asin;  using std::acos;     using std::atan;  using std::atan2; // <cmath>
-      using std::sinh;  using std::cosh;     using std::tanh;   using std::asinh; using std::acosh;    using std::atanh; // <cmath>
-      using std::erf;   using std::erfc;     using std::tgamma; using std::trunc; using std::round;    using std::floor; using std::ceil; // <cmath>
+   inline namespace _std { // from <cmath>
+      using std::isnan, std::isfinite, std::fmod, std::fma, std::copysign, std::signbit;
+      using std::exp, std::expm1, std::log, std::log1p, std::log10, std::log2, std::sqrt, std::hypot, std::cbrt, std::pow;
+      using std::sin, std::cos, std::tan, std::asin, std::acos, std::atan, std::atan2;
+      using std::sinh, std::cosh, std::tanh, std::asinh, std::acosh, std::atanh;
+      using std::erf, std::erfc, std::tgamma, std::trunc, std::round, std::floor, std::ceil;
    }
 # define MNL_M(VAL, SUFFIX) \
    MNL_INLINE static inline VAL lgamma_r(VAL rhs, int *sign) noexcept { return ::lgamma##SUFFIX##_r(rhs, &sign); }
@@ -232,6 +231,9 @@ namespace aux {
    MNL_M(double, /*empty*/) MNL_M(float, f)
 # undef MNL_M
 
+   template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _order(Val lhs, Val rhs) {
+      return signbit(lhs) ^ signbit(rhs) ? signbit(rhs) - signbit(lhs) : (lhs < rhs) - (lhs > rhs);
+   }
    template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _div(Val lhs, Val rhs) {
       auto res = lhs / rhs;
       if (MNL_LIKELY(isfinite(res))) return res;
@@ -494,13 +496,16 @@ namespace aux {
                return {};
             }
             return [&op, argc]() MNL_NOINLINE->val{
-               switch (MNL_EARLY(sym::disp{"^", "Set"})[op]) {
-               case 0/*^*/:
+               switch (MNL_EARLY(disp({"^", "Set"}))[op]) {
+               case 1/*^*/:
                   if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
                   MNL_ERR(MNL_SYM("IndirectionByNil"));
-               case 1/*Set*/:
+               case 2/*Set*/:
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
                   MNL_ERR(MNL_SYM("IndirectionByNil"));
+               default:
+                  MNL_UNREACHABLE();
+               case int{}:
                }
                err_UnrecognizedOperation();
             }();
@@ -548,12 +553,15 @@ namespace aux {
                return op1([](auto rhs) MNL_INLINE{ return rhs; });
             }
             return [&self, &op, argc, argv]() MNL_NOINLINE->val{
-               switch (op) {
-               case sym::op_Str:
+               switch (MNL_EARLY(disp{"Str"})[op]) {
+               case 1/*Str*/:
                   if (MNL_LIKELY(argc == 0)) return aux::_str(as<long long>(self));
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
                   if (MNL_UNLIKELY(!is<std::string>(argv[0]))) err_TypeMismatch();
                   return aux::_str(as<long long>(self), as<const std::string &>(argv[0]));
+               default:
+                  MNL_UNREACHABLE();
+               case int{}:
                }
                err_UnrecognizedOperation();
             }();
@@ -617,75 +625,78 @@ namespace aux {
                const auto op2 = [&](decltype(self) op(decltype(self), decltype(self))) MNL_INLINE{ return _op2(op, self, argc, argv); };
                switch (MNL_EARLY(disp{"Rem", "Fma", "Exp", "Expm1", "Log", "Log1p", "Log10", "Log2", "Hypot", "Cbrt", "Pow", "Sin", "Cos", "Tan",
                   "Asin", "Acos", "Atan", "Sinh", "Cosh", "Tanh", "Asinh", "Acosh", "Atanh", "Erf", "Erfc", "Gamma", "Lgamma", "Jn", "Yn", "Str"})[op]) {
-               case  0/*Rem*/:
+               case  1/*Rem*/:
                   return op2(aux::_rem);
-               case  1/*Fma*/:
+               case  2/*Fma*/:
                   if (MNL_UNLIKELY(argc != 2)) err_InvalidInvocation();
                   if (MNL_UNLIKELY(!is<decltype(self)>(argv[0])) || MNL_UNLIKELY(!is<decltype(self)>(argv[1]))) err_TypeMismatch();
                   return aux::_fma(as<decltype(self)>(argv[0]), as<decltype(self)>(argv[1]), self);
-               case  2/*Exp*/:
+               case  3/*Exp*/:
                   return op1(aux::_exp);
-               case  3/*Expm1*/:
+               case  4/*Expm1*/:
                   return op1(aux::_expm1);
-               case  4/*Log*/:
+               case  5/*Log*/:
                   return MNL_LIKELY(!argc) ? aux::_log(self) : op2(aux::_log);
-               case  5/*Log1p*/:
+               case  6/*Log1p*/:
                   return op1(aux::_log1p);
-               case  6/*Log10*/:
+               case  7/*Log10*/:
                   return op1(aux::_log10);
-               case  7/*Log2*/:
+               case  8/*Log2*/:
                   return op1(aux::_log2);
-               case  8/*Hypot*/:
+               case  9/*Hypot*/:
                   return op2(aux::_hypot);
-               case  9/*Cbrt*/:
+               case 10/*Cbrt*/:
                   return op1(aux::_cbrt);
-               case 10/*Pow*/:
+               case 11/*Pow*/:
                   return op2(aux::_pow);
-               case 11/*Sin*/:
+               case 12/*Sin*/:
                   return op1(aux::_sin);
-               case 12/*Cos*/:
+               case 13/*Cos*/:
                   return op1(aux::_cos);
-               case 13/*Tan*/:
+               case 14/*Tan*/:
                   return op1(aux::_tan);
-               case 14/*Asin*/:
+               case 15/*Asin*/:
                   return op1(aux::_asin);
-               case 15/*Acos*/:
+               case 16/*Acos*/:
                   return op1(aux::_acos);
-               case 16/*Atan*/:
+               case 17/*Atan*/:
                   return MNL_LIKELY(!argc) ? aux::_atan(self) : op2(aux::_atan);
-               case 17/*Sinh*/:
+               case 18/*Sinh*/:
                   return op1(aux::_sinh);
-               case 18/*Cosh*/:
+               case 19/*Cosh*/:
                   return op1(aux::_cosh);
-               case 19/*Tanh*/:
+               case 20/*Tanh*/:
                   return op1(aux::_tanh);
-               case 20/*Asinh*/:
+               case 21/*Asinh*/:
                   return op1(aux::_asinh);
-               case 21/*Acosh*/:
+               case 22/*Acosh*/:
                   return op1(aux::_acosh);
-               case 22/*Atanh*/:
+               case 23/*Atanh*/:
                   return op1(aux::_atanh);
-               case 23/*Erf*/:
+               case 24/*Erf*/:
                   return op1(aux::_erf);
-               case 24/*Erfc*/:
+               case 25/*Erfc*/:
                   return op1(aux::_erfc);
-               case 25/*Gamma*/:
+               case 26/*Gamma*/:
                   return op1(aux::_gamma);
-               case 26/*Lgamma*/:
+               case 27/*Lgamma*/:
                   return op1(aux::_lgamma);
-               case 27/*Jn*/:
+               case 28/*Jn*/:
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
                   if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
                   return aux::_jn(as<long long>(argv[0]), self);
-               case 28/*Yn*/:
+               case 29/*Yn*/:
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
                   if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
                   return aux::_yn(as<long long>(argv[0]), self);
-               case 29/*Str*/:
+               case 30/*Str*/:
                   if (MNL_LIKELY(argc == 0)) return aux::_str(self);
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
                   if (MNL_UNLIKELY(!is<std::string>(argv[0]))) err_TypeMismatch();
                   return aux::_str(self, as<const std::string &>(argv[0]));
+               default:
+                  MNL_UNREACHABLE();
+               case int{}:
                }
                err_UnrecognizedOperation();
             }();

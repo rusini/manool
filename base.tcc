@@ -91,7 +91,7 @@ namespace aux {
       MNL_INLINE bool is_lvalue() const noexcept { return target.is_lvalue(); }
    };
    template<class Target, class Arg0>
-      expr_apply2(Target, Arg0)->expr_apply1<Target, Arg0>;
+      expr_apply1(Target, Arg0)->expr_apply1<Target, Arg0>;
    template<class Op, class Arg0>
    struct expr_apply2<Op, Arg0, true>: code::rvalue, Op {
       Arg0 arg0; loc _loc;
