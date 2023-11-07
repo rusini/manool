@@ -40,7 +40,16 @@ namespace aux {
 
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   template<class Target = code> struct expr_apply0: code::rvalue { // application specialized for 0 arguments
+   template< int Argc, class Target = code,
+      typename Arg0 = std::conditional_t<Argc >= 1 && Argc <= 2, code, void>,
+      typename Arg1 = std::conditional_t<Argc >= 2 && Argc <= 2, code, void>, bool Is_op = std::is_base_of_v<op, Target> >
+   class expr_apply; // incomplete
+
+   // Application specialized for 0 arguments
+   template<class Target> expr_apply(Target)->expr_apply< 0,
+      std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>, Target, expr_lit<Target>> >;
+   template<class Target> struct expr_apply<0, Target>
+      : code::rvalue {
       Target target; loc _loc;
       MNL_INLINE val execute(bool = {}) const { return MNL_SYM("Apply")(trace_execute, _loc, target.execute(), 0 , {}); }
       MNL_INLINE void exec_nores(bool = {}) const { execute(); }
@@ -49,9 +58,13 @@ namespace aux {
    struct _op1 { // operator mixin mark
       static val _apply(const val &) = delete; // for limited diagnostics
    };
+
    // Application specialized for 1 argument
-   template<class Target = code, class Arg0 = code, bool Is_op = std::is_base_of_v<_op1, Target>>
-   struct expr_apply1: std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue> {
+   template<class Target, typename Arg0> expr_apply(Target, Arg0)->expr_apply< 1,
+      std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>, Target, expr_lit<Target>>,
+      std::conditional_t<std::is_base_of_v<code, Arg0>   || std::is_base_of_v<code::rvalue, Arg0>,   Arg0,   expr_lit<Arg0>> >;
+   template<class Target, class Arg0> struct expr_apply<1, Target, Arg0>
+      : std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue> {
       Target target; Arg0 arg0; loc _loc;
       static_assert(std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>);
       static_assert(std::is_base_of_v<code, Arg0>   || std::is_base_of_v<code::rvalue, Arg0>);
@@ -90,10 +103,8 @@ namespace aux {
    public:
       MNL_INLINE bool is_lvalue() const noexcept { return target.is_lvalue(); }
    };
-   template<class Target, class Arg0>
-      expr_apply1(Target, Arg0)->expr_apply1<Target, Arg0>;
    template<class Op, class Arg0>
-   struct expr_apply2<Op, Arg0, true>: code::rvalue, Op {
+   struct expr_apply<1, Op, Arg0, void, true>: Op {
       Arg0 arg0; loc _loc;
       static_assert(std::is_same_v<_op1, Op>);
       static_assert(std::is_same_v<code, Arg0> || std::is_base_of_v<code::rvalue, Arg0>);
@@ -108,12 +119,18 @@ namespace aux {
       }
    };
 
-   // application specialized for 2 arguments
    struct _op2 { // operator mixin mark
       static val _apply(const val &, const val &) = delete; // for limited diagnostics
    };
-   template<class Target = code, class Arg0 = code, class Arg1 = code, bool Is_op = std::is_base_of_v<_op2, Target>>
-   struct expr_apply2: std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue> {
+
+
+   // Application specialized for 2 arguments
+   template<class Target, typename Arg0, typename Arg1> expr_apply(Target, Arg0, Arg1)->expr_apply< 2,
+      std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>, Target, expr_lit<Target>>,
+      std::conditional_t<std::is_base_of_v<code, Arg0>   || std::is_base_of_v<code::rvalue, Arg0>,   Arg0,   expr_lit<Arg0>>,
+      std::conditional_t<std::is_base_of_v<code, Arg1>   || std::is_base_of_v<code::rvalue, Arg1>,   Arg1,   expr_lit<Arg1>> >;
+   template<class Target, class Arg0, class Arg1> struct expr_apply<2, Target, Arg0, Arg1>
+      : std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue> {
       Target target; Arg0 arg0; Arg1 arg1; loc _loc;
       static_assert(std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>);
       static_assert(std::is_base_of_v<code, Arg0>   || std::is_base_of_v<code::rvalue, Arg0>);
@@ -153,10 +170,8 @@ namespace aux {
    public:
       MNL_INLINE bool is_lvalue() const noexcept { return target.is_lvalue(); }
    };
-   template<class Target, class Arg0, class Arg1>
-      expr_apply2(Target, Arg0, Arg1)->expr_apply2<Target, Arg0, Arg1>;
    template<class Op, class Arg0, class Arg1>
-   struct expr_apply2<Op, Arg0, Arg1, true>: code::rvalue, Op {
+   struct expr_apply2<Op, Arg0, Arg1, true>: Op {
       Arg0 arg0; Arg0 arg1; loc _loc;
       static_assert(std::is_same_v<_op2, Op>);
       static_assert(std::is_same_v<code, Arg0> || std::is_base_of_v<code::rvalue, Arg0>);
@@ -173,8 +188,10 @@ namespace aux {
    };
 
    // Application specialized for 3 arguments
-   template<class Target = code>
-   struct apply3: std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue> {
+   template<class Target, typename Arg, std::enable_if_t<std::is_same_v<Arg, code>, int> = int{}> expr_apply(Target, Arg, Arg, Arg)->expr_apply< 3,
+      std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>, Target, expr_lit<Target>> >;
+   template<class Target> struct expr_apply<3, Target>
+      : std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue> {
       Target target; code a0, a1, a2; loc _loc; // arg types intentionally not parameterized
       static_assert(std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>);
    public:
@@ -211,8 +228,10 @@ namespace aux {
       expr_apply3(Target, val, val, val)->expr_apply3<Target, val, val, val>;
 
    // Application specialized for 4 arguments
-   template<class Target = code>
-   struct apply4: std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue> {
+   template<class Target, typename Arg, std::enable_if_t<std::is_same_v<Arg, code>, int> = int{}> expr_apply(Target, Arg, Arg, Arg, Arg)->expr_apply< 4,
+      std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>, Target, expr_lit<Target>> >;
+   template<class Target> struct expr_apply<4, Target>
+      : std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue> {
       Target target; code a0, a1, a2, a3; loc _loc; // arg types intentionally not parameterized
       static_assert(std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>);
    public:
