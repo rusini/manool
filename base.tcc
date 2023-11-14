@@ -42,7 +42,7 @@ namespace aux {
 
    template< int Argc, class Target = code,
       typename Arg0 = std::conditional_t<Argc >= 1 && Argc <= 2, code, void>,
-      typename Arg1 = std::conditional_t<Argc >= 2 && Argc <= 2, code, void>, bool Is_op = std::is_base_of_v<op, Target> >
+      typename Arg1 = std::conditional_t<Argc >= 2 && Argc <= 2, code, void>, bool Is_op = !sizeof(Target) >
    class expr_apply; // incomplete
 
    // Application specialized for 0 arguments
@@ -125,12 +125,17 @@ namespace aux {
 
 
    // Application specialized for 2 arguments
-   template<class Target, typename Arg0, typename Arg1> expr_apply(Target, Arg0, Arg1)->expr_apply< 2,
+   template<typename Target, class Arg0, class Arg1>
+   expr_apply(
+      std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue>,
+      Target, Arg0, Arg1 )->
+   expr_apply< 2,
       std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>, Target, expr_lit<Target>>,
       std::conditional_t<std::is_base_of_v<code, Arg0>   || std::is_base_of_v<code::rvalue, Arg0>,   Arg0,   expr_lit<Arg0>>,
       std::conditional_t<std::is_base_of_v<code, Arg1>   || std::is_base_of_v<code::rvalue, Arg1>,   Arg1,   expr_lit<Arg1>> >;
-   template<class Target, class Arg0, class Arg1> struct expr_apply<2, Target, Arg0, Arg1>
-      : std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue> {
+   template<class Target, class Arg0, class Arg1>
+   struct expr_apply<2, Target, Arg0, Arg1>:
+      std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue> {
       Target target; Arg0 arg0; Arg1 arg1; loc _loc;
       static_assert(std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>);
       static_assert(std::is_base_of_v<code, Arg0>   || std::is_base_of_v<code::rvalue, Arg0>);

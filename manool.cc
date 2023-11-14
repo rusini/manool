@@ -40,6 +40,113 @@ namespace MNL_AUX_UUID { using namespace aux;
 
    code pub::make_lit(const val &value) { return optimize(expr_lit<>{value}); }
 
+
+   struct expr_applyN: code::lvalue {
+      code target; std::vector<code> args; loc _loc; // implementation-defined destruction order for "args"
+   public:
+      MNL_INLINE val execute(bool) const {
+         int argc = args.size(); auto args = this->args.data();
+         val argv[argc];
+         for (int sn = 0; sn < argc; ++sn) args[sn].execute().swap(argv[sn]); val target = this->target.execute();
+         try { return move(target)(argc, argv); } catch (...) { trace_execute(_loc); }
+      }
+      MNL_INLINE void exec_nores(bool = {}) const {
+         execute();
+      }
+      MNL_INLINE void exec_in(val &&value) const {
+         int argc = args.size(); auto args = this->args.data();
+         target.exec_in([&]()->val{
+            val argv[argc + 2];
+            for (int sn = 0; sn < argc; ++sn) args[sn].execute().swap(argv[sn + 1]); target.exec_out().swap(argv[0]); value.swap(argv[argc + 1]);
+            try { return MNL_SYM("Repl")(argc, argv); } catch (...) { trace_exec_in(_loc); }
+         }());
+      }
+      MNL_INLINE val exec_out() const {
+         int argc = args.size(); auto args = this->args.data();
+         val argv_out[argc + 2];
+         target.exec_in([&]()->val{
+            val argv[argc + 2];
+            for (int sn = 0; sn < argc; ++sn) args[sn].execute().swap(argv[sn + 1]); target.exec_out().swap(argv[0]);
+            try { return MNL_SYM("Repl")(argc, argv, argv_out); } catch (...) { trace_exec_out(_loc); }
+         }());
+         return move(argv_out[argc + 1]);
+      }
+      MNL_INLINE bool is_lvalue() const noexcept {
+         return target.is_lvalue();
+      }
+   };
+
+   static code optimize(expr_applyN expr) {
+      struct expr_apply5: code::lvalue {
+         code target, a0, a1, a2, a3, a4; loc _loc;
+      public:
+         MNL_INLINE val execute(bool) const {
+            val argv[] = {a0.execute(), a1.execute(), a2.execute(), a3.execute(), a4.execute()};
+            return target.execute()(trace_execute, _loc, std::size(argv), argv);
+         }
+         MNL_INLINE void exec_nores(bool = {}) const {
+            execute();
+         }
+         MNL_INLINE void exec_in(val &&value) const {
+            target.exec_in([&]() MNL_INLINE{
+               val argv[] = {a0.execute(), a1.execute(), a2.execute(), a3.execute(), a4.execute(), std::move(value)};
+               return target.exec_out().repl(trace_exec_in, _loc, std::size(argv), argv);
+            }());
+         }
+         MNL_INLINE val exec_out() const {
+            val argv_out[6];
+            target.exec_in([&]() MNL_INLINE{
+               val argv[std::size(argv_out)] = {a0.execute(), a1.execute(), a2.execute(), a3.execute(), a4.execute()};
+               return target.exec_out().repl(trace_exec_out, _loc, std::size(argv), argv, argv_out);
+            }());
+            return std::move(argv_out[std::size(argv_out) - 1]);
+         }
+         MNL_INLINE bool is_lvalue() const noexcept {
+            return target.is_lvalue();
+         }
+      };
+      struct expr_apply6: code::lvalue {
+         code target, a0, a1, a2, a3, a4, a5; loc _loc;
+      public:
+         MNL_INLINE val execute(bool) const {
+            val argv[] = {a0.execute(), a1.execute(), a2.execute(), a3.execute(), a4.execute(), a5.execute()};
+            return target.execute()(trace_execute, _loc, std::size(argv), argv);
+         }
+         MNL_INLINE void exec_nores(bool = {}) const {
+            execute();
+         }
+         MNL_INLINE void exec_in(val &&value) const {
+            target.exec_in([&]() MNL_INLINE{
+               val argv[] = {a0.execute(), a1.execute(), a2.execute(), a3.execute(), a4.execute(), a5.execute(), std::move(value)};
+               return target.exec_out().repl(trace_exec_in, _loc, std::size(argv), argv);
+            }());
+         }
+         MNL_INLINE val exec_out() const {
+            val argv_out[7];
+            target.exec_in([&]() MNL_INLINE{
+               val argv[std::size(argv_out)] = {a0.execute(), a1.execute(), a2.execute(), a3.execute(), a4.execute(), a5.execute()};
+               return target.exec_out().repl(trace_exec_out, _loc, std::size(argv), argv, argv_out);
+            }());
+            return std::move(argv_out[std::size(argv_out) - 1]);
+         }
+         MNL_INLINE bool is_lvalue() const noexcept {
+            return target.is_lvalue();
+         }
+      };
+      switch (expr.args.size()) {
+      case 0: return optimize(expr_apply<0>{move(target), _loc});
+      case 1: return optimize(expr_apply<1>{move(target), move(args[0]), _loc});
+      case 2: return optimize(expr_apply2<>{move(target), move(args[0]), move(args[1]), _loc});
+      case 3: return optimize(expr_apply3<>{move(target), move(args[0]), move(args[1]), move(args[2]), _loc});
+      case 4: return optimize(expr_apply4<>{move(target), move(args[0]), move(args[1]), move(args[2]), move(args[3]), _loc});
+      case 5: return expr_apply5{_mv(expr.target), _mv(expr.args[0]), _mv(expr.args[1]), _mv(expr.args[2]), _mv(expr.args[3]), _mv(expr.args[4]), _loc};
+      case 6: return expr_apply6{_mv(expr.target),
+         std::move(expr.args[0]), std::move(expr.args[1]), std::move(expr.args[2]), std::move(expr.args[3]), std::move(expr.args[4]), std::move(expr.args[5]), _loc};
+      }
+      return std::move(expr);
+   }
+
+
    code aux::compile_apply(code &&target, const form &form, const loc &_loc) {
       if (form.size() - 1 > val::max_argc) MNL_ERR(MNL_SYM("LimitExceeded"));
    opt1: // Application without input/output arguments
