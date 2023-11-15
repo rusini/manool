@@ -22,13 +22,27 @@ namespace aux {
 
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   template<typename Val = const val &, typename Value = std::remove_cv_t<std::remove_reference_t<Val>>>
+   template<typename Val = const val &, typename Value = std::remove_cv_t<std::remove_reference_t<Val>>, bool empty = !sizeof(Value)>
    struct expr_lit/*eral*/: code::rvalue { // constant value evaluated before evaluation of an expression, during its compilation
       Value value;
       MNL_INLINE Val execute(bool = {}) const noexcept(noexcept(Val(value))) { return value; }
    };
    template<typename Val = decltype(nullptr)> expr_lit(Val)->expr_lit<std::conditional_t<
       std::is_trivially_copy_constructible_v<Val> && std::is_trivially_copyable_v<Val> && sizeof(Val) <= 2 * sizeof(long), Val, const Val & >>;
+
+   template<typename Val, typename Value>
+   class expr_lit<Val, Value, true>: code::rvalue, Value {
+   public:
+      MNL_INLINE expr_lit(Val value): Value(value) {}
+      MNL_INLINE Val execute(bool = {}) const noexcept(noexcept(Val(*this))) { return *this; }
+   };
+
+   template<enum sym::id Id>
+   class expr_lit<op<Id>>: public code::rvalue {
+   public:
+      MNL_INLINE constexpr expr_lit(op<Id>) noexcept {}
+      MNL_INLINE constexpr op<Id> execute(bool = {}) const noexcept { return {}; }
+   };
 
    struct expr_tvar: code::lvalue { // "temporary variable"
       int offset;
