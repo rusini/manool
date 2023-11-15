@@ -23,7 +23,7 @@ namespace aux {
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    template< typename Val = const val &, typename Value = std::remove_cv_t<std::remove_reference_t<Val>>,
-      bool empty = std::is_empty_v<Value> && std::is_trivially_default_constructible_v<Value> >
+      bool = std::is_same_v<Val, Value> && std::is_trivially_default_constructible_v<Value> && std::is_empty_v<Value> >
    struct expr_lit/*eral*/: code::rvalue { // constant value evaluated before evaluation of an expression, during its compilation
       Value value;
       MNL_INLINE Val execute(bool = {}) const noexcept(noexcept(Val(value))) { return value; }
@@ -36,24 +36,22 @@ namespace aux {
    };
    template<typename Value = decltype(nullptr)> expr_lit(Value)->expr_lit<expr_lit<Value>::recommended>;
 
-   template<class Value> class _empty_lit {
-      static_assert(std::is_empty_v<Value> && std::is_trivially_default_constructible_v<Value>);
+   template<class Value> class _expr_lit_blackhole {
    public:
-      MNL_INLINE constexpr _empty_lit(Value) noexcept {}
+      _expr_lit_blackhole() = default();
+      MNL_INLINE constexpr _expr_lit_blackhole(const Value &) noexcept {}
+      static_assert(std::is_trivially_default_constructible_v<Value>);
+      static_assert(std::is_empty_v<Value>);
    };
-   template<class Value>
-   struct expr_lit<Value, Value, true>: code::rvalue, _empty_lit<Value> {
+   template<class Val, class Value>
+   struct expr_lit<Val, Value, true>: code::rvalue, _expr_lit_blackhole<Value> {
       MNL_INLINE constexpr Value execute(bool = {}) const noexcept { return {}; }
+      static_assert(std::is_same_v<Val, Value>);
+      static_assert(std::is_trivially_default_constructible_v<Value>);
+      static_assert(std::is_empty_v<Value>);
    };
 
-   template<enum sym::id Id>
-   class expr_lit<op<Id>>: public code::rvalue { // for completeness, not used due to EBO in expr_apply
-   public:
-      MNL_INLINE constexpr explicit expr_lit(op<Id>) noexcept {}
-      MNL_INLINE constexpr op<Id> execute(bool = {}) const noexcept { return {}; }
-   };
-
-   struct expr_tvar: code::lvalue { // "temporary variable"
+   struct expr_tvar: code::lvalue { // "*t*emporary *var*iable"
       int offset;
       MNL_INLINE const val &execute(bool = {}) const noexcept { return tvar_stack[offset]; }
       MNL_INLINE void exec_in(const val &value) const noexcept { exec_in((val)value); }
@@ -82,12 +80,12 @@ namespace aux {
       static val _apply(const val &) = delete; // for limited diagnostics
    };
 
-   template<class Value> class _empty_target {
+   template<class Value> class _expr_apply_op {
    public:
-      static_assert(std::is_empty_v<Value> && std::is_trivially_default_constructible_v<Value>);
-   public:
-      MNL_INLINE constexpr /*implicit*/ _empty_target(Value) noexcept {}
-      MNL_INLINE constexpr /*implicit*/ _empty_target(expr_lit<Value>) noexcept {}
+      _expr_apply_op() = default;
+      MNL_INLINE constexpr /*implicit*/ _expr_apply_op(Value) noexcept {}
+      MNL_INLINE constexpr /*implicit*/ _expr_apply_op(expr_lit<Value>) noexcept {}
+      static_assert(std::is_empty_v<Value> && std::is_trivially_copy_constructible_v<Value>);
    };
 
    // Application specialized for 1 argument
@@ -150,11 +148,6 @@ namespace aux {
       }
    };
 
-   struct _op2 { // operator mixin mark
-      static val _apply(const val &, const val &) = delete; // for limited diagnostics
-   };
-
-
    // Application specialized for 2 arguments
    template<typename Target, typename Arg0, typename Arg1>
    expr_apply(
@@ -207,7 +200,7 @@ namespace aux {
       MNL_INLINE bool is_lvalue() const noexcept { return target.is_lvalue(); }
    };
    template<class Target, class Arg0, class Arg1>
-   struct expr_apply<2, expr_lit<Target, Target, true>, Arg0, Arg1>: code::rvalue, _empty_target<Target> {
+   struct expr_apply<2, expr_lit<Target, Target, true>, Arg0, Arg1>: code::rvalue, _expr_apply_op<Target> {
       Arg0 arg0; Arg0 arg1; loc _loc;
       static_assert(std::is_empty_v<Target> && std::is_trivially_default_constructible_v<Target>);
       static_assert(std::is_base_of_v<code, Arg0> || std::is_base_of_v<code::rvalue, Arg0>);
