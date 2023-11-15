@@ -22,25 +22,34 @@ namespace aux {
 
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   template<typename Val = const val &, typename Value = std::remove_cv_t<std::remove_reference_t<Val>>, bool empty = !sizeof(Value)>
+   template< typename Val = const val &, typename Value = std::remove_cv_t<std::remove_reference_t<Val>>,
+      bool empty = std::is_empty_v<Value> && std::is_trivially_default_constructible_v<Value> >
    struct expr_lit/*eral*/: code::rvalue { // constant value evaluated before evaluation of an expression, during its compilation
       Value value;
       MNL_INLINE Val execute(bool = {}) const noexcept(noexcept(Val(value))) { return value; }
-   };
-   template<typename Val = decltype(nullptr)> expr_lit(Val)->expr_lit<std::conditional_t<
-      std::is_trivially_copy_constructible_v<Val> && std::is_trivially_copyable_v<Val> && sizeof(Val) <= 2 * sizeof(long), Val, const Val & >>;
-
-   template<typename Val, typename Value>
-   class expr_lit<Val, Value, true>: code::rvalue, Value {
    public:
-      MNL_INLINE expr_lit(Val value): Value(value) {}
-      MNL_INLINE Val execute(bool = {}) const noexcept(noexcept(Val(*this))) { return *this; }
+      using recommended = std::conditional_t<
+         std::is_trivially_copy_constructible_v<Value> &&
+         std::is_trivially_copyable_v<Value> &&
+         sizeof(Val) <= 2 * sizeof(long),
+         Value, const Value & >;
+   };
+   template<typename Value = decltype(nullptr)> expr_lit(Value)->expr_lit<expr_lit<Value>::recommended>;
+
+   template<class Value> class _empty_lit {
+      static_assert(std::is_empty_v<Value> && std::is_trivially_default_constructible_v<Value>);
+   public:
+      MNL_INLINE constexpr _empty_lit(Value) noexcept {}
+   };
+   template<class Value>
+   struct expr_lit<Value, Value, true>: code::rvalue, _empty_lit<Value> {
+      MNL_INLINE constexpr Value execute(bool = {}) const noexcept { return {}; }
    };
 
    template<enum sym::id Id>
-   class expr_lit<op<Id>>: public code::rvalue {
+   class expr_lit<op<Id>>: public code::rvalue { // for completeness, not used due to EBO in expr_apply
    public:
-      MNL_INLINE constexpr expr_lit(op<Id>) noexcept {}
+      MNL_INLINE constexpr explicit expr_lit(op<Id>) noexcept {}
       MNL_INLINE constexpr op<Id> execute(bool = {}) const noexcept { return {}; }
    };
 
@@ -71,6 +80,14 @@ namespace aux {
 
    struct _op1 { // operator mixin mark
       static val _apply(const val &) = delete; // for limited diagnostics
+   };
+
+   template<class Value> class _empty_target {
+   public:
+      static_assert(std::is_empty_v<Value> && std::is_trivially_default_constructible_v<Value>);
+   public:
+      MNL_INLINE constexpr /*implicit*/ _empty_target(Value) noexcept {}
+      MNL_INLINE constexpr /*implicit*/ _empty_target(expr_lit<Value>) noexcept {}
    };
 
    // Application specialized for 1 argument
@@ -139,14 +156,14 @@ namespace aux {
 
 
    // Application specialized for 2 arguments
-   template<typename Target, class Arg0, class Arg1>
+   template<typename Target, typename Arg0, typename Arg1>
    expr_apply(
       std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue>,
       Target, Arg0, Arg1 )->
    expr_apply< 2,
-      std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>, Target, expr_lit<Target>>,
-      std::conditional_t<std::is_base_of_v<code, Arg0>   || std::is_base_of_v<code::rvalue, Arg0>,   Arg0,   expr_lit<Arg0>>,
-      std::conditional_t<std::is_base_of_v<code, Arg1>   || std::is_base_of_v<code::rvalue, Arg1>,   Arg1,   expr_lit<Arg1>> >;
+      std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>, Target, expr_lit<expr_lit<Target>::recommended>>,
+      std::conditional_t<std::is_base_of_v<code, Arg0>   || std::is_base_of_v<code::rvalue, Arg0>,   Arg0,   expr_lit<expr_lit<Arg0>  ::recommended>>,
+      std::conditional_t<std::is_base_of_v<code, Arg1>   || std::is_base_of_v<code::rvalue, Arg1>,   Arg1,   expr_lit<expr_lit<Arg1>  ::recommended>> >;
    template<class Target, class Arg0, class Arg1>
    struct expr_apply<2, Target, Arg0, Arg1>:
       std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue> {
@@ -189,8 +206,28 @@ namespace aux {
    public:
       MNL_INLINE bool is_lvalue() const noexcept { return target.is_lvalue(); }
    };
-   template<class Op, class Arg0, class Arg1>
-   struct expr_apply2<Op, Arg0, Arg1, true>: Op {
+   template<class Target, class Arg0, class Arg1>
+   struct expr_apply<2, expr_lit<Target, Target, true>, Arg0, Arg1>: code::rvalue, _empty_target<Target> {
+      Arg0 arg0; Arg0 arg1; loc _loc;
+      static_assert(std::is_empty_v<Target> && std::is_trivially_default_constructible_v<Target>);
+      static_assert(std::is_base_of_v<code, Arg0> || std::is_base_of_v<code::rvalue, Arg0>);
+      static_assert(std::is_base_of_v<code, Arg1> || std::is_base_of_v<code::rvalue, Arg1>);
+   public:
+      MNL_INLINE auto execute(bool = {}) const {
+         auto &&arg0 = this->arg0.execute(); auto &&arg1 = this->arg1.execute();
+         try { return Target{}(std::forward<decltype(arg0)>(arg0), std::forward<decltype(arg1)>(arg1)); }
+         catch (...) { trace_execute(_loc); }
+         static_assert(std::is_trivially_default_constructible_v<Target>);
+      }
+      MNL_INLINE void exec_nores(bool = {}) const {
+         execute();
+      }
+   };
+
+
+
+   template<enum sym::id Id, class Arg0, class Arg1>
+   struct expr_apply2<expr_lit<op<Id>>, Arg0, Arg1>: code::rvalue, Op {
       Arg0 arg0; Arg0 arg1; loc _loc;
       static_assert(std::is_same_v<_op2, Op>);
       static_assert(std::is_same_v<code, Arg0> || std::is_base_of_v<code::rvalue, Arg0>);
