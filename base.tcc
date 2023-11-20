@@ -101,20 +101,15 @@ namespace aux {
       static_assert(std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>);
       static_assert(std::is_base_of_v<code, Arg0>   || std::is_base_of_v<code::rvalue, Arg0>);
    public:
-      MNL_INLINE auto execute(bool = {}, bool = {}) const { return _execute(); }
+      MNL_INLINE auto execute(bool = {}, bool = {}) const {
+         auto &&arg0 = this->arg0.execute(); auto &&target = this->target.execute();
+         try { if constexpr (!has_apply<>::value) return MNL_ERR(MNL_SYM("UnrecognizedOperation")), nullptr; else
+            return std::forward<decltype(target)>(target)(std::forward<decltype(arg0)>(arg0));
+         } catch (...) { trace_execute(_loc); }
+      }
    private:
-      template<class, typename = void> struct has_apply: std::false_type {};
+      template<class = Target, typename = void> struct has_apply: std::false_type {};
       template<class T_> struct has_apply<T_, decltype((void)T_{}.execute()(Arg0{}.execute()))>: std::true_type {};
-   private:
-      template<class T_ = Target> MNL_INLINE auto _execute(std::enable_if_t< has_apply<T_>::value, int> = {}) const {
-         auto &&arg0 = this->arg0.execute(); auto &&target = this->target.execute();
-         try { return std::forward<decltype(target)>(target)(std::forward<decltype(arg0)>(arg0)); }
-         catch (...) { trace_execute(_loc); }
-      }
-      template<class T_ = Target> MNL_INLINE auto _execute(std::enable_if_t<!has_apply<T_>::value, int> = {}) const {
-         auto &&arg0 = this->arg0.execute(); auto &&target = this->target.execute();
-         try { MNL_ERR(MNL_SYM("UnrecognizedOperation")); } catch (...) { trace_execute(_loc); }
-      }
    public:
       MNL_INLINE void exec_in(const val &value) const { _exec_in(value); }
       MNL_INLINE void exec_in(val &&value) const { _exec_in(std::move(value)); }
