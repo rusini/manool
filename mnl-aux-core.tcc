@@ -1071,7 +1071,7 @@ namespace aux { namespace pub {
    public: // Construction -- Implicit conversion (to) + Compilation/execution operations
       template<typename Dat> code(Dat dat): rep(new box<Dat>{std::move(dat)}) {}
       MNL_INLINE code compile(const form &form, const loc &loc) && { return rep->compile(std::move(*this), form, loc); }
-      MNL_INLINE val  execute(bool fast_sig = {}) const { return rep->execute(fast_sig); }
+      MNL_INLINE val  execute(bool fast_sig = {}, bool nores = {}) const;
       MNL_INLINE void exec_nores(bool fast_sig = {}) const { rep->exec_nores(fast_sig); }
       MNL_INLINE void exec_in(const val &value) const { rep->exec_in(value); }
       MNL_INLINE void exec_in(val &&value) const { rep->exec_in(std::move(value)); }
@@ -1093,8 +1093,10 @@ namespace aux { namespace pub {
          root(root &&) = delete; // can only be constructed/destructed (not movied or copied)
          virtual ~root() = default;
          virtual code compile(code &&self, const form &, const loc &) const = 0;
-         virtual val  execute(bool fast_sig) const = 0;
-         virtual void exec_nores(bool fast_sig) const = 0;
+         virtual val  execute() const = 0;
+         virtual val  exec_fastsig() const = 0;
+         virtual void exec_nores() const = 0;
+         virtual void exec_fastsig_nores() const = 0;
          virtual void exec_in(const val &) const = 0;            // concrete dat (e.g., expr_tv) may have Dat::exec_in(long long) etc. for optimization purposes
          virtual void exec_in(val &&) const = 0;
          virtual val  exec_out() const = 0;
@@ -1107,8 +1109,10 @@ namespace aux { namespace pub {
          static_assert(std::is_base_of_v<nonvalue, Dat>);
          explicit box(Dat dat) noexcept: root{&tag}, dat(std::move(dat)) {}
          code compile(code &&self, const form &form, const loc &loc) const override { return dat.compile(move(self), form, loc); }
-         MNL_HOT val  execute(bool fast_sig) const override { return dat.execute(fast_sig); }
-         MNL_HOT void exec_nores(bool fast_sig) const override { dat.exec_nores(fast_sig); }
+         MNL_HOT val  execute() const override { return dat.execute(); }
+         MNL_HOT val  exec_fastsig() const override { return dat.execute(true); }
+         MNL_HOT void exec_nores() const override { dat.execute({}, true); }
+         MNL_HOT void exec_fastsig_nores() const override { dat.execute(true, true); }
          MNL_HOT void exec_in(const val &value) const override { dat.exec_in(value); }
          MNL_HOT void exec_in(val &&value) const override { dat.exec_in(std::move(value)); }
          MNL_HOT val  exec_out() const override { return dat.exec_out(); }
@@ -1129,6 +1133,16 @@ namespace aux { namespace pub {
    MNL_INLINE inline bool operator!=(const code &lhs, const code &rhs) noexcept { return std::rel_ops::operator!=(lhs, rhs); }
    template<typename>     bool test(const code &) noexcept;
    template<typename Dat> Dat  cast(const code &) noexcept;
+
+   MNL_INLINE val code::execute(bool fast_sig, bool nores) const {
+      switch (fast_sig << 1 | nores) {
+      default: MNL_UNREACHABLE();
+      case 0b00: return rep->executeSR();
+      case 0b01: return rep->executeSN(), val{};
+      case 0b10: return rep->executeFR();
+      case 0b11: return rep->executeFN(), val{};
+      }
+   }
 
    extern MNL_IF_WITH_MT(thread_local) sym::tab<> symtab;
    code compile(const form &, const loc & = MNL_IF_GCC5(loc)MNL_IF_GCC6(loc){});

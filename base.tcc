@@ -100,21 +100,18 @@ namespace aux {
       Target target; Arg0 arg0; loc _loc;
       static_assert(std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>);
       static_assert(std::is_base_of_v<code, Arg0>   || std::is_base_of_v<code::rvalue, Arg0>);
+   public:
+      MNL_INLINE auto execute(bool = {}, bool = {}) const { return _execute(); }
    private:
       template<class, typename = void> struct has_apply: std::false_type {};
       template<class T_> struct has_apply<T_, decltype((void)T_{}.execute()(Arg0{}.execute()))>: std::true_type {};
-   public:
-      MNL_INLINE auto execute(bool = {}) const { return _execute(); }
-      MNL_INLINE void exec_nores(bool = {}) const { // TODO: can be represented like this: execute<false>()
-         execute();
-      }
    private:
-      template<class T_ = Target, std::enable_if_t< has_apply<T_>::value, int> = int{}> MNL_INLINE auto _execute(bool = {}) const {
+      template<class T_ = Target> MNL_INLINE auto _execute(std::enable_if_t< has_apply<T_>::value, int> = {}) const {
          auto &&arg0 = this->arg0.execute(); auto &&target = this->target.execute();
          try { return std::forward<decltype(target)>(target)(std::forward<decltype(arg0)>(arg0)); }
          catch (...) { trace_execute(_loc); }
       }
-      template<class T_ = Target, std::enable_if_t<!has_apply<T_>::value, int> = int{}> MNL_INLINE auto _execute(bool = {}) const {
+      template<class T_ = Target> MNL_INLINE auto _execute(std::enable_if_t<!has_apply<T_>::value, int> = {}) const {
          auto &&arg0 = this->arg0.execute(); auto &&target = this->target.execute();
          try { MNL_ERR(MNL_SYM("UnrecognizedOperation")); } catch (...) { trace_execute(_loc); }
       }
@@ -136,7 +133,7 @@ namespace aux {
          val argv_out[2 + 1];
          target.exec_in( [&]() MNL_INLINE{
             val argv[std::size(argv_out) - 1] = {arg0.execute()}, target = this->target.exec_out();
-            try { return MNL_SYM("Repl")(std::move(target), std::size(argv), argv, argv_out + 1); }
+            try { return op<sym::id("Repl")>(std::move(target), std::size(argv), argv, argv_out + 1); }
             catch (...) { trace_exec_out(_loc); }
          }() );
          return std::move(argv_out[std::size(argv_out) - 1]);
@@ -150,21 +147,20 @@ namespace aux {
       Arg0 arg0; loc _loc;
       static_assert(std::is_empty_v<Target> && std::is_trivially_default_constructible_v<Target>);
       static_assert(std::is_base_of_v<code, Arg0> || std::is_base_of_v<code::rvalue, Arg0>);
+   public:
+      MNL_INLINE auto execute(bool = {}, bool = {}) const { return _execute(); }
    private:
       template<class, typename = void> struct has_apply: std::false_type {};
       template<class T_> struct has_apply<T_, decltype((void)T_{}(Arg0{}.execute()))>: std::true_type {};
-   public:
-      template<class T_ = Target, std::enable_if_t< has_apply<T_>::value, int> = int{}> MNL_INLINE auto execute(bool = {}) const {
+   private:
+      template<class T_ = Target> MNL_INLINE auto _execute(std::enable_if_t< has_apply<T_>::value, int> = {}) const {
          auto &&arg0 = this->arg0.execute();
          try { return Target{}(std::forward<decltype(arg0)>(arg0)); }
          catch (...) { trace_execute(_loc); }
       }
-      template<class T_ = Target, std::enable_if_t<!has_apply<T_>::value, int> = int{}> MNL_INLINE auto execute(bool = {}) const {
+      template<class T_ = Target> MNL_INLINE auto _execute(std::enable_if_t<!has_apply<T_>::value, int> = {}) const {
          auto &&arg0 = this->arg0.execute();
          try { MNL_ERR(MNL_SYM("UnrecognizedOperation")); } catch (...) { trace_execute(_loc); }
-      }
-      MNL_INLINE void exec_nores(bool = {}) const {
-         execute();
       }
    };
 
