@@ -1134,16 +1134,6 @@ namespace aux { namespace pub {
    template<typename>     bool test(const code &) noexcept;
    template<typename Dat> Dat  cast(const code &) noexcept;
 
-   MNL_INLINE val code::execute(bool fastsig, bool nores) const {
-      switch (fastsig << 1 | nores) {
-      default: MNL_UNREACHABLE();
-      case false << 1 | false: return rep->execute();
-      case false << 1 | true : return rep->exec_nores(), nullptr;
-      case true  << 1 | false: return rep->exec_fastsig();
-      case true  << 1 | true : return rep->exec_fastsig_nores(), nullptr;
-      }
-   }
-
    extern MNL_IF_WITH_MT(thread_local) sym::tab<> symtab;
    code compile(const form &, const loc & = MNL_IF_GCC5(loc)MNL_IF_GCC6(loc){});
    MNL_NORETURN void err_compile(const char *msg, const loc &);
