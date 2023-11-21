@@ -26,11 +26,10 @@ namespace aux {
    template< typename Val = const val &, typename Value = std::remove_cv_t<std::remove_reference_t<Val>>,
       bool is_special = std::is_empty_v<Value> &&
          std::is_trivially_default_constructible_v<Value> && std::is_trivially_constructible_v<Val, Value>,
-      std::enable_if_t<is_special == ( std::is_empty_v<Value> &&
+      std::enable_if_t<is_special == ( std::is_empty_v<Value> && // consistency check
          std::is_trivially_default_constructible_v<Value> && std::is_trivially_constructible_v<Val, Value> ), int> = int{} >
    struct expr_lit/*eral*/: code::rvalue {
       Value value;
-      static_assert(!(std::is_trivially_default_constructible_v<Value> && std::is_trivially_constructible_v<Val, Value> && std::is_empty_v<Value>));
    public:
       template<bool = bool{}, bool nores = bool{}>
       MNL_INLINE std::conditional_t<!nores, Val, void> execute() const noexcept(nores || noexcept(Val(value)))
@@ -42,18 +41,22 @@ namespace aux {
    template<typename Value = decltype(nullptr)>
    expr_lit(Value)->expr_lit<Value>::optimal;
 # if MNL_LEAN
-   template<class Value, class Val> struct expr_lit<Val, Value, true>;
+   template<class Value>
+   struct expr_lit<Value, Value, true>;
 # else
-   template<class Value> class _expr_lit_blackhole {
-      static_assert(std::is_trivially_default_constructible_v<Value> && std::is_empty_v<Value>);
-   public:
-      _expr_lit_blackhole() = default();
+   template<class Value>
+   class _expr_lit_blackhole {
+      constexpr _expr_lit_blackhole() = default();
       MNL_INLINE constexpr /*implicit*/ _expr_lit_blackhole(const Value &) noexcept {}
    };
-   template<class Value, class Val> struct expr_lit<Val, Value, true>: code::rvalue, _expr_lit_blackhole<Value> {
-      static_assert(std::is_trivially_default_constructible_v<Value> && std::is_trivially_constructible_v<Val, Value> && std::is_empty_v<Value>);
+   template<class Value>
+   struct expr_lit<Value, Value, true>: code::rvalue, _expr_lit_blackhole<Value> {
    public:
-      template<bool = bool{}, bool = bool{}> MNL_INLINE constexpr Val execute() const noexcept { return Value{}; }
+      template<bool = bool{}, bool = bool{}>
+      MNL_INLINE constexpr Value execute() const noexcept
+      { return {}; }
+   public:
+      using optimal = expr_lit;
    };
 # endif
 
@@ -69,8 +72,9 @@ namespace aux {
 
    template< int Argc, class Target = code,
       typename Arg0 = std::conditional_t<Argc >= 1 && Argc <= 2, code, void>,
-      typename Arg1 = std::conditional_t<Argc >= 2 && Argc <= 2, code, void>, bool Is_op = !sizeof(Target) >
-   class expr_apply; // incomplete
+      typename Arg1 = std::conditional_t<Argc >= 2 && Argc <= 2, code, void>,
+      std::enable_if_t<Argc >= 0 && Argc <= 4, decltype(nullptr)> = decltype(nullptr){} >
+   class expr_apply;
 
    // Application specialized for 0 arguments
    template<class Target> expr_apply(Target)->expr_apply< 0,
@@ -82,17 +86,17 @@ namespace aux {
       MNL_INLINE void exec_nores(bool = {}) const { execute(); }
    };
 
-   template<typename Value, typename Val> class _expr_apply_blackhole {
-      _expr_apply_blackhole() = default;
-      MNL_INLINE constexpr /*implicit*/ _expr_apply_blackhole(const Value &) noexcept {}
-      MNL_INLINE constexpr /*implicit*/ _expr_apply_blackhole(const expr_lit<Val, Value, true> &) noexcept {}
+   template<class Target> class _expr_apply_blackhole {
+      constexpr _expr_apply_blackhole() = default;
+      MNL_INLINE constexpr /*implicit*/ _expr_apply_blackhole(const Target &) noexcept {}
+      MNL_INLINE constexpr /*implicit*/ _expr_apply_blackhole(const expr_lit<Target, Target, true> &) noexcept {}
    };
 
    // Application specialized for 1 argument
    template<typename Target, typename Arg0>
    expr_apply(
       std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue>,
-      Target, Arg0 )->
+      Target, Arg0, loc )->
    expr_apply< 1,
       std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>, Target, expr_lit<Target>::optimal>,
       std::conditional_t<std::is_base_of_v<code, Arg0>   || std::is_base_of_v<code::rvalue, Arg0>,   Arg0,   expr_lit<Arg0>::optimal> >;
@@ -140,12 +144,10 @@ namespace aux {
    public:
       MNL_INLINE bool is_lvalue() const noexcept { return target.is_lvalue(); }
    };
-   template<typename TargetValue, typename TargetRetVal, class Arg0>
-   struct expr_apply<1, expr_lit<TargetRetVal, TargetValue, true>, Arg0>:
-      code::rvalue, _expr_apply_blackhole<TargetValue, TargetRetVal> {
+   template<typename Target, class Arg0>
+   struct expr_apply<1, expr_lit<Target, Target, true>, Arg0>:
+      code::rvalue, _expr_apply_blackhole<Target> {
       Arg0 arg0; loc _loc;
-      static_assert(std::is_trivially_default_constructible_v<TargetValue> && std::is_trivially_constructible_v<TargetRetVal, TargetValue> &&
-         std::is_empty_v<TargetValue>);
       static_assert(std::is_base_of_v<code, Arg0> || std::is_base_of_v<code::rvalue, Arg0>);
    public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute() const {
@@ -163,18 +165,18 @@ namespace aux {
    template<typename Target, typename Arg0, typename Arg1>
    expr_apply(
       std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue>,
-      Target, Arg0, Arg1 )->
+      Target, Arg0, Arg1, loc )->
    expr_apply< 2,
       std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>, Target, expr_lit<Target>::optimal>,
-      std::conditional_t<std::is_base_of_v<code, Arg0>   || std::is_base_of_v<code::rvalue, Arg0>,   Arg0,   expr_lit<Arg0>::optimal>,
-      std::conditional_t<std::is_base_of_v<code, Arg1>   || std::is_base_of_v<code::rvalue, Arg1>,   Arg1,   expr_lit<Arg1>::optimal> >;
+      std::conditional_t<std::is_base_of_v<code, Arg0>   || std::is_base_of_v<code::rvalue, Arg0>,   Arg0,   expr_lit<Arg0>  ::optimal>,
+      std::conditional_t<std::is_base_of_v<code, Arg1>   || std::is_base_of_v<code::rvalue, Arg1>,   Arg1,   expr_lit<Arg1>  ::optimal> >;
    template<class Target, class Arg0, class Arg1>
    struct expr_apply<2, Target, Arg0, Arg1>:
       std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue> {
       Target target; Arg0 arg0; Arg1 arg1; loc _loc;
-      static_assert(std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>);
-      static_assert(std::is_base_of_v<code, Arg0>   || std::is_base_of_v<code::rvalue, Arg0>);
-      static_assert(std::is_base_of_v<code, Arg1>   || std::is_base_of_v<code::rvalue, Arg1>);
+      static_assert(std::is_base_of_v<code, Target> || std::is_base_of_v<rvalue, Target>);
+      static_assert(std::is_base_of_v<code, Arg0>   || std::is_base_of_v<rvalue, Arg0>);
+      static_assert(std::is_base_of_v<code, Arg1>   || std::is_base_of_v<rvalue, Arg1>);
    public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute() const {
          auto &&arg0 = this->arg0.execute(); auto &&arg1 = this->arg1.execute(); auto &&target = this->target.execute();
@@ -190,46 +192,45 @@ namespace aux {
       MNL_INLINE void exec_in(val &&value) const { _exec_in(std::move(value)); }
    private:
       template<typename Val> MNL_INLINE void _exec_in(Val &&value) const {
-         if constexpr (!std::is_base_of_v<code::lvalue, expr_apply>) MNL_UNREACHABLE();
-         Target::exec_in( [&]() MNL_INLINE{
-            auto &&arg0 = this->arg0.execute(); auto &&arg1 = this->arg1.execute(); val target = Target::exec_out();
-            try { return op<sym::id("Repl")>( std::move(target),
-               std::forward<decltype(arg0)>(arg0), std::forward<decltype(arg1)>(arg1), std::forward<Val>(value) );
-            } catch (...) { trace_exec_in(_loc); }
+         if constexpr (!std::is_base_of_v<lvalue, expr_apply>) return rvalue::exec_in(std::forward<Val>(value)); // unreachable
+         target.exec_in( [&]() MNL_INLINE{
+            auto &&arg0 = this->arg0.execute(); auto &&arg1 = this->arg1.execute(); val target = this->target.exec_out();
+            try { return repl(std::move(target), std::forward<decltype(arg0)>(arg0), std::forward<decltype(arg1)>(arg1), std::forward<Val>(value)); }
+            catch (...) { trace_exec_in(_loc); }
          }() );
       }
    public:
       MNL_INLINE val exec_out() const {
-         if constexpr (!std::is_base_of_v<code::lvalue, expr_apply>) MNL_UNREACHABLE();
+         if constexpr (!std::is_base_of_v<lvalue, expr_apply>) return rvalue::exec_out(); // unreachable
          val argv_out[3 + 1];
-         Target::exec_in( [&]() MNL_INLINE{
-            val argv[std::size(argv_out) - 1] = {arg0.execute(), arg1.execute()}, target = Target::exec_out();
-            try { return op<sym::id("Repl")>( std::move(target),
-               std::size(argv), argv, argv_out + 1 );
-            } catch (...) { trace_exec_out(_loc); }
+         target.exec_in( [&]() MNL_INLINE{
+            val argv[std::size(argv_out) - 1] = {arg0.execute(), arg1.execute()}, target = this->target.exec_out();
+            try { return repl(std::move(target), std::size(argv), argv, argv_out + 1); }
+            catch (...) { trace_exec_out(_loc); }
          }() );
          return std::move(argv_out[std::size(argv_out) - 1]);
       }
+   private:
+      static constexpr auto repl = op<sym::id("Repl")>;
    public:
       MNL_INLINE bool is_lvalue() const noexcept { return target.is_lvalue(); }
    };
    template<class Target, class Arg0, class Arg1>
-   struct expr_apply<2, expr_lit<Target, Target, true>, Arg0, Arg1>
-      : code::rvalue, _expr_apply_blackhole<Target> {
+   struct expr_apply<2, expr_lit<Target, Target, true>, Arg0, Arg1>:
+      code::rvalue, _expr_apply_blackhole<Target> {
       Arg0 arg0; Arg0 arg1; loc _loc;
-      static_assert(std::is_empty_v<Target> && std::is_trivially_default_constructible_v<Target>);
       static_assert(std::is_base_of_v<code, Arg0> || std::is_base_of_v<code::rvalue, Arg0>);
       static_assert(std::is_base_of_v<code, Arg1> || std::is_base_of_v<code::rvalue, Arg1>);
    public:
-      MNL_INLINE auto execute(bool = {}) const {
+      template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute() const {
          auto &&arg0 = this->arg0.execute(); auto &&arg1 = this->arg1.execute();
-         try { return Target{}(std::forward<decltype(arg0)>(arg0), std::forward<decltype(arg1)>(arg1)); }
-         catch (...) { trace_execute(_loc); }
-         static_assert(std::is_trivially_default_constructible_v<Target>);
+         try { if constexpr (!has_apply<>{}) return MNL_ERR(MNL_SYM("UnrecognizedOperation")), nullptr; else
+            return Target{}(std::forward<decltype(arg0)>(arg0), std::forward<decltype(arg1)>(arg1));
+         } catch (...) { trace_execute(_loc); }
       }
-      MNL_INLINE void exec_nores(bool = {}) const {
-         execute();
-      }
+   private:
+      template<class = Target, typename = void> struct has_apply: std::false_type {};
+      template<class T_> struct has_apply<T_, decltype((void)T_{}(Arg0{}.execute(), Arg1{}.execute()))>: std::true_type {};
    };
 
 

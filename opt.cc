@@ -91,162 +91,162 @@
          {  const auto optimize = [&](auto op) MNL_INLINE->code{
                if (auto arg0_p = as_p<expr_lit<long long>>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply{{}, {}, op, *arg0_p, *arg1_p}; // ?Ls*[?Lt; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1)}; // ?Ls*[?Lt; ?]
+                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
+                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
                }
                if (auto arg0_p = as_p<expr_lit<double>>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply{{}, op, *arg0_p, *arg1_p}; // ?Ls*[?Lt; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1)}; // ?Ls*[?Lt; ?]
+                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
+                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
                }
                if (auto arg0_p = as_p<expr_lit<float>>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply{{}, op, *arg0_p, *arg1_p}; // ?Ls*[?Lt; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1)}; // ?Ls*[?Lt; ?]
+                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
+                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
                }
                if (auto arg0_p = as_p<expr_lit<const sym &>>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply{{}, op, *arg0_p, *arg1_p}; // ?Ls*[?Ls; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1)}; // ?Ls*[?Lt; ?]
+                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Ls; ?T]
+                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
                }
                if (auto arg0_p = as_p<expr_lit<bool>>(expr.arg0)) // False == V, True <> V might be faster than Not[V]
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply{{}, op, *arg0_p, *arg1_p}; // ?Ls*[?Lt; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1)}; // ?Ls*[?Lt; ?]
+                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
+                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
                }
                if (auto arg0_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply{{}, op, *arg0_p, *arg1_p}; // ?Ls*[?Lt; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1)}; // ?Ls*[?Lt; ?]
+                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
+                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
                }
                if (auto arg0_p = as_p<expr_lit<unsigned>>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply{{}, op, *arg0_p, *arg1_p}; // ?Ls*[?Lt; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1)}; // ?Ls*[?Lt; ?]
+                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
+                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
                }
                if (auto arg0_p = as_p<expr_lit<>>(expr.arg0)) {
                   if (is<std::string>(arg0_p->value)) {
                      if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                        return expr_apply{{}, op, expr_lit{as<std::string>(arg0_p->value)}, *arg1_p}; // ?Ls*[?Lt; ?T]
-                     return expr_apply{{}, op, expr_lit{as<std::string>(arg0_p->value)}, std::move(expr.arg1)}; // ?Ls*[?Lt; ?]
+                        return expr_apply{{}, op, expr_lit{as<std::string>(arg0_p->value)}, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
+                     return expr_apply{{}, op, expr_lit{as<std::string>(arg0_p->value)}, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
                   }
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p}; // ?Ls[?L; ?T]
-                  return expr_apply{{}, *target_p, *arg0_p, std::move(expr.arg1)}; // ?Ls[?L; ?]
+                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
+                  return expr_apply{{}, *target_p, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
                }
                if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1))
-                     return expr_apply{{}, op, *arg0_p, *arg1_p}; // ?Ls*[?T; ?Lt]
+                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Lt]
                   if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1))
-                     return expr_apply{{}, op, *arg0_p, *arg1_p}; // ?Ls*[?T; ?Lt]
+                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Lt]
                   if (auto arg1_p = as_p<expr_lit<float>>(expr.arg1))
-                     return expr_apply{{}, op, *arg0_p, *arg1_p}; // ?Ls*[?T; ?Lt]
+                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Lt]
                   if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1))
-                     return expr_apply{{}, op, *arg0_p, *arg1_p}; // ?Ls*[?T; ?Ls]
+                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Ls]
                   if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1))
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p}; // ?Ls[?T; ?Lt]
+                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
                   if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1))
-                     return expr_apply{{}, op, *arg0_p, *arg1_p}; // ?Ls*[?T; ?Lt]
+                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Lt]
                   if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1))
-                     return expr_apply{{}, op, *arg0_p, *arg1_p}; // ?Ls*[?T; ?Lt]
+                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Lt]
                   if (auto arg1_p = as_p<expr_lit<>>(expr.arg1))
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p}; // ?Ls[?T; ?L]
+                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?L]
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply{{}, op, *arg0_p, *arg1_p}; // ?Ls*[?T; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1)}; // ?Ls*[?T; ?]
+                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?T]
+                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?T; ?]
                }
                if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1))
-                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p}; // ?Ls*[?; ?Lt]
+                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Lt]
                if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1))
-                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p}; // ?Ls*[?; ?Lt]
+                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Lt]
                if (auto arg1_p = as_p<expr_lit<float>>(expr.arg1))
-                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p}; // ?Ls*[?; ?Lt]
+                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Lt]
                if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1))
-                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p}; // ?Ls*[?; ?Ls]
+                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Ls]
                if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1))
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p}; // ?Ls[?; ?Lt]
+                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
                if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1))
-                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p}; // ?Ls*[?; ?Lt]
+                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Lt]
                if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1))
-                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p}; // ?Ls*[?; ?Lt]
+                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Lt]
                if (auto arg1_p = as_p<expr_lit<>>(expr.arg1))
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p}; // ?Ls[?; ?L]
+                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?L]
                if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p}; // ?Ls*[?; ?T]
-               return expr_apply{{}, op, std::move(expr.arg0), std::move(expr.arg1)}; // ?Ls*[?; ?]
+                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?T]
+               return expr_apply{{}, op, std::move(expr.arg0), std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?; ?]
             };
             switch (target_p->value) {
-            case sym::id("=="): return optimize(op<sym::id("==")>{});
-            case sym::id("<>"): return optimize(op<sym::id("<>")>{});
+            case sym::id("=="): return optimize(op<sym::id("==")>);
+            case sym::id("<>"): return optimize(op<sym::id("<>")>);
             }
          }
          // all numeric, except where belongs to (*)
          {  const auto optimize = [&](auto op) MNL_INLINE->code{
                if (auto arg0_p = as_p<expr_lit<long long>>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply{{}, op, *arg0_p, *arg1_p}; // ?Ls*[?Lt; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1)}; // ?Ls*[?Lt; ?]
+                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
+                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
                }
                if (auto arg0_p = as_p<expr_lit<double>>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply{{}, op, *arg0_p, *arg1_p}; // ?Ls*[?Lt; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1)}; // ?Ls*[?Lt; ?]
+                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
+                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
                }
                if (auto arg0_p = as_p<expr_lit<float>>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply{{}, op, *arg0_p, *arg1_p}; // ?Ls*[?Lt; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1)}; // ?Ls*[?Lt; ?]
+                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
+                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
                }
                if (auto arg0_p = as_p<expr_lit<unsigned>>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply{{}, op, *arg0_p, *arg1_p}; // ?Ls*[?Lt; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1)}; // ?Ls*[?Lt; ?]
+                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
+                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
                }
                if (auto arg0_p = as_p<expr_lit<>>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p}; // ?Ls[?L; ?T]
-                  return expr_apply{{}, *target_p, *arg0_p, std::move(expr.arg1)}; // ?Ls[?L; ?]
+                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
+                  return expr_apply{{}, *target_p, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
                }
                if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1))
-                     return expr_apply{{}, op, *arg0_p, *arg1_p}; // ?Ls*[?T; ?Lt]
+                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Lt]
                   if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1))
-                     return expr_apply{{}, op, *arg0_p, *arg1_p}; // ?Ls*[?T; ?Lt]
+                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Lt]
                   if (auto arg1_p = as_p<expr_lit<float>>(expr.arg1))
-                     return expr_apply{{}, op, *arg0_p, *arg1_p}; // ?Ls*[?T; ?Lt]
+                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Lt]
                   if (auto arg1_p = as_p<expr_lit<const sym *>>(expr.arg1))
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p}; // ?Ls[?T; ?Ls]
+                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Ls]
                   if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1))
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p}; // ?Ls[?T; ?Lt]
+                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
                   if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1))
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p}; // ?Ls[?T; ?Lt]
+                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
                   if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1))
-                     return expr_apply{{}, op, *arg0_p, *arg1_p}; // ?Ls*[?T; ?Lt]
+                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Lt]
                   if (auto arg1_p = as_p<expr_lit<>>(expr.arg1))
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p}; // ?Ls[?T; ?L]
+                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?L]
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply{{}, op, *arg0_p, *arg1_p}; // ?Ls*[?T; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1)}; // ?Ls*[?T; ?]
+                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?T]
+                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?T; ?]
                }
                if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1))
-                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p}; // ?Ls*[?; ?Lt]
+                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Lt]
                if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1))
-                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p}; // ?Ls*[?; ?Lt]
+                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Lt]
                if (auto arg1_p = as_p<expr_lit<float>>(expr.arg1))
-                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p}; // ?Ls*[?; ?Lt]
+                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Lt]
                if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1))
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p}; // ?Ls[?; ?Ls]
+                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Ls]
                if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1))
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p}; // ?Ls[?; ?Lt]
+                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
                if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1))
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p}; // ?Ls[?; ?Lt]
+                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
                if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1))
-                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p}; // ?Ls*[?; ?Lt]
+                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Lt]
                if (auto arg1_p = as_p<expr_lit<>>(expr.arg1))
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p}; // ?Ls[?; ?L]
+                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?L]
                if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p}; // ?Ls*[?; ?T]
-               return expr_apply{{}, op, std::move(expr.arg0), std::move(expr.arg1)}; // ?Ls*[?; ?]
+                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?T]
+               return expr_apply{{}, op, std::move(expr.arg0), std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?; ?]
             };
             switch (target_p->value) {
             case sym::id("<" ): return optimize(op<sym::id("<" )>{});
@@ -262,59 +262,59 @@
          {  const auto optimize = [&](auto op) MNL_INLINE->code{
                if (auto arg0_p = as_p<expr_lit<bool>>(expr.arg0)) { // True.Xor[V] might be faster than Not[V]
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply{{}, op, *arg0_p, *arg1_p}; // ?Ls*[?Lt; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1)}; // ?Ls*[?Lt; ?]
+                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
+                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
                }
                if (auto arg0_p = as_p<expr_lit<unsigned>>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply{{}, op, *arg0_p, *arg1_p}; // ?Ls*[?Lt; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1)}; // ?Ls*[?Lt; ?]
+                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
+                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
                }
                if (auto arg0_p = as_p<expr_lit<>>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p}; // ?Ls[?L; ?T]
-                  return expr_apply{{}, *target_p, *arg0_p, std::move(expr.arg1)}; // ?Ls[?L; ?]
+                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
+                  return expr_apply{{}, *target_p, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
                }
                if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) {
                   if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1))
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p}; // ?Ls[?T; ?Lt]
+                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
                   if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1))
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p}; // ?Ls[?T; ?Lt]
+                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
                   if (auto arg1_p = as_p<expr_lit<float>>(expr.arg1))
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p}; // ?Ls[?T; ?Lt]
+                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
                   if (auto arg1_p = as_p<expr_lit<const sym *>>(expr.arg1))
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p}; // ?Ls[?T; ?Ls]
+                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Ls]
                   if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1))
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p}; // ?Ls[?T; ?Lt]
+                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
                   if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1))
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p}; // ?Ls[?T; ?Lt]
+                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
                   if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1))
-                     return expr_apply{{}, op, *arg0_p, *arg1_p}; // ?Ls*[?T; ?Lt]
+                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Lt]
                   if (auto arg1_p = as_p<expr_lit<>>(expr.arg1))
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p}; // ?Ls[?T; ?L]
+                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?L]
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                     return expr_apply{{}, op, *arg0_p, *arg1_p}; // ?Ls*[?T; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1)}; // ?Ls*[?T; ?]
+                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?T]
+                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?T; ?]
                }
                if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1))
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p}; // ?Ls[?; ?Lt]
+                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
                if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1))
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p}; // ?Ls[?; ?Lt]
+                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
                if (auto arg1_p = as_p<expr_lit<float>>(expr.arg1))
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p}; // ?Ls[?; ?Lt]
+                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
                if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1))
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p}; // ?Ls[?; ?Ls]
+                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Ls]
                if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1))
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p}; // ?Ls[?; ?Lt]
+                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
                if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1))
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p}; // ?Ls[?; ?Lt]
+                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
                if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1))
-                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p}; // ?Ls*[?; ?Lt]
+                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Lt]
                if (auto arg1_p = as_p<expr_lit<>>(expr.arg1))
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p}; // ?Ls[?; ?L]
+                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?L]
                if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p}; // ?Ls*[?; ?T]
-               return expr_apply{{}, op, std::move(expr.arg0), std::move(expr.arg1)}; // ?Ls*[?; ?]
+                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?T]
+               return expr_apply{{}, op, std::move(expr.arg0), std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?; ?]
             };
             switch (target_p->value) {
             case sym::id("Xor"): return optimize(op<sym::id("Xor")>{});
@@ -323,125 +323,125 @@
          // assuming a binary operation with no observable side effects (*)
          if (auto arg0_p = as_p<expr_lit<long long>>(expr.arg0)) {
             if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-               return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, *arg1_p}; // ?Ls[?L; ?T]
-            return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, std::move(expr.arg1)}; // ?Ls[?L; ?]
+               return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
+            return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
          }
          if (auto arg0_p = as_p<expr_lit<double>>(expr.arg0)) {
             if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-               return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, *arg1_p}; // ?Ls[?L; ?T]
-            return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, std::move(expr.arg1)}; // ?Ls[?L; ?]
+               return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
+            return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
          }
          if (auto arg0_p = as_p<expr_lit<float>>(expr.arg0)) {
             if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-               return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, *arg1_p}; // ?Ls[?L; ?T]
-            return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, std::move(expr.arg1)}; // ?Ls[?L; ?]
+               return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
+            return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
          }
          if (auto arg0_p = as_p<expr_lit<const sym &>>(expr.arg0)) {
             if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-               return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, *arg1_p}; // ?Ls[?L; ?T]
-            return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, std::move(expr.arg1)}; // ?Ls[?L; ?]
+               return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
+            return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
          }
          if (auto arg0_p = as_p<expr_lit<bool>>(expr.arg0)) {
             if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-               return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, *arg1_p}; // ?Ls[?L; ?T]
-            return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, std::move(expr.arg1)}; // ?Ls[?L; ?]
+               return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
+            return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
          }
          if (auto arg0_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg0)) {
             if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-               return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, *arg1_p}; // ?Ls[?L; ?T]
-            return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, std::move(expr.arg1)}; // ?Ls[?L; ?]
+               return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
+            return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
          }
          if (auto arg0_p = as_p<expr_lit<unsigned>>(expr.arg0)) {
             if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-               return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, *arg1_p}; // ?Ls[?L; ?T]
-            return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, std::move(expr.arg1)}; // ?Ls[?L; ?]
+               return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
+            return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
          }
          if (auto arg0_p = as_p<expr_lit<>>(expr.arg0)) {
             if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-               return expr_apply{{}, *target_p, *arg0_p, *arg1_p}; // ?Ls[?L; ?T]
-            return expr_apply{{}, *target_p, *arg0_p, std::move(expr.arg1)}; // ?Ls[?L; ?]
+               return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
+            return expr_apply{{}, *target_p, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
          }
          if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) {
             if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1))
-               return expr_apply{{}, *target_p, *arg0_p, *arg1_p}; // ?Ls[?T; ?Lt]
+               return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
             if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1))
-               return expr_apply{{}, *target_p, *arg0_p, *arg1_p}; // ?Ls[?T; ?Lt]
+               return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
             if (auto arg1_p = as_p<expr_lit<float>>(expr.arg1))
-               return expr_apply{{}, *target_p, *arg0_p, *arg1_p}; // ?Ls[?T; ?Lt]
+               return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
             if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1))
-               return expr_apply{{}, *target_p, *arg0_p, *arg1_p}; // ?Ls[?T; ?Ls]
+               return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Ls]
             if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1))
-               return expr_apply{{}, *target_p, *arg0_p, *arg1_p}; // ?Ls[?T; ?Lt]
+               return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
             if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1))
-               return expr_apply{{}, *target_p, *arg0_p, *arg1_p}; // ?Ls[?T; ?Lt]
+               return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
             if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1))
-               return expr_apply{{}, *target_p, *arg0_p, *arg1_p}; // ?Ls[?T; ?Lt]
+               return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
             if (auto arg1_p = as_p<expr_lit<>>(expr.arg1))
-               return expr_apply{{}, *target_p, *arg0_p, *arg1_p}; // ?Ls[?T; ?L]
+               return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?L]
             if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-               return expr_apply{{}, *target_p, *arg0_p, *arg1_p}; // ?Ls[?T; ?T]
-            return expr_apply{{}, *target_p, *arg0_p, std::move(expr.arg1)}; // ?Ls[?T; ?E]
+               return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?T]
+            return expr_apply{{}, *target_p, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?T; ?E]
          }
          if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1))
-            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p}; // ?Ls[?; ?Lt]
+            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
          if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1))
-            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p}; // ?Ls[?; ?Lt]
+            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
          if (auto arg1_p = as_p<expr_lit<float>>(expr.arg1))
-            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p}; // ?Ls[?; ?Lt]
+            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
          if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1))
-            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p}; // ?Ls[?; ?Ls]
+            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Ls]
          if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1))
-            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p}; // ?Ls[?; ?Lt]
+            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
          if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1))
-            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p}; // ?Ls[?; ?Lt]
+            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
          if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1))
-            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p}; // ?Ls[?; ?Lt]
+            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
          if (auto arg1_p = as_p<expr_lit<>>(expr.arg1))
-            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p}; // ?Ls[?; ?L]
+            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?L]
          if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p}; // ?Ls[?; ?T]
-         return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr.arg1)}; // ?Ls[?; ?]
+            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?T]
+         return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?; ?]
       }
       // assuming indexing into fast containers
       if (auto target_p = as_p<expr_lit<>>(expr.target)) {
          if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) {
             if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1))
-               return expr_apply{{}, *target_p, *arg0_p, *arg1_p}; // ?L[?T; ?Ls]
+               return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?L[?T; ?Ls]
             if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-               return expr_apply{{}, *target_p, *arg0_p, *arg1_p}; // ?L[?T; ?T]
-            return expr_apply{{}, *target_p, *arg0_p, std::move(expr.arg1)}; // ?L[?T; ?]
+               return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?L[?T; ?T]
+            return expr_apply{{}, *target_p, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?L[?T; ?]
          }
          if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1))
-            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p}; // ?L[?; ?Ls]
+            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?L[?; ?Ls]
          if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p}; // ?L[?; ?T]
-         return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr.arg1)}; // ?L[?; ?]
+            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?L[?; ?T]
+         return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr.arg1), std::move(expr._loc)}; // ?L[?; ?]
       }
       if (auto target_p = as_p<expr_tvar>(expr.target)) {
          if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) {
             if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1))
-               return expr_apply{{}, *target_p, *arg0_p, *arg1_p}; // ?T[?T; ?Ls]
+               return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?T[?T; ?Ls]
             if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-               return expr_apply{{}, *target_p, *arg0_p, *arg1_p}; // ?T[?T; ?T]
-            return expr_apply{{}, *target_p, *arg0_p, std::move(expr.arg1)}; // ?T[?T; ?]
+               return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?T[?T; ?T]
+            return expr_apply{{}, *target_p, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?T[?T; ?]
          }
          if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1))
-            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p}; // ?T[?; ?Ls]
+            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?T[?; ?Ls]
          if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p}; // ?T[?; ?T]
-         return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr.arg1)}; // ?T[?; ?]
+            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?T[?; ?T]
+         return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr.arg1), std::move(expr._loc)}; // ?T[?; ?]
       }
       if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) {
          if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1))
-            return expr_apply{{}, std::move(expr.target), *arg0_p, *arg1_p}; // ?[?T; ?Ls]
+            return expr_apply{{}, std::move(expr.target), *arg0_p, *arg1_p, std::move(expr._loc)}; // ?[?T; ?Ls]
          if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-            return expr_apply{{}, std::move(expr.target), *arg0_p, *arg1_p}; // ?[?T; ?T]
-         return expr_apply{{}, std::move(expr.target), *arg0_p, std::move(expr.arg1)}; // ?[?T; ?]
+            return expr_apply{{}, std::move(expr.target), *arg0_p, *arg1_p, std::move(expr._loc)}; // ?[?T; ?T]
+         return expr_apply{{}, std::move(expr.target), *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?[?T; ?]
       }
       if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1))
-         return expr_apply{{}, std::move(expr.target), std::move(expr.arg0), *arg1_p}; // ?[?; ?Ls]
+         return expr_apply{{}, std::move(expr.target), std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?[?; ?Ls]
       if (auto arg1_p = as_p<expr_tvar>(expr.arg1))
-         return expr_apply{{}, std::move(expr.target), std::move(expr.arg0), *arg1_p}; // ?[?; ?T]
+         return expr_apply{{}, std::move(expr.target), std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?[?; ?T]
       return std::move(expr); // ?[?; ?]
    }
 
