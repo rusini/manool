@@ -82,21 +82,19 @@ namespace aux {
 
    // Application specialized for 0 arguments
    template<class Target>
-   expr_apply(code::rvalue, Target, loc)->
-   expr_apply<0, std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>, Target, expr_lit<Target>::optimal>>;
+   expr_apply(
+      code::rvalue, Target, loc )->
+   expr_apply< 0,
+      std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>, Target, expr_lit<Target>::optimal> >;
    template<class Target>
    struct expr_apply<0, Target>: code::rvalue {
       Target target; loc _loc;
       static_assert(std::is_base_of_v<code, Target> || std::is_base_of_v<rvalue, Target>);
    public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute() const {
-         try { if constexpr (!has_apply<>{}) return MNL_ERR(MNL_SYM("UnrecognizedOperation")), nullptr; else
-            return std::forward<decltype(target)>(target)();
-         } catch (...) { trace_execute(_loc); }
+         try { return op<sym::id("Apply")>(std::forward<decltype(target)>(target), 0, {}); }
+         catch (...) { trace_execute(_loc); }
       }
-   private:
-      template<class = Target, typename = void> struct has_apply: std::false_type {};
-      template<class T_> struct has_apply<T_, decltype((void)T_{}.execute()())>: std::true_type {};
    };
 
    template<class Target> class _expr_apply_blackhole {
@@ -122,9 +120,9 @@ namespace aux {
    public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute() const {
          auto &&arg0 = this->arg0.execute(); auto &&target = this->target.execute();
-         try { if constexpr (!has_apply<>{}) return MNL_ERR(MNL_SYM("UnrecognizedOperation")), nullptr; else
-            return std::forward<decltype(target)>(target)(std::forward<decltype(arg0)>(arg0));
-         } catch (...) { trace_execute(_loc); }
+         typedef std::conditional_t<has_apply<>{}, decltype(std::forward<decltype(target)>(target)), val> _target;
+         try { return ((_target)std::forward<decltype(target)>(target))(std::forward<decltype(arg0)>(arg0)); }
+         catch (...) { trace_execute(_loc); }
       }
    private:
       template<class = Target, typename = void> struct has_apply: std::false_type {};
@@ -165,9 +163,9 @@ namespace aux {
    public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute() const {
          auto &&arg0 = this->arg0.execute();
-         try { if constexpr (!has_apply<>{}) return MNL_ERR(MNL_SYM("UnrecognizedOperation")), nullptr; else
-            return Target{}(std::forward<decltype(arg0)>(arg0));
-         } catch (...) { trace_execute(_loc); }
+         typedef std::conditional_t<has_apply<>{}, decltype(Target{}), val> _target;
+         try { return ((_target)Target{})(std::forward<decltype(arg0)>(arg0)); }
+         catch (...) { trace_execute(_loc); }
       }
    private:
       template<class = Target, typename = void> struct has_apply: std::false_type {};
@@ -193,9 +191,9 @@ namespace aux {
    public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute() const {
          auto &&arg0 = this->arg0.execute(); auto &&arg1 = this->arg1.execute(); auto &&target = this->target.execute();
-         try { if constexpr (!has_apply<>{}) return MNL_ERR(MNL_SYM("UnrecognizedOperation")), nullptr; else
-            return std::forward<decltype(target)>(target)(std::forward<decltype(arg0)>(arg0), std::forward<decltype(arg1)>(arg1));
-         } catch (...) { trace_execute(_loc); }
+         typedef std::conditional_t<has_apply<>{}, decltype(std::forward<decltype(target)>(target)), val> _target;
+         try { return ((_target)std::forward<decltype(target)>(target))(std::forward<decltype(arg0)>(arg0), std::forward<decltype(arg1)>(arg1)); }
+         catch (...) { trace_execute(_loc); }
       }
    private:
       template<class = Target, typename = void> struct has_apply: std::false_type {};
@@ -237,13 +235,13 @@ namespace aux {
    public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute() const {
          auto &&arg0 = this->arg0.execute(); auto &&arg1 = this->arg1.execute();
-         try { if constexpr (!has_apply<>{}) return MNL_ERR(MNL_SYM("UnrecognizedOperation")), nullptr; else
-            return Target{}(std::forward<decltype(arg0)>(arg0), std::forward<decltype(arg1)>(arg1));
-         } catch (...) { trace_execute(_loc); }
+         typedef std::conditional_t<has_apply<>{}, decltype(Target{}), val> _target;
+         try { return ((_target)Target{})(std::forward<decltype(arg0)>(arg0), std::forward<decltype(arg1)>(arg1)); }
+         catch (...) { trace_execute(_loc); }
       }
    private:
-      template<class = Target, typename = void> struct has_apply: std::false_type {};
-      template<class T_> struct has_apply<T_, decltype((void)T_{}(Arg0{}.execute(), Arg1{}.execute()))>: std::true_type {};
+      template<typename = Target, typename = void> struct has_apply: std::false_type {};
+      template<typename T_> struct has_apply<T_, decltype((void)T_{}(Arg0{}.execute(), Arg1{}.execute()))>: std::true_type {};
    };
 
 
