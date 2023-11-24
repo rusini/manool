@@ -39,7 +39,7 @@ namespace aux {
          std::is_trivially_copy_constructible_v<Value> && sizeof(Value) <= 2 * sizeof(long), Value, const Value & >>;
    };
    template<typename Value = decltype(nullptr)>
-   expr_lit(Value)->expr_lit<Value>::optimal;
+   expr_lit(code::rvalue, Value)->expr_lit<Value>::optimal;
 # if MNL_LEAN
    template<class Value>
    struct expr_lit<Value, Value, true>;
