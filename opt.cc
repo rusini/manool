@@ -86,6 +86,35 @@
    }
 
    auto mnl::aux::optimize(expr_apply<2> expr)->code {
+      code res;
+      {  const auto optimize = [&](auto op) MNL_INLINE{
+            return
+               match<expr_apply< 2, expr_lit<decltype(op)>,  expr_lit<long long>,          expr_tvar >>  () ||
+               match<expr_apply< 2, expr_lit<decltype(op)>,  expr_lit<long long>,          code >>       () ||
+               match<expr_apply< 2, expr_lit<decltype(op)>,  expr_lit<double>,             expr_tvar >>  () ||
+               match<expr_apply< 2, expr_lit<decltype(op)>,  expr_lit<double>,             code >>       () ||
+               match<expr_apply< 2, expr_lit<decltype(op)>,  expr_lit<float>,              expr_tvar >>  () ||
+               match<expr_apply< 2, expr_lit<decltype(op)>,  expr_lit<float>,              code >>       () ||
+               match<expr_apply< 2, expr_lit<decltype(op)>,  expr_lit<const sym &>,        expr_tvar >>  () ||
+               match<expr_apply< 2, expr_lit<decltype(op)>,  expr_lit<const sym &>,        code >>       () ||
+               match<expr_apply< 2, expr_lit<decltype(op)>,  expr_lit<bool>,               expr_tvar >>  () ||
+               match<expr_apply< 2, expr_lit<decltype(op)>,  expr_lit<bool>,               code >>       () ||
+               match<expr_apply< 2, expr_lit<decltype(op)>,  expr_lit<decltype(nullptr)>,  expr_tvar >>  () ||
+               match<expr_apply< 2, expr_lit<decltype(op)>,  expr_lit<decltype(nullptr)>,  code >>       () ||
+               match<expr_apply< 2, expr_lit<decltype(op)>,  expr_lit<unsigned>,           expr_tvar >>  () ||
+               match<expr_apply< 2, expr_lit<decltype(op)>,  expr_lit<unsigned>,           code >>       () ||
+               match<expr_apply< 2, expr_lit<decltype(op)>,  expr_lit<std::string>,        expr_tvar >>  () ||
+               match<expr_apply< 2, expr_lit<decltype(op)>,  expr_lit<std::string>,        code >>       () ||
+               match<expr_apply< 2, expr_lit<decltype(op)>,  expr_lit<>,                   expr_tvar >>  () ||
+               match<expr_apply< 2, expr_lit<decltype(op)>,  expr_lit<>,                   code >>       () ||
+               ...;
+         };
+         if (
+            optimize(op<sym::id("==")>) ||
+            optimize(op<sym::id("<>")>) )
+            return res;
+      };
+
       if (auto target_p = as_p<expr_lit<const sym &>>(expr.target)) {
          // (in)equality, except where belongs to (*)
          {  const auto optimize = [&](auto op) MNL_INLINE->code{
@@ -485,5 +514,51 @@
          if (auto src_p = as_p<expr_apply2<op_not>>(expr.src))
             return expr_set{std::move(*dest_p), std::move(*src_p), std::move(expr._loc)};
       }
+   }
+
+   template<template<class> class Expr> static MNL_INLINE auto mnl::aux::optimize_cond(Expr<> &expr)->code {
+      static const sym::tab<code (Expr<> &expr)> tab = []() MNL_COLD{
+         sym::tab<code (Expr<> &expr)> tab;
+
+
+
+         return tab;
+      }();
+
+
+      if (auto cond_p = as_p<expr_apply<1, expr_lit<decltype(op<sym::id("~")>)>, expr_tvar>>(expr.cond))
+         return Expr{*cond_p, expr.rest, expr._loc};
+      if (auto cond_p = as_p<expr_apply<1, expr_lit<decltype(op<sym::id("~")>)>, code>>(expr.cond))
+         return Expr{*cond_p, expr.rest, expr._loc};
+
+      {  constexpr auto optimize = [&](auto op) MNL_INLINE->code{
+           switch (MNL_EARLY(disp{
+              code::kindid<expr_apply<2, expr_lit<decltype(op)>, expr_lit<long long>, expr_tvar>>,
+
+              code::kindid<expr_apply<2, expr_lit<decltype(op)>, expr_tvar, expr_lit<long long>>>,
+              code::kindid<expr_apply<2, expr_lit<decltype(op)>, expr_tvar, expr_lit<double>>>,
+              ...
+           })[expr.cond.kindid]) {
+           }
+
+
+            if (auto cond_p = as_p<expr_apply<2, expr_lit<decltype(op)>, expr_tvar, expr_lit<long long>>>(expr.cond))
+               return Expr{*cond_p, std::move(expr._), std::move(expr._loc)};
+            if (auto cond_p = as_p<expr_apply<2, expr_lit<decltype(op)>, code, expr_lit<long long>>>(expr.cond))
+               return Expr{*cond_p, std::move(expr._), std::move(expr._loc)};
+            if (auto cond_p = as_p<expr_apply<2, expr_lit<decltype(op)>, expr_tvar, expr_lit<double>>>(expr.cond))
+               return Expr{*cond_p, std::move(expr._), std::move(expr._loc)};
+            if (auto cond_p = as_p<expr_apply<2, expr_lit<decltype(op)>, code, expr_lit<double>>>(expr.cond))
+               return Expr{*cond_p, std::move(expr._), std::move(expr._loc)};
+            ...
+            return {};
+         };
+         if (code res = optimize(op<sym::id("==")>)) return res;
+         if (code res = optimize(op<sym::id("<>")>)) return res;
+      }
+   }
+
+   auto mnl::aux::optimize(expr_if<> expr)->code {
+      return optimize_cond<expr_if>(expr);
    }
 
