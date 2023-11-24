@@ -1080,8 +1080,10 @@ namespace aux { namespace pub {
       MNL_INLINE void exec_in(const val &value) const { rep->exec_in(value); }
       MNL_INLINE void exec_in(val &&value)      const { rep->exec_in(std::move(value)); }
       MNL_INLINE val  exec_out() const { return rep->exec_out(); }
-      MNL_INLINE bool is_rvalue() const noexcept { return rep->is_rvalue(); }
-      MNL_INLINE bool is_lvalue() const noexcept { return rep->is_lvalue(); } // implies is_rvalue()
+      MNL_INLINE bool is_rvalue() const noexcept { return rep->category() >= 1; }
+      MNL_INLINE bool is_lvalue() const noexcept { return rep->category() >= 2; }
+      //MNL_INLINE bool is_rvalue() const noexcept { return rep->is_rvalue(); }
+      //MNL_INLINE bool is_lvalue() const noexcept { return rep->is_lvalue(); } // implies is_rvalue()
    public: // Extraction
       template<typename Dat> MNL_INLINE friend bool test(const code &rhs) noexcept
          { return rhs.rep->tag == &box<std::remove_cv_t<std::remove_reference_t<Dat>>>::tag; }
@@ -1104,8 +1106,9 @@ namespace aux { namespace pub {
          virtual void exec_in(const val &) const = 0;            // concrete dat (e.g., expr_tv) may have Dat::exec_in(long long) etc. for optimization purposes
          virtual void exec_in(val &&)      const = 0;
          virtual val  exec_out() const = 0;
-         virtual bool is_rvalue() const noexcept = 0;
-         virtual bool is_lvalue() const noexcept = 0; // shall imply is_rvalue()
+         virtual int  category() const noexcept = 0;
+         //virtual bool is_rvalue() const noexcept = 0;
+         //virtual bool is_lvalue() const noexcept = 0; // shall imply is_rvalue()
       } *rep = {};
       template<typename Dat> class box final: public root { public:
          const Dat dat;
@@ -1120,8 +1123,9 @@ namespace aux { namespace pub {
          MNL_HOT void exec_in(const val &value) const override { dat.exec_in(value); }
          MNL_HOT void exec_in(val &&value)      const override { dat.exec_in(std::move(value)); }
          MNL_HOT val  exec_out() const override { return dat.exec_out(); }
-         bool is_rvalue() const noexcept override { return dat.is_rvalue(); }
-         bool is_lvalue() const noexcept override { return dat.is_lvalue(); } // shall imply is_rvalue()
+         virtual int  category() const noexcept override { return dat.is_lvalue() ? 2 : dat.is_rvalue() ? 1 : 0; } // TODO: other better mapping methods could exist
+         //bool is_rvalue() const noexcept override { return dat.is_rvalue(); }
+         //bool is_lvalue() const noexcept override { return dat.is_lvalue(); } // shall imply is_rvalue()
       };
    private: // Implementation helpers
       MNL_INLINE void addref() const noexcept
