@@ -852,6 +852,10 @@ namespace aux::pub {
          val argv[] = {std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::move(arg2)};
          return _invoke(std::forward<Self>(self), MNL_SYM("Repl"), std::size(argv), argv);
       }
+   public:
+      template<typename Dat> class typed {
+         val value;
+      };
    };
    template<> class box<decltype(nullptr)>; // to be left incomplete to improve diagnostics
    template<> class box<long long>;         // ditto
