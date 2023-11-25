@@ -246,7 +246,7 @@ namespace aux::pub {
       MNL_INLINE val(unsigned dat) noexcept: rep{0x7FFDu, dat} {}
       MNL_INLINE val(char dat) noexcept:     val((unsigned)(unsigned char)dat) {}
       template<typename Dat, std::enable_if_t<!std::is_same_v<Dat, val *>, int{}>
-         val(Dat dat) noexcept(std::is_nothrow_constructible_v<Dat>): rep{0x7FF8u, (void *)(root *)new box<Dat>{std::move(dat)}} {}
+         val(Dat dat) noexcept(std::is_nothrow_constructible_v<Dat>): rep{0x7FF8u, (root *)new box<Dat>{std::move(dat)}} {}
       val(const char *);
       MNL_INLINE val(char *dat): val((const char *)dat) {}
    public: // Extraction
@@ -296,9 +296,9 @@ namespace aux::pub {
          # endif
             (this, &rhs, sizeof *this); // updates sym::rep (AND rep::tag at once), in case of _sym (corner case of ISO/IEC 14882:2011)
          }
-         static constexpr decltype(_tag) tag_base = 0x7FF8,
+         enum: decltype(_tag) { tag_base = 0x7FF8,
             tag_box = tag_base | 0x0, tag_nil = tag_base | 0x1, tag_i48 = tag_base | 0x2, tag_f32 = tag_base | 0x4,
-            tag_sym = tag_base | 0x3, tag_false = tag_base | 0x6, tag_true = tag_false | true, tag_u32 = tag_base | 0x5;
+            tag_sym = tag_base | 0x3, tag_false = tag_base | 0x6, tag_true = tag_false | true, tag_u32 = tag_base | 0x5 };
          static_assert(!(tag_false & true));
       } rep;
       static_assert(sizeof rep == 8, "sizeof rep == 8");                                                             // paranoid check
@@ -307,8 +307,8 @@ namespace aux::pub {
    private: // Implementation helpers
       void addref() const noexcept, release() const noexcept;
       void assume_f64() const noexcept;
-      template<typename     = decltype(nullptr)> bool test() const noexcept;
-      template<typename Dat = decltype(nullptr)> Dat  cast() const noexcept(std::is_nothrow_copy_constructible<Dat>::value);
+      template<typename     = decltype(nullptr)> bool is() const noexcept;
+      template<typename Dat = decltype(nullptr)> Dat  as() const noexcept(std::is_nothrow_copy_constructible_t<Dat>);
    public:
       class root;
    public: // Convenience -- Functional application - !argc => !argv && !argv_out
@@ -629,7 +629,7 @@ namespace aux::pub {
 // class Template box //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    class val::root {
    protected:
-      template<class Dat> MNL_INLINE root() noexcept: tag(reinterpret_cast<std::uintptr_t>(&tags<Dat>)) {}
+      MNL_INLINE root(const std::byte &tag) noexcept: tag(reinterpret_cast<std::uintptr_t>(&tag)) {}
       virtual ~root() = default;
    private:
       root(const root &) = delete;
@@ -640,7 +640,6 @@ namespace aux::pub {
       /*atomic*/ long _rc = 1;
    private:
       const unsigned tag; // assumed: 64-bit small/medium memory model or x32 ABI or 32-bit ISA
-      template<class> static constexpr unsigned char tags = {};
    private: // To be called instead of virtual functions directly (just more consistent naming)
       template<typename ...Items> MNL_INLINE val invoke(Items &&...items) { return _invoke(std::forward<Items>(items) ...); }
       template<typename ...Items> MNL_INLINE val apply(Items &&...items) { return _apply(std::forward<Items>(items) ...); }
@@ -772,9 +771,11 @@ namespace aux::pub {
    inline int val::root::tag_count;
    template<typename Dat> class box final: val::root {
       Dat dat;
-      explicit box(Dat &&dat): dat(std::move(dat)) {}
+      explicit box(Dat &&dat): root(tag), dat(std::move(dat)) {}
       ~box() {}
       friend val;
+   private:
+      static constexpr std::byte tag = {};
    private: // 38 VMT entries
       MNL_NOINLINE MNL_HOT val _invoke(const val &self, const sym &op, int argc, val argv[], val *argv_out = {}) override
          { return invoke(self, op, argv, argv_out); }
@@ -953,13 +954,13 @@ namespace aux::pub {
 
 // val Extractors //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    template<typename Dat> MNL_INLINE inline bool val::is() const noexcept {
-      return MNL_LIKELY(rep.tag() == 0x7FF8u) && static_cast<root *>(rep.dat<void *>())->tag ==
-         (decltype(root::tag))reinterpret_cast<std::uintptr_t>(&root::tags<typename std::remove_cv_t<typename std::remove_reference_t<Dat>>>);
+      return MNL_LIKELY(rep.tag() == rep::_box) && static_cast<const root *>(rep.dat<void *>())->tag ==
+         (decltype(root::tag))reinterpret_cast<std::uintptr_t>(&box<std::remove_cv_t<std::remove_reference_t<Dat>>>::tag);
       //return MNL_LIKELY(rep.tag() == 0x7FF8u) &&
       //   typeid(*static_cast<root *>(rep.dat<void *>())) == typeid(box<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type>);
    }
-   template<typename Dat> MNL_INLINE inline Dat val::as() const noexcept(noexcept(Dat(std::declval<Dat>()))) {
-      return static_cast<box<typename std::remove_cv_t<typename std::remove_reference_t<Dat>>> *>(static_cast<root *>(rep.dat<void *>()))->dat;
+   template<typename Dat> MNL_INLINE inline Dat val::as() const noexcept(std::is_nothrow_copy_constructible_v<Dat>) {
+      return static_cast<box<std::remove_cv_t<std::remove_reference_t<Dat>>> *>(static_cast<root *>(rep.dat<void *>()))->dat;
    }
    //template<typename Dat> MNL_INLINE inline Dat val::as() const noexcept(std::is_nothrow_copy_constructible_v<Dat>) {
    //   return static_cast<box<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type> *>(static_cast<root *>(rep.dat<void *>()))->dat;
