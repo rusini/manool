@@ -629,7 +629,7 @@ namespace aux::pub {
 // class Template box //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    class val::root {
    protected:
-      root() = default;
+      template<class Dat> MNL_INLINE root() noexcept: tag(reinterpret_cast<std::uintptr_t>(&tags<Dat>)) {}
       virtual ~root() = default;
    private:
       root(const root &) = delete;
@@ -638,6 +638,9 @@ namespace aux::pub {
       long rc() const noexcept { return MNL_IF_WITHOUT_MT(_rc) MNL_IF_WITH_MT(__atomic_load_n(&_rc, __ATOMIC_RELAXED)); }
    private:
       /*atomic*/ long _rc = 1;
+   private:
+      const unsigned tag; // assumed: 64-bit small/medium memory model or x32 ABI or 32-bit ISA
+      template<class> static constexpr unsigned char tags = {};
    private: // To be called instead of virtual functions directly (just more consistent naming)
       template<typename ...Items> MNL_INLINE val invoke(Items &&...items) { return _invoke(std::forward<Items>(items) ...); }
       template<typename ...Items> MNL_INLINE val apply(Items &&...items) { return _apply(std::forward<Items>(items) ...); }
@@ -765,6 +768,8 @@ namespace aux::pub {
    // end # define MNL_M(ID)
       MNL_M(_eq) MNL_M(_ne)
    };
+   template<class> const int val::root::tags = tag_count++;
+   inline int val::root::tag_count;
    template<typename Dat> class box final: val::root {
       Dat dat;
       explicit box(Dat &&dat): dat(std::move(dat)) {}
@@ -947,13 +952,18 @@ namespace aux::pub {
 # endif
 
 // val Extractors //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-   template<typename Dat> MNL_INLINE inline bool val::test() const noexcept {
-      return MNL_LIKELY(rep.tag() == 0x7FF8u) &&
-         typeid(*static_cast<root *>(rep.dat<void *>())) == typeid(box<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type>);
+   template<typename Dat> MNL_INLINE inline bool val::is() const noexcept {
+      return MNL_LIKELY(rep.tag() == 0x7FF8u) && static_cast<root *>(rep.dat<void *>())->tag ==
+         (decltype(root::tag))reinterpret_cast<std::uintptr_t>(&root::tags<typename std::remove_cv_t<typename std::remove_reference_t<Dat>>>);
+      //return MNL_LIKELY(rep.tag() == 0x7FF8u) &&
+      //   typeid(*static_cast<root *>(rep.dat<void *>())) == typeid(box<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type>);
    }
-   template<typename Dat> MNL_INLINE inline Dat val::cast() const noexcept(std::is_nothrow_copy_constructible<Dat>::value) {
-      return static_cast<box<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type> *>(static_cast<root *>(rep.dat<void *>()))->dat;
+   template<typename Dat> MNL_INLINE inline Dat val::as() const noexcept(noexcept(Dat(std::declval<Dat>()))) {
+      return static_cast<box<typename std::remove_cv_t<typename std::remove_reference_t<Dat>>> *>(static_cast<root *>(rep.dat<void *>()))->dat;
    }
+   //template<typename Dat> MNL_INLINE inline Dat val::as() const noexcept(std::is_nothrow_copy_constructible_v<Dat>) {
+   //   return static_cast<box<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type> *>(static_cast<root *>(rep.dat<void *>()))->dat;
+   //}
    MNL_INLINE inline long val::rc() const noexcept
       { return static_cast<const root *>(rep.dat<void *>())->rc(); }
 
@@ -1080,8 +1090,8 @@ namespace aux { namespace pub {
       MNL_INLINE void exec_in(const val &value) const { rep->exec_in(value); }
       MNL_INLINE void exec_in(val &&value)      const { rep->exec_in(std::move(value)); }
       MNL_INLINE val  exec_out() const { return rep->exec_out(); }
-      MNL_INLINE bool is_rvalue() const noexcept { return rep->category() >= 1; }
-      MNL_INLINE bool is_lvalue() const noexcept { return rep->category() >= 2; }
+      MNL_INLINE bool is_rvalue() const noexcept { return rep->category() >= true; }
+      MNL_INLINE bool is_lvalue() const noexcept { return rep->category() >= true << 1; }
       //MNL_INLINE bool is_rvalue() const noexcept { return rep->is_rvalue(); }
       //MNL_INLINE bool is_lvalue() const noexcept { return rep->is_lvalue(); } // implies is_rvalue()
    public: // Extraction
@@ -1123,7 +1133,7 @@ namespace aux { namespace pub {
          MNL_HOT void exec_in(const val &value) const override { dat.exec_in(value); }
          MNL_HOT void exec_in(val &&value)      const override { dat.exec_in(std::move(value)); }
          MNL_HOT val  exec_out() const override { return dat.exec_out(); }
-         virtual int  category() const noexcept override { return dat.is_lvalue() ? 2 : dat.is_rvalue() ? 1 : 0; } // TODO: other better mapping methods could exist
+         virtual int  category() const noexcept override { return dat.is_lvalue() << 1 | dat.is_rvalue(); }
          //bool is_rvalue() const noexcept override { return dat.is_rvalue(); }
          //bool is_lvalue() const noexcept override { return dat.is_lvalue(); } // shall imply is_rvalue()
       };
