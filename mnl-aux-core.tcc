@@ -956,24 +956,13 @@ namespace aux::pub {
    template<typename Dat> MNL_INLINE inline bool val::is() const noexcept {
       return MNL_LIKELY(rep.tag() == rep::_box) && static_cast<const root *>(rep.dat<void *>())->tag ==
          (decltype(root::tag))reinterpret_cast<std::uintptr_t>(&box<std::remove_cv_t<std::remove_reference_t<Dat>>>::tag);
-      //return MNL_LIKELY(rep.tag() == 0x7FF8u) &&
-      //   typeid(*static_cast<root *>(rep.dat<void *>())) == typeid(box<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type>);
    }
    template<typename Dat> MNL_INLINE inline Dat val::as() const noexcept(std::is_nothrow_copy_constructible_v<Dat>) {
       return static_cast<box<std::remove_cv_t<std::remove_reference_t<Dat>>> *>(static_cast<root *>(rep.dat<void *>()))->dat;
    }
-   //template<typename Dat> MNL_INLINE inline Dat val::as() const noexcept(std::is_nothrow_copy_constructible_v<Dat>) {
-   //   return static_cast<box<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type> *>(static_cast<root *>(rep.dat<void *>()))->dat;
-   //}
-   MNL_INLINE inline long val::rc() const noexcept
-      { return static_cast<const root *>(rep.dat<void *>())->rc(); }
-
-   template<> MNL_INLINE inline bool val::test<std::vector>() const noexcept
-      { return MNL_LIKELY(rep.tag() == 0x7FF8u) && static_cast<root *>(rep.dat<void *>())->type == root::array; }
-   template<> MNL_INLINE inline bool val::test<const std::vector &>() const noexcept
-      { return test<std::vector>(); }
-   template<> MNL_INLINE inline bool val::test<std::vector &>() const noexcept
-      { return test<std::vector>(); }
+   MNL_INLINE inline long val::rc() const noexcept {
+      return static_cast<const root *>(rep.dat<void *>())->rc();
+   }
 
    // Fake test/cast for val outputs
    template<> MNL_INLINE inline bool val::test<const val &>() const noexcept { return true; }
@@ -1084,7 +1073,9 @@ namespace aux { namespace pub {
       MNL_INLINE friend bool operator==(const code &lhs, const code &rhs) noexcept { return lhs.rep == rhs.rep; }
       MNL_INLINE explicit operator bool() const noexcept { return rep; }
    public: // Construction -- Implicit conversion (to) + Compilation/execution operations
-      template<typename Dat> code(Dat dat): rep(new box<Dat>{std::move(dat)}) {}
+      template<typename Dat> code(Dat dat): // designated initializers are a g++/clang++ extension to C++17:
+         rep(new box<Dat>{{.tag = (decltype(root::tag))reinterpret_cast<std::uintptr_t>(&box<Dat>::tag)}, std::move(dat)}) {}
+   public:
       MNL_INLINE code compile(const form &form, const loc &loc) && { return rep->compile(std::move(*this), form, loc); }
       template<bool fast_sig = bool{}, bool nores = bool{}>
       MNL_INLINE auto execute() const { return rep->execute(std::bool_constant<fast_sig>{}, std::bool_constant<nores>{}); }
@@ -1105,9 +1096,9 @@ namespace aux { namespace pub {
    private: // Concrete representation
       class root { public:
          /*atomic*/ long rc = 1;
-         const void *const tag; // dynamic type identification
-         MNL_INLINE explicit root(decltype(tag) tag) noexcept: tag(tag) {}
-         root(root &&) = delete; // can only be constructed/destructed (not movied or copied)
+         const unsigned tag; // custom RTTI
+         //MNL_INLINE explicit root(decltype(tag) tag) noexcept: tag(tag) {}
+         //root(root &&) = delete; // can only be constructed/destructed (not movied or copied)
          virtual ~root() = default;
          virtual code compile(code &&self, const form &, const loc &) const = 0;
          virtual val  execute(std::false_type, std::false_type) const = 0;
@@ -1123,7 +1114,7 @@ namespace aux { namespace pub {
       } *rep = {};
       template<typename Dat> class box final: public root { public:
          const Dat dat;
-         static constexpr unsigned char tag = {}; // dynamic type identification
+         static constexpr std::byte tag = {}; // dynamic type identification
          static_assert(std::is_base_of_v<nonvalue, Dat>);
          explicit box(Dat dat) noexcept: root{&tag}, dat(std::move(dat)) {}
          code compile(code &&self, const form &form, const loc &loc) const override { return dat.compile(std::move(self), form, loc); }
