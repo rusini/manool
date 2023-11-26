@@ -1114,7 +1114,7 @@ namespace aux { namespace pub {
       template<typename Dat> class box final: public root { public:
          const Dat dat;
          static_assert(std::is_base_of_v<nonvalue, Dat>);
-         static constexpr std::byte tag = {}; // custom RTTI
+         static std::byte tag; // custom RTTI
          explicit box(Dat &&dat) noexcept: root{tag}, dat(std::move(dat)) {}
          code compile(code &&self, const form &form, const loc &loc) const override { return dat.compile(std::move(self), form, loc); }
          MNL_HOT val  execute(std::false_type, std::false_type) const override { return dat.execute<>(); }
@@ -1137,6 +1137,7 @@ namespace aux { namespace pub {
       MNL_INLINE val invoke(val &&self, const sym &op, int argc, val argv[], val *) { return self.default_invoke(op, argc, argv); }
       friend mnl::box<code>;
    };
+   template<typename Dat> std::byte code::box<Dat>::tag;
    MNL_INLINE inline void swap(code &lhs, code &rhs) noexcept { lhs.swap(rhs); }
    bool operator==(const code &, const code &) noexcept;
    MNL_INLINE inline bool operator!=(const code &lhs, const code &rhs) noexcept { return std::rel_ops::operator!=(lhs, rhs); }
