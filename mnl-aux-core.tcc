@@ -245,8 +245,8 @@ namespace aux::pub {
       MNL_INLINE val(bool dat) noexcept: rep{0x7FFEu | dat} {}
       MNL_INLINE val(unsigned dat) noexcept: rep{0x7FFDu, dat} {}
       MNL_INLINE val(char dat) noexcept:     val((unsigned)(unsigned char)dat) {}
-      template<typename Dat, std::enable_if_t<!std::is_same_v<Dat, val *>, int{}>
-         val(Dat dat) noexcept(std::is_nothrow_constructible_v<Dat>): rep{0x7FF8u, (root *)new box<Dat>{std::move(dat)}} {}
+      template<typename Dat, std::enable_if_t<!std::is_same_v<Dat, val *>, decltype(nullptr)> = decltype(nullptr)>
+         val(Dat dat) noexcept(std::is_nothrow_constructible_v<Dat>): rep{rep::_box, (root *)new box<Dat>{root{box<Dat>::tag}, std::move(dat)}} {}
       val(const char *);
       MNL_INLINE val(char *dat): val((const char *)dat) {}
    public: // Extraction
@@ -530,6 +530,10 @@ namespace aux::pub {
    # undef MNL_M
    public:
       friend class proc_Min; friend class proc_Max;
+   public:
+      template<typename Dat> class typed {
+         val value;
+      };
    };
    MNL_INLINE inline void swap(val &lhs, val &rhs) noexcept { lhs.swap(rhs); }
    // defined in friend declarations above:
@@ -629,7 +633,7 @@ namespace aux::pub {
 // class Template box //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    class val::root {
    protected:
-      MNL_INLINE root(const std::byte &tag) noexcept: tag(reinterpret_cast<std::uintptr_t>(&tag)) {}
+      MNL_INLINE explicit root(const std::byte &tag) noexcept: tag(reinterpret_cast<std::uintptr_t>(&tag)) {}
       virtual ~root() = default;
    private:
       root(const root &) = delete;
@@ -767,14 +771,12 @@ namespace aux::pub {
    // end # define MNL_M(ID)
       MNL_M(_eq) MNL_M(_ne)
    };
-   template<class> const int val::root::tags = tag_count++;
-   inline int val::root::tag_count;
-   template<typename Dat> class box final: val::root {
+   template<typename Dat> struct box final: val::root {
       Dat dat;
-      explicit box(Dat &&dat): root(tag), dat(std::move(dat)) {}
+      //explicit box(Dat &&dat): root(tag), dat(std::move(dat)) {}
       ~box() {}
-      friend val;
    private:
+      friend val;
       static constexpr std::byte tag = {};
    private: // 38 VMT entries
       MNL_NOINLINE MNL_HOT val _invoke(const val &self, const sym &op, int argc, val argv[], val *argv_out = {}) override
@@ -858,10 +860,6 @@ namespace aux::pub {
          val argv[] = {std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::move(arg2)};
          return _invoke(std::forward<Self>(self), MNL_SYM("Repl"), std::size(argv), argv);
       }
-   public:
-      template<typename Dat> class typed {
-         val value;
-      };
    };
    template<> class box<decltype(nullptr)>; // to be left incomplete to improve diagnostics
    template<> class box<long long>;         // ditto
@@ -1061,7 +1059,7 @@ namespace aux { namespace pub {
       { auto res = parse(source, move(origin)); source.clear(); return res; } // this is to release its resources earlier, which is useful in practice
    typedef ast form; // AST when it is to be compiled as a whole - for documentation purposes
 
-   class code /*compiled entity*/ {
+   class code { // compiled entity
    public: // Standard operations
       code() = default;
       MNL_INLINE code(const code &rhs) noexcept: rep(rhs.rep) { addref(); }
@@ -1073,9 +1071,10 @@ namespace aux { namespace pub {
       MNL_INLINE friend bool operator==(const code &lhs, const code &rhs) noexcept { return lhs.rep == rhs.rep; }
       MNL_INLINE explicit operator bool() const noexcept { return rep; }
    public: // Construction -- Implicit conversion (to) + Compilation/execution operations
-      template<typename Dat> code(Dat dat): // designated initializers are a g++/clang++ extension to C++17:
-         rep(new box<Dat>{{.tag = (decltype(root::tag))reinterpret_cast<std::uintptr_t>(&box<Dat>::tag)}, std::move(dat)}) {}
-   public:
+      template<typename Dat> code(Dat dat): rep(new box<Dat>{std::move(dat)}) {}
+   # if MNL_LEAN
+      MNL_INLINE code compile(const form &form, const loc &loc) const & { return ((code)*this).compile(form, loc); }
+   # endif
       MNL_INLINE code compile(const form &form, const loc &loc) && { return rep->compile(std::move(*this), form, loc); }
       template<bool fast_sig = bool{}, bool nores = bool{}>
       MNL_INLINE auto execute() const { return rep->execute(std::bool_constant<fast_sig>{}, std::bool_constant<nores>{}); }
@@ -1087,25 +1086,25 @@ namespace aux { namespace pub {
       //MNL_INLINE bool is_rvalue() const noexcept { return rep->is_rvalue(); }
       //MNL_INLINE bool is_lvalue() const noexcept { return rep->is_lvalue(); } // implies is_rvalue()
    public: // Extraction
-      template<typename Dat> MNL_INLINE friend bool test(const code &rhs) noexcept
-         { return rhs.rep->tag == &box<std::remove_cv_t<std::remove_reference_t<Dat>>>::tag; }
-      template<typename Dat> MNL_INLINE friend Dat  cast(const code &rhs) noexcept
+      template<typename Dat> MNL_INLINE friend bool is(const code &rhs) noexcept
+         { return rhs.rep->tag == (decltype(root::tag))reinterpret_cast<std::uintptr_t>(&box<std::remove_cv_t<std::remove_reference_t<Dat>>>::tag); }
+      template<typename Dat> MNL_INLINE friend Dat  as(const code &rhs) noexcept
          { return static_cast<box<std::remove_cv_t<std::remove_reference_t<Dat>>> *>(rhs.rep)->dat; }
    public: // Mandatory bases for Dat
       struct nonvalue; struct rvalue; struct lvalue;
    private: // Concrete representation
-      class root { public:
+      class root { public: // del copy cons, no move cons, del copy assignment, no move assignment (same for derived)
          /*atomic*/ long rc = 1;
-         const unsigned tag; // custom RTTI
-         //MNL_INLINE explicit root(decltype(tag) tag) noexcept: tag(tag) {}
-         //root(root &&) = delete; // can only be constructed/destructed (not movied or copied)
+         const unsigned tag; // custom RTTI (assuming appropriate memory/linking models or ABIs or ISAs)
+         root(const root &) = delete;
+         MNL_INLINE explicit root(const std::byte &tag) noexcept: tag(reinterpret_cast<std::uintptr_t>(&tag)) {}
          virtual ~root() = default;
          virtual code compile(code &&self, const form &, const loc &) const = 0;
          virtual val  execute(std::false_type, std::false_type) const = 0;
          virtual void execute(std::false_type, std::true_type)  const = 0;
          virtual val  execute(std::true_type,  std::false_type) const = 0;
          virtual void execute(std::true_type,  std::true_type)  const = 0;
-         virtual void exec_in(const val &) const = 0;            // concrete dat (e.g., expr_tv) may have Dat::exec_in(long long) etc. for optimization purposes
+         virtual void exec_in(const val &) const = 0; // concrete dat (e.g., expr_tv) may have Dat::exec_in(long long) etc. for optimization purposes
          virtual void exec_in(val &&)      const = 0;
          virtual val  exec_out() const = 0;
          virtual int  category() const noexcept = 0;
@@ -1114,9 +1113,9 @@ namespace aux { namespace pub {
       } *rep = {};
       template<typename Dat> class box final: public root { public:
          const Dat dat;
-         static constexpr std::byte tag = {}; // dynamic type identification
          static_assert(std::is_base_of_v<nonvalue, Dat>);
-         explicit box(Dat dat) noexcept: root{&tag}, dat(std::move(dat)) {}
+         static constexpr std::byte tag = {}; // custom RTTI
+         explicit box(Dat &&dat) noexcept: root{tag}, dat(std::move(dat)) {}
          code compile(code &&self, const form &form, const loc &loc) const override { return dat.compile(std::move(self), form, loc); }
          MNL_HOT val  execute(std::false_type, std::false_type) const override { return dat.execute<>(); }
          MNL_HOT void execute(std::false_type, std::true_type)  const override { (void)dat.execute<bool{}, true>(); }
@@ -1141,11 +1140,14 @@ namespace aux { namespace pub {
    MNL_INLINE inline void swap(code &lhs, code &rhs) noexcept { lhs.swap(rhs); }
    bool operator==(const code &, const code &) noexcept;
    MNL_INLINE inline bool operator!=(const code &lhs, const code &rhs) noexcept { return std::rel_ops::operator!=(lhs, rhs); }
-   template<typename>     bool test(const code &) noexcept;
-   template<typename Dat> Dat  cast(const code &) noexcept;
+
+   template<class> bool is(const code &) noexcept;
+   template<class Dat> const Dat &as(const code &) noexcept;
+   template<class Dat> MNL_INLINE inline const Dat *as_p(const code &rhs) noexcept
+   { return MNL_UNLIKELY(is<Dat>(rhs)) ? &as<Dat>(rhs) : nullptr; }
 
    extern MNL_IF_WITH_MT(thread_local) sym::tab<> symtab;
-   code compile(const form &, const loc & = MNL_IF_GCC5(loc)MNL_IF_GCC6(loc){});
+   code compile(const form &, const loc & = {});
    MNL_NORETURN void err_compile(const char *msg, const loc &);
 
    template<enum sym::id _> std::enable_if_t<(_, true), void> op;
@@ -1163,17 +1165,15 @@ namespace aux { namespace pub {
 
    struct code::nonvalue {
       static code compile(code &&self, const form &, const loc &) = delete;
-      MNL_INLINE static val execute(bool fast_sig = {}) noexcept { MNL_UNREACHABLE(); }
-      MNL_INLINE static void exec_nores(bool fast_sig = {}) noexcept { MNL_UNREACHABLE(); }
+      template<bool fast_sig = bool{}, bool nores = bool{}> MNL_INLINE static val execute() noexcept { MNL_UNREACHABLE(); }
       MNL_INLINE static void exec_in(const val &) noexcept { MNL_UNREACHABLE(); }
-      MNL_INLINE static val exec_out() noexcept { MNL_UNREACHABLE(); }
-      MNL_INLINE static bool is_rvalue() noexcept { return false; }
-      MNL_INLINE static bool is_lvalue() noexcept { return false; }
+      MNL_INLINE static val  exec_out() noexcept { MNL_UNREACHABLE(); }
+      MNL_INLINE static bool is_rvalue() noexcept { return {}; }
+      MNL_INLINE static bool is_lvalue() noexcept { return {}; }
    };
    struct code::rvalue: code::nonvalue {
       MNL_INLINE static code compile(code &&self, const form &form, const loc &loc) { return aux::compile_apply(std::move(self), form, loc); }
-      static val execute(bool fast_sig = {}) = delete;
-      MNL_INLINE static void exec_nores(bool fast_sig = {}) noexcept {} // may still be shadowed
+      template<bool fast_sig = bool{}, bool nores = bool{}> static val execute() = delete;
       MNL_INLINE static bool is_rvalue() noexcept { return true; }
    };
    struct code::lvalue: code::rvalue {
