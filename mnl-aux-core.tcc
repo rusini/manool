@@ -1334,20 +1334,13 @@ namespace aux { namespace pub {
             MNL_ERR(MNL_SYM("UnrecognizedOperation"));
          };
          static constexpr auto op_lit_val = [](const auto &lhs, auto &&rhs) MNL_INLINE{
-            if constexpr(
-               std::is_same_v<decltype(lhs), long long> ||
-               std::is_same_v<decltype(lhs), double> ||
-               std::is_same_v<decltype(lhs), float> ||
-               std::is_same_v<decltype(lhs), unsigned> ) {
-               if (is<decltype(lhs)>(rhs)) return op_lit_lit(std::forward<decltype(lhs)>(lhs), as<decltype(lhs)>(rhs));
-               MNL_ERR(MNL_SYM("TypeMismatch"));
-            } else
-               return op_val_val(std::forward<decltype(lhs)>(lhs), std::forward<decltype(rhs)>(rhs));
+            if (is<decltype(lhs)>(rhs)) return op_lit_lit(lhs, as<decltype(lhs)>(rhs));
+            MNL_ERR(MNL_SYM("TypeMismatch"));
          };
-         static constexpr auto apply_val_lit = [](auto &&lhs, const auto &rhs) MNL_INLINE{ return
-            MNL_LIKELY(is<decltype(rhs)>(lhs)) ? (val)op_lit_lit(as<decltype(rhs)>(lhs), rhs) :
-            MNL_LIKELY(lhs.rep.tag() == rep::_box) ? invoke(std::forward<decltype(lhs)>(lhs), rhs) :
-            op_val_val(invoke(std::forward<decltype(lhs)>(lhs), rhs);
+         static constexpr auto apply_val_lit = [](auto &&lhs, const auto &rhs) MNL_INLINE{
+            if (MNL_LIKELY(is<decltype(rhs)>(lhs))) return (val)op_lit_lit(as<decltype(rhs)>(lhs), rhs);
+            if (MNL_LIKELY(lhs.rep.tag() == rep::_box)) return invoke(std::forward<decltype(lhs)>(lhs), rhs);
+            []() MNL_NORETURN{ MNL_EARLY(sym(Id))(std::forward<decltype(lhs)>(lhs), rhs); }();
          };
          struct _ {
             // op_val_val
