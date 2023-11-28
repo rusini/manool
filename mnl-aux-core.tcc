@@ -1344,12 +1344,10 @@ namespace aux { namespace pub {
             } else
                return op_val_val(std::forward<decltype(lhs)>(lhs), std::forward<decltype(rhs)>(rhs));
          };
-         static constexpr auto apply_val_lit = [](auto &&lhs, const auto &rhs) MNL_INLINE{
-            if (is<decltype(rhs)>(lhs)) return op_lit_lit(as<decltype(rhs)>(lhs), rhs);
-            if (lhs.rep.tag() == rep::_box) lhs.rep.dat<void *>()
-               return static_cast<root *>(lhs.rep.template dat<void *>())->
-                  invoke(std::forward<Lhs>(lhs), op_sym(), 1, std::forward<decltype(rhs)>(rhs));
-            MNL_ERR(MNL_SYM("TypeMismatch"));
+         static constexpr auto apply_val_lit = [](auto &&lhs, const auto &rhs) MNL_INLINE{ return
+            MNL_LIKELY(is<decltype(rhs)>(lhs)) ? (val)op_lit_lit(as<decltype(rhs)>(lhs), rhs) :
+            MNL_LIKELY(lhs.rep.tag() == rep::_box) ? invoke(std::forward<decltype(lhs)>(lhs), rhs) :
+            op_val_val(invoke(std::forward<decltype(lhs)>(lhs), rhs);
          };
          struct _ {
             // op_val_val
