@@ -1151,318 +1151,16 @@ namespace aux { namespace pub {
    code compile(const form &, const loc & = {});
    MNL_NORETURN void err_compile(const char *msg, const loc &);
 
-   template<enum sym::id _> std::enable_if_t<(_, true), void> op;
-
-   template< enum sym::id Id, std::enable_if_t<
-      Id == sym::id( "+" ) || Id == sym::id("-" ) || Id == sym::id("*") || Id == sym::id("~" ) || Id == sym::id("Neg") || Id == sym::id("Abs") ||
-      Id == sym::id( "==") || Id == sym::id("<>") || Id == sym::id("<") || Id == sym::id("<=") || Id == sym::id( ">" ) || Id == sym::id( ">=") ||
-      Id == sym::id("Xor") || Id == sym::id("&" ) || Id == sym::id("|") ||
-      bool{}, decltype(nullptr) > = decltype(nullptr){} >
-   extern constexpr auto op = [](){
-      static constexpr auto invoke1 = [](auto &&lhs, auto &&rhs) MNL_INLINE{
-         return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs), MNL_EARLY(sym(Id)), 0, {});
-      };
-      static constexpr auto invoke2 = [](auto &&lhs, auto &&rhs) MNL_INLINE{
-         return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs), MNL_EARLY(sym(Id)),
-            1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
-      };
-      if constexpr(Id == sym::id("~") || Id == sym::id("Neg") || Id == sym::id("Abs")) {
-         static constexpr auto op_lit = [](const auto &rhs){
-            if (bool{});
-            else if constexpr(Id == sym::id("Neg")) return _neg(rhs);
-            else if constexpr(Id == sym::id("Abs")) return _abs(rhs);
-         };
-         static constexpr auto op_val = [](auto &&rhs) MNL_INLINE->val{
-            if constexpr(Id == sym::id("~"))
-               switch (rhs.rep.tag()) {
-               case rep::_box: // BoxPtr (fallback)
-                  return invoke1(std::forward<Rhs>(rhs));
-               case rep::_nil: case rep::_sym:
-                  MNL_ERR(MNL_SYM("UnrecognizedOperation"));
-               case rep::_false: return true;
-               case rep::_true:  return false;
-               case rep::_u32:   return ~as<unsigned>(rhs);
-               case rep::_i48:   return aux::_neg(as<long long>(rhs)); // Neg(ation)
-               default:          return aux::_neg(as<double>(rhs));    // Neg(ation)
-               case rep::_f32:   return aux::_neg(as<float>(rhs));     // Neg(ation)
-               }
-            else { // Id == sym::id("Neg") || Id == sym::id("Abs")
-               if (MNL_LIKELY(is<long long>(lhs)))  return op_lit(as<long long>(rhs));
-               if (MNL_UNLIKELY(is<unsigned>(lhs))) return op_lit(as<unsigned>(rhs));
-               if (MNL_LIKELY(is<double>(lhs)))     return op_lit(as<double>(rhs));
-               if (MNL_UNLIKELY(is<float>(lhs)))    return op_lit(as<float>(rhs));
-               if (MNL_LIKELY(lhs.rep.tag() == rep::_box)) // BoxPtr (fallback)
-                  return static_cast<root *>(rhs.rep.dat<void *>())->invoke(std::forward<Rhs>(rhs), op_sym, 0, {});
-               MNL_ERR(MNL_SYM("UnrecognizedOperation"));
-            }
-         };
-         struct _ {
-            MNL_INLINE auto operator()(const val &rhs) const { return op_val(rhs); }
-            MNL_INLINE auto operator()(val &&rhs) const { return op_val(std::move(rhs)); }
-         };
-         return _{};
-      } else
-      if constexpr(Id == id::sym("==") || Id == id::sym("<>")) {
-         static constexpr auto op_val_val = [](auto &&lhs, auto &&rhs) MNL_INLINE{
-            if constexpr(Id == sym::id("=="))
-               switch (lhs.rep.tag()) {
-               case rep::_box:   return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs),
-                  MNL_SYM("=="), 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<decltype(rhs), val &&>, val &, val>)rhs));
-               case rep::_nil:   return  is<>(rhs);
-               case rep::_i48:   return  MNL_LIKELY(is<long long>(rhs)) && as<long long>(lhs) == as<long long>(rhs);
-               default:          return  MNL_LIKELY(is<double>(rhs)) && as<double>(lhs) == as<double>(rhs);
-               case rep::_f32:   return  MNL_LIKELY(is<float>(rhs)) && as<float>(lhs) == as<float>(rhs);
-               case rep::_sym:   return  MNL_LIKELY(is<sym>(rhs)) && as<const sym &>(lhs) == as<const sym &>(rhs);
-               case rep::_false: return  rhs.rep.tag() == rep::_false;
-               case rep::_true:  return  rhs.rep.tag() == rep::_true;
-               case rep::_u32:   return  MNL_LIKELY(is<unsigned>(rhs)) && as<unsigned>(lhs) == as<unsigned>(rhs);
-               }
-            else // Id == sym::id("<>")
-               switch (lhs.rep.tag()) {
-               case rep::_box:   return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs),
-                  MNL_SYM("<>"), 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<decltype(rhs), val &&>, val &, val>)rhs));
-               case rep::_nil:   return !is<>(rhs);
-               case rep::_i48:   return !MNL_LIKELY(is<long long>(rhs)) || as<long long>(lhs) != as<long long>(rhs);
-               default:          return !MNL_LIKELY(is<double>(rhs)) || as<double>(lhs) != as<double>(rhs);
-               case rep::_f32:   return !MNL_LIKELY(is<float>(rhs)) || as<float>(lhs) != as<float>(rhs);
-               case rep::_sym:   return !MNL_LIKELY(is<sym>(rhs)) || as<const sym &>(lhs) != as<const sym &>(rhs);
-               case rep::_false: return  rhs.rep.tag() != rep::_false;
-               case rep::_true:  return  rhs.rep.tag() != rep::_true;
-               case rep::_u32:   return !MNL_LIKELY(is<unsigned>(rhs)) || as<unsigned>(lhs) != as<unsigned>(rhs);
-               }
-         };
-         static constexpr auto op_lit_val = [](const auto &lhs, auto &&rhs) MNL_INLINE{
-            if constexpr(Id == sym::id("=="))
-               return  MNL_LIKELY(is<decltype(lhs)>(rhs)) && lhs == as<decltype(lhs)>(rhs);
-            else // Id == sym::id("<>")
-               return !MNL_LIKELY(is<decltype(lhs)>(rhs)) || lhs != as<decltype(lhs)>(rhs);
-         };
-         static constexpr auto op_val_lit = [](auto &&lhs, const auto &rhs) MNL_INLINE{
-            if constexpr(Id == sym::id("==")) {
-               if (MNL_LIKELY(is<decltype(rhs)>(lhs))) return as<decltype(rhs)>(lhs) == rhs;
-               if (!MNL_LIKELY(lhs.rep.tag() == rep::_box)) return false;
-               return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs),
-                  MNL_SYM("=="), 1, &const_cast<val &>((const val &)rhs));
-            } else { // Id == sym::id("<>")
-               if (MNL_LIKELY(is<decltype(rhs)>(lhs))) return as<decltype(rhs)>(lhs) != rhs;
-               if (!MNL_LIKELY(lhs.rep.tag() == rep::_box)) return true;
-               return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs),
-                  MNL_SYM("<>"), 1, &const_cast<val &>((const val &)rhs));
-            }
-         };
-         struct _ {
-            // op_val_val
-            MNL_INLINE auto operator()(const val &lhs, const val &rhs) const { return op_val_val(lhs, rhs); }
-            MNL_INLINE auto operator()(const val &lhs, val &&rhs) const { return op_val_val(lhs, std::move(rhs)); }
-            MNL_INLINE auto operator()(val &&lhs, const val &rhs) const { return op_val_val(std::move(lhs), rhs); }
-            MNL_INLINE auto operator()(val &&lhs, val &&rhs) const { return op_val_val(std::move(lhs), std::move(rhs)); }
-            // op_dat_val
-            MNL_INLINE auto operator()(long long lhs, const val &rhs) const { return op_dat_val(lhs, rhs); }
-            MNL_INLINE auto operator()(long long lhs, val &&rhs) const { return op_dat_val(lhs, std::move(rhs)); }
-            MNL_INLINE auto operator()(int lhs, const val &rhs) const { return (*this)((long long)lhs, rhs); }
-            MNL_INLINE auto operator()(int lhs, val &&rhs) const { return (*this)((long long)lhs, std::move(rhs)); }
-            MNL_INLINE auto operator()(double lhs, const val &rhs) const { return op_dat_val(lhs, rhs); }
-            MNL_INLINE auto operator()(double lhs, val &&rhs) const { return op_dat_val(lhs, std::move(rhs)); }
-            MNL_INLINE auto operator()(float lhs, const val &rhs) const { return op_dat_val(lhs, rhs); }
-            MNL_INLINE auto operator()(float lhs, val &&rhs) const { return op_dat_val(lhs, std::move(rhs)); }
-            MNL_INLINE auto operator()(const sym &lhs, const val &rhs) const { return op_dat_val(lhs, rhs); }
-            MNL_INLINE auto operator()(const sym &lhs, val &&rhs) const { return op_dat_val(lhs, std::move(rhs)); }
-            MNL_INLINE auto operator()(bool lhs, const val &rhs) const { return op_dat_val(lhs, rhs); }
-            MNL_INLINE auto operator()(bool lhs, val &&rhs) const { return op_dat_val(lhs, std::move(rhs)); }
-            MNL_INLINE auto operator()(decltype(nullptr) lhs, const val &rhs) const { return op_dat_val(lhs, rhs); }
-            MNL_INLINE auto operator()(decltype(nullptr) lhs, val &&rhs) const { return op_dat_val(lhs, std::move(rhs)); }
-            MNL_INLINE auto operator()(unsigned lhs, const val &rhs) const { return op_dat_val(lhs, rhs); }
-            MNL_INLINE auto operator()(unsigned lhs, val &&rhs) const { return op_dat_val(lhs, std::move(rhs)); }
-            MNL_INLINE auto operator()(const std::string &lhs, const val &rhs) const { return op_dat_val(lhs, rhs); }
-            MNL_INLINE auto operator()(const std::string &lhs, val &&rhs) const { return op_dat_val(lhs, std::move(rhs)); }
-            // op_val_dat
-            MNL_INLINE auto operator()(const val &lhs, long long rhs) const { return op_val_dat(lhs, rhs); }
-            MNL_INLINE auto operator()(val &&lhs, long long rhs) const { return op_val_dat(std::move(lhs), rhs); }
-            MNL_INLINE auto operator()(const val &lhs, int rhs) const { return (*this)(lhs, (long long)rhs); }
-            MNL_INLINE auto operator()(val &&lhs, int rhs) const { return (*this)(std::move(lhs), (long long)rhs); }
-            MNL_INLINE auto operator()(const val &lhs, double rhs) const { return op_val_dat(lhs, rhs); }
-            MNL_INLINE auto operator()(val &&lhs, double rhs) const { return op_val_dat(std::move(lhs), rhs); }
-            MNL_INLINE auto operator()(const val &lhs, float rhs) const { return op_val_dat(lhs, rhs); }
-            MNL_INLINE auto operator()(val &&lhs, float rhs) const { return op_val_dat(std::move(lhs), rhs); }
-            MNL_INLINE auto operator()(const val &lhs, const sym &rhs) const { return op_val_dat(lhs, rhs); }
-            MNL_INLINE auto operator()(val &&lhs, const sym &rhs) const { return op_val_dat(std::move(lhs), rhs); }
-            MNL_INLINE auto operator()(const val &lhs, decltype(nullptr) rhs) const { return op_val_dat(lhs, rhs); }
-            MNL_INLINE auto operator()(val &&lhs, decltype(nullptr) rhs) const { return op_val_dat(std::move(lhs), rhs); }
-            MNL_INLINE auto operator()(const val &lhs, unsigned rhs) const { return op_val_dat(lhs, rhs); }
-            MNL_INLINE auto operator()(val &&lhs, unsigned rhs) const { return op_val_dat(std::move(lhs), rhs); }
-            MNL_INLINE auto operator()(const val &lhs, const std::string &rhs) const { return op_val_dat(lhs, rhs); }
-            MNL_INLINE auto operator()(val &&lhs, const std::string &rhs) const { return op_val_dat(std::move(lhs), rhs); }
-            // op_dat_dat
-         # if MNL_LEAN
-            MNL_INLINE auto operator()(long long lhs, long long rhs) const { return (*this)(lhs, (val)rhs); }
-            MNL_INLINE auto operator()(const val &lhs, int rhs) const { return (*this)(lhs, (long long)rhs); }
-            MNL_INLINE auto operator()(val &&lhs, int rhs) const { return (*this)(std::move(lhs), (long long)rhs); }
-            MNL_INLINE auto operator()(const val &lhs, double rhs) const { return op_val_dat(lhs, rhs); }
-            MNL_INLINE auto operator()(val &&lhs, double rhs) const { return op_val_dat(std::move(lhs), rhs); }
-            MNL_INLINE auto operator()(const val &lhs, float rhs) const { return op_val_dat(lhs, rhs); }
-            MNL_INLINE auto operator()(val &&lhs, float rhs) const { return op_val_dat(std::move(lhs), rhs); }
-            MNL_INLINE auto operator()(const val &lhs, const sym &rhs) const { return op_val_dat(lhs, rhs); }
-            MNL_INLINE auto operator()(val &&lhs, const sym &rhs) const { return op_val_dat(std::move(lhs), rhs); }
-            MNL_INLINE auto operator()(const val &lhs, decltype(nullptr) rhs) const { return op_val_dat(lhs, rhs); }
-            MNL_INLINE auto operator()(val &&lhs, decltype(nullptr) rhs) const { return op_val_dat(std::move(lhs), rhs); }
-            MNL_INLINE auto operator()(const val &lhs, unsigned rhs) const { return op_val_dat(lhs, rhs); }
-            MNL_INLINE auto operator()(val &&lhs, unsigned rhs) const { return op_val_dat(std::move(lhs), rhs); }
-            MNL_INLINE auto operator()(const val &lhs, const std::string &rhs) const { return op_val_dat(lhs, rhs); }
-            MNL_INLINE auto operator()(val &&lhs, const std::string &rhs) const { return op_val_dat(std::move(lhs), rhs); }
-         # endif
-         };
-         return _{};
-      } else {
-         static constexpr auto apply_lit_lit = [](auto &&lhs, auto &&rhs){
-            if (bool{});
-            else if constexpr (Id == sym::id("+" )) return _add(std::forward<decltype(lhs)>(lhs), std::forward<decltype(rhs)>(rhs));
-            else if constexpr (Id == sym::id("-" )) return _sub(std::forward<decltype(lhs)>(lhs), std::forward<decltype(rhs)>(rhs));
-            else if constexpr (Id == sym::id("*" )) return _mul(std::forward<decltype(lhs)>(lhs), std::forward<decltype(rhs)>(rhs));
-            else if constexpr (Id == sym::id("<" )) return std::forward<decltype(lhs)>(lhs) <  std::forward<decltype(rhs)>(rhs);
-            else if constexpr (Id == sym::id("<=")) return std::forward<decltype(lhs)>(lhs) <= std::forward<decltype(rhs)>(rhs);
-            else if constexpr (Id == sym::id(">" )) return std::forward<decltype(lhs)>(lhs) >  std::forward<decltype(rhs)>(rhs);
-            else if constexpr (Id == sym::id(">=")) return std::forward<decltype(lhs)>(lhs) >= std::forward<decltype(rhs)>(rhs);
-         };
-         static constexpr auto apply_val_val = [](auto &&lhs, auto &&rhs) MNL_INLINE{
-            if (MNL_LIKELY(is<long long>(lhs))) {
-               if (MNL_UNLIKELY(!is<long long>(rhs))) err_TypeMismatch();
-               return op_lit_lit(as<long long>(lhs), as<long long>(rhs));
-            }
-            if (MNL_UNLIKELY(is<unsigned>(lhs))) {
-               if (MNL_UNLIKELY(!is<unsigned>(rhs))) err_TypeMismatch();
-               return op_lit_lit(as<unsigned>(lhs), as<unsigned>(rhs));
-            }
-            if (MNL_LIKELY(is<double>(lhs))) {
-               if (MNL_UNLIKELY(!is<double>(rhs))) err_TypeMismatch();
-               return op_lit_lit(as<double>(lhs), as<double>(rhs));
-            }
-            if (MNL_UNLIKELY(lhs.rep.tag() == rep::_box)) // BoxPtr (fallback)
-               return invoke(std::forward<decltype(lhs)>(lhs), std::forward<decltype(rhs)>(rhs));
-            if (MNL_LIKELY(is<float>(lhs))) {
-               if (MNL_UNLIKELY(!is<float>(rhs))) err_TypeMismatch();
-               return op_lit_lit(as<float>(lhs), as<float>(rhs));
-            }
-            MNL_ERR(MNL_SYM("UnrecognizedOperation"));
-         };
-         static constexpr auto op_lit_val = [](const auto &lhs, auto &&rhs) MNL_INLINE{
-            if (is<decltype(lhs)>(rhs)) return op_lit_lit(lhs, as<decltype(lhs)>(rhs));
-            MNL_ERR(MNL_SYM("TypeMismatch"));
-         };
-         static constexpr auto apply_val_lit = [](auto &&lhs, const auto &rhs) MNL_INLINE{
-            if (MNL_LIKELY(is<decltype(rhs)>(lhs))) return (val)op_lit_lit(as<decltype(rhs)>(lhs), rhs);
-            if (MNL_LIKELY(lhs.rep.tag() == rep::_box)) return invoke2(std::forward<decltype(lhs)>(lhs), rhs);
-            []() MNL_NORETURN{ MNL_EARLY(sym(Id))(std::forward<decltype(lhs)>(lhs), rhs); }();
-         };
-         struct _ {
-            // op_val_val
-            MNL_INLINE auto operator()(const val &lhs, const val &rhs) const { return op_val_val(lhs, rhs); }
-            MNL_INLINE auto operator()(const val &lhs, val &&rhs) const { return op_val_val(lhs, std::move(rhs)); }
-            MNL_INLINE auto operator()(val &&lhs, const val &rhs) const { return op_val_val(std::move(lhs), rhs); }
-            MNL_INLINE auto operator()(val &&lhs, val &&rhs) const { return op_val_val(std::move(lhs), std::move(rhs)); }
-            // op_dat_val
-            MNL_INLINE auto operator()(long long lhs, const val &rhs) const { return op_dat_val(lhs, rhs); }
-            MNL_INLINE auto operator()(long long lhs, val &&rhs) const { return op_dat_val(lhs, std::move(rhs)); }
-            MNL_INLINE auto operator()(int lhs, const val &rhs) const { return (*this)((long long)lhs, rhs); }
-            MNL_INLINE auto operator()(int lhs, val &&rhs) const { return (*this)((long long)lhs, std::move(rhs)); }
-            MNL_INLINE auto operator()(double lhs, const val &rhs) const { return op_dat_val(lhs, rhs); }
-            MNL_INLINE auto operator()(double lhs, val &&rhs) const { return op_dat_val(lhs, std::move(rhs)); }
-            MNL_INLINE auto operator()(float lhs, const val &rhs) const { return op_dat_val(lhs, rhs); }
-            MNL_INLINE auto operator()(float lhs, val &&rhs) const { return op_dat_val(lhs, std::move(rhs)); }
-            MNL_INLINE auto operator()(unsigned lhs, const val &rhs) const { return op_dat_val(lhs, rhs); }
-            MNL_INLINE auto operator()(unsigned lhs, val &&rhs) const { return op_dat_val(lhs, std::move(rhs)); }
-            // op_val_dat
-            MNL_INLINE auto operator()(const val &lhs, long long rhs) const { return op_val_dat(lhs, rhs); }
-            MNL_INLINE auto operator()(val &&lhs, long long rhs) const { return op_val_dat(std::move(lhs), rhs); }
-            MNL_INLINE auto operator()(const val &lhs, int rhs) const { return (*this)(lhs, (long long)rhs); }
-            MNL_INLINE auto operator()(val &&lhs, int rhs) const { return (*this)(std::move(lhs), (long long)rhs); }
-            MNL_INLINE auto operator()(const val &lhs, double rhs) const { return op_val_dat(lhs, rhs); }
-            MNL_INLINE auto operator()(val &&lhs, double rhs) const { return op_val_dat(std::move(lhs), rhs); }
-            MNL_INLINE auto operator()(const val &lhs, float rhs) const { return op_val_dat(lhs, rhs); }
-            MNL_INLINE auto operator()(val &&lhs, float rhs) const { return op_val_dat(std::move(lhs), rhs); }
-            MNL_INLINE auto operator()(const val &lhs, unsigned rhs) const { return op_val_dat(lhs, rhs); }
-            MNL_INLINE auto operator()(val &&lhs, unsigned rhs) const { return op_val_dat(std::move(lhs), rhs); }
-         };
-         return _{};
-      } else
-      if constexpr(Id == sym::id("Xor")) {
-         static constexpr auto op_val_val = [](auto &&lhs, auto &&rhs) MNL_INLINE{
-            switch (lhs.rep.tag()) {
-            case rep::_box: // BoxPtr (fallback)
-               return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs), MNL_SYM("Xor"),
-                  1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
-            default:
-               MNL_ERR(MNL_SYM("UnrecognizedOperation"));
-            case rep::_false: // Bool/False
-               if (MNL_UNLIKELY(!test<bool>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch"));
-               return val{decltype(rep){rhs.rep.tag()}};
-            case rep::_true:  // Bool/True
-               if (MNL_UNLIKELY(!test<bool>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch"));
-               return val{decltype(rep){rhs.rep.tag() ^ 1}};
-            case rep::_u32:   // U32
-               if (MNL_UNLIKELY(!test<unsigned>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch"));
-               return as<unsigned>(lhs) ^ as<unsigned>(rhs);
-            }
-         };
-         struct _ {
-            // op_val_val
-            MNL_INLINE auto operator()(const val &lhs, const val &rhs) const { return op_val_val(lhs, rhs); }
-            MNL_INLINE auto operator()(const val &lhs, val &&rhs) const { return op_val_val(lhs, std::move(rhs)); }
-            MNL_INLINE auto operator()(val &&lhs, const val &rhs) const { return op_val_val(std::move(lhs), rhs); }
-            MNL_INLINE auto operator()(val &&lhs, val &&rhs) const { return op_val_val(std::move(lhs), std::move(rhs)); }
-            // op_dat_val
-            MNL_INLINE auto operator()(bool lhs, const val &rhs) const { return op_dat_val(lhs, rhs); }
-            MNL_INLINE auto operator()(bool lhs, val &&rhs) const { return op_dat_val(lhs, std::move(rhs)); }
-            MNL_INLINE auto operator()(unsigned lhs, const val &rhs) const { return op_dat_val(lhs, rhs); }
-            MNL_INLINE auto operator()(unsigned lhs, val &&rhs) const { return op_dat_val(lhs, std::move(rhs)); }
-            // op_val_dat
-            MNL_INLINE auto operator()(const val &lhs, unsigned rhs) const { return op_val_dat(lhs, rhs); }
-            MNL_INLINE auto operator()(val &&lhs, unsigned rhs) const { return op_val_dat(std::move(lhs), rhs); }
-         };
-         return _{};
-      } else
-      if constexpr(Id == sym::id("&") || Id == sym::id("|")) {
-         struct _ {
-            // op_val_val
-            MNL_INLINE auto operator()(const val &lhs, const val &rhs) const { return op_val_val(lhs, rhs); }
-            MNL_INLINE auto operator()(const val &lhs, val &&rhs) const { return op_val_val(lhs, std::move(rhs)); }
-            MNL_INLINE auto operator()(val &&lhs, const val &rhs) const { return op_val_val(std::move(lhs), rhs); }
-            MNL_INLINE auto operator()(val &&lhs, val &&rhs) const { return op_val_val(std::move(lhs), std::move(rhs)); }
-            // op_dat_val
-            MNL_INLINE auto operator()(unsigned lhs, const val &rhs) const { return op_dat_val(lhs, rhs); }
-            MNL_INLINE auto operator()(unsigned lhs, val &&rhs) const { return op_dat_val(lhs, std::move(rhs)); }
-            // op_val_dat
-            MNL_INLINE auto operator()(const val &lhs, unsigned rhs) const { return op_val_dat(lhs, rhs); }
-            MNL_INLINE auto operator()(val &&lhs, unsigned rhs) const { return op_val_dat(std::move(lhs), rhs); }
-         };
-         return _{};
-      }
-   }();
 
 
 
-   template<enum sym::id _> std::enable_if_t<(_, true), void> op;
-
-   template< enum sym::id Id, std::enable_if_t<
-      Id == sym::id( "+" ) || Id == sym::id("-" ) || Id == sym::id("*") || Id == sym::id("~" ) || Id == sym::id("Neg") || Id == sym::id("Abs") ||
-      Id == sym::id( "==") || Id == sym::id("<>") || Id == sym::id("<") || Id == sym::id("<=") || Id == sym::id( ">" ) || Id == sym::id( ">=") ||
-      Id == sym::id("Xor") || Id == sym::id("&" ) || Id == sym::id("|") ||
-      bool{}, decltype(nullptr) > = decltype(nullptr){} >
-
-      template<enum sym::id Id>
-      struct op_type<Id,
-         Id == sym::id("+")  | Id == sym::id("-" ) | Id == sym::id("*") |
-         Id == sym::id("<")  | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id( ">=") ? 1 :
-         Id == sym::id("==") | Id == sym::id("<>") ? 2 :
-         Id == sym::id("~" ) || Id == sym::id("Neg") || Id == sym::id("Abs")
-      > {
-      };
-
-   struct val::ops { // empty (like, e.g., many in the Standard library) // TODO: no need anymore for this "wrapper"
+namespace mnl {
+   struct val::ops { // empty (like, e.g., many in the Standard library)
    private:
       enum class group { unsupported, numeric, equality, unary, xoring, and_or };
       template<enum sym::id, group> struct _op;
    public:
-      template<enum sym::id Id> static constexpr _op< Id, // TODO: maybe because of this (otherwise we'd have more dependencies)
+      template<enum sym::id Id> static constexpr _op< Id,
          Id == sym::id( "+" ) | Id == sym::id( "-" ) | Id == sym::id( "*" ) |
          Id == sym::id( "<" ) | Id == sym::id( "<=") | Id == sym::id( ">" ) | Id == sym::id( ">=") ? group::numeric  :
          Id == sym::id( "==") | Id == sym::id( "<>")                                               ? group::equality :
@@ -1470,9 +1168,15 @@ namespace aux { namespace pub {
          Id == sym::id("Xor")                                                                      ? group::xoring   :
          Id == sym::id( "&" ) | Id == sym::id( "|" )                                               ? group::and_or   :
          group::unsupported > op = {};
+   private:
+      template<typename Val> static constexpr bool is_core_numeric =
+         std::is_same_v<Val, long long> | std::is_same_v<Val, double> | std::is_same_v<Val, float> | std::is_same_v<Val, unsigned>;
    };
 
-   template<enum sym::id Id> struct val::ops::_op<Id, group::unary> {
+   template<enum sym::id Id> constexpr auto op = val::ops::op<Id>;
+
+   // (~); Neg; Abs ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   template<enum sym::id Id> struct val::ops::_op<Id, val::ops::group::unary> {
    public:
       template<typename Rhs, std::enable_if_t<
          (std::is_same_v<Rhs, const val &> | std::is_same_v<Rhs, val>),
@@ -1502,7 +1206,8 @@ namespace aux { namespace pub {
          }
       }
    public:
-      operator sym() const noexcept { return MNL_EARLY((sym)Id); }
+      MNL_INLINE operator sym() const noexcept { return MNL_EARLY((sym)Id); }
+      MNL_INLINE operator val() const noexcept { return (sym)*this; }
    private:
       template<typename Val> static auto op(Val rhs) {
          if (bool{});
@@ -1510,11 +1215,8 @@ namespace aux { namespace pub {
          else if constexpr(Id == sym::id("Abs")) return aux::_abs(rhs);
       }
    };
-
-   template<enum sym::id Id> struct val::ops::_op<Id, group::numeric> {
-   private:
-      template<typename Val> static constexpr bool is_core_numeric_v =
-         std::is_same_v<Val, long long> | std::is_same_v<Val, double> | std::is_same_v<Val, float> | std::is_same_v<Val, unsigned>;
+   // (+); (-); (*); (<); (<=); (>); (>=) //////////////////////////////////////////////////////////////////////////////////////////////////
+   template<enum sym::id Id> struct val::ops::_op<Id, val::ops::group::numeric> {
    public:
       template<typename Lhs, typename Rhs, std::enable_if_t<
          (std::is_same_v<Lhs, const val &> | std::is_same_v<Lhs, val>) &
@@ -1560,7 +1262,8 @@ namespace aux { namespace pub {
          [&lhs, rhs]() MNL_NORETURN{ MNL_EARLY((sym)Id)(std::forward<Lhs>(lhs), rhs); }();
       }
    public:
-      operator sym() const noexcept { return MNL_EARLY((sym)Id); }
+      MNL_INLINE operator sym() const noexcept { return MNL_EARLY((sym)Id); }
+      MNL_INLINE operator val() const noexcept { return (sym)*this; }
    private:
       template<typename Val> static auto op(Val lhs, Val rhs) {
          if (bool{});
@@ -1573,11 +1276,8 @@ namespace aux { namespace pub {
          else if constexpr(Id == sym::id(">=")) return lhs >= rhs;
       }
    };
-
-   template<enum sym::id Id> struct val::ops::_op<Id, group::equality> {
-   private:
-      template<typename Val> static constexpr bool is_core_numeric_v =
-         std::is_same_v<Val, long long> | std::is_same_v<Val, double> | std::is_same_v<Val, float> | std::is_same_v<Val, unsigned>;
+   // (==); (<>) ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   template<enum sym::id Id> struct val::ops::_op<Id, val::ops::group::equality> {
    public:
       template<typename Lhs, typename Rhs, std::enable_if_t<
          (std::is_same_v<Lhs, const val &> | std::is_same_v<Lhs, val>) &
@@ -1663,9 +1363,10 @@ namespace aux { namespace pub {
          }
       }
    public:
-      operator sym() const noexcept { return MNL_EARLY((sym)Id); }
+      MNL_INLINE operator sym() const noexcept { return MNL_EARLY((sym)Id); }
+      MNL_INLINE operator val() const noexcept { return (sym)*this; }
    };
-
+   // Xor //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    template<enum sym::id Id> struct val:ops::_op<Id, val:ops::group::xoring> {
    public:
       template<typename Lhs, typename Rhs, std::enable_if_t<
@@ -1708,9 +1409,10 @@ namespace aux { namespace pub {
          [&lhs, rhs]() MNL_NORETURN{ MNL_EARLY((sym)Id)(std::forward<Lhs>(lhs), rhs); }();
       }
    public:
-      operator sym() const noexcept { return MNL_EARLY((sym)Id); }
+      MNL_INLINE operator sym() const noexcept { return MNL_EARLY((sym)Id); }
+      MNL_INLINE operator val() const noexcept { return (sym)*this; }
    };
-
+   // (&); (|) /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    template<enum sym::id Id> struct val:ops::_op<Id, val:ops::group::and_or> {
    public:
       template<typename Lhs, typename Rhs, std::enable_if_t<
@@ -1753,7 +1455,8 @@ namespace aux { namespace pub {
          [&lhs, rhs]() MNL_NORETURN{ MNL_EARLY((sym)Id)(std::forward<Lhs>(lhs), rhs); }();
       }
    public:
-      operator sym() const noexcept { return MNL_EARLY((sym)Id); }
+      MNL_INLINE operator sym() const noexcept { return MNL_EARLY((sym)Id); }
+      MNL_INLINE operator val() const noexcept { return (sym)*this; }
    private:
       template<typename Val> static auto op(Val lhs, Val rhs) {
          if (bool{});
@@ -1761,7 +1464,7 @@ namespace aux { namespace pub {
          else if constexpr(Id == sym::id("|")) return lhs | rhs;
       }
   };
-
+} // namespace mnl
 
 
 
