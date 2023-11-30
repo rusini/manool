@@ -1457,54 +1457,22 @@ namespace aux { namespace pub {
       > {
       };
 
-   struct val::ops { // empty
+   struct val::ops { // empty (like, e.g., many in the Standard library) // TODO: no need anymore for this "wrapper"
    private:
-      template<enum sym::id Id,
-         int group =
-            Id == sym::id( "+" ) | Id == sym::id( "-" ) | Id == sym::id( "*" ) |
-            Id == sym::id( "<" ) | Id == sym::id( "<=") | Id == sym::id( ">" ) | Id == sym::id( ">=") ? 1 :
-            Id == sym::id( "==") | Id == sym::id( "<>")                                               ? 2 :
-            Id == sym::id( "~" ) | Id == sym::id("Neg") | Id == sym::id("Abs")                        ? 3 :
-            Id == sym::id("Xor")                                                                      ? 4 :
-            Id == sym::id( "&" ) | Id == sym::id( "|" )                                               ? 5 :
-         int{},
-         std::enable_if_t< // no need to do this as this is private"
-            Id == sym::id( "+" ) | Id == sym::id( "-" ) | Id == sym::id( "*" ) |
-            Id == sym::id( "<" ) | Id == sym::id( "<=") | Id == sym::id( ">" ) | Id == sym::id( ">=") ? group == 1 :
-            Id == sym::id( "==") | Id == sym::id( "<>")                                               ? group == 2 :
-            Id == sym::id( "~" ) | Id == sym::id("Neg") | Id == sym::id("Abs")                        ? group == 3 :
-            Id == sym::id("Xor")                                                                      ? group == 4 :
-            Id == sym::id( "&" ) | Id == sym::id( "|" )                                               ? group == 5 :
-         bool{}, decltype(nullptr)> = decltype(nullptr){}>
-      struct _op;
-
       enum class group { unsupported, numeric, equality, unary, xoring, and_or };
-      template<enum sym::id Id, group Group> struct _op;
-
-
+      template<enum sym::id, group> struct _op;
    public:
-      template<enum sym::id Id>
-      static constexpr _op<Id, // a variable template is also OK here before specializations for _op, since the instantiation will happen below
+      template<enum sym::id Id> static constexpr _op< Id, // TODO: maybe because of this (otherwise we'd have more dependencies)
          Id == sym::id( "+" ) | Id == sym::id( "-" ) | Id == sym::id( "*" ) |
-         Id == sym::id( "<" ) | Id == sym::id( "<=") | Id == sym::id( ">" ) | Id == sym::id( ">=") ? group::numeric :
+         Id == sym::id( "<" ) | Id == sym::id( "<=") | Id == sym::id( ">" ) | Id == sym::id( ">=") ? group::numeric  :
          Id == sym::id( "==") | Id == sym::id( "<>")                                               ? group::equality :
-         Id == sym::id( "~" ) | Id == sym::id("Neg") | Id == sym::id("Abs")                        ? group::unary :
-         Id == sym::id("Xor")                                                                      ? group::xoring :
-         Id == sym::id( "&" ) | Id == sym::id( "|" )                                               ? group::and_or :
-         group::unsupported> op() noexcept { return {}; } // TODO: or else use group::invalid, to refer to an incomplete type, which results in error anyway
-
-
-      = [](){
-         return op_type<Id
-            Id == sym::id("+")  | Id == sym::id("-"  ) | Id == sym::id( "*" ) |
-            Id == sym::id("<")  | Id == sym::id("<=" ) | Id == sym::id( ">" ) | Id == sym::id( ">=") ? 1 :
-            Id == sym::id("==") | Id == sym::id("<>" ) ? 2 :
-            Id == sym::id("~" ) | Id == sym::id("Neg") | Id == sym::id("Abs") ? 3 :
-         >{};
-      };
+         Id == sym::id( "~" ) | Id == sym::id("Neg") | Id == sym::id("Abs")                        ? group::unary    :
+         Id == sym::id("Xor")                                                                      ? group::xoring   :
+         Id == sym::id( "&" ) | Id == sym::id( "|" )                                               ? group::and_or   :
+         group::unsupported > op = {};
    };
 
-   template<enum sym::id Id> struct val::ops::_op<Id, 1> {
+   template<enum sym::id Id> struct val::ops::_op<Id, group::unary> {
    public:
       template<typename Rhs, std::enable_if_t<
          (std::is_same_v<Rhs, const val &> | std::is_same_v<Rhs, val>),
@@ -1535,7 +1503,7 @@ namespace aux { namespace pub {
       }
    };
 
-   template<enum sym::id Id> struct val::_op<Id, 1> {
+   template<enum sym::id Id> struct val::ops::_op<Id, group::numeric> {
    private:
       template<typename Val> static constexpr bool is_core_numeric_v =
          std::is_same_v<Val, long long> | std::is_same_v<Val, double> | std::is_same_v<Val, float> | std::is_same_v<Val, unsigned>;
@@ -1558,7 +1526,7 @@ namespace aux { namespace pub {
             return op(as<double>(lhs), as<double>(rhs));
          }
          if (MNL_UNLIKELY(lhs.rep.tag() == rep::_box)) // BoxPtr (fallback)
-            return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs), MNL_EARLY(sym(Id)),
+            return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs), *this,
                1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
          if (MNL_LIKELY(is<float>(lhs))) {
             if (MNL_UNLIKELY(!is<float>(rhs))) err_TypeMismatch();
@@ -1567,23 +1535,27 @@ namespace aux { namespace pub {
          MNL_ERR(MNL_SYM("UnrecognizedOperation"));
       }
       template<typename Lhs, typename Rhs, std::enable_if_t<
-         is_core_numeric_v<Lhs> & std::is_same_v<Rhs, val>,
+         is_core_numeric<Lhs> & std::is_same_v<Rhs, val>,
          decltype(nullptr)> = decltype(nullptr){}>
       MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const {
-         if (is<Lhs>(rhs)) return op(lhs, as<Lhs>(rhs));
+         if (MNL_LIKELY(is<Lhs>(rhs))) return op(lhs, as<Lhs>(rhs));
          err_TypeMismatch();
       }
       template<typename Lhs, typename Rhs, std::enable_if_t<
-         (std::is_same_v<Lhs, const val &> | std::is_same_v<Lhs, val>) & is_core_numeric_v<Rhs>,
+         (std::is_same_v<Lhs, const val &> | std::is_same_v<Lhs, val>) & is_core_numeric<Rhs>,
          decltype(nullptr)> = decltype(nullptr){}>
       MNL_INLINE val operator()(Lhs &&lhs, Rhs rhs) const {
-      {
-         if (MNL_LIKELY(is<Rhs>(lhs))) return op(as<Rhs>(lhs), rhs);
-         if (MNL_LIKELY(lhs.rep.tag() == rep::_box)) return invoke(std::forward<Lhs>(lhs), rhs);
-         [&lhs, rhs]() MNL_NORETURN{ MNL_EARLY(sym(Id))(std::forward<Lhs>(lhs), rhs); }();
+         if (MNL_LIKELY(is<Rhs>(lhs)))
+            return op(as<Rhs>(lhs), rhs);
+         if (MNL_LIKELY(lhs.rep.tag() == rep::_box))
+            return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(
+               std::forward<Lhs>(lhs), *this, 1, &const_cast<val &>((const val &)rhs));
+         [&lhs, rhs]() MNL_NORETURN{ MNL_EARLY(sym(Id))(std::forward<Lhs>(lhs), (val)rhs); }();
       }
+   public:
+      operator sym() const noexcept { return MNL_EARLY((sym)Id); }
    private:
-      template<typename Val> static auto op(Val lhs, Val rhs){
+      template<typename Val> static auto op(Val lhs, Val rhs) {
          if (bool{});
          else if constexpr(Id == sym::id("+" )) return aux::_add(lhs, rhs);
          else if constexpr(Id == sym::id("-" )) return aux::_sub(lhs, rhs);
@@ -1592,11 +1564,10 @@ namespace aux { namespace pub {
          else if constexpr(Id == sym::id("<=")) return lhs <= rhs;
          else if constexpr(Id == sym::id(">" )) return lhs >  rhs;
          else if constexpr(Id == sym::id(">=")) return lhs >= rhs;
-      };
-  };
+      }
+   };
 
-   template<enum sym::id Id>
-   struct op_type<Id, 2> {
+   template<enum sym::id Id> struct val::ops::_op<Id, group::equality> {
    private:
       template<typename Val> static constexpr bool is_core_numeric_v =
          std::is_same_v<Val, long long> | std::is_same_v<Val, double> | std::is_same_v<Val, float> | std::is_same_v<Val, unsigned>;
