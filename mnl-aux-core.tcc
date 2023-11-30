@@ -1495,11 +1495,19 @@ namespace aux { namespace pub {
             if (MNL_LIKELY(is<long long>(lhs)))  return op(as<long long>(rhs));
             if (MNL_LIKELY(is<double>(lhs)))     return op(as<double>(rhs));
             if (MNL_UNLIKELY(lhs.rep.tag() == rep::_box)) // BoxPtr (fallback)
-               return static_cast<root *>(rhs.rep.dat<void *>())->invoke(std::forward<Rhs>(rhs), sym(Id), 0, {});
+               return static_cast<root *>(rhs.rep.template dat<void *>())->invoke(std::forward<Rhs>(rhs), *this, 0, {});
             if (MNL_LIKELY(is<float>(lhs)))    return op(as<float>(rhs));
             if (MNL_LIKELY(is<unsigned>(lhs))) return op(as<unsigned>(rhs));
             MNL_ERR(MNL_SYM("UnrecognizedOperation"));
          }
+      }
+   public:
+      operator sym() const noexcept { return MNL_EARLY((sym)Id); }
+   private:
+      template<typename Val> static auto op(Val rhs) {
+         if (bool{});
+         else if constexpr(Id == sym::id("Neg")) return aux::_neg(rhs);
+         else if constexpr(Id == sym::id("Abs")) return aux::_abs(rhs);
       }
    };
 
@@ -1627,12 +1635,12 @@ namespace aux { namespace pub {
       MNL_INLINE val operator()(Lhs &&lhs, Rhs rhs) const {
          if constexpr(Id == sym::id("==")) {
             if (MNL_LIKELY(is<Rhs>(lhs))) return as<Rhs>(lhs) == rhs;
-            if (MNL_UNLIKELY(lhs.rep.tag() != rep::_box)) return false;
+            if (MNL_LIKELY(lhs.rep.tag() != rep::_box)) return false;
             return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs),
                MNL_SYM("=="), 1, &const_cast<val &>((const val &)rhs));
          } else { // Id == sym::id("<>")
             if (MNL_LIKELY(is<Rsh>(lhs))) return as<Rsh>(lhs) != rhs;
-            if (MNL_UNLIKELY(lhs.rep.tag() != rep::_box)) return true;
+            if (MNL_LIKELY(lhs.rep.tag() != rep::_box)) return true;
             return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs),
                MNL_SYM("<>"), 1, &const_cast<val &>((const val &)rhs));
          }
@@ -1644,19 +1652,21 @@ namespace aux { namespace pub {
       MNL_INLINE val operator()(Lhs &&lhs, const Rhs &rhs) const {
          if constexpr(Id == sym::id("==")) {
             if (MNL_LIKELY(is<Rhs>(lhs))) return as<const Rhs &>(lhs) == rhs;
-            if (MNL_UNLIKELY(lhs.rep.tag() != rep::_box)) return false;
+            if (MNL_LIKELY(lhs.rep.tag() != rep::_box)) return false;
             return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs),
                MNL_SYM("=="), 1, &const_cast<val &>((const val &)rhs));
          } else { // Id == sym::id("<>")
             if (MNL_LIKELY(is<Rsh>(lhs))) return as<const Rhs &>(lhs) != rhs;
-            if (MNL_UNLIKELY(lhs.rep.tag() != rep::_box)) return true;
+            if (MNL_LIKELY(lhs.rep.tag() != rep::_box)) return true;
             return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs),
                MNL_SYM("<>"), 1, &const_cast<val &>((const val &)rhs));
          }
       }
+   public:
+      operator sym() const noexcept { return MNL_EARLY((sym)Id); }
    };
 
-   template<enum sym::id Id> struct val::_op<Id, 1> {
+   template<enum sym::id Id> struct val:ops::_op<Id, val:ops::group::xoring> {
    public:
       template<typename Lhs, typename Rhs, std::enable_if_t<
          (std::is_same_v<Lhs, const val &> | std::is_same_v<Lhs, val>) &
@@ -1665,48 +1675,91 @@ namespace aux { namespace pub {
       MNL_INLINE val operator()(Lhs &&lhs, Rhs &&rhs) const {
          switch (lhs.rep.tag()) {
          case rep::_box: // BoxPtr (fallback)
-            return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs), MNL_SYM("Xor"),
-               1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
+            return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs),
+               MNL_SYM("Xor"), 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
          default:
             MNL_ERR(MNL_SYM("UnrecognizedOperation"));
          case rep::_false: // Bool
             if (MNL_UNLIKELY(!test<bool>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch"));
-            return val{decltype(val::rep){rhs.rep.tag()}};
+            return val{decltype(rep){rhs.rep.tag()}};
          case rep::_true:  // Bool
             if (MNL_UNLIKELY(!test<bool>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch"));
-            return val{decltype(val::rep){rhs.rep.tag() ^ 1}};
+            return val{decltype(rep){rhs.rep.tag() ^ 1}};
          case rep::_u32:
             if (MNL_UNLIKELY(!test<unsigned>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch"));
             return cast<unsigned>(lhs) ^ cast<unsigned>(rhs);
          }
       }
       template<typename Lhs, typename Rhs, std::enable_if_t<
-         is_core_numeric_v<Lhs> & std::is_same_v<Rhs, val>,
+         is_same_v<Lhs, unsigned> & is_same_v<Lhs, bool> & std::is_same_v<Rhs, val>,
+         decltype(nullptr)> = decltype(nullptr){}>
+      MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const {
+         if (is<Lhs>(rhs)) return lhs ^ as<Lhs>(rhs);
+         err_TypeMismatch();
+      }
+      template<typename Lhs, typename Rhs, std::enable_if_t<
+         (std::is_same_v<Lhs, const val &> | std::is_same_v<Lhs, val>) & is_same_v<Lhs, unsigned>,
+         decltype(nullptr)> = decltype(nullptr){}>
+      MNL_INLINE val operator()(Lhs &&lhs, Rhs rhs) const {
+         if (MNL_LIKELY(is<Rhs>(lhs))) return as<Rhs>(lhs) ^ rhs;
+         if (MNL_LIKELY(lhs.rep.tag() == rep::_box))
+            return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs),
+               MNL_SYM("Xor"), 1, &const_cast<val &>((const val &)rhs));
+         [&lhs, rhs]() MNL_NORETURN{ MNL_EARLY((sym)Id)(std::forward<Lhs>(lhs), rhs); }();
+      }
+   public:
+      operator sym() const noexcept { return MNL_EARLY((sym)Id); }
+   };
+
+   template<enum sym::id Id> struct val:ops::_op<Id, val:ops::group::and_or> {
+   public:
+      template<typename Lhs, typename Rhs, std::enable_if_t<
+         (std::is_same_v<Lhs, const val &> | std::is_same_v<Lhs, val>) &
+         (std::is_same_v<Rhs, const val &> | std::is_same_v<Rhs, val>),
+         decltype(nullptr)> = decltype(nullptr){}>
+      MNL_INLINE val operator()(Lhs &&lhs, Rhs &&rhs) const {
+         switch (lhs.rep.tag()) {
+         case rep::_box: // BoxPtr (fallback)
+            return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs),
+               *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
+         default:
+            MNL_ERR(MNL_SYM("UnrecognizedOperation"));
+         case rep::_false: // Bool
+            if (MNL_UNLIKELY(!is<bool>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch"));
+            if constexpr(Id == sym::id("&")) return false; else return val{decltype(rep){rhs.rep.tag()}};
+         case rep::_true:  // Bool
+            if (MNL_UNLIKELY(!test<bool>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch"));
+            if constexpr(Id == sym::id("|")) return true;  else return val{decltype(rep){rhs.rep.tag()}};
+         case rep::_u32:
+            if (MNL_UNLIKELY(!test<unsigned>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch"));
+            return op(as<unsigned>(lhs), op<unsigned>(rhs));
+         }
+      }
+      template<typename Lhs, typename Rhs, std::enable_if_t<
+         is_same_v<Lhs, unsigned> & std::is_same_v<Rhs, val>,
          decltype(nullptr)> = decltype(nullptr){}>
       MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const {
          if (is<Lhs>(rhs)) return op(lhs, as<Lhs>(rhs));
          err_TypeMismatch();
       }
       template<typename Lhs, typename Rhs, std::enable_if_t<
-         (std::is_same_v<Lhs, const val &> | std::is_same_v<Lhs, val>) & is_core_numeric_v<Rhs>,
+         (std::is_same_v<Lhs, const val &> | std::is_same_v<Lhs, val>) & is_same_v<Lhs, unsigned>,
          decltype(nullptr)> = decltype(nullptr){}>
       MNL_INLINE val operator()(Lhs &&lhs, Rhs rhs) const {
-      {
          if (MNL_LIKELY(is<Rhs>(lhs))) return op(as<Rhs>(lhs), rhs);
-         if (MNL_LIKELY(lhs.rep.tag() == rep::_box)) return invoke(std::forward<Lhs>(lhs), rhs);
-         [&lhs, rhs]() MNL_NORETURN{ MNL_EARLY(sym(Id))(std::forward<Lhs>(lhs), rhs); }();
+         if (MNL_LIKELY(lhs.rep.tag() == rep::_box))
+            return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs),
+               *this, 1, &const_cast<val &>((const val &)rhs));
+         [&lhs, rhs]() MNL_NORETURN{ MNL_EARLY((sym)Id)(std::forward<Lhs>(lhs), rhs); }();
       }
+   public:
+      operator sym() const noexcept { return MNL_EARLY((sym)Id); }
    private:
-      template<typename Val> static auto op(Val lhs, Val rhs){
+      template<typename Val> static auto op(Val lhs, Val rhs) {
          if (bool{});
-         else if constexpr(Id == sym::id("+" )) return aux::_add(lhs, rhs);
-         else if constexpr(Id == sym::id("-" )) return aux::_sub(lhs, rhs);
-         else if constexpr(Id == sym::id("*" )) return aux::_mul(lhs, rhs);
-         else if constexpr(Id == sym::id("<" )) return lhs <  rhs;
-         else if constexpr(Id == sym::id("<=")) return lhs <= rhs;
-         else if constexpr(Id == sym::id(">" )) return lhs >  rhs;
-         else if constexpr(Id == sym::id(">=")) return lhs >= rhs;
-      };
+         else if constexpr(Id == sym::id("&")) return lhs & rhs;
+         else if constexpr(Id == sym::id("|")) return lhs | rhs;
+      }
   };
 
 
