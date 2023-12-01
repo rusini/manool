@@ -1188,7 +1188,7 @@ namespace aux::pub {
          if constexpr(Id == sym::id("~"))
             switch (rhs.rep.tag()) {
             case rep::_box: // BoxPtr (fallback)
-               return static_cast<root *>(rhs.rep.dat<void *>())->invoke(std::forward<Rhs>(rhs), MNL_SYM("~"), 0, {});
+               return static_cast<root *>(rhs.rep.template dat<void *>())->_invoke(std::forward<Rhs>(rhs), MNL_SYM("~"));
             case rep::_nil: case rep::_sym:
                MNL_ERR(MNL_SYM("UnrecognizedOperation"));
             case rep::_false: return true;
@@ -1202,7 +1202,7 @@ namespace aux::pub {
             if (MNL_LIKELY(is<long long>(lhs)))  return op(as<long long>(rhs));
             if (MNL_LIKELY(is<double>(lhs)))     return op(as<double>(rhs));
             if (MNL_UNLIKELY(lhs.rep.tag() == rep::_box)) // BoxPtr (fallback)
-               return static_cast<root *>(rhs.rep.template dat<void *>())->invoke(std::forward<Rhs>(rhs), *this, 0, {});
+               return static_cast<root *>(rhs.rep.template dat<void *>())->_invoke(std::forward<Rhs>(rhs), *this);
             if (MNL_LIKELY(is<float>(lhs)))    return op(as<float>(rhs));
             if (MNL_LIKELY(is<unsigned>(lhs))) return op(as<unsigned>(rhs));
             MNL_ERR(MNL_SYM("UnrecognizedOperation"));
@@ -1288,11 +1288,13 @@ namespace aux::pub {
          decltype(nullptr)> = decltype(nullptr){}>
       MNL_INLINE val operator()(Lhs &&lhs, Rhs &&rhs) const {
          if constexpr(Id == sym::id("=="))
-            switch (lhs.rep.tag()) {
+            if (MNL_UNLIKELY(is<long long>(lhs)))
+               return  MNL_LIKELY(is<long long>(rhs)) && as<long long>(lhs) == as<long long>(rhs);
+            else switch (lhs.rep.tag()) {
             case rep::_box:   return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs), // BoxPtr (fallback)
                MNL_SYM("=="), 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
             case rep::_nil:   return  is<>(rhs);
-            case rep::_i48:   return  MNL_LIKELY(is<long long>(rhs)) && as<long long>(lhs) == as<long long>(rhs);
+            case rep::_i48:   MNL_UNREACHABLE();
             default:          return  MNL_LIKELY(is<double>(rhs)) && as<double>(lhs) == as<double>(rhs);
             case rep::_f32:   return  MNL_LIKELY(is<float>(rhs)) && as<float>(lhs) == as<float>(rhs);
             case rep::_sym:   return  MNL_LIKELY(is<sym>(rhs)) && as<const sym &>(lhs) == as<const sym &>(rhs);
@@ -1301,11 +1303,13 @@ namespace aux::pub {
             case rep::_u32:   return  MNL_LIKELY(is<unsigned>(rhs)) && as<unsigned>(lhs) == as<unsigned>(rhs);
             }
          else // Id == sym::id("<>")
-            switch (lhs.rep.tag()) {
+            if (MNL_UNLIKELY(is<long long>(lhs)))
+               return !MNL_LIKELY(is<long long>(rhs)) || as<long long>(lhs) != as<long long>(rhs);
+            else switch (lhs.rep.tag()) {
             case rep::_box:   return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs), // BoxPtr (fallback)
                MNL_SYM("<>"), 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
             case rep::_nil:   return !is<>(rhs);
-            case rep::_i48:   return !MNL_LIKELY(is<long long>(rhs)) || as<long long>(lhs) != as<long long>(rhs);
+            case rep::_i48:   MNL_UNREACHABLE();
             default:          return !MNL_LIKELY(is<double>(rhs)) || as<double>(lhs) != as<double>(rhs);
             case rep::_f32:   return !MNL_LIKELY(is<float>(rhs)) || as<float>(lhs) != as<float>(rhs);
             case rep::_sym:   return !MNL_LIKELY(is<sym>(rhs)) || as<const sym &>(lhs) != as<const sym &>(rhs);

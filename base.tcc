@@ -376,32 +376,32 @@ namespace aux {
    struct _expr_ifelse_misc { code body1, body2; };
    template<class Cond = code, std::enable_if_t<std::is_class_v<Cond>, decltype(nullptr)> = decltype(nullptr){}>
    struct expr_ifelse: code::lvalue {
-      Cond cond; _expr_ifelse_misc misc; loc _loc;
+      Cond cond; _expr_ifelse_misc _; loc _loc;
       static_assert(std::is_base_of_v<code, Cond> || std::is_base_of_v<rvalue, Cond>);
    public:
       template<bool fast_sig = bool{}, bool nores = bool{}> MNL_INLINE auto execute() const {
          auto &&cond = this->cond.execute();
          if (MNL_UNLIKELY(!is<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
-         return (as<bool>(cond) ? misc.body1 : misc.body2).execute<fast_sig, nores>();
+         return (as<bool>(cond) ? _.body1 : _.body2).execute<fast_sig, nores>();
       }
    public:
       MNL_INLINE void exec_in(const val &value) const { _exec_in(value); }
       MNL_INLINE void exec_in(val &&value) const { _exec_in(std::move(value)); }
    private:
-      template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
+      template<typename Val> MNL_INLINE void _exec_in(Val &&value) const {
          auto &&cond = this->cond.execute();
          if (MNL_UNLIKELY(!is<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
-         (as<bool>(cond) ? misc.body1 : misc.body2).exec_in(std::forward<Val>(value));
+         (as<bool>(cond) ? _.body1 : _.body2).exec_in(std::forward<Val>(value));
       }
    public:
       MNL_INLINE val exec_out() const {
          auto &&cond = this->cond.execute();
          if (MNL_UNLIKELY(!is<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
-         return (as<bool>(cond) ? misc.body1 : misc.body2).exec_out();
+         return (as<bool>(cond) ? _.body1 : _.body2).exec_out();
       }
    public:
       MNL_INLINE bool is_lvalue() const noexcept {
-         return misc.body1.is_lvalue() && misc.body2.is_lvalue();
+         return _.body1.is_lvalue() && _.body2.is_lvalue();
       }
    };
    template<class Cond> expr_ifelse(Cond, _expr_ifelse_misc, loc)->expr_ifelse<Cond>;
@@ -410,12 +410,13 @@ namespace aux {
    struct _expr_if_misc { code body; };
    template<class Cond = code, std::enable_if_t<std::is_class_v<Cond>, decltype(nullptr)> = decltype(nullptr){}>
    struct expr_if: code::rvalue {
-      Cond cond; _expr_if_misc misc; loc _loc;
+      Cond cond; _expr_if_misc _; loc _loc;
+      static_assert(std::is_base_of_v<code, Cond> || std::is_base_of_v<rvalue, Cond>);
    public:
       template<bool fast_sig = bool{}, bool = bool{}> MNL_INLINE decltype(nullptr) execute() const {
          auto &&cond = this->cond.execute();
          if (MNL_UNLIKELY(!is<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
-         if (as<bool>(cond)) misc.body.execute<fast_sig, true>();
+         if (as<bool>(cond)) _.body.execute<fast_sig, true>();
          return {};
       }
    };
@@ -423,59 +424,68 @@ namespace aux {
    template<class Cond> expr_if(Cond, code, loc)->expr_if<Cond>;
 
    struct _expr_and_misc { code arg1; };
-   template<class Arg0 = code, std::enable_if_t<std::is_class_v<Cond>, decltype(nullptr)> = decltype(nullptr){}>
+   template<class Arg0 = code, std::enable_if_t<std::is_class_v<Arg0>, decltype(nullptr)> = decltype(nullptr){}>
    struct expr_and: code::rvalue {
-      Arg0 cond; _expr_and_misc misc; loc _loc;
+      Arg0 cond; _expr_and_misc _; loc _loc;
+      static_assert(std::is_base_of_v<code, Arg0> || std::is_base_of_v<rvalue, Arg0>);
    public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE val execute() const {
          auto &&arg0 = cond.execute();
          if (MNL_LIKELY(!is<bool>(arg0))) {
-            val argv[] = {std::move(arg0), misc.arg1.execute()};
-            return MNL_SYM("&")(trace_execute, _loc, std::size(argv), argv);
+            val argv[] = {std::move(arg0), _.arg1.execute()};
+            try { return MNL_SYM("&")(trace_execute, _loc, std::size(argv), argv);
          }
          if (!as<bool>(arg0))
             return false;
          return [&]() MNL_INLINE{ // RVO
-            val arg1 = this->misc.arg1.execute(); // NRVO
+            val arg1 = this->_.arg1.execute(); // NRVO
             if (MNL_UNLIKELY(!is<bool>(arg1))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
             return arg1;
          }();
       }
    };
+   template<class Arg0> expr_and(Arg0, _expr_and_misc, loc)->expr_and<Arg0>;
+   template<class Arg0> expr_and(Arg0, code, loc)->expr_and<Arg0>;
 
-   template<class Arg0 = code> struct expr_or: code::rvalue {
-      Arg0 arg0; code arg1; loc _loc;
+   struct _expr_or_misc { code arg1; };
+   template<class Arg0 = code, std::enable_if_t<std::is_class_v<Arg0>, decltype(nullptr)> = decltype(nullptr){}>
+   struct expr_or: code::rvalue {
+      Arg0 cond; _expr_or_misc _; loc _loc;
+      static_assert(std::is_base_of_v<code, Arg0> || std::is_base_of_v<rvalue, Arg0>);
    public:
-      MNL_INLINE val execute(bool = {}) const {
-         auto &&arg0 = this->arg0.execute();
-         if (MNL_LIKELY(!test<bool>(arg0))) {
-            val argv[] = {std::move(arg0), arg1.execute()};
+      template<bool = bool{}, bool = bool{}> MNL_INLINE val execute(bool = {}) const {
+         auto &&arg0 = this->cond.execute();
+         if (MNL_LIKELY(!is<bool>(arg0))) {
+            val argv[] = {std::move(arg0), _.arg1.execute()};
             return MNL_SYM("|")(trace_execute, _loc, std::size(argv), argv);
          }
-         if (cast<bool>(arg0))
+         if (as<bool>(arg0))
             return true;
          return [&]() MNL_INLINE{ // RVO
-            val arg1 = this->arg1.execute(); // NRVO
-            if (MNL_UNLIKELY(!test<bool>(arg1))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
+            val arg1 = this->_.arg1.execute(); // NRVO
+            if (MNL_UNLIKELY(!is<bool>(arg1))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
             return arg1;
          }();
       }
    };
+   template<class Arg0> expr_or(Arg0, _expr_or_misc, loc)->expr_or<Arg0>;
+   template<class Arg0> expr_or(Arg0, code, loc)->expr_or<Arg0>;
 
    struct _expr_while_misc { code body; };
    template<class Cond = code, std::enable_if_t<std::is_class_v<Cond>, decltype(nullptr)> = decltype(nullptr){}>
    struct expr_while: code::rvalue {
-      Cond cond; _expr_while_misc misc; loc _loc;
+      Cond cond; _expr_while_misc _; loc _loc;
       static_assert(std::is_base_of_v<code, Cond> || std::is_base_of_v<rvalue, Cond>);
    public:
       template<bool fast_sig = bool{}, bool = bool{}> MNL_INLINE decltype(nullptr) execute() const {
          for (;;) {
             auto &&cond = this->cond.execute(); // no prediction for condition - performing zero iterations for while-loops may be useful
             if (MNL_UNLIKELY(!is<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
-            if (!as<bool>(cond) || MNL_UNLIKELY(misc.body.execute<fast_sig, true>(), fast_sig && sig_state)) return {};
+            if (!as<bool>(cond) || MNL_UNLIKELY(_.body.execute<fast_sig, true>(), fast_sig && sig_state)) return {};
          }
       }
    };
+   template<class Cond> expr_while(Cond, _expr_while_misc, loc)->expr_while<Cond>;
    template<class Cond> expr_while(Cond, code, loc)->expr_while<Cond>;
 
    template<class Tag = code> struct expr_on: code::rvalue {
