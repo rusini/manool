@@ -432,8 +432,9 @@ namespace aux {
       template<bool = bool{}, bool = bool{}> MNL_INLINE val execute() const {
          {  auto &&arg0 = cond.execute();
             if (MNL_LIKELY(!is<bool>(arg0))) {
-               val argv[] = {std::move(arg0), _.arg1.execute()};
-               try { return MNL_SYM("&")(std::size(argv), argv); } catch (...) { trace_execute(_loc); } // TODO: use op<> here
+               val arg1 = _.arg1.execute();
+               try { return op<sym::id("&")>(std::forward<decltype(arg0)>(arg0), std::move(arg1)); }
+               catch (...) { trace_execute(_loc); }
             }
             if (!as<bool>(arg0)) return false;
          }
@@ -456,8 +457,9 @@ namespace aux {
       template<bool = bool{}, bool = bool{}> MNL_INLINE val execute() const {
          {  auto &&arg0 = this->cond.execute();
             if (MNL_LIKELY(!is<bool>(arg0))) {
-               val argv[] = {std::move(arg0), _.arg1.execute()};
-               try { return MNL_SYM("|")(std::size(argv), argv); } catch (...) { trace_execute(_loc); }
+               val arg1 = _.arg1.execute();
+               try { return op<sym::id("|")>(std::forward<decltype(arg0)>(arg0), std::move(arg1)); }
+               catch (...) { trace_execute(_loc); }
             }
             if (as<bool>(arg0)) return true;
          }
