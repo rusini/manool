@@ -433,7 +433,7 @@ namespace aux {
          {  auto &&arg0 = cond.execute();
             if (MNL_LIKELY(!is<bool>(arg0))) {
                val argv[] = {std::move(arg0), _.arg1.execute()};
-               try { return MNL_SYM("&")(std::size(argv), argv); } catch (...) { trace_execute(_loc); }
+               try { return MNL_SYM("&")(std::size(argv), argv); } catch (...) { trace_execute(_loc); } // TODO: use op<> here
             }
             if (!as<bool>(arg0)) return false;
          }
