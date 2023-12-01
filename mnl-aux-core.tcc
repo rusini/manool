@@ -1155,6 +1155,7 @@ namespace aux { namespace pub {
 
 
 namespace aux::pub {
+
    struct val::ops { // empty (like, e.g., many in the Standard library)
    private:
       enum class group { unsupported, numeric, equality, unary, xoring, and_or };
@@ -1175,7 +1176,7 @@ namespace aux::pub {
       static MNL_INLINE void err_TypeMismatch() { MNL_ERR(MNL_SYM("TypeMismatch")); }
    };
 
-   template<enum sym::id Id> constexpr auto op = val::ops::op<Id>;
+   template<enum sym::id Id> static constexpr auto op = val::ops::op<Id>;
 
    // (~); Neg; Abs ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    template<enum sym::id Id> struct val::ops::_op<Id, val::ops::group::unary> {
@@ -1295,8 +1296,8 @@ namespace aux::pub {
             default:          return  MNL_LIKELY(is<double>(rhs)) && as<double>(lhs) == as<double>(rhs);
             case rep::_f32:   return  MNL_LIKELY(is<float>(rhs)) && as<float>(lhs) == as<float>(rhs);
             case rep::_sym:   return  MNL_LIKELY(is<sym>(rhs)) && as<const sym &>(lhs) == as<const sym &>(rhs);
-            case rep::_false: return  rhs.rep.tag() == rep::_false;
-            case rep::_true:  return  rhs.rep.tag() == rep::_true;
+            case rep::_false: return  rhs.rep.tag() == rep::_false; // Bool
+            case rep::_true:  return  rhs.rep.tag() == rep::_true;  // Bool
             case rep::_u32:   return  MNL_LIKELY(is<unsigned>(rhs)) && as<unsigned>(lhs) == as<unsigned>(rhs);
             }
          else // Id == sym::id("<>")
@@ -1308,8 +1309,8 @@ namespace aux::pub {
             default:          return !MNL_LIKELY(is<double>(rhs)) || as<double>(lhs) != as<double>(rhs);
             case rep::_f32:   return !MNL_LIKELY(is<float>(rhs)) || as<float>(lhs) != as<float>(rhs);
             case rep::_sym:   return !MNL_LIKELY(is<sym>(rhs)) || as<const sym &>(lhs) != as<const sym &>(rhs);
-            case rep::_false: return  rhs.rep.tag() != rep::_false;
-            case rep::_true:  return  rhs.rep.tag() != rep::_true;
+            case rep::_false: return  rhs.rep.tag() != rep::_false; // Bool
+            case rep::_true:  return  rhs.rep.tag() != rep::_true;  // Bool
             case rep::_u32:   return !MNL_LIKELY(is<unsigned>(rhs)) || as<unsigned>(lhs) != as<unsigned>(rhs);
             }
       }
@@ -1482,6 +1483,7 @@ namespace aux::pub {
          else if constexpr(Id == sym::id("|")) return lhs | rhs;
       }
   };
+
 } // namespace aux::pub
 
 
