@@ -120,13 +120,9 @@ namespace aux {
    public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute() const {
          auto &&arg0 = this->arg0.execute(); auto &&target = this->target.execute();
-         typedef std::conditional_t<has_apply<>{}, decltype(std::forward<decltype(target)>(target)), val> _target;
-         try { return ((_target)std::forward<decltype(target)>(target))(std::forward<decltype(arg0)>(arg0)); }
+         try { return std::forward<decltype(target)>(target)(std::forward<decltype(arg0)>(arg0)); }
          catch (...) { trace_execute(_loc); }
       }
-   private:
-      template<class = Target, typename = void> struct has_apply: std::false_type {};
-      template<class T_> struct has_apply<T_, decltype((void)T_{}.execute()(Arg0{}.execute()))>: std::true_type {};
    public:
       MNL_INLINE void exec_in(const val &value) const { _exec_in(value); }
       MNL_INLINE void exec_in(val &&value) const { _exec_in(std::move(value)); }
@@ -191,13 +187,9 @@ namespace aux {
    public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute() const {
          auto &&arg0 = this->arg0.execute(); auto &&arg1 = this->arg1.execute(); auto &&target = this->target.execute();
-         typedef std::conditional_t<has_apply<>{}, decltype(std::forward<decltype(target)>(target)), val> _target;
-         try { return ((_target)std::forward<decltype(target)>(target))(std::forward<decltype(arg0)>(arg0), std::forward<decltype(arg1)>(arg1)); }
+         try { return std::forward<decltype(target)>(target)(std::forward<decltype(arg0)>(arg0), std::forward<decltype(arg1)>(arg1)); }
          catch (...) { trace_execute(_loc); }
       }
-   private:
-      template<class = Target, typename = void> struct has_apply: std::false_type {};
-      template<class T_> struct has_apply<T_, decltype((void)T_{}.execute()(Arg0{}.execute(), Arg1{}.execute()))>: std::true_type {};
    public:
       MNL_INLINE void exec_in(const val &value) const { _exec_in(value); }
       MNL_INLINE void exec_in(val &&value) const { _exec_in(std::move(value)); }
@@ -225,38 +217,6 @@ namespace aux {
       static constexpr auto repl = op<sym::id("Repl")>;
    public:
       MNL_INLINE bool is_lvalue() const noexcept { return target.is_lvalue(); }
-   public:
-
-
-
-   
-      static bool match(const expr_apply<2> &expr, code &res) {
-         if (is<Target>(expr.target) && is<Arg0>(expr.arg0) && is<Arg1>(expr.arg1))
-            return res = expr_apply{as<Target>(expr.target), as<Arg0>(expr.arg0), as<Arg1>(expr.arg1)}, true;
-         returm false;
-      }
-
-
-      static std::optional<expr_apply> match(const expr_apply<2> &src) {
-         if (auto _target = Target::match(src.target)))
-         if (auto _arg0   = Arg0  ::match(src.arg0)))
-         if (auto _arg1   = Arg1  ::match(src.arg1)))
-            return expr_apply{*_target, *_arg0, *_arg1, src._loc};
-         return {};
-      }
-      static std::optional<expr_apply> match(code src) {
-         if (is<expr_apply>(src)) return as<expr_apply>(src);
-         if (is<expr_apply<2>>(src)) return match(as<expr_apply<2>>(src));
-         return {};
-      }
-
-
-      bool match(const expr_apply<2> &src) {
-         return target.nonvalue::match(src.target) || arg0.nonvalue::match(src.arg0) || arg1.nonvalue::match(src.arg1);
-      }
-
-
-
    };
    template<class Target, class Arg0, class Arg1>
    struct expr_apply<2, expr_lit<Target, Target, true>, Arg0, Arg1>:
@@ -292,12 +252,9 @@ namespace aux {
       template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute(bool = {}) const {
          val argv[] = {a0.execute(), a1.execute(), a2.execute()}; auto &&target = this->target.execute();
          typedef std::conditional_t<has_apply<>{}, decltype(std::forward<decltype(target)>(target)), val> _target;
-         try { return ((_target)std::forward<decltype(target)>(target))(std::size(argv), argv); } // NB we benefit from the fact that argc is checked using inlining (potentially eliminated)
+         try { return std::forward<decltype(target)>(target)(std::size(argv), argv); } // NB we benefit from the fact that argc is checked using inlining (potentially eliminated)
          catch (...) { trace_execute(_loc); }
       }
-   private:
-      template<class = Target, typename = void> struct has_apply: std::false_type {};
-      template<class T_> struct has_apply<T_, decltype((void)T_{}.execute()(std::declval<std::size_t>(), std::declval<val *>()))>: std::true_type {};
    public:
       MNL_INLINE void exec_in(const val &value) const { _exec_in(value); }
       MNL_INLINE void exec_in(val &&value) const { _exec_in(std::move(value)); }
@@ -343,12 +300,9 @@ namespace aux {
       template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute(bool = {}) const {
          val argv[] = {a0.execute(), a1.execute(), a2.execute(), a3.execute()}; auto &&target = this->target.execute();
          typedef std::conditional_t<has_apply<>{}, decltype(std::forward<decltype(target)>(target)), val> _target;
-         try { return ((_target)std::forward<decltype(target)>(target))(std::size(argv), argv); } // NB we benefit from the fact that argc is checked using inlining (potentially eliminated)
+         try { return std::forward<decltype(target)>(target)(std::size(argv), argv); } // NB we benefit from the fact that argc is checked using inlining (potentially eliminated)
          catch (...) { trace_execute(_loc); }
       }
-   private:
-      template<class = Target, typename = void> struct has_apply: std::false_type {};
-      template<class T_> struct has_apply<T_, decltype((void)T_{}.execute()(std::declval<std::size_t>(), std::declval<val *>()))>: std::true_type {};
    public:
       MNL_INLINE void exec_in(const val &value) const { _exec_in(value); }
       MNL_INLINE void exec_in(val &&value) const { _exec_in(std::move(value)); }
