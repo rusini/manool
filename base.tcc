@@ -429,14 +429,14 @@ namespace aux {
       static_assert(std::is_base_of_v<code, Arg0> || std::is_base_of_v<rvalue, Arg0>);
    public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE val execute() const {
-         {  auto &&arg0 = cond.execute();
-            if (MNL_LIKELY(!is<bool>(arg0))) {
-               val arg1 = _.arg1.execute();
-               try { return op<sym::id("&")>(std::forward<decltype(arg0)>(arg0), std::move(arg1)); }
-               catch (...) { trace_execute(_loc); }
-            }
-            if (!as<bool>(arg0)) return false;
+         auto &&arg0 = cond.execute();
+         if (MNL_LIKELY(!is<bool>(arg0))) {
+            val arg1 = _.arg1.execute();
+            try { return op<sym::id("&")>(std::forward<decltype(arg0)>(arg0), std::move(arg1)); }
+            catch (...) { trace_execute(_loc); }
          }
+         if (!as<bool>(arg0))
+            return false;
          return [&]() MNL_INLINE{ // RVO
             val arg1 = this->_.arg1.execute(); // NRVO
             if (MNL_UNLIKELY(!is<bool>(arg1))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
@@ -454,14 +454,14 @@ namespace aux {
       static_assert(std::is_base_of_v<code, Arg0> || std::is_base_of_v<rvalue, Arg0>);
    public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE val execute() const {
-         {  auto &&arg0 = this->cond.execute();
-            if (MNL_LIKELY(!is<bool>(arg0))) {
-               val arg1 = _.arg1.execute();
-               try { return op<sym::id("|")>(std::forward<decltype(arg0)>(arg0), std::move(arg1)); }
-               catch (...) { trace_execute(_loc); }
-            }
-            if (as<bool>(arg0)) return true;
+         auto &&arg0 = this->cond.execute();
+         if (MNL_LIKELY(!is<bool>(arg0))) {
+            val arg1 = _.arg1.execute();
+            try { return op<sym::id("|")>(std::forward<decltype(arg0)>(arg0), std::move(arg1)); }
+            catch (...) { trace_execute(_loc); }
          }
+         if (as<bool>(arg0))
+            return true;
          return [&]() MNL_INLINE{ // RVO
             val arg1 = this->_.arg1.execute(); // NRVO
             if (MNL_UNLIKELY(!is<bool>(arg1))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
