@@ -299,7 +299,6 @@ namespace aux {
    public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute(bool = {}) const {
          val argv[] = {a0.execute(), a1.execute(), a2.execute(), a3.execute()}; auto &&target = this->target.execute();
-         typedef std::conditional_t<has_apply<>{}, decltype(std::forward<decltype(target)>(target)), val> _target;
          try { return std::forward<decltype(target)>(target)(std::size(argv), argv); } // NB we benefit from the fact that argc is checked using inlining (potentially eliminated)
          catch (...) { trace_execute(_loc); }
       }
@@ -481,9 +480,28 @@ namespace aux {
    public:
       template<bool fast_sig = bool{}, bool = bool{}> MNL_INLINE decltype(nullptr) execute() const {
          for (;;) {
-            auto &&cond = this->cond.execute(); // no prediction for condition - performing zero iterations for while-loops may be useful
+            auto &&cond = this->cond.execute();
             if (MNL_UNLIKELY(!is<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
-            if (!as<bool>(cond) || MNL_UNLIKELY(_.body.execute<fast_sig, true>(), fast_sig && sig_state)) return {};
+            if (MNL_UNLIKELY(!as<bool>(cond)) || MNL_UNLIKELY(_.body.execute<fast_sig, true>(), fast_sig && sig_state.first)) return {};
+         }
+      }
+   };
+   template<class Cond> expr_while(Cond, _expr_while_misc, loc)->expr_while<Cond>;
+   template<class Cond> expr_while(Cond, code, loc)->expr_while<Cond>;
+
+   struct _expr_while_misc { code body; };
+   template<class Cond = code, std::enable_if_t<std::is_class_v<Cond>, decltype(nullptr)> = decltype(nullptr){}>
+   struct expr_while: code::rvalue {
+      Cond cond; _expr_while_misc _; loc _loc;
+      static_assert(std::is_base_of_v<code, Cond> || std::is_base_of_v<rvalue, Cond>);
+   public:
+      template<bool fast_sig = bool{}, bool = bool{}> MNL_INLINE decltype(nullptr) execute() const {
+         for (;;) {
+            auto &&cond = this->cond.execute();
+            if (MNL_UNLIKELY(!is<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
+            if (MNL_UNLIKELY(!as<bool>(cond)) return {}
+            _.body.execute<fast_sig, true>();
+            if constexpr(fast_sig) if (MNL_UNLIKELY(sig_state.first)) return {};
          }
       }
    };
