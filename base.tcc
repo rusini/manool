@@ -333,10 +333,16 @@ namespace aux {
 
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   template<class Dest = code, class Src = code> struct expr_set: code::rvalue {
+   template<class Dest = code, class Src = code,
+      std::enable_if_t<std::is_class_v<Dest> && std::is_class_v<Src>, decltype(nullptr)> = decltype(nullptr){}>
+   struct expr_set: code::rvalue {
       Dest dest; Src src;
-      MNL_INLINE decltype(nullptr) execute(bool = {}) const { dest.exec_in(src.execute()); return {}; }
-      MNL_INLINE void exec_nores(bool = {}) const { execute(); }
+      static_assert(std::is_base_of_v<code, Dest> || std::is_base_of_v<code::lvalue, Dest>);
+      static_assert(std::is_base_of_v<code, Src>  || std::is_base_of_v<rvalue, Src>);
+   public:
+      template<bool = bool{}, bool = bool{}> MNL_INLINE decltype(nullptr) execute(bool = {}) const { dest.exec_in(src.execute()); return {}; }
+
+
    public:
       template<typename Res, Res Op(void (const loc &), const loc &, decltype(std::declval<Dest>().execute()), decltype(std::declval<Src>().execute()))>
          struct _update;
