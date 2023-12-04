@@ -1,68 +1,68 @@
 
    auto mnl::aux::optimize(expr_lit<> expr)->code {
-      if (is<long long>(expr.value))
+      if (is<long long>(expr.value)) [[unlikely]]
          return expr_lit{{}, as<long long>(expr.value)};
-      if (is<double>(expr.value))
+      if (is<double>(expr.value)) [[unlikely]]
          return expr_lit{{}, as<double>(expr.value)};
-      if (is<float>(expr.value))
+      if (is<float>(expr.value)) [[unlikely]]
          return expr_lit{{}, as<float>(expr.value)};
-      if (is<sym>(expr.value))
+      if (is<sym>(expr.value)) [[unlikely]]
          return expr_lit{{}, std::move(as<sym &>(expr.value))};
-      if (is<bool>(expr.value))
+      if (is<bool>(expr.value)) [[unlikely]]
          return expr_lit{{}, as<bool>(expr.value)};
-      if (is<decltype(nullptr)>(expr.value))
+      if (is<decltype(nullptr)>(expr.value)) [[unlikely]]
          return expr_lit{{}, {}};
-      if (is<unsigned>(expr.value))
+      if (is<unsigned>(expr.value)) [[unlikely]]
          return expr_lit{{}, as<unsigned>(expr.value)};
-      return expr; // NOTE: the stored value will have the only possible type tag - "boxed" - could be used for (very advanced) optimization
+      return expr; // move semantics! // NOTE/TODO: the stored value will have the only possible type tag - "boxed" - could be used for (very advanced) optimization
    }
    auto mnl::aux::optimize(expr_apply<0> expr)->code {
-      if (auto target_p = as_p<expr_lit<>>(expr.target))
+      if (auto target_p = as_p<expr_lit<>>(expr.target)) [[unlikely]]
          return expr_apply{{}, *target_p, std::move(expr._loc)};
-      if (auto target_p = as_p<expr_tvar>(expr.target))
+      if (auto target_p = as_p<expr_tvar>(expr.target)) [[unlikely]]
          return expr_apply{{}, *target_p, std::move(expr._loc)};
-      return expr;
+      return expr; // move semantics!
    }
    auto mnl::aux::optimize(expr_apply<1> expr)->code {
       if (auto target_p = as_p<expr_lit<const sym &>>(expr.target)) [[unlikely]] {
          // possibly trivial unary operations
          switch (target_p->value) {
          case sym::id("~"):
-            if (auto arg0_p = as_p<expr_tvar>(expr.arg0))
-               return expr_apply{{}, op<sym::id("~")>{},   *arg0_p, std::move(expr._loc)}; // ?Ls*[?T]
-            return expr_apply{{}, op<sym::id("~")>{},   std::move(expr.arg0), std::move(expr._loc)}; // ?Ls*[?]
+            if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]]
+               return expr_apply{{}, op<sym::id("~")>,   *arg0_p, std::move(expr._loc)}; // ?Ls*[?T]
+            return expr_apply{{}, op<sym::id("~")>,   std::move(expr.arg0), std::move(expr._loc)}; // ?Ls*[?]
          case sym::id("Neg"):
-            if (auto arg0_p = as_p<expr_tvar>(expr.arg0))
-               return expr_apply{{}, op<sym::id("Neg")>{}, *arg0_p, std::move(expr._loc)}; // ?Ls*[?T]
-            return expr_apply{{}, op<sym::id("Neg")>{}, std::move(expr.arg0), std::move(expr._loc)}; // ?Ls*[?]
+            if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]]
+               return expr_apply{{}, op<sym::id("Neg")>, *arg0_p, std::move(expr._loc)}; // ?Ls*[?T]
+            return expr_apply{{}, op<sym::id("Neg")>, std::move(expr.arg0), std::move(expr._loc)}; // ?Ls*[?]
          case sym::id("Abs"):
-            if (auto arg0_p = as_p<expr_tvar>(expr.arg0))
-               return expr_apply{{}, op<sym::id("Abs")>{}, *arg0_p, std::move(expr._loc)}; // ?Ls*[?T]
-            return expr_apply{{}, op<sym::id("Abs")>{}, std::move(expr.arg0), std::move(expr._loc)}; // ?Ls*[?]
+            if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]]
+               return expr_apply{{}, op<sym::id("Abs")>, *arg0_p, std::move(expr._loc)}; // ?Ls*[?T]
+            return expr_apply{{}, op<sym::id("Abs")>, std::move(expr.arg0), std::move(expr._loc)}; // ?Ls*[?]
          }
          // assuming a unary operation with no observable side effects
-         if (auto arg0_p = as_p<expr_tvar>(expr.arg0))
+         if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]]
             return expr_apply{{}, *target_p, *arg0_p, std::move(expr._loc)}; // ?Ls[?T]
          return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr._loc)}; // ?Ls[?]
       }
       // assuming indexing into fast containers
-      if (auto target_p = as_p<expr_lit<>>(expr.target)) {
-         if (auto arg0_p = as_p<expr_lit<const sym &>>(expr.arg0))
+      if (auto target_p = as_p<expr_lit<>>(expr.target)) [[unlikely]] {
+         if (auto arg0_p = as_p<expr_lit<const sym &>>(expr.arg0)) [[unlikely]]
             return expr_apply1{{}, *target_p, *arg0_p, std::move(expr._loc)}; // ?L[?Ls]
-         if (auto arg0_p = as_p<expr_tvar>(expr.arg0))
+         if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]]
             return expr_apply1{{}, *target_p, *arg0_p, std::move(expr._loc)}; // ?L[?T]
          return expr_apply1{{}, *target_p, std::move(expr.arg0), std::move(expr._loc)}; // ?L[?]
       }
-      if (auto target_p = as_p<expr_tvar>(expr.target)) {
-         if (auto arg0_p = as_p<expr_lit<const sym &>>(expr.arg0))
+      if (auto target_p = as_p<expr_tvar>(expr.target)) [[unlikely]] {
+         if (auto arg0_p = as_p<expr_lit<const sym &>>(expr.arg0)) [[unlikely]]
             return expr_apply1{{}, *target_p, *arg0_p, std::move(expr._loc)}; // ?T[?Ls]
-         if (auto arg0_p = as_p<expr_tvar>(expr.arg0))
+         if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]]
             return expr_apply1{{}, *target_p, *arg0_p, std::move(expr._loc)}; // ?T[?T]
          return expr_apply1{{}, *target_p, std::move(expr.arg0), std::move(expr._loc)}; // ?T[?]
       }
-      if (auto arg0_p = as_p<expr_lit<const sym &>>(expr.arg0))
+      if (auto arg0_p = as_p<expr_lit<const sym &>>(expr.arg0)) [[unlikely]]
          return expr_apply1{{}, *target_p, *arg0_p, std::move(expr._loc)}; // ?[?Ls]
-      if (auto arg0_p = as_p<expr_tvar>(expr.arg0))
+      if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]]
          return expr_apply1{{}, *target_p, *arg0_p, std::move(expr._loc)}; // ?[?T]
       return expr; // ?[?] (move semantics!)
    }
