@@ -577,40 +577,28 @@ public:
       if (MNL_UNLIKELY(top == limit)) []() MNL_NOINLINE{
          std::size_t
             top   = reinterpret_cast<std::byte *>(tstack::top)   - reinterpret_cast<std::byte *>(bottom),
-            limit = reinterpret_cast<std::byte *>(tstack::limit) - reinterpret_cast<std::byte *>(bottom),
+            limit = MNL_LIKELY(top) ? top << 1 : 4/*KiB*/ * (1 << 10), // starting from 1 "typical" page
             frame = reinterpret_cast<std::byte *>(tstack::frame) - reinterpret_cast<std::byte *>(bottom);
-         limit =
-            MNL_LIKELY(limit) ? limit << 1 : 4/*KiB*/ * (1 << 10); // starting from 1 typical page
-         bottom =
-            static_cast<val *>(aux::realloc(bottom, limit)); // may throw like ::new
-         tstack::top =
-            reinterpret_cast<val *>(reinterpret_cast<std::byte *>(bottom) + top);
-         tstack::limit =
-            reinterpret_cast<val *>(reinterpret_cast<std::byte *>(bottom) + limit);
-         tstack::frame =
-            reinterpret_cast<val *>(reinterpret_cast<std::byte *>(bottom) + frame);
+         bottom = static_cast<val *>(aux::realloc(bottom, limit)); // may throw like ::new TODO: 3/2 exp base
+         tstack::top   = reinterpret_cast<val *>(reinterpret_cast<std::byte *>(bottom) + top);
+         tstack::limit = reinterpret_cast<val *>(reinterpret_cast<std::byte *>(bottom) + limit);
+         tstack::frame = reinterpret_cast<val *>(reinterpret_cast<std::byte *>(bottom) + frame);
       }();
       new(top++) val(std::forward<Rhs>(rsh));
    }
    MNL_INLINE static void pop() noexcept { // essential
       (--top)->~val();
    }
-public:
-   MNL_INLINE template<typename Rsh = decltype(nullptr)> static void push(const Rsh &rsh, int count) // convenience
-      { for (; MNL_LIKELY(count); --count) push(rsh); }
-   MNL_INLINE static void pop(int count) noexcept // convenience
-      { for (; MNL_LIKELY(count); --count) pop(); }
+public: // convenience
+   MNL_INLINE template<typename Rsh = decltype(nullptr)> static void push(const Rsh &rsh, int count) { for (; MNL_LIKELY(count); --count) push(rsh); }
+   MNL_INLINE static void pop(int count) noexcept                                                    { for (; MNL_LIKELY(count); --count) pop(); }
 public:
    MNL_INLINE val &operator[](int index) const noexcept { return frame[index]; }
 public:
-   MNL_INLINE static std::size_t enter() noexcept {
-      std::size_t frame = reinterpret_cast<std::byte *>(tstack::frame) - reinterpret_cast<std::byte *>(bottom);
-      tstack::frame = top;
-      return frame;
-   }
-   MNL_INLINE static void leave(std::size_t frame) noexcept {
-      tstack::frame = reinterpret_cast<val *>(reinterpret_cast<std::byte *>(bottom) + frame);
-   }
+   MNL_INLINE static std::size_t enter() noexcept
+      { std::size_t frame = reinterpret_cast<std::byte *>(tstack::frame) - reinterpret_cast<std::byte *>(bottom); tstack::frame = top; return frame; }
+   MNL_INLINE static void leave(std::size_t frame) noexcept
+      { tstack::frame = reinterpret_cast<val *>(reinterpret_cast<std::byte *>(bottom) + frame); }
 private:
    static thread_local val *bottom, *top, *limit;
    static thread_local val *frame;
