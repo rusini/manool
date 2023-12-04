@@ -1,514 +1,518 @@
 
-   auto mnl::aux::optimize(expr_lit<> expr)->code {
-      if (is<long long>(expr.value)) [[unlikely]]
-         return expr_lit{{}, as<long long>(expr.value)};
-      if (is<double>(expr.value)) [[unlikely]]
-         return expr_lit{{}, as<double>(expr.value)};
-      if (is<float>(expr.value)) [[unlikely]]
-         return expr_lit{{}, as<float>(expr.value)};
-      if (is<sym>(expr.value)) [[unlikely]]
-         return expr_lit{{}, std::move(as<sym &>(expr.value))};
-      if (is<bool>(expr.value)) [[unlikely]]
-         return expr_lit{{}, as<bool>(expr.value)};
-      if (is<decltype(nullptr)>(expr.value)) [[unlikely]]
-         return expr_lit{{}, {}};
-      if (is<unsigned>(expr.value)) [[unlikely]]
-         return expr_lit{{}, as<unsigned>(expr.value)};
-      return expr; // move semantics! // NOTE/TODO: the stored value will have the only possible type tag - "boxed" - could be used for (very advanced) optimization
-   }
-   auto mnl::aux::optimize(expr_apply<0> expr)->code {
-      if (auto target_p = as_p<expr_lit<>>(expr.target)) [[unlikely]]
-         return expr_apply{{}, *target_p, std::move(expr._loc)};
-      if (auto target_p = as_p<expr_tvar>(expr.target)) [[unlikely]]
-         return expr_apply{{}, *target_p, std::move(expr._loc)};
-      return expr; // move semantics!
-   }
-   auto mnl::aux::optimize(expr_apply<1> expr)->code {
-      if (auto target_p = as_p<expr_lit<const sym &>>(expr.target)) [[unlikely]] {
-         // possibly trivial unary operations
-         switch (target_p->value) {
-         case sym::id("~"):
-            if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]]
-               return expr_apply{{}, op<sym::id("~")>,   *arg0_p, std::move(expr._loc)}; // ?Ls*[?T]
-            return expr_apply{{}, op<sym::id("~")>,   std::move(expr.arg0), std::move(expr._loc)}; // ?Ls*[?]
-         case sym::id("Neg"):
-            if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]]
-               return expr_apply{{}, op<sym::id("Neg")>, *arg0_p, std::move(expr._loc)}; // ?Ls*[?T]
-            return expr_apply{{}, op<sym::id("Neg")>, std::move(expr.arg0), std::move(expr._loc)}; // ?Ls*[?]
-         case sym::id("Abs"):
-            if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]]
-               return expr_apply{{}, op<sym::id("Abs")>, *arg0_p, std::move(expr._loc)}; // ?Ls*[?T]
-            return expr_apply{{}, op<sym::id("Abs")>, std::move(expr.arg0), std::move(expr._loc)}; // ?Ls*[?]
-         }
-         // assuming a unary operation with no observable side effects
+auto mnl::aux::optimize(expr_lit<> expr)->code {
+   if (is<long long>(expr.value)) [[unlikely]]
+      return expr_lit{{}, as<long long>(expr.value)};
+   if (is<double>(expr.value)) [[unlikely]]
+      return expr_lit{{}, as<double>(expr.value)};
+   if (is<float>(expr.value)) [[unlikely]]
+      return expr_lit{{}, as<float>(expr.value)};
+   if (is<sym>(expr.value)) [[unlikely]]
+      return expr_lit{{}, std::move(as<sym &>(expr.value))};
+   if (is<bool>(expr.value)) [[unlikely]]
+      return expr_lit{{}, as<bool>(expr.value)};
+   if (is<decltype(nullptr)>(expr.value)) [[unlikely]]
+      return expr_lit{{}, {}};
+   if (is<unsigned>(expr.value)) [[unlikely]]
+      return expr_lit{{}, as<unsigned>(expr.value)};
+   return expr; // move semantics!
+} // NOTE/TODO: the stored value will have the only possible type tag - "boxed" - could be used for (very advanced) optimization
+auto mnl::aux::optimize(expr_apply<0> expr)->code {
+   if (auto target_p = as_p<expr_lit<>>(expr.target)) [[unlikely]]
+      return expr_apply{{}, *target_p, std::move(expr._loc)};
+   if (auto target_p = as_p<expr_tvar>(expr.target)) [[unlikely]]
+      return expr_apply{{}, *target_p, std::move(expr._loc)};
+   return expr; // move semantics!
+}
+auto mnl::aux::optimize(expr_apply<1> expr)->code {
+   if (auto target_p = as_p<expr_lit<const sym &>>(expr.target)) [[unlikely]] {
+      // possibly trivial unary operations
+      switch (target_p->value) {
+      case sym::id("~"):
          if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]]
-            return expr_apply{{}, *target_p, *arg0_p, std::move(expr._loc)}; // ?Ls[?T]
-         return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr._loc)}; // ?Ls[?]
-      }
-      // assuming indexing into fast containers
-      if (auto target_p = as_p<expr_lit<>>(expr.target)) [[unlikely]] {
-         if (auto arg0_p = as_p<expr_lit<const sym &>>(expr.arg0)) [[unlikely]]
-            return expr_apply1{{}, *target_p, *arg0_p, std::move(expr._loc)}; // ?L[?Ls]
+            return expr_apply{{}, op<sym::id("~")>,   *arg0_p, std::move(expr._loc)}; // ?Ls*[?T]
+         return expr_apply{{}, op<sym::id("~")>,   std::move(expr.arg0), std::move(expr._loc)}; // ?Ls*[?]
+      case sym::id("Neg"):
          if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]]
-            return expr_apply1{{}, *target_p, *arg0_p, std::move(expr._loc)}; // ?L[?T]
-         return expr_apply1{{}, *target_p, std::move(expr.arg0), std::move(expr._loc)}; // ?L[?]
-      }
-      if (auto target_p = as_p<expr_tvar>(expr.target)) [[unlikely]] {
-         if (auto arg0_p = as_p<expr_lit<const sym &>>(expr.arg0)) [[unlikely]]
-            return expr_apply1{{}, *target_p, *arg0_p, std::move(expr._loc)}; // ?T[?Ls]
+            return expr_apply{{}, op<sym::id("Neg")>, *arg0_p, std::move(expr._loc)}; // ?Ls*[?T]
+         return expr_apply{{}, op<sym::id("Neg")>, std::move(expr.arg0), std::move(expr._loc)}; // ?Ls*[?]
+      case sym::id("Abs"):
          if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]]
-            return expr_apply1{{}, *target_p, *arg0_p, std::move(expr._loc)}; // ?T[?T]
-         return expr_apply1{{}, *target_p, std::move(expr.arg0), std::move(expr._loc)}; // ?T[?]
+            return expr_apply{{}, op<sym::id("Abs")>, *arg0_p, std::move(expr._loc)}; // ?Ls*[?T]
+         return expr_apply{{}, op<sym::id("Abs")>, std::move(expr.arg0), std::move(expr._loc)}; // ?Ls*[?]
       }
-      if (auto arg0_p = as_p<expr_lit<const sym &>>(expr.arg0)) [[unlikely]]
-         return expr_apply1{{}, *target_p, *arg0_p, std::move(expr._loc)}; // ?[?Ls]
+      // assuming a unary operation with no observable side effects
       if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]]
-         return expr_apply1{{}, *target_p, *arg0_p, std::move(expr._loc)}; // ?[?T]
-      return expr; // ?[?] (move semantics!)
+         return expr_apply{{}, *target_p, *arg0_p, std::move(expr._loc)}; // ?Ls[?T]
+      return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr._loc)}; // ?Ls[?]
    }
+   // assuming indexing into fast containers
+   if (auto target_p = as_p<expr_lit<>>(expr.target)) [[unlikely]] {
+      if (auto arg0_p = as_p<expr_lit<const sym &>>(expr.arg0)) [[unlikely]]
+         return expr_apply1{{}, *target_p, *arg0_p, std::move(expr._loc)}; // ?L[?Ls]
+      if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]]
+         return expr_apply1{{}, *target_p, *arg0_p, std::move(expr._loc)}; // ?L[?T]
+      return expr_apply1{{}, *target_p, std::move(expr.arg0), std::move(expr._loc)}; // ?L[?]
+   }
+   if (auto target_p = as_p<expr_tvar>(expr.target)) [[unlikely]] {
+      if (auto arg0_p = as_p<expr_lit<const sym &>>(expr.arg0)) [[unlikely]]
+         return expr_apply1{{}, *target_p, *arg0_p, std::move(expr._loc)}; // ?T[?Ls]
+      if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]]
+         return expr_apply1{{}, *target_p, *arg0_p, std::move(expr._loc)}; // ?T[?T]
+      return expr_apply1{{}, *target_p, std::move(expr.arg0), std::move(expr._loc)}; // ?T[?]
+   }
+   if (auto arg0_p = as_p<expr_lit<const sym &>>(expr.arg0)) [[unlikely]]
+      return expr_apply1{{}, *target_p, *arg0_p, std::move(expr._loc)}; // ?[?Ls]
+   if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]]
+      return expr_apply1{{}, *target_p, *arg0_p, std::move(expr._loc)}; // ?[?T]
+   return expr; // ?[?] (move semantics!)
+}
+auto mnl::aux::optimize(expr_apply<3> expr)->code {
+   if (auto target_p = as_p<expr_lit<const sym *>>(expr.target)) [[unlikely]]
+      return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr.arg1), std::move(expr.arg2), std::move(expr._loc)};
+   if (auto target_p = as_p<expr_lit<>>(expr.target)) [[unlikely]]
+      return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr.arg1), std::move(expr.arg2), std::move(expr._loc)};
+   if (auto target_p = as_p<expr_tvar>(expr.target)) [[unlikely]]
+      return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr.arg1), std::move(expr.arg2), std::move(expr._loc)};
+   return expr; // move semantics!
+}
+auto mnl::aux::optimize(expr_apply<4> expr)->code {
+   if (auto target_p = as_p<expr_lit<const sym *>>(expr.target)) [[unlikely]]
+      return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr.arg1), std::move(expr.arg2), std::move(expr.arg3), std::move(expr._loc)};
+   if (auto target_p = as_p<expr_lit<>>(expr.target)) [[unlikely]]
+      return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr.arg1), std::move(expr.arg2), std::move(expr.arg3), std::move(expr._loc)};
+   if (auto target_p = as_p<expr_tvar>(expr.target)) [[unlikely]]
+      return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr.arg1), std::move(expr.arg2), std::move(expr.arg3), std::move(expr._loc)};
+   return expr; // move semantics!
+}
+auto mnl::aux::optimize(expr_move<> expr)->code {
+   if (auto dest_p = as_p<expr_tvar>(expr.dest)) [[unlikely]]
+      return expr_move{{}, *dest_p};
+   return expr; // move semantics!
+}
 
-   auto mnl::aux::optimize(expr_apply<2> expr)->code {
-      if (auto target_p = as_p<expr_lit<const sym &>>(expr.target)) [[unlikely]] {
-         // (in)equality, except where belongs to (*)
-         {  const auto optimize = [&](auto op) MNL_INLINE->code{
-               if (auto arg0_p = as_p<expr_lit<long long>>(expr.arg0)) [[unlikely]] {
+auto mnl::aux::optimize(expr_apply<2> expr)->code {
+   if (auto target_p = as_p<expr_lit<const sym &>>(expr.target)) [[unlikely]] {
+      // (in)equality, except where belongs to (*)
+      {  const auto optimize = [&](auto op) MNL_INLINE->code{
+            if (auto arg0_p = as_p<expr_lit<long long>>(expr.arg0)) [[unlikely]] {
+               if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
+               return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
+            }
+            if (auto arg0_p = as_p<expr_lit<double>>(expr.arg0)) [[unlikely]] {
+               if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
+               return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
+            }
+            if (auto arg0_p = as_p<expr_lit<float>>(expr.arg0)) [[unlikely]] {
+               if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
+               return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
+            }
+            if (auto arg0_p = as_p<expr_lit<const sym &>>(expr.arg0)) [[unlikely]] {
+               if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Ls; ?T]
+               return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
+            }
+            if (auto arg0_p = as_p<expr_lit<bool>>(expr.arg0)) [[unlikely]] { // False == V, True <> V might be faster than Not[V]
+               if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
+               return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
+            }
+            if (auto arg0_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg0)) [[unlikely]] {
+               if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
+               return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
+            }
+            if (auto arg0_p = as_p<expr_lit<unsigned>>(expr.arg0)) [[unlikely]] {
+               if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
+               return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
+            }
+            if (auto arg0_p = as_p<expr_lit<>>(expr.arg0)) [[unlikely]] {
+               if (is<std::string>(arg0_p->value)) [[unlikely]] {
                   if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
+                     return expr_apply{{}, op, expr_lit{as<std::string>(arg0_p->value)}, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
+                  return expr_apply{{}, op, expr_lit{as<std::string>(arg0_p->value)}, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
                }
-               if (auto arg0_p = as_p<expr_lit<double>>(expr.arg0)) [[unlikely]] {
-                  if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
-               }
-               if (auto arg0_p = as_p<expr_lit<float>>(expr.arg0)) [[unlikely]] {
-                  if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
-               }
-               if (auto arg0_p = as_p<expr_lit<const sym &>>(expr.arg0)) [[unlikely]] {
-                  if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Ls; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
-               }
-               if (auto arg0_p = as_p<expr_lit<bool>>(expr.arg0)) [[unlikely]] { // False == V, True <> V might be faster than Not[V]
-                  if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
-               }
-               if (auto arg0_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg0)) [[unlikely]] {
-                  if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
-               }
-               if (auto arg0_p = as_p<expr_lit<unsigned>>(expr.arg0)) [[unlikely]] {
-                  if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
-               }
-               if (auto arg0_p = as_p<expr_lit<>>(expr.arg0)) [[unlikely]] {
-                  if (is<std::string>(arg0_p->value)) [[unlikely]] {
-                     if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-                        return expr_apply{{}, op, expr_lit{as<std::string>(arg0_p->value)}, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
-                     return expr_apply{{}, op, expr_lit{as<std::string>(arg0_p->value)}, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
-                  }
-                  if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
-                  return expr_apply{{}, *target_p, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
-               }
-               if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]] {
-                  if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Lt]
-                  if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Lt]
-                  if (auto arg1_p = as_p<expr_lit<float>>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Lt]
-                  if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Ls]
-                  if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
-                  if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Lt]
-                  if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Lt]
-                  if (auto arg1_p = as_p<expr_lit<>>(expr.arg1)) [[unlikely]] {
-                     if (is<std::string>(arg1_p->value)) [[unlikely]]
-                        return expr_apply{{}, op, *arg0_p, expr_lit{val::typed<std::string>{arg1_p->value}}, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?L]
-                  }
-                  if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?T; ?]
-               }
+               if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
+               return expr_apply{{}, *target_p, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
+            }
+            if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]] {
                if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Lt]
+                  return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Lt]
                if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Lt]
+                  return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Lt]
                if (auto arg1_p = as_p<expr_lit<float>>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Lt]
+                  return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Lt]
                if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Ls]
+                  return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Ls]
                if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
+                  return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
                if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Lt]
+                  return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Lt]
                if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Lt]
+                  return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Lt]
                if (auto arg1_p = as_p<expr_lit<>>(expr.arg1)) [[unlikely]] {
                   if (is<std::string>(arg1_p->value)) [[unlikely]]
                      return expr_apply{{}, op, *arg0_p, expr_lit{val::typed<std::string>{arg1_p->value}}, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?L]
+                  return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?L]
                }
                if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?T]
-               return expr_apply{{}, op, std::move(expr.arg0), std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?; ?]
-            };
-            switch (target_p->value) {
-            case sym::id("=="): return optimize(op<sym::id("==")>);
-            case sym::id("<>"): return optimize(op<sym::id("<>")>);
+                  return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?T]
+               return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?T; ?]
             }
-         }
-         // all numeric, except where belongs to (*)
-         {  const auto optimize = [&](auto op) MNL_INLINE->code{
-               if (auto arg0_p = as_p<expr_lit<long long>>(expr.arg0)) [[unlikely]] {
-                  if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
-               }
-               if (auto arg0_p = as_p<expr_lit<double>>(expr.arg0)) [[unlikely]] {
-                  if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
-               }
-               if (auto arg0_p = as_p<expr_lit<float>>(expr.arg0)) [[unlikely]] {
-                  if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
-               }
-               if (auto arg0_p = as_p<expr_lit<unsigned>>(expr.arg0)) [[unlikely]] {
-                  if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
-               }
-               if (auto arg0_p = as_p<expr_lit<>>(expr.arg0)) [[unlikely]] {
-                  if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
-                  return expr_apply{{}, *target_p, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
-               }
-               if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]] {
-                  if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Lt]
-                  if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Lt]
-                  if (auto arg1_p = as_p<expr_lit<float>>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Lt]
-                  if (auto arg1_p = as_p<expr_lit<const sym *>>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Ls]
-                  if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
-                  if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
-                  if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Lt]
-                  if (auto arg1_p = as_p<expr_lit<>>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?L]
-                  if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?T; ?]
-               }
-               if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Lt]
-               if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Lt]
-               if (auto arg1_p = as_p<expr_lit<float>>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Lt]
-               if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Ls]
-               if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
-               if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
-               if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Lt]
-               if (auto arg1_p = as_p<expr_lit<>>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?L]
-               if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?T]
-               return expr_apply{{}, op, std::move(expr.arg0), std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?; ?]
-            };
-            switch (target_p->value) {
-            case sym::id("<" ): return optimize(op<sym::id("<" )>);
-            case sym::id("<="): return optimize(op<sym::id("<=")>);
-            case sym::id(">" ): return optimize(op<sym::id(">" )>);
-            case sym::id(">="): return optimize(op<sym::id(">=")>);
-            case sym::id("+" ): return optimize(op<sym::id("+" )>);
-            case sym::id("-" ): return optimize(op<sym::id("-" )>);
-            case sym::id("*" ): return optimize(op<sym::id("*" )>);
-            }
-         }
-         // exclussive-or, except where belongs to (*)
-         {  const auto optimize = [&](auto op) MNL_INLINE->code{
-               if (auto arg0_p = as_p<expr_lit<bool>>(expr.arg0)) [[unlikely]] { // True.Xor[V] might be faster than Not[V]
-                  if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
-               }
-               if (auto arg0_p = as_p<expr_lit<unsigned>>(expr.arg0)) [[unlikely]] {
-                  if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
-               }
-               if (auto arg0_p = as_p<expr_lit<>>(expr.arg0)) [[unlikely]] {
-                  if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
-                  return expr_apply{{}, *target_p, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
-               }
-               if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]] {
-                  if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
-                  if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
-                  if (auto arg1_p = as_p<expr_lit<float>>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
-                  if (auto arg1_p = as_p<expr_lit<const sym *>>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Ls]
-                  if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
-                  if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
-                  if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Lt]
-                  if (auto arg1_p = as_p<expr_lit<>>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?L]
-                  if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?T; ?]
-               }
-               if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
-               if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
-               if (auto arg1_p = as_p<expr_lit<float>>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
-               if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Ls]
-               if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
-               if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
-               if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Lt]
-               if (auto arg1_p = as_p<expr_lit<>>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?L]
-               if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?T]
-               return expr_apply{{}, op, std::move(expr.arg0), std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?; ?]
-            };
-            switch (target_p->value) {
-            case sym::id("Xor"): return optimize(op<sym::id("Xor")>);
-            }
-         }
-         // plain and/or
-         {  const auto optimize = [&](auto op) MNL_INLINE->code{
-               if (auto arg0_p = as_p<expr_lit<unsigned>>(expr.arg0)) [[unlikely]] {
-                  if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
-               }
-               if (auto arg0_p = as_p<expr_lit<>>(expr.arg0)) [[unlikely]] {
-                  if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
-                  return expr_apply{{}, *target_p, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
-               }
-               if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]] {
-                  if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
-                  if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
-                  if (auto arg1_p = as_p<expr_lit<float>>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
-                  if (auto arg1_p = as_p<expr_lit<const sym *>>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Ls]
-                  if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
-                  if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
-                  if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Lt]
-                  if (auto arg1_p = as_p<expr_lit<>>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?L]
-                  if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-                     return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?T]
-                  return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?T; ?]
-               }
-               if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
-               if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
-               if (auto arg1_p = as_p<expr_lit<float>>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
-               if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Ls]
-               if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
-               if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
-               if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Lt]
-               if (auto arg1_p = as_p<expr_lit<>>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?L]
-               if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-                  return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?T]
-               return expr_apply{{}, op, std::move(expr.arg0), std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?; ?]
-            };
-            switch (target_p->value) {
-            case sym::id("&"): return optimize(op<sym::id("&")>);
-            case sym::id("|"): return optimize(op<sym::id("|" )>);
-            }
-         }
-         // assuming a binary operation with no observable side effects (*)
-         if (auto arg0_p = as_p<expr_lit<long long>>(expr.arg0)) [[unlikely]] {
-            if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-               return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
-            return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
-         }
-         if (auto arg0_p = as_p<expr_lit<double>>(expr.arg0)) [[unlikely]] {
-            if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-               return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
-            return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
-         }
-         if (auto arg0_p = as_p<expr_lit<float>>(expr.arg0)) [[unlikely]] {
-            if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-               return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
-            return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
-         }
-         if (auto arg0_p = as_p<expr_lit<const sym &>>(expr.arg0)) [[unlikely]] {
-            if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-               return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
-            return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
-         }
-         if (auto arg0_p = as_p<expr_lit<bool>>(expr.arg0)) [[unlikely]] {
-            if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-               return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
-            return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
-         }
-         if (auto arg0_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg0)) [[unlikely]] {
-            if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-               return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
-            return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
-         }
-         if (auto arg0_p = as_p<expr_lit<unsigned>>(expr.arg0)) [[unlikely]] {
-            if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-               return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
-            return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
-         }
-         if (auto arg0_p = as_p<expr_lit<>>(expr.arg0)) [[unlikely]] {
-            if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-               return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
-            return expr_apply{{}, *target_p, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
-         }
-         if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]] {
             if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1)) [[unlikely]]
-               return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
+               return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Lt]
             if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1)) [[unlikely]]
-               return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
+               return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Lt]
             if (auto arg1_p = as_p<expr_lit<float>>(expr.arg1)) [[unlikely]]
-               return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
+               return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Lt]
             if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1)) [[unlikely]]
-               return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Ls]
+               return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Ls]
             if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1)) [[unlikely]]
-               return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
+               return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
             if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1)) [[unlikely]]
-               return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
+               return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Lt]
             if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1)) [[unlikely]]
-               return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
+               return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Lt]
+            if (auto arg1_p = as_p<expr_lit<>>(expr.arg1)) [[unlikely]] {
+               if (is<std::string>(arg1_p->value)) [[unlikely]]
+                  return expr_apply{{}, op, *arg0_p, expr_lit{val::typed<std::string>{arg1_p->value}}, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
+               return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?L]
+            }
+            if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+               return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?T]
+            return expr_apply{{}, op, std::move(expr.arg0), std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?; ?]
+         };
+         switch (target_p->value) {
+         case sym::id("=="): return optimize(op<sym::id("==")>);
+         case sym::id("<>"): return optimize(op<sym::id("<>")>);
+         }
+      } // if (auto target_p = as_p<expr_lit<const sym &>>(expr.target))
+      // all numeric, except where belongs to (*)
+      {  const auto optimize = [&](auto op) MNL_INLINE->code{
+            if (auto arg0_p = as_p<expr_lit<long long>>(expr.arg0)) [[unlikely]] {
+               if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
+               return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
+            }
+            if (auto arg0_p = as_p<expr_lit<double>>(expr.arg0)) [[unlikely]] {
+               if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
+               return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
+            }
+            if (auto arg0_p = as_p<expr_lit<float>>(expr.arg0)) [[unlikely]] {
+               if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
+               return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
+            }
+            if (auto arg0_p = as_p<expr_lit<unsigned>>(expr.arg0)) [[unlikely]] {
+               if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
+               return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
+            }
+            if (auto arg0_p = as_p<expr_lit<>>(expr.arg0)) [[unlikely]] {
+               if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
+               return expr_apply{{}, *target_p, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
+            }
+            if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]] {
+               if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Lt]
+               if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Lt]
+               if (auto arg1_p = as_p<expr_lit<float>>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Lt]
+               if (auto arg1_p = as_p<expr_lit<const sym *>>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Ls]
+               if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
+               if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
+               if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Lt]
+               if (auto arg1_p = as_p<expr_lit<>>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?L]
+               if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?T]
+               return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?T; ?]
+            }
+            if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1)) [[unlikely]]
+               return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Lt]
+            if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1)) [[unlikely]]
+               return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Lt]
+            if (auto arg1_p = as_p<expr_lit<float>>(expr.arg1)) [[unlikely]]
+               return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Lt]
+            if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1)) [[unlikely]]
+               return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Ls]
+            if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1)) [[unlikely]]
+               return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
+            if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1)) [[unlikely]]
+               return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
+            if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1)) [[unlikely]]
+               return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Lt]
             if (auto arg1_p = as_p<expr_lit<>>(expr.arg1)) [[unlikely]]
-               return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?L]
+               return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?L]
             if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-               return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?T]
-            return expr_apply{{}, *target_p, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?T; ?E]
+               return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?T]
+            return expr_apply{{}, op, std::move(expr.arg0), std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?; ?]
+         };
+         switch (target_p->value) {
+         case sym::id("<" ): return optimize(op<sym::id("<" )>);
+         case sym::id("<="): return optimize(op<sym::id("<=")>);
+         case sym::id(">" ): return optimize(op<sym::id(">" )>);
+         case sym::id(">="): return optimize(op<sym::id(">=")>);
+         case sym::id("+" ): return optimize(op<sym::id("+" )>);
+         case sym::id("-" ): return optimize(op<sym::id("-" )>);
+         case sym::id("*" ): return optimize(op<sym::id("*" )>);
          }
-         if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1)) [[unlikely]]
-            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
-         if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1)) [[unlikely]]
-            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
-         if (auto arg1_p = as_p<expr_lit<float>>(expr.arg1)) [[unlikely]]
-            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
-         if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1)) [[unlikely]]
-            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Ls]
-         if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1)) [[unlikely]]
-            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
-         if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1)) [[unlikely]]
-            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
-         if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1)) [[unlikely]]
-            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
-         if (auto arg1_p = as_p<expr_lit<>>(expr.arg1)) [[unlikely]]
-            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?L]
-         if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?T]
-         return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?; ?]
       }
-      // assuming indexing into fast containers
-      if (auto target_p = as_p<expr_lit<>>(expr.target)) [[unlikely]] {
-         if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]] {
+      // exclussive-or, except where belongs to (*)
+      {  const auto optimize = [&](auto op) MNL_INLINE->code{
+            if (auto arg0_p = as_p<expr_lit<bool>>(expr.arg0)) [[unlikely]] { // True.Xor[V] might be faster than Not[V]
+               if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
+               return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
+            }
+            if (auto arg0_p = as_p<expr_lit<unsigned>>(expr.arg0)) [[unlikely]] {
+               if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
+               return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
+            }
+            if (auto arg0_p = as_p<expr_lit<>>(expr.arg0)) [[unlikely]] {
+               if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
+               return expr_apply{{}, *target_p, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
+            }
+            if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]] {
+               if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
+               if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
+               if (auto arg1_p = as_p<expr_lit<float>>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
+               if (auto arg1_p = as_p<expr_lit<const sym *>>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Ls]
+               if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
+               if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
+               if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Lt]
+               if (auto arg1_p = as_p<expr_lit<>>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?L]
+               if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?T]
+               return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?T; ?]
+            }
+            if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1)) [[unlikely]]
+               return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
+            if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1)) [[unlikely]]
+               return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
+            if (auto arg1_p = as_p<expr_lit<float>>(expr.arg1)) [[unlikely]]
+               return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
             if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1)) [[unlikely]]
-               return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?L[?T; ?Ls]
+               return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Ls]
+            if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1)) [[unlikely]]
+               return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
+            if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1)) [[unlikely]]
+               return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
+            if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1)) [[unlikely]]
+               return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Lt]
+            if (auto arg1_p = as_p<expr_lit<>>(expr.arg1)) [[unlikely]]
+               return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?L]
             if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-               return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?L[?T; ?T]
-            return expr_apply{{}, *target_p, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?L[?T; ?]
+               return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?T]
+            return expr_apply{{}, op, std::move(expr.arg0), std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?; ?]
+         };
+         switch (target_p->value) {
+         case sym::id("Xor"): return optimize(op<sym::id("Xor")>);
          }
-         if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1)) [[unlikely]]
-            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?L[?; ?Ls]
-         if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?L[?; ?T]
-         return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr.arg1), std::move(expr._loc)}; // ?L[?; ?]
       }
-      if (auto target_p = as_p<expr_tvar>(expr.target)) [[unlikely]] {
-         if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]] {
+      // plain and/or
+      {  const auto optimize = [&](auto op) MNL_INLINE->code{
+            if (auto arg0_p = as_p<expr_lit<unsigned>>(expr.arg0)) [[unlikely]] {
+               if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?Lt; ?T]
+               return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?Lt; ?]
+            }
+            if (auto arg0_p = as_p<expr_lit<>>(expr.arg0)) [[unlikely]] {
+               if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
+               return expr_apply{{}, *target_p, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
+            }
+            if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]] {
+               if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
+               if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
+               if (auto arg1_p = as_p<expr_lit<float>>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
+               if (auto arg1_p = as_p<expr_lit<const sym *>>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Ls]
+               if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
+               if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
+               if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?Lt]
+               if (auto arg1_p = as_p<expr_lit<>>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?L]
+               if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+                  return expr_apply{{}, op, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls*[?T; ?T]
+               return expr_apply{{}, op, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?T; ?]
+            }
+            if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1)) [[unlikely]]
+               return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
+            if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1)) [[unlikely]]
+               return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
+            if (auto arg1_p = as_p<expr_lit<float>>(expr.arg1)) [[unlikely]]
+               return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
             if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1)) [[unlikely]]
-               return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?T[?T; ?Ls]
+               return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Ls]
+            if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1)) [[unlikely]]
+               return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
+            if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1)) [[unlikely]]
+               return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
+            if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1)) [[unlikely]]
+               return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?Lt]
+            if (auto arg1_p = as_p<expr_lit<>>(expr.arg1)) [[unlikely]]
+               return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?L]
             if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-               return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?T[?T; ?T]
-            return expr_apply{{}, *target_p, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?T[?T; ?]
+               return expr_apply{{}, op, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls*[?; ?T]
+            return expr_apply{{}, op, std::move(expr.arg0), std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?; ?]
+         };
+         switch (target_p->value) {
+         case sym::id("&"): return optimize(op<sym::id("&")>);
+         case sym::id("|"): return optimize(op<sym::id("|" )>);
          }
-         if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1)) [[unlikely]]
-            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?T[?; ?Ls]
+      }
+      // assuming a binary operation with no observable side effects (*)
+      if (auto arg0_p = as_p<expr_lit<long long>>(expr.arg0)) [[unlikely]] {
          if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-            return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?T[?; ?T]
-         return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr.arg1), std::move(expr._loc)}; // ?T[?; ?]
+            return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
+         return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
+      }
+      if (auto arg0_p = as_p<expr_lit<double>>(expr.arg0)) [[unlikely]] {
+         if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+            return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
+         return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
+      }
+      if (auto arg0_p = as_p<expr_lit<float>>(expr.arg0)) [[unlikely]] {
+         if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+            return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
+         return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
+      }
+      if (auto arg0_p = as_p<expr_lit<const sym &>>(expr.arg0)) [[unlikely]] {
+         if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+            return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
+         return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
+      }
+      if (auto arg0_p = as_p<expr_lit<bool>>(expr.arg0)) [[unlikely]] {
+         if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+            return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
+         return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
+      }
+      if (auto arg0_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg0)) [[unlikely]] {
+         if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+            return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
+         return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
+      }
+      if (auto arg0_p = as_p<expr_lit<unsigned>>(expr.arg0)) [[unlikely]] {
+         if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+            return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
+         return expr_apply{{}, *target_p, expr_lit<>{arg0_p->value}, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
+      }
+      if (auto arg0_p = as_p<expr_lit<>>(expr.arg0)) [[unlikely]] {
+         if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+            return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
+         return expr_apply{{}, *target_p, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
       }
       if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]] {
+         if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1)) [[unlikely]]
+            return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
+         if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1)) [[unlikely]]
+            return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
+         if (auto arg1_p = as_p<expr_lit<float>>(expr.arg1)) [[unlikely]]
+            return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
          if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1)) [[unlikely]]
-            return expr_apply{{}, std::move(expr.target), *arg0_p, *arg1_p, std::move(expr._loc)}; // ?[?T; ?Ls]
+            return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Ls]
+         if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1)) [[unlikely]]
+            return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
+         if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1)) [[unlikely]]
+            return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
+         if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1)) [[unlikely]]
+            return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
+         if (auto arg1_p = as_p<expr_lit<>>(expr.arg1)) [[unlikely]]
+            return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?L]
          if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-            return expr_apply{{}, std::move(expr.target), *arg0_p, *arg1_p, std::move(expr._loc)}; // ?[?T; ?T]
-         return expr_apply{{}, std::move(expr.target), *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?[?T; ?]
+            return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?T]
+         return expr_apply{{}, *target_p, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?T; ?E]
+      }
+      if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1)) [[unlikely]]
+         return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
+      if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1)) [[unlikely]]
+         return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
+      if (auto arg1_p = as_p<expr_lit<float>>(expr.arg1)) [[unlikely]]
+         return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
+      if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1)) [[unlikely]]
+         return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Ls]
+      if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1)) [[unlikely]]
+         return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
+      if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1)) [[unlikely]]
+         return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
+      if (auto arg1_p = as_p<expr_lit<unsigned>>(expr.arg1)) [[unlikely]]
+         return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?Lt]
+      if (auto arg1_p = as_p<expr_lit<>>(expr.arg1)) [[unlikely]]
+         return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?L]
+      if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+         return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?Ls[?; ?T]
+      return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?; ?]
+   }
+   // assuming indexing into fast containers
+   if (auto target_p = as_p<expr_lit<>>(expr.target)) [[unlikely]] {
+      if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]] {
+         if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1)) [[unlikely]]
+            return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?L[?T; ?Ls]
+         if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+            return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?L[?T; ?T]
+         return expr_apply{{}, *target_p, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?L[?T; ?]
       }
       if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1)) [[unlikely]]
-         return expr_apply{{}, std::move(expr.target), std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?[?; ?Ls]
+         return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?L[?; ?Ls]
       if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
-         return expr_apply{{}, std::move(expr.target), std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?[?; ?T]
-      return expr; // ?[?; ?] (move semantics!)
+         return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?L[?; ?T]
+      return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr.arg1), std::move(expr._loc)}; // ?L[?; ?]
    }
-
-   auto mnl::aux::optimize(expr_apply<3> expr)->code {
-      if (auto target_p = as_p<expr_lit<const sym *>>(expr.target)) [[unlikely]]
-         return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr.arg1), std::move(expr.arg2), std::move(expr._loc)};
-      if (auto target_p = as_p<expr_lit<>>(expr.target)) [[unlikely]]
-         return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr.arg1), std::move(expr.arg2), std::move(expr._loc)};
-      if (auto target_p = as_p<expr_tvar>(expr.target)) [[unlikely]]
-         return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr.arg1), std::move(expr.arg2), std::move(expr._loc)};
-      return expr; // move semantics!
+   if (auto target_p = as_p<expr_tvar>(expr.target)) [[unlikely]] {
+      if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]] {
+         if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1)) [[unlikely]]
+            return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?T[?T; ?Ls]
+         if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+            return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?T[?T; ?T]
+         return expr_apply{{}, *target_p, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?T[?T; ?]
+      }
+      if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1)) [[unlikely]]
+         return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?T[?; ?Ls]
+      if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+         return expr_apply{{}, *target_p, std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?T[?; ?T]
+      return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr.arg1), std::move(expr._loc)}; // ?T[?; ?]
    }
-   auto mnl::aux::optimize(expr_apply<4> expr)->code {
-      if (auto target_p = as_p<expr_lit<const sym *>>(expr.target)) [[unlikely]]
-         return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr.arg1), std::move(expr.arg2), std::move(expr.arg3), std::move(expr._loc)};
-      if (auto target_p = as_p<expr_lit<>>(expr.target)) [[unlikely]]
-         return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr.arg1), std::move(expr.arg2), std::move(expr.arg3), std::move(expr._loc)};
-      if (auto target_p = as_p<expr_tvar>(expr.target)) [[unlikely]]
-         return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr.arg1), std::move(expr.arg2), std::move(expr.arg3), std::move(expr._loc)};
-      return expr; // move semantics!
+   if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]] {
+      if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1)) [[unlikely]]
+         return expr_apply{{}, std::move(expr.target), *arg0_p, *arg1_p, std::move(expr._loc)}; // ?[?T; ?Ls]
+      if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+         return expr_apply{{}, std::move(expr.target), *arg0_p, *arg1_p, std::move(expr._loc)}; // ?[?T; ?T]
+      return expr_apply{{}, std::move(expr.target), *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?[?T; ?]
    }
+   if (auto arg1_p = as_p<expr_lit<const sym &>>(expr.arg1)) [[unlikely]]
+      return expr_apply{{}, std::move(expr.target), std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?[?; ?Ls]
+   if (auto arg1_p = as_p<expr_tvar>(expr.arg1)) [[unlikely]]
+      return expr_apply{{}, std::move(expr.target), std::move(expr.arg0), *arg1_p, std::move(expr._loc)}; // ?[?; ?T]
+   return expr; // ?[?; ?] (move semantics!)
+}
 
 
 namespace mnl::aux {
