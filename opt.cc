@@ -516,19 +516,6 @@ auto mnl::aux::optimize(expr_apply<2> expr)->code {
 
 
 namespace mnl::aux {
-   template <class Src> static MNL_INLINE inline bool match_src(expr_set<> &expr, expr_tvar *dst_p, code &res) {
-      auto src_p = as_p<Src>(expr.src);
-      if (MNL_UNLIKELY(src_p)) return res = expr_set{*dst_p, *src_p, std::move(expr._), std::move(expr._loc)}, true;
-      return {};
-   }
-   template <class Src> static MNL_INLINE inline bool match_dst(expr_set<> &expr, code &res) {
-      auto src_p = as_p<Src>(expr.src);
-      if (MNL_UNLIKELY(src_p)) return res = expr_set{*dst_p, *src_p, std::move(expr._), std::move(expr._loc)}, true;
-      return {};
-   }
-}
-
-namespace mnl::aux {
    template<class Src>  static MNL_INLINE inline bool match_src (expr_set<> &expr, const expr_tvar *dest_p, code &res) {
       if (auto src_p  = as_p<Src> (expr.src))  [[unlikely]] return res = expr_set{*dest_p, *src_p, std::move(expr._loc)}, true;
       return {};
@@ -544,174 +531,173 @@ namespace mnl::aux {
    }
 }
 
-   auto mnl::aux::optimize(expr_set<> expr)->code {
-      if (auto dest_p = as_p<expr_tvar>(expr.dest)) [[unlikely]] {
-         if (
-            MNL_UNLIKELY(match_src< expr_lit<long long> >          (expr, dest_p, res)) ||
-            MNL_UNLIKELY(match_src< expr_lit<double> >             (expr, dest_p, res)) ||
-            MNL_UNLIKELY(match_src< expr_lit<float> >              (expr, dest_p, res)) ||
-            MNL_UNLIKELY(match_src< expr_lit<const sym &> >        (expr, dest_p, res)) ||
-            MNL_UNLIKELY(match_src< expr_lit<bool> >               (expr, dest_p, res)) ||
-            MNL_UNLIKELY(match_src< expr_lit<decltype(nullptr)> >  (expr, dest_p, res)) ||
-            MNL_UNLIKELY(match_src< expr_lit<unsigned> >           (expr, dest_p, res)) ||
-            MNL_UNLIKELY(match_src< expr_lit<> >                   (expr, dest_p, res)) ||
-            MNL_UNLIKELY(match_src< expr_apply<1, expr_lit<decltype(op<sym::id("~")>)>,    expr_tvar> >  (expr, dest_p, res)) ||
-            MNL_UNLIKELY(match_src< expr_apply<1, expr_lit<decltype(op<sym::id("~")>)>,    code> >       (expr, dest_p, res)) ||
-            MNL_UNLIKELY(match_src< expr_apply<1, expr_lit<decltype(op<sym::id("Neg")>)>,  expr_tvar> >  (expr, dest_p, res)) ||
-            MNL_UNLIKELY(match_src< expr_apply<1, expr_lit<decltype(op<sym::id("Neg")>)>,  code> >       (expr, dest_p, res)) ||
-            MNL_UNLIKELY(match_src< expr_apply<1, expr_lit<decltype(op<sym::id("Abs")>)>,  expr_tvar> >  (expr, dest_p, res)) ||
-            MNL_UNLIKELY(match_src< expr_apply<1, expr_lit<decltype(op<sym::id("Abs")>)>,  code> >       (expr, dest_p, res)) ||
-         bool{} ) return res;
-         {  const auto optimize = [&](auto op) MNL_INLINE{
-               typedef expr_lit<decltype(op)> op;
-               return
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<long long>,            expr_tvar> >  (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<long long>,            code> >       (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<double>,               expr_tvar> >  (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<double>,               code> >       (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<float>,                expr_tvar> >  (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<float>,                code> >       (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<const sym &>,          expr_tvar> >  (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<const sym &>,          code> >       (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<bool>,                 expr_tvar> >  (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<bool>,                 code> >       (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<decltype(nullptr)>,    expr_tvar> >  (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<decltype(nullptr)>,    code> >       (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<unsigned>,             expr_tvar> >  (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<unsigned>,             code> >       (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<const std::string &>,  expr_tvar> >  (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<const std::string &>,  code> >       (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_lit<long long>> >                                (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_lit<double>> >                                   (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_lit<float>> >                                    (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_lit<const sym &>> >                              (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_lit<decltype(nullptr)>> >                        (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_lit<unsigned>> >                                 (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_lit<const val::typed<const std::string &> &>> >  (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_tvar> >                                          (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  code> >                                               (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_lit<long long>> >                                (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_lit<double>> >                                   (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_lit<float>> >                                    (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_lit<const sym &>> >                              (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_lit<decltype(nullptr)>> >                        (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_lit<unsigned>> >                                 (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_lit<const val::typed<const std::string &> &>> >  (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_tvar> >                                          (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, code,       code> >                                               (expr, dest_p, res)) ||
-               bool{};
-            };
-            if (
-               MNL_UNLIKELY(optimize(op<sym::id("==")>)) || MNL_UNLIKELY(optimize(op<sym::id("<>")>)) ||
-            bool{} ) return res;
-         }
-         {  const auto optimize = [&](auto op) MNL_INLINE{
-               typedef expr_lit<decltype(op)> op;
-               return
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<long long>,  expr_tvar> >  (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<long long>,  code> >       (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<double>,     expr_tvar> >  (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<double>,     code> >       (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<float>,      expr_tvar> >  (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<float>,      code> >       (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<unsigned>,   expr_tvar> >  (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<unsigned>,   code> >       (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_lit<long long>> >  (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_lit<double>> >     (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_lit<float>> >      (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_lit<unsigned>> >   (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_tvar> >            (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  code> >                 (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_lit<long long>> >  (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_lit<double>> >     (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_lit<float>> >      (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_lit<unsigned>> >   (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_tvar> >            (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, code,       code> >                 (expr, dest_p, res)) ||
-               bool{};
-            };
-            if (
-               MNL_UNLIKELY(optimize(op<sym::id("+")>)) || MNL_UNLIKELY(optimize(op<sym::id("-" )>)) || MNL_UNLIKELY(optimize(op<sym::id("*")>)) ||
-               MNL_UNLIKELY(optimize(op<sym::id("<")>)) || MNL_UNLIKELY(optimize(op<sym::id("<=")>)) ||
-               MNL_UNLIKELY(optimize(op<sym::id(">")>)) || MNL_UNLIKELY(optimize(op<sym::id(">=")>)) ||
-            bool{} ) return res;
-         }
-         {  const auto optimize = [&](auto op) MNL_INLINE{
-               typedef expr_lit<decltype(op)> op;
-               return
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<bool>,      expr_tvar> >  (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<bool>,      code> >       (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<unsigned>,  expr_tvar> >  (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<unsigned>,  code> >       (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_lit<unsigned>> >  (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_tvar> >           (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  code> >                (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_lit<unsigned>> >  (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_tvar> >           (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, code,       code> >                (expr, dest_p, res)) ||
-               bool{};
-            };
-            if (
-               MNL_UNLIKELY(optimize(op<sym::id("Xor")>)) ||
-            bool{} ) return res;
-         }
-         {  const auto optimize = [&](auto op) MNL_INLINE{
-               typedef expr_lit<decltype(op)> op;
-               return
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<unsigned>,  expr_tvar> >  (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<unsigned>,  code> >       (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_lit<unsigned>> >  (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_tvar> >           (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  code> >                (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_lit<unsigned>> >  (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_tvar> >           (expr, dest_p, res)) ||
-                  MNL_UNLIKELY(match_src< expr_apply<2, op, code,       code> >                (expr, dest_p, res)) ||
-               bool{};
-            };
-            if (
-               MNL_UNLIKELY(optimize(op<sym::id("&")>)) || MNL_UNLIKELY(optimize(op<sym::id("|")>)) ||
-            bool{} ) return res;
-         }
-         if (
-            MNL_UNLIKELY(match_src<expr_tvar>(expr, res)) ||
-         bool{} ) return res;
-         // otherwise
-         res = expr_set{*dest_p, std::move(expr.src), std::move(expr._loc)};
-         return res; // NRVO
-      } // if (auto dest_p = as_p<expr_tvar>(expr.dest))
+auto mnl::aux::optimize(expr_set<> expr)->code {
+   if (auto dest_p = as_p<expr_tvar>(expr.dest)) [[unlikely]] {
       if (
-         MNL_UNLIKELY(match_dest< expr_apply<1, expr_tvar,  expr_lit<const sym &>> >  (expr, res)) ||
-         MNL_UNLIKELY(match_dest< expr_apply<1, expr_tvar,  expr_tvar> >              (expr, res)) ||
-         MNL_UNLIKELY(match_dest< expr_apply<1, expr_tvar,  code> >                   (expr, res)) ||
-         MNL_UNLIKELY(match_dest< expr_apply<1, code,       expr_lit<const sym &>> >  (expr, res)) ||
-         MNL_UNLIKELY(match_dest< expr_apply<1, code,       expr_tvar> >              (expr, res)) ||
-         MNL_UNLIKELY(match_dest< expr_apply<1, code,       code> >                   (expr, res)) ||
-         MNL_UNLIKELY(match_dest< expr_apply<2, expr_tvar,  expr_tvar,  expr_lit<const sym &>> >  (expr, res)) ||
-         MNL_UNLIKELY(match_dest< expr_apply<2, expr_tvar,  expr_tvar,  expr_tvar> >              (expr, res)) ||
-         MNL_UNLIKELY(match_dest< expr_apply<2, expr_tvar,  expr_tvar,  code> >                   (expr, res)) ||
-         MNL_UNLIKELY(match_dest< expr_apply<2, expr_tvar,  code,       expr_lit<const sym &>> >  (expr, res)) ||
-         MNL_UNLIKELY(match_dest< expr_apply<2, expr_tvar,  code,       expr_tvar> >              (expr, res)) ||
-         MNL_UNLIKELY(match_dest< expr_apply<2, expr_tvar,  code,       code> >                   (expr, res)) ||
-         MNL_UNLIKELY(match_dest< expr_apply<2, code,       expr_tvar,  expr_lit<const sym &>> >  (expr, res)) ||
-         MNL_UNLIKELY(match_dest< expr_apply<2, code,       expr_tvar,  expr_tvar> >              (expr, res)) ||
-         MNL_UNLIKELY(match_dest< expr_apply<2, code,       expr_tvar,  code> >                   (expr, res)) ||
-         MNL_UNLIKELY(match_dest< expr_apply<2, code,       code,       expr_lit<const sym &>> >  (expr, res)) ||
-         MNL_UNLIKELY(match_dest< expr_apply<2, code,       code,       expr_tvar> >              (expr, res)) ||
-         MNL_UNLIKELY(match_dest< expr_apply<2, code,       code,       code> >                   (expr, res)) ||
-         MNL_UNLIKELY(match_src< expr_lit<long long> >          (expr, res)) ||
-         MNL_UNLIKELY(match_src< expr_lit<double> >             (expr, res)) ||
-         MNL_UNLIKELY(match_src< expr_lit<float> >              (expr, res)) ||
-         MNL_UNLIKELY(match_src< expr_lit<const sym &> >        (expr, res)) ||
-         MNL_UNLIKELY(match_src< expr_lit<bool> >               (expr, res)) ||
-         MNL_UNLIKELY(match_src< expr_lit<decltype(nullptr)> >  (expr, res)) ||
-         MNL_UNLIKELY(match_src< expr_lit<unsigned> >           (expr, res)) ||
-         MNL_UNLIKELY(match_src< expr_lit<> >                   (expr, res)) ||
-         MNL_UNLIKELY(match_src< expr_tvar >                    (expr, res)) ||
+         MNL_UNLIKELY(match_src< expr_lit<long long> >          (expr, dest_p, res)) ||
+         MNL_UNLIKELY(match_src< expr_lit<double> >             (expr, dest_p, res)) ||
+         MNL_UNLIKELY(match_src< expr_lit<float> >              (expr, dest_p, res)) ||
+         MNL_UNLIKELY(match_src< expr_lit<const sym &> >        (expr, dest_p, res)) ||
+         MNL_UNLIKELY(match_src< expr_lit<bool> >               (expr, dest_p, res)) ||
+         MNL_UNLIKELY(match_src< expr_lit<decltype(nullptr)> >  (expr, dest_p, res)) ||
+         MNL_UNLIKELY(match_src< expr_lit<unsigned> >           (expr, dest_p, res)) ||
+         MNL_UNLIKELY(match_src< expr_lit<> >                   (expr, dest_p, res)) ||
+         MNL_UNLIKELY(match_src< expr_apply<1, expr_lit<decltype(op<sym::id("~")>)>,    expr_tvar> >  (expr, dest_p, res)) ||
+         MNL_UNLIKELY(match_src< expr_apply<1, expr_lit<decltype(op<sym::id("~")>)>,    code> >       (expr, dest_p, res)) ||
+         MNL_UNLIKELY(match_src< expr_apply<1, expr_lit<decltype(op<sym::id("Neg")>)>,  expr_tvar> >  (expr, dest_p, res)) ||
+         MNL_UNLIKELY(match_src< expr_apply<1, expr_lit<decltype(op<sym::id("Neg")>)>,  code> >       (expr, dest_p, res)) ||
+         MNL_UNLIKELY(match_src< expr_apply<1, expr_lit<decltype(op<sym::id("Abs")>)>,  expr_tvar> >  (expr, dest_p, res)) ||
+         MNL_UNLIKELY(match_src< expr_apply<1, expr_lit<decltype(op<sym::id("Abs")>)>,  code> >       (expr, dest_p, res)) ||
+      bool{} ) return res;
+      {  const auto optimize = [&](auto op) MNL_INLINE{
+            typedef expr_lit<decltype(op)> op;
+            return
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<long long>,            expr_tvar> >  (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<long long>,            code> >       (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<double>,               expr_tvar> >  (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<double>,               code> >       (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<float>,                expr_tvar> >  (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<float>,                code> >       (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<const sym &>,          expr_tvar> >  (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<const sym &>,          code> >       (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<bool>,                 expr_tvar> >  (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<bool>,                 code> >       (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<decltype(nullptr)>,    expr_tvar> >  (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<decltype(nullptr)>,    code> >       (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<unsigned>,             expr_tvar> >  (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<unsigned>,             code> >       (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<const std::string &>,  expr_tvar> >  (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<const std::string &>,  code> >       (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_lit<long long>> >                                (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_lit<double>> >                                   (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_lit<float>> >                                    (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_lit<const sym &>> >                              (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_lit<decltype(nullptr)>> >                        (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_lit<unsigned>> >                                 (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_lit<const val::typed<const std::string &> &>> >  (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_tvar> >                                          (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  code> >                                               (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_lit<long long>> >                                (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_lit<double>> >                                   (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_lit<float>> >                                    (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_lit<const sym &>> >                              (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_lit<decltype(nullptr)>> >                        (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_lit<unsigned>> >                                 (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_lit<const val::typed<const std::string &> &>> >  (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_tvar> >                                          (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, code,       code> >                                               (expr, dest_p, res)) ||
+            bool{};
+         };
+         if (
+            MNL_UNLIKELY(optimize(op<sym::id("==")>)) || MNL_UNLIKELY(optimize(op<sym::id("<>")>)) ||
+         bool{} ) return res;
+      }
+      {  const auto optimize = [&](auto op) MNL_INLINE{
+            typedef expr_lit<decltype(op)> op;
+            return
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<long long>,  expr_tvar> >  (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<long long>,  code> >       (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<double>,     expr_tvar> >  (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<double>,     code> >       (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<float>,      expr_tvar> >  (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<float>,      code> >       (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<unsigned>,   expr_tvar> >  (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<unsigned>,   code> >       (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_lit<long long>> >  (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_lit<double>> >     (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_lit<float>> >      (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_lit<unsigned>> >   (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_tvar> >            (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  code> >                 (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_lit<long long>> >  (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_lit<double>> >     (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_lit<float>> >      (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_lit<unsigned>> >   (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_tvar> >            (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, code,       code> >                 (expr, dest_p, res)) ||
+            bool{};
+         };
+         if (
+            MNL_UNLIKELY(optimize(op<sym::id("+")>)) || MNL_UNLIKELY(optimize(op<sym::id("-" )>)) || MNL_UNLIKELY(optimize(op<sym::id("*")>)) ||
+            MNL_UNLIKELY(optimize(op<sym::id("<")>)) || MNL_UNLIKELY(optimize(op<sym::id("<=")>)) ||
+            MNL_UNLIKELY(optimize(op<sym::id(">")>)) || MNL_UNLIKELY(optimize(op<sym::id(">=")>)) ||
+         bool{} ) return res;
+      }
+      {  const auto optimize = [&](auto op) MNL_INLINE{
+            typedef expr_lit<decltype(op)> op;
+            return
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<bool>,      expr_tvar> >  (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<bool>,      code> >       (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<unsigned>,  expr_tvar> >  (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<unsigned>,  code> >       (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_lit<unsigned>> >  (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_tvar> >           (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  code> >                (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_lit<unsigned>> >  (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_tvar> >           (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, code,       code> >                (expr, dest_p, res)) ||
+            bool{};
+         };
+         if (
+            MNL_UNLIKELY(optimize(op<sym::id("Xor")>)) ||
+         bool{} ) return res;
+      }
+      {  const auto optimize = [&](auto op) MNL_INLINE{
+            typedef expr_lit<decltype(op)> op;
+            return
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<unsigned>,  expr_tvar> >  (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_lit<unsigned>,  code> >       (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_lit<unsigned>> >  (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  expr_tvar> >           (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, expr_tvar,  code> >                (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_lit<unsigned>> >  (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, code,       expr_tvar> >           (expr, dest_p, res)) ||
+               MNL_UNLIKELY(match_src< expr_apply<2, op, code,       code> >                (expr, dest_p, res)) ||
+            bool{};
+         };
+         if (
+            MNL_UNLIKELY(optimize(op<sym::id("&")>)) || MNL_UNLIKELY(optimize(op<sym::id("|")>)) ||
+         bool{} ) return res;
+      }
+      if (
+         MNL_UNLIKELY(match_src<expr_tvar>(expr, res)) ||
       bool{} ) return res;
       // otherwise
-      res = std::move(expr);
+      res = expr_set{*dest_p, std::move(expr.src), std::move(expr._loc)};
       return res; // NRVO
-   }
+   } // if (auto dest_p = as_p<expr_tvar>(expr.dest))
+   if (
+      MNL_UNLIKELY(match_dest< expr_apply<1, expr_tvar,  expr_lit<const sym &>> >  (expr, res)) ||
+      MNL_UNLIKELY(match_dest< expr_apply<1, expr_tvar,  expr_tvar> >              (expr, res)) ||
+      MNL_UNLIKELY(match_dest< expr_apply<1, expr_tvar,  code> >                   (expr, res)) ||
+      MNL_UNLIKELY(match_dest< expr_apply<1, code,       expr_lit<const sym &>> >  (expr, res)) ||
+      MNL_UNLIKELY(match_dest< expr_apply<1, code,       expr_tvar> >              (expr, res)) ||
+      MNL_UNLIKELY(match_dest< expr_apply<1, code,       code> >                   (expr, res)) ||
+      MNL_UNLIKELY(match_dest< expr_apply<2, expr_tvar,  expr_tvar,  expr_lit<const sym &>> >  (expr, res)) ||
+      MNL_UNLIKELY(match_dest< expr_apply<2, expr_tvar,  expr_tvar,  expr_tvar> >              (expr, res)) ||
+      MNL_UNLIKELY(match_dest< expr_apply<2, expr_tvar,  expr_tvar,  code> >                   (expr, res)) ||
+      MNL_UNLIKELY(match_dest< expr_apply<2, expr_tvar,  code,       expr_lit<const sym &>> >  (expr, res)) ||
+      MNL_UNLIKELY(match_dest< expr_apply<2, expr_tvar,  code,       expr_tvar> >              (expr, res)) ||
+      MNL_UNLIKELY(match_dest< expr_apply<2, expr_tvar,  code,       code> >                   (expr, res)) ||
+      MNL_UNLIKELY(match_dest< expr_apply<2, code,       expr_tvar,  expr_lit<const sym &>> >  (expr, res)) ||
+      MNL_UNLIKELY(match_dest< expr_apply<2, code,       expr_tvar,  expr_tvar> >              (expr, res)) ||
+      MNL_UNLIKELY(match_dest< expr_apply<2, code,       expr_tvar,  code> >                   (expr, res)) ||
+      MNL_UNLIKELY(match_dest< expr_apply<2, code,       code,       expr_lit<const sym &>> >  (expr, res)) ||
+      MNL_UNLIKELY(match_dest< expr_apply<2, code,       code,       expr_tvar> >              (expr, res)) ||
+      MNL_UNLIKELY(match_dest< expr_apply<2, code,       code,       code> >                   (expr, res)) ||
+      MNL_UNLIKELY(match_src< expr_lit<long long> >          (expr, res)) ||
+      MNL_UNLIKELY(match_src< expr_lit<double> >             (expr, res)) ||
+      MNL_UNLIKELY(match_src< expr_lit<float> >              (expr, res)) ||
+      MNL_UNLIKELY(match_src< expr_lit<const sym &> >        (expr, res)) ||
+      MNL_UNLIKELY(match_src< expr_lit<bool> >               (expr, res)) ||
+      MNL_UNLIKELY(match_src< expr_lit<decltype(nullptr)> >  (expr, res)) ||
+      MNL_UNLIKELY(match_src< expr_lit<unsigned> >           (expr, res)) ||
+      MNL_UNLIKELY(match_src< expr_lit<> >                   (expr, res)) ||
+      MNL_UNLIKELY(match_src< expr_tvar >                    (expr, res)) ||
+   bool{} ) return res;
+   // otherwise
+   res = std::move(expr);
+   return res; // NRVO
 }
 
 namespace mnl::aux {
