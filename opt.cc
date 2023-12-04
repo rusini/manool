@@ -24,7 +24,7 @@
       return expr;
    }
    auto mnl::aux::optimize(expr_apply<1> expr)->code {
-      if (auto target_p = as_p<expr_lit<const sym &>>(expr.target)) {
+      if (auto target_p = as_p<expr_lit<const sym &>>(expr.target)) [[unlikely]] {
          // possibly trivial unary operations
          switch (target_p->value) {
          case sym::id("~"):
@@ -362,8 +362,8 @@
                return expr_apply{{}, op, std::move(expr.arg0), std::move(expr.arg1), std::move(expr._loc)}; // ?Ls*[?; ?]
             };
             switch (target_p->value) {
-            case sym::id("And"): return optimize(op<sym::id("And")>);
-            case sym::id("Or" ): return optimize(op<sym::id("Or" )>);
+            case sym::id("&"): return optimize(op<sym::id("&")>);
+            case sym::id("|"): return optimize(op<sym::id("|" )>);
             }
          }
          // assuming a binary operation with no observable side effects (*)
@@ -492,22 +492,22 @@
    }
 
    auto mnl::aux::optimize(expr_apply<3> expr)->code {
-      if (auto target_p = as_p<expr_lit<const sym *>>(expr.target))
+      if (auto target_p = as_p<expr_lit<const sym *>>(expr.target)) [[unlikely]]
          return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr.arg1), std::move(expr.arg2), std::move(expr._loc)};
-      if (auto target_p = as_p<expr_lit<>>(expr.target))
+      if (auto target_p = as_p<expr_lit<>>(expr.target)) [[unlikely]]
          return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr.arg1), std::move(expr.arg2), std::move(expr._loc)};
-      if (auto target_p = as_p<expr_tvar>(expr.target))
+      if (auto target_p = as_p<expr_tvar>(expr.target)) [[unlikely]]
          return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr.arg1), std::move(expr.arg2), std::move(expr._loc)};
-      return expr;
+      return expr; // move semantics!
    }
    auto mnl::aux::optimize(expr_apply<4> expr)->code {
-      if (auto target_p = as_p<expr_lit<const sym *>>(expr.target))
+      if (auto target_p = as_p<expr_lit<const sym *>>(expr.target)) [[unlikely]]
          return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr.arg1), std::move(expr.arg2), std::move(expr.arg3), std::move(expr._loc)};
-      if (auto target_p = as_p<expr_lit<>>(expr.target))
+      if (auto target_p = as_p<expr_lit<>>(expr.target)) [[unlikely]]
          return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr.arg1), std::move(expr.arg2), std::move(expr.arg3), std::move(expr._loc)};
-      if (auto target_p = as_p<expr_tvar>(expr.target))
+      if (auto target_p = as_p<expr_tvar>(expr.target)) [[unlikely]]
          return expr_apply{{}, *target_p, std::move(expr.arg0), std::move(expr.arg1), std::move(expr.arg2), std::move(expr.arg3), std::move(expr._loc)};
-      return expr;
+      return expr; // move semantics!
    }
 
 
