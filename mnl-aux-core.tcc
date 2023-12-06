@@ -977,7 +977,7 @@ namespace aux::pub {
    template<> MNL_INLINE inline long long val::cast() const noexcept { return rep.dat<long long>(); }
    template<> MNL_INLINE inline int       val::cast() const noexcept { return cast<long long>(); }
 
-   template<> MNL_INLINE inline bool val::is<double>() const noexcept         { return (rep.tag() & 0x7FF8u) != 0x7FF8u; }
+   template<> MNL_INLINE inline bool val::is<double>() const noexcept         { return (rep.tag() & 0x7FF8u) != 0x7FF8u; } // TODO: use <, we might want to use signed short instead of unsigned short
    template<> MNL_INLINE inline bool val::is<const double &>() const noexcept { return is<double>(); }
    template<> MNL_INLINE inline double val::as() const noexcept                 { return rep.dat<double>(); }
    template<> MNL_INLINE inline double val::as<const double &>() const noexcept { return as<double>(); }

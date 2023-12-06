@@ -728,8 +728,6 @@ template<template<class> class Expr> MNL_INLINE inline auto mnl::aux::optimize(E
             MNL_UNLIKELY(match< expr_apply<2, op, expr_lit<float>,                code> >       (expr, res)) ||
             MNL_UNLIKELY(match< expr_apply<2, op, expr_lit<const sym &>,          expr_tvar> >  (expr, res)) ||
             MNL_UNLIKELY(match< expr_apply<2, op, expr_lit<const sym &>,          code> >       (expr, res)) ||
-            MNL_UNLIKELY(match< expr_apply<2, op, expr_lit<bool>,                 expr_tvar> >  (expr, res)) ||
-            MNL_UNLIKELY(match< expr_apply<2, op, expr_lit<bool>,                 code> >       (expr, res)) ||
             MNL_UNLIKELY(match< expr_apply<2, op, expr_lit<decltype(nullptr)>,    expr_tvar> >  (expr, res)) ||
             MNL_UNLIKELY(match< expr_apply<2, op, expr_lit<decltype(nullptr)>,    code> >       (expr, res)) ||
             MNL_UNLIKELY(match< expr_apply<2, op, expr_lit<unsigned>,             expr_tvar> >  (expr, res)) ||
@@ -792,8 +790,6 @@ template<template<class> class Expr> MNL_INLINE inline auto mnl::aux::optimize(E
    }
    {  const auto optimize = [&](auto op) MNL_INLINE{
          return
-            MNL_UNLIKELY(match< expr_apply<2, op, expr_lit<bool>,  expr_tvar> >  (expr, res)) ||
-            MNL_UNLIKELY(match< expr_apply<2, op, expr_lit<bool>,  code> >       (expr, res)) ||
             MNL_UNLIKELY(match< expr_apply<2, op, expr_tvar,  expr_tvar> >  (expr, res)) ||
             MNL_UNLIKELY(match< expr_apply<2, op, expr_tvar,  code> >       (expr, res)) ||
             MNL_UNLIKELY(match< expr_apply<2, op, code,       expr_tvar> >  (expr, res)) ||

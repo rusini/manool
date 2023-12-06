@@ -212,7 +212,7 @@ auto mnl::aux::optimize(expr_apply<2> expr)->code {
                   return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?L; ?T]
                return expr_apply{{}, *target_p, *arg0_p, std::move(expr.arg1), std::move(expr._loc)}; // ?Ls[?L; ?]
             }
-            if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]] {
+            if (auto arg0_p = as_p<expr_tvar>(expr.arg0)) [[unlikely]] { // TODO: having a lit of any type T on the right indicates that for the left operand we do not need to check for full range of tags (like in the most general handler), if T is not supported by the op, then we check only for rep::_box, on the other hand, we are trying to speed up relatively cold code here (boxed rep, etc)
                if (auto arg1_p = as_p<expr_lit<long long>>(expr.arg1)) [[unlikely]]
                   return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
                if (auto arg1_p = as_p<expr_lit<double>>(expr.arg1)) [[unlikely]]
@@ -221,7 +221,7 @@ auto mnl::aux::optimize(expr_apply<2> expr)->code {
                   return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
                if (auto arg1_p = as_p<expr_lit<const sym *>>(expr.arg1)) [[unlikely]]
                   return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Ls]
-               if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1)) [[unlikely]]
+               if (auto arg1_p = as_p<expr_lit<bool>>(expr.arg1)) [[unlikely]] // TODO: A.Xor[True] also might be faster than Not[A] ??? nope, because only bool and u32 support Not
                   return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]
                if (auto arg1_p = as_p<expr_lit<decltype(nullptr)>>(expr.arg1)) [[unlikely]]
                   return expr_apply{{}, *target_p, *arg0_p, *arg1_p, std::move(expr._loc)}; // ?Ls[?T; ?Lt]

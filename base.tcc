@@ -386,8 +386,11 @@ namespace aux {
    public:
       template<bool fast_sig = bool{}, bool nores = bool{}> MNL_INLINE auto execute() const {
          auto &&cond = this->cond.execute();
-         if (MNL_UNLIKELY(!is<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
-         return (as<bool>(cond) ? _.body1 : _.body2).execute<fast_sig, nores>();
+         //if (MNL_UNLIKELY(!is<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
+         //return (as<bool>(cond) ? _.body1 : _.body2).execute<fast_sig, nores>();
+         if (MNL_LIKELY(cond == true))  return _.body1.execute<fast_sig, nores>();
+         if (MNL_LIKELY(cond == false)) return _.body2.execute<fast_sig, nores>();
+         MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
       }
    public:
       MNL_INLINE void exec_in(const val &value) const { _exec_in(value); }
