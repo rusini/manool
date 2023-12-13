@@ -63,8 +63,11 @@ namespace aux {
    struct expr_tvar: code::lvalue { // "*t*emporary *var*iable"
       int offset;
       template<bool = bool{}, bool = bool{}> MNL_INLINE const val &execute() const noexcept { return tstack[offset]; }
-      MNL_INLINE void exec_in(const val &value) const noexcept { exec_in((val)value); }
+      //MNL_INLINE void exec_in(const val &value) const noexcept { exec_in((val)value); }
+      MNL_INLINE void exec_in(const val &value) const noexcept { tstack[offset] = value; } // is it better? -- measure!
       MNL_INLINE void exec_in(val &&value) const noexcept { tstack[offset].swap(value); }
+      MNL_INLINE void exec_in(long long value) const noexcept { tstack[offset] = value; } // TODO: is it beneficial in practice? -- measure!
+      ...
       MNL_INLINE val exec_out() const noexcept { return std::move(tstack[offset]); }
    };
 
@@ -388,9 +391,13 @@ namespace aux {
          auto &&cond = this->cond.execute();
          //if (MNL_UNLIKELY(!is<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
          //return (as<bool>(cond) ? _.body1 : _.body2).execute<fast_sig, nores>();
-         if (MNL_LIKELY(cond == true))  return _.body1.execute<fast_sig, nores>();
-         if (MNL_LIKELY(cond == false)) return _.body2.execute<fast_sig, nores>();
+         if (MNL_LIKELY(is<true>(cond)))  return _.body1.execute<fast_sig, nores>();
+         if (MNL_LIKELY(is<false>(cond))) return _.body2.execute<fast_sig, nores>();
          MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
+         // !!! it's sometimes beneficial to male a copy/move of val before use if the object comes as a return value (may be marked as escaped!)
+         // BEWARE of potentially aliased objects!!!
+         // due to bitwise packaging of tag/value for bool clang fails to fully propagate conditions (but gcc does), also clang seems to "reuse" the return object (potentially aliased!)
+         // we could ty to avoid ORing when constructing bools and instead ...
       }
    public:
       MNL_INLINE void exec_in(const val &value) const { _exec_in(value); }
@@ -439,7 +446,21 @@ namespace aux {
    public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE val execute() const {
          auto &&arg0 = cond.execute();
-         if (MNL_LIKELY(!is<bool>(arg0))) {
+         if (MNL_UNLIKELY(arg0 == false))
+            return false;
+         if (MNL_LIKELY(arg0 != true)) {
+            val arg1 = _.arg1.execute();
+            try { return op<sym::id("&")>(std::forward<decltype(arg0)>(arg0), std::move(arg1)); }
+            catch (...) { trace_execute(_loc); }
+         }
+         return [&]() MNL_INLINE{ // RVO
+            val arg1 = _.arg1.execute(); // NRVO
+            if (MNL_UNLIKELY(!is<bool>(arg1))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
+            return arg1;
+         }();
+
+
+         /*if (MNL_LIKELY(!is<bool>(arg0))) {
             val arg1 = _.arg1.execute();
             try { return op<sym::id("&")>(std::forward<decltype(arg0)>(arg0), std::move(arg1)); }
             catch (...) { trace_execute(_loc); }
@@ -450,7 +471,7 @@ namespace aux {
             val arg1 = this->_.arg1.execute(); // NRVO
             if (MNL_UNLIKELY(!is<bool>(arg1))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
             return arg1;
-         }();
+         }();*/
       }
    };
    template<class Arg0> expr_and(Arg0, _expr_and_misc, loc)->expr_and<Arg0>;
@@ -490,10 +511,17 @@ namespace aux {
       template<bool fast_sig = bool{}, bool = bool{}> MNL_INLINE decltype(nullptr) execute() const {
          for (;;) {
             auto &&cond = this->cond.execute();
-            if (MNL_UNLIKELY(!is<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
-            if (MNL_UNLIKELY(!as<bool>(cond)) return {}
-            _.body.execute<fast_sig, true>();
-            if constexpr(fast_sig) if (MNL_UNLIKELY(sig_state.first)) return {};
+            //if (MNL_UNLIKELY(!is<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
+            //if (MNL_UNLIKELY(!as<bool>(cond)) return {}
+            //_.body.execute<fast_sig, true>();
+            //if constexpr(fast_sig) if (MNL_UNLIKELY(sig_state.first)) return {};
+            if (MNL_LIKELY(is<true>(cond))) {
+               _.body.execute<fast_sig, true>();
+               if constexpr(fast_sig) if (MNL_UNLIKELY(sig_state.first)) return {};
+               continue;
+            }
+            if (MNL_LIKELY(is<false>(cond))) return {};
+            MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
          }
       }
    };

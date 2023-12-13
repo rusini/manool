@@ -296,10 +296,10 @@ namespace aux::pub {
          # endif
             (this, &rhs, sizeof *this); // updates sym::rep (AND rep::tag at once), in case of _sym (corner case of ISO/IEC 14882:2011)
          }
-         enum: decltype(_tag) { tag_base = 0x7FF8,
-            tag_box = tag_base | 0x0, tag_nil = tag_base | 0x1, tag_i48 = tag_base | 0x2, tag_f32 = tag_base | 0x4,
-            tag_sym = tag_base | 0x3, tag_false = tag_base | 0x6, tag_true = tag_false | true, tag_u32 = tag_base | 0x5 };
-         static_assert(!(tag_false & true));
+         enum: decltype(_tag) { _base = 0xFFF8,
+            _box = _base | 0x0, _nil = _base | 0x1, _i48 = _base | 0x2, _f32 = _base | 0x4, // TODO: maybe nil == 0?
+            _sym = _base | 0x3, _false = _base | 0x6, _true = _false | true, _u32 = _base | 0x5 };
+         static_assert(!_false & true);
       } rep;
       static_assert(sizeof rep == 8, "sizeof rep == 8");                                                             // paranoid check
       static_assert(std::is_standard_layout<decltype(rep)>::value, "std::is_standard_layout<decltype(rep)>::value"); // ditto
@@ -952,7 +952,7 @@ namespace aux::pub {
 
 // val Extractors //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    template<typename Dat> MNL_INLINE inline bool val::is() const noexcept {
-      return MNL_LIKELY(rep.tag() == rep::_box) && static_cast<const root *>(rep.dat<void *>())->tag ==
+      return MNL_LIKELY(rep.tag() == rep::_box) && static_cast<const root *>(rep.dat<void *>())->tag == // TODO: good prediction? use parameterized prediction?
          (decltype(root::tag))reinterpret_cast<std::uintptr_t>(&box<std::remove_cv_t<std::remove_reference_t<Dat>>>::tag);
    }
    template<typename Dat> MNL_INLINE inline Dat val::as() const noexcept(std::is_nothrow_copy_constructible_v<Dat>) {

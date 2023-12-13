@@ -703,8 +703,7 @@ auto mnl::aux::optimize(expr_set<> expr)->code {
 
 namespace MNL_AUX_UUID::aux {
    template <class Cond, template<class> class Expr> static MNL_INLINE inline bool match(Expr<> &expr, code &res) {
-      auto cond_p = as_p<Cond>(expr.cond);
-      if (MNL_UNLIKELY(cond_p)) return res = Expr{*cond_p, std::move(expr._), std::move(expr._loc)}, true;
+      if (auto cond_p = as_p<Cond>(expr.cond)) [[unlikely]] return res = Expr{*cond_p, std::move(expr._), std::move(expr._loc)}, true;
       return {};
    }
 
@@ -797,9 +796,14 @@ template<template<class> class Expr> MNL_INLINE inline auto mnl::aux::optimize(E
          bool{};
       };
       if (
-         MNL_UNLIKELY(optimize(op<sym::id("Xor")>))
+         MNL_UNLIKELY(optimize(op<sym::id("Xor")>)) ||
       bool{} ) return res;
    }
+   // TODO: array/record access?
+   // TODO: op invocation for other ops (some might return bool)
+   // if we coved, say, if ? == ? ... (where ? represent kinda cold path), then we also should cover other situations that
+   // do not lead to too much exponential code expansion!
+   // even T * T might be covered, but involving despecialization of the operator
    if (
       MNL_UNLIKELY(match<expr_tvar>(expr, res)) ||
    bool{} ) return res;
