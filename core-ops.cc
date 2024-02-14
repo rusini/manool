@@ -288,18 +288,6 @@ namespace aux {
       if (MNL_LIKELY(isfinite(res))) return res;
       MNL_ERR(!isnan(res) ? lhs == 0 ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow") : MNL_SYM("Undefined"), res, lhs);
    }
-   template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _pow(Val lhs, long long rhs) {
-      long long exp = aux::_abs(rhs);
-      Val res = 1;
-      while (exp) {
-         if (exp & 1) res = aux::_mul(res, lhs);
-         exp >>= 2;
-         lhs = aux::_mul(lhs, lhs);
-      }
-      if (MNL_UNLIKELY(rhs < 0))
-         res = aux::_div((Val)1, res);
-      return res;
-   }
    template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _sin(Val rhs) {
       return sin(rhs);
    }
@@ -417,6 +405,16 @@ namespace aux {
 
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   template<typename Dat> MNL_INLINE static inline enable_same<Val, unsigned> _shl(Val lhs, Val rhs) { return MNL_LIKELY(rhs < 32) ? lhs << rhs : 0; }
+   template<typename Dat> MNL_INLINE static inline enable_same<Val, unsigned> _shr(Val lhs, Val rhs) { return MNL_LIKELY(rhs < 32) ? lhs << rhs : 0; }
+   template<typename Dat> MNL_INLINE static inline enable_same<Val, unsigned> _asr(Val lhs, Val rhs) { return MNL_LIKELY(rhs < 32) ? (int)lhs >> rhs : 0; }
+   template<typename Dat> MNL_INLINE static inline enable_same<Val, unsigned> _rol(Val lhs, Val rhs) { return lhs << (rhs & 0x1F) | lhs >> (-rhs & 0x1F); }
+   template<typename Dat> MNL_INLINE static inline enable_same<Val, unsigned> _ror(Val lhs, Val rhs) { return lhs >> (rhs & 0x1F) | lhs << (-rhs & 0x1F); }
+   template<typename Dat> MNL_INLINE static inline enable_same<Val, unsigned> _clz(Val rhs)          { return MNL_LIKELY(rhs) ? __builtin_clz(rsh) : 32; }
+   template<typename Dat> MNL_INLINE static inline enable_same<Val, unsigned> _ctz(Val rhs)          { return MNL_LIKELY(rhs) ? __builtin_ctz(rsh) : 32; }
+   // TODO: constraints rhs != 0 is logical since the result is unclear if there're no stopping 1-s
+   // on the other hand, we actually *count* 0-s (until a stopping 1 or *end* of word, in which case it naturally gives the word width)
+
    template<typename Dat> MNL_INLINE static inline enable_same<Dat, unsigned, string> _str(Dat rhs, const string &format) {
       auto pc = format.c_str();
       for (;;) { switch (*pc) case ' ': case '#': case '+': case '-': case '0': { ++pc; continue; } break; }
@@ -960,13 +958,13 @@ namespace aux {
             return _ror(as<unsigned>(self), as<long long>(argv[0]));
          case sym::id("CTZ"):
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-            return (long long)_ctz(as<unsigned>(self));
+            return _ctz(as<unsigned>(self));
          case sym::id("CLZ"):
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-            return (long long)_clz(as<unsigned>(self));
-         case sym::id("Log2"):
+            return _clz(as<unsigned>(self));
+         case sym::id("Log2"): // Log2[rhs] == ~0 for rhs == 0 (on purpose)
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-            return 31 - (unsigned)_clz(as<unsigned>(self));
+            return 31 - _clz(as<unsigned>(self)); // by def
          case sym::id("BitSum"):
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
             return (unsigned)__builtin_popcount(as<unsigned>(self));
@@ -1025,7 +1023,7 @@ namespace aux {
             return _clz(as<unsigned>(self));
          case sym::id("Log2"):
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-            return 31 - _clz(as<unsigned>(self));
+            return 31 - _clz(as<unsigned>(self)); // def: Log2[rhs] == ~0 for rhs == 0 (on purpose)
          case sym::id("BitSum"):
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
             return _bitsum(as<unsigned>(self));
