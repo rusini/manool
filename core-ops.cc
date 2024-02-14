@@ -410,8 +410,10 @@ namespace aux {
    template<typename Dat> MNL_INLINE static inline enable_same<Val, unsigned> _asr(Val lhs, Val rhs) { return MNL_LIKELY(rhs < 32) ? (int)lhs >> rhs : 0; }
    template<typename Dat> MNL_INLINE static inline enable_same<Val, unsigned> _rol(Val lhs, Val rhs) { return lhs << (rhs & 0x1F) | lhs >> (-rhs & 0x1F); }
    template<typename Dat> MNL_INLINE static inline enable_same<Val, unsigned> _ror(Val lhs, Val rhs) { return lhs >> (rhs & 0x1F) | lhs << (-rhs & 0x1F); }
-   template<typename Dat> MNL_INLINE static inline enable_same<Val, unsigned> _clz(Val rhs)          { return MNL_LIKELY(rhs) ? __builtin_clz(rsh) : 32; }
-   template<typename Dat> MNL_INLINE static inline enable_same<Val, unsigned> _ctz(Val rhs)          { return MNL_LIKELY(rhs) ? __builtin_ctz(rsh) : 32; }
+   template<typename Dat> MNL_INLINE static inline enable_same<Val, unsigned> _clz(Val rhs)          { return rhs ? __builtin_clz(rsh) : 32; }
+   template<typename Dat> MNL_INLINE static inline enable_same<Val, unsigned> _ctz(Val rhs)          { return rhs ? __builtin_ctz(rsh) : 32; }
+   // _asr relies on the implementation-specific behavior of the C++ implementation but that's OK for our target platforms
+
    // TODO: constraints rhs != 0 is logical since the result is unclear if there're no stopping 1-s
    // on the other hand, we actually *count* 0-s (until a stopping 1 or *end* of word, in which case it naturally gives the word width)
 
@@ -938,43 +940,6 @@ namespace aux {
             return as<unsigned>(self) ^ as<unsigned>(argv[0]);
          case sym::id("SHL"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-            if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
-            return _shl(as<unsigned>(self), as<long long>(argv[0]));
-         case sym::id("SHR"):
-            if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-            if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
-            return _shr(as<unsigned>(self), as<long long>(argv[0]));
-         case sym::id("ASR"):
-            if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-            if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
-            return _asr(as<unsigned>(self), as<long long>(argv[0]));
-         case sym::id("ROL"):
-            if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-            if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
-            return _rol(as<unsigned>(self), as<long long>(argv[0]));
-         case sym::id("ROR"):
-            if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-            if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
-            return _ror(as<unsigned>(self), as<long long>(argv[0]));
-         case sym::id("CTZ"):
-            if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-            return _ctz(as<unsigned>(self));
-         case sym::id("CLZ"):
-            if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-            return _clz(as<unsigned>(self));
-         case sym::id("Log2"): // Log2[rhs] == ~0 for rhs == 0 (on purpose)
-            if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-            return 31 - _clz(as<unsigned>(self)); // by def
-         case sym::id("BitSum"):
-            if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-            return (unsigned)__builtin_popcount(as<unsigned>(self));
-
-         
-         
-         
-         
-         case sym::id("SHL"):
-            if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) err_TypeMismatch();
             return _shl(as<unsigned>(self), as<unsigned>(argv[0]));
          case sym::id("SHR"):
@@ -985,23 +950,6 @@ namespace aux {
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) err_TypeMismatch();
             return _asr(as<unsigned>(self), as<unsigned>(argv[0]));
-
-
-
-         case sym::id("LSH"):
-            if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-            if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
-            return as<long long>(argv[0]) >= 0 ?
-               _shl(as<unsigned>(self), (unsigned)as<long long>(argv[0])) : _shr(as<unsigned>(self), (unsigned)-as<long long>(argv[0]));
-         case sym::id("ASR"):
-            if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-            if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) err_TypeMismatch();
-            return _asr(as<unsigned>(self), as<unsigned>(argv[0]));
-         case sym::id("ASH"):
-            if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-            if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
-            return as<long long>(argv[0]) >= 0 ?
-               _shl(as<unsigned>(self), (unsigned)as<long long>(argv[0])) : _asr(as<unsigned>(self), (unsigned)-as<long long>(argv[0]));
          case sym::id("ROL"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) err_TypeMismatch();
@@ -1010,64 +958,23 @@ namespace aux {
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) err_TypeMismatch();
             return _ror(as<unsigned>(self), as<unsigned>(argv[0]));
-         case sym::id("ROT"):
-            if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-            if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
-            return as<long long>(argv[0]) >= 0 ?
-               _rol(as<unsigned>(self), (unsigned)as<long long>(argv[0])) : _ror(as<unsigned>(self), (unsigned)-as<long long>(argv[0]));
-         case sym::id("CTZ"):
-            if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-            return _ctz(as<unsigned>(self));
          case sym::id("CLZ"):
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
             return _clz(as<unsigned>(self));
-         case sym::id("Log2"):
+         case sym::id("CTZ"):
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-            return 31 - _clz(as<unsigned>(self)); // def: Log2[rhs] == ~0 for rhs == 0 (on purpose)
+            return _ctz(as<unsigned>(self));
+         case sym::id("Log2"): // Log2[rhs] == ~0 for rhs == 0 (on purpose)
+            if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
+            return 31 - _clz(as<unsigned>(self)); // definition
          case sym::id("BitSum"):
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-            return _bitsum(as<unsigned>(self));
+            return (unsigned)__builtin_popcount(as<unsigned>(self));
          case sym::id("Clone"): case sym::op("DeepClone"):
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
             return as<unsigned>(self);
          case sym::id("Int"):
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-            return (long long)as<unsigned>(self);
-
-
-
-         case sym::op_Shl:
-            return op2([](auto lhs, auto rhs) MNL_INLINE{ return MNL_LIKELY(rhs < 32) ? lhs << rhs : 0; });
-         case sym::op_Shr:
-            return op2([](auto lhs, auto rhs) MNL_INLINE{ return MNL_LIKELY(rhs < 32) ? lhs >> rhs : 0; });
-         case sym::op_Ashr: // relies on implementation-specific behavior of C++ implementation but that's OK for our target platforms
-            return op2([](auto lhs, auto rhs) MNL_INLINE{ return MNL_LIKELY(rhs < 32) ? (unsigned)((int)lhs >> (int)rhs) : 0; });
-         case sym::op_Rotl:
-            return op2([](unsigned lhs, unsigned rhs) MNL_INLINE{ return lhs << (rhs & 0x1F) | lhs >> (-rhs & 0x1F); });
-         case sym::op_Rotr:
-            return op2([](unsigned lhs, unsigned rhs) MNL_INLINE{ return lhs >> (rhs & 0x1F) | lhs << (-rhs & 0x1F); });
-         case sym::op_Ctz:
-            static constexpr auto err_ConstraintViolation =
-               []() MNL_INLINE{ MNL_ERR(MNL_SYM("ConstraintViolation")); };
-            return op1( [](unsigned rhs) MNL_INLINE{
-               if (MNL_UNLIKELY(!rhs)) err_ConstraintViolation();
-               return (unsigned)__builtin_ctz(rhs); } );
-         case sym::op_Clz:
-            return op1( [](unsigned rhs) MNL_INLINE{
-               if (MNL_UNLIKELY(!rhs)) err_ConstraintViolation();
-               return (unsigned)__builtin_clz(rhs); } );
-         case sym::op_Log2:
-            return op1( [](unsigned rhs) MNL_INLINE{
-               if (MNL_UNLIKELY(!rhs)) err_ConstraintViolation();
-               return 31 - (unsigned)__builtin_clz(rhs); } );
-         case sym::op_C1s:
-            return op1( [](unsigned rhs) MNL_INLINE{
-               return (unsigned)__builtin_popcount(rhs); } );
-         case sym::op_clone: case sym::op_deep_clone:
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-            return as<unsigned>(self);
-         case op_int:
-            if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
             return (long long)as<unsigned>(self);
          }
          return [&op, argc]() MNL_NOINLINE->val{
