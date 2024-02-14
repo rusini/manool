@@ -35,14 +35,14 @@ namespace MNL_AUX_UUID { using namespace aux;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 # define MNL_M \
    MNL_S(_sym0,          "`") \
-   MNL_S(op_shl,         "Shl") \
-   MNL_S(op_shr,         "Shr") \
-   MNL_S(op_ashr,        "Ashr") \
-   MNL_S(op_rotl,        "Rotl") \
-   MNL_S(op_rotr,        "Rotr") \
-   MNL_S(op_ctz,         "Ctz") \
-   MNL_S(op_clz,         "Clz") \
-   MNL_S(op_c1s,         "C1s") \
+   MNL_S(op_shl,         "SHL") \
+   MNL_S(op_shr,         "SHR") \
+   MNL_S(op_ashr,        "ASL") \
+   MNL_S(op_rotl,        "ROL") \
+   MNL_S(op_rotr,        "ROR") \
+   MNL_S(op_ctz,         "CTZ") \
+   MNL_S(op_clz,         "CLZ") \
+   MNL_S(op_c1s,         "BitSum") \
    MNL_S(op_size,        "Size") \
    MNL_S(op_elems,       "Elems") \
    MNL_S(op_keys,        "Keys") \
@@ -56,7 +56,6 @@ namespace MNL_AUX_UUID { using namespace aux;
    MNL_S(op_mul,         "*") \
    MNL_S(op_div,         "/") \
    MNL_S(op_rem,         "Rem") \
-   MNL_S(op_neg,         "Neg") \
    MNL_S(op_and,         "&") \
    MNL_S(op_or,          "|") \
    MNL_S(op_xor,         "Xor") \
@@ -78,36 +77,9 @@ namespace MNL_AUX_UUID { using namespace aux;
    MNL_S(op_log2,        "Log2") \
    MNL_S(op_set,         "Set") \
    MNL_S(op_weak,        "Weak") \
-   MNL_S(op_fma,         "Fma") \
    MNL_S(op_sign,        "Sign") \
-   MNL_S(op_exp,         "Exp") \
-   MNL_S(op_expm1,       "Expm1") \
-   MNL_S(op_log,         "Log") \
-   MNL_S(op_log1p,       "Log1p") \
-   MNL_S(op_log10,       "Log10") \
    MNL_S(op_sqr,         "Sqr") \
    MNL_S(op_sqrt,        "Sqrt") \
-   MNL_S(op_hypot,       "Hypot") \
-   MNL_S(op_cbrt,        "Cbrt") \
-   MNL_S(op_pow,         "Pow") \
-   MNL_S(op_sin,         "Sin") \
-   MNL_S(op_cos,         "Cos") \
-   MNL_S(op_tan,         "Tan") \
-   MNL_S(op_asin,        "Asin") \
-   MNL_S(op_acos,        "Acos") \
-   MNL_S(op_atan,        "Atan") \
-   MNL_S(op_sinh,        "Sinh") \
-   MNL_S(op_cosh,        "Cosh") \
-   MNL_S(op_tanh,        "Tanh") \
-   MNL_S(op_asinh,       "Asinh") \
-   MNL_S(op_acosh,       "Acosh") \
-   MNL_S(op_atanh,       "Atanh") \
-   MNL_S(op_erf,         "Erf") \
-   MNL_S(op_erfc,        "Erfc") \
-   MNL_S(op_gamma,       "Gamma") \
-   MNL_S(op_lgamma,      "Lgamma") \
-   MNL_S(op_jn,          "Jn") \
-   MNL_S(op_yn,          "Yn") \
    MNL_S(op_trunc,       "Trunc") \
    MNL_S(op_round,       "Round") \
    MNL_S(op_floor,       "Floor") \
@@ -463,9 +435,8 @@ namespace aux {
 
    template<typename Self> MNL_NOINLINE MNL_HOT val val::_invoke(Self &&self, const sym &op, int argc, val argv[], val *argv_out) {
       switch (self.rep.tag()) {
-         static constexpr auto err_InvalidInvocation     = []() MNL_INLINE{ MNL_ERR(MNL_SYM("InvalidInvocation"));     };
-         static constexpr auto err_TypeMismatch          = []() MNL_INLINE{ MNL_ERR(MNL_SYM("TypeMismatch"));          };
-         static constexpr auto err_UnrecognizedOperation = []() MNL_INLINE{ MNL_ERR(MNL_SYM("UnrecognizedOperation")); };
+         static constexpr auto err_InvalidInvocation = []() MNL_INLINE{ MNL_ERR(MNL_SYM("InvalidInvocation")); };
+         static constexpr auto err_TypeMismatch      = []() MNL_INLINE{ MNL_ERR(MNL_SYM("TypeMismatch"));      };
 
          static constexpr auto _op1 = [](auto op, auto &self, auto &argc, auto &argv) MNL_INLINE{
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
@@ -511,15 +482,15 @@ namespace aux {
             switch (MNL_EARLY(disp({"^", "Set"}))[op]) {
             case 1: // ^
                if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-               MNL_ERR(MNL_SYM("IndirectionByNil"));
+               MNL_ERR(MNL_SYM("IndirectionThruNil"));
             case 2: // Set
                if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-               MNL_ERR(MNL_SYM("IndirectionByNil"));
+               MNL_ERR(MNL_SYM("IndirectionThruNil"));
             default:
                MNL_UNREACHABLE();
             case int{}:
             }
-            err_UnrecognizedOperation();
+            MNL_ERR(MNL_SYM("UnrecognizedOperation"));
          }();
       case rep::_i48: ////////////////////////////////////////////////////////////////////////////////////////////////////////////////// I48
          switch (op) {
@@ -664,20 +635,12 @@ namespace aux {
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
                   if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) err_TypeMismatch();
                   return aux::_sign(self, as<decltype(self)>(argv[0]));
-               case sym::id("Sqr"): // abbreviation, should be read "Square"
+               case sym::id("Sqr"):
                   if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
                   return aux::_mul(self, self);
-               case sym::id("Sqrt"): // read "Square Root"
+               case sym::id("Sqrt"):
                   if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
                   return aux::_sqrt(self);
-               case sym::id("Pow"):
-                  if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-                  if (MNL_LIKELY(argv[0].rep == rep{rep::_i48, 2})) return aux::_mul(self, self);
-                  return [self, argc, argv]() MNL_NOINLINE->val{
-                     if (MNL_UNLIKELY(!is<long long>(argv[0]))) return aux::_pow(self, as<long long>(argv[0]));
-                     if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-                     return aux::_pow(self, as<decltype(self)>(argv[0]));
-                  }();
                case sym::id("Trunc"):
                   if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
                   return aux::_trunc(self);
