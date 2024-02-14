@@ -696,9 +696,8 @@ namespace aux {
                   return aux::_int(self);
                }
                return [self, &op, argc, argv]() MNL_NOINLINE->val{
-                  switch (MNL_EARLY(disp{"Rem", "FMA",
-                     "Exp", "Expm1", "Log", "Log1p", "Log10", "Log2", "Hypot", "Cbrt", "Pow", "Sin", "Cos", "Tan", "Asin", "Acos", "Atan",
-                     "Sinh", "Cosh", "Tanh", "Asinh", "Acosh", "Atanh", "Erf", "Erfc", "Gamma", "LogGamma", "BesselJ", "BesselY", "Str"})[op]) {
+                  switch (MNL_EARLY(disp{"Rem", "FMA", "Exp", "Expm1", "Log", "Log1p", "Log10", "Log2", "Hypot", "Cbrt", "Pow", "Sin", "Cos", "Tan", "Asin",
+                     "Acos", "Atan", "Sinh", "Cosh", "Tanh", "Asinh", "Acosh", "Atanh", "Erf", "Erfc", "Gamma", "LogGamma", "BesselJ", "BesselY", "Str"})[op]) {
                   case  1: // Rem
                      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
                      if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
@@ -978,12 +977,56 @@ namespace aux {
             return as<unsigned>(self) ^ as<unsigned>(argv[0]);
          case sym::id("SHL"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
+            if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
+            return _shl(as<unsigned>(self), as<long long>(argv[0]));
+         case sym::id("SHR"):
+            if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
+            if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
+            return _shr(as<unsigned>(self), as<long long>(argv[0]));
+         case sym::id("ASR"):
+            if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
+            if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
+            return _asr(as<unsigned>(self), as<long long>(argv[0]));
+         case sym::id("ROL"):
+            if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
+            if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
+            return _rol(as<unsigned>(self), as<long long>(argv[0]));
+         case sym::id("ROR"):
+            if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
+            if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
+            return _ror(as<unsigned>(self), as<long long>(argv[0]));
+         case sym::id("CTZ"):
+            if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
+            return (long long)_ctz(as<unsigned>(self));
+         case sym::id("CLZ"):
+            if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
+            return (long long)_clz(as<unsigned>(self));
+         case sym::id("Log2"):
+            if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
+            return 31 - (unsigned)_clz(as<unsigned>(self));
+         case sym::id("BitSum"):
+            if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
+            return (unsigned)__builtin_popcount(as<unsigned>(self));
+
+         
+         
+         
+         
+         case sym::id("SHL"):
+            if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) err_TypeMismatch();
             return _shl(as<unsigned>(self), as<unsigned>(argv[0]));
          case sym::id("SHR"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) err_TypeMismatch();
             return _shr(as<unsigned>(self), as<unsigned>(argv[0]));
+         case sym::id("ASR"):
+            if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
+            if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) err_TypeMismatch();
+            return _asr(as<unsigned>(self), as<unsigned>(argv[0]));
+
+
+
          case sym::id("LSH"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
