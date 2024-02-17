@@ -1523,22 +1523,25 @@ namespace aux { namespace pub { constexpr auto max_i48 = (1ll << 48 - 1) - 1, mi
 
 namespace aux {
 
+   MNL_INLINE inline void err_Overflow()  { MNL_ERR(MNL_SYM("Overflow"));  }
+   MNL_INLINE inline void err_Undefined() { MNL_ERR(MNL_SYM("Undefined")); }
+
    // I48 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    template<typename Dat, std::enable_if_t<std::is_same_v<Dat, long long>, int> = int{}>
    MNL_INLINE inline Dat _add(Dat lhs, Dat rhs) {
       if (MNL_LIKELY((unsigned long long)(lhs += rhs) - min_i48 <= max_i48 - min_i48)) return lhs;
-      MNL_ERR(MNL_SYM("Overflow"));
+      err_Overflow();
    }
    template<typename Dat, std::enable_if_t<std::is_same_v<Dat, long long>, int> = int{}>
    MNL_INLINE inline Dat _sub(Dat lhs, Dat rhs) {
       if (MNL_LIKELY((unsigned long long)(lhs -= rhs) - min_i48 <= max_i48 - min_i48)) return lhs;
-      MNL_ERR(MNL_SYM("Overflow"));
+      err_Overflow();
    }
    template<typename Dat, std::enable_if_t<std::is_same_v<Dat, long long>, int> = int{}>
    MNL_INLINE inline Dat _mul(Dat lhs, Dat rhs) {
       if (MNL_LIKELY(!__builtin_mul_overflow(lhs, rhs, &lhs)) && MNL_LIKELY((unsigned long long)res - min_i48 <= max_i48 - min_i48)) return lhs;
-      MNL_ERR(MNL_SYM("Overflow"));
+      err_Overflow();
    }
 
    template<typename Dat, std::enable_if_t<std::is_same_v<Dat, long long>, int> = int{}>

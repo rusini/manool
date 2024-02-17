@@ -166,6 +166,9 @@ namespace aux {
       # endif
          (MNL_UNLIKELY(lhs < 0 ^ rhs < 0) ? MNL_LIKELY(lhs % rhs) ? lhs % rhs + rhs : 0 : lhs % rhs);
    }
+   template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, long long>, long long> _order(Val lhs, Val rhs) {
+      return (as<long long>(lhs) > as<long long>(rhs)) - (as<long long>(lhs) < as<long long>(rhs));
+   }
    template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, long long>, std::string> _str(Val rhs) {
       char res[sizeof "+140737488355327"];
       return sprintf(res, "%lld", rhs), res;
@@ -178,7 +181,7 @@ namespace aux {
       switch (*pc) { default: MNL_ERR(MNL_SYM("SyntaxError")); case 'd': case 'i': ; }
       if (MNL_UNLIKELY(*++pc)) MNL_ERR(MNL_SYM("SyntaxError"));
       char res[512];
-      return sprintf(res, ("%" + string(format.begin(), format.end() - 1) + "lld").c_str(), rhs), res;
+      return sprintf(res, ("%" + std::string(format.begin(), format.end() - 1) + "lld").c_str(), rhs), res;
    }
 
    // F64, F32 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -192,20 +195,17 @@ namespace aux {
       using std::erf, std::erfc, std::tgamma, std::trunc, std::round, std::floor, std::ceil;
    }
 # define MNL_M(VAL, SUFFIX) \
-   MNL_INLINE static inline VAL lgamma_r(VAL rhs, int *sign) noexcept { return ::lgamma##SUFFIX##_r(rhs, &sign); }
-   MNL_INLINE static inline VAL j0(VAL rhs) noexcept { return ::j0##SUFFIX(rhs); }
-   MNL_INLINE static inline VAL j1(VAL rhs) noexcept { return ::j1##SUFFIX(rhs); }
-   MNL_INLINE static inline VAL jn(int ord, VAL rhs) noexcept { return ::jn##SUFFIX(ord, rhs); }
-   MNL_INLINE static inline VAL y0(VAL rhs) noexcept { return ::y0##SUFFIX(rhs); }
-   MNL_INLINE static inline VAL y1(VAL rhs) noexcept { return ::y1##SUFFIX(rhs); }
-   MNL_INLINE static inline VAL yn(int ord, VAL rhs) noexcept { return ::yn##SUFFIX(ord, rhs); }
-// end # define MNL_M(DAT, SUFFIX)
+   MNL_INLINE static inline VAL lgamma_r(VAL rhs, int *sign) noexcept { return ::lgamma##SUFFIX##_r(rhs, &sign); } \
+   MNL_INLINE static inline VAL j0(VAL rhs) noexcept { return ::j0##SUFFIX(rhs); } \
+   MNL_INLINE static inline VAL j1(VAL rhs) noexcept { return ::j1##SUFFIX(rhs); } \
+   MNL_INLINE static inline VAL jn(int _n, VAL rhs) noexcept { return ::jn##SUFFIX(_n, rhs); } \
+   MNL_INLINE static inline VAL y0(VAL rhs) noexcept { return ::y0##SUFFIX(rhs); } \
+   MNL_INLINE static inline VAL y1(VAL rhs) noexcept { return ::y1##SUFFIX(rhs); } \
+   MNL_INLINE static inline VAL yn(int _n, VAL rhs) noexcept { return ::yn##SUFFIX(_n, rhs); } \
+// end # define MNL_M(VAL, SUFFIX)
    MNL_M(double, /*empty*/) MNL_M(float, f)
 # undef MNL_M
 
-   template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _order(Val lhs, Val rhs) {
-      return signbit(lhs) ^ signbit(rhs) ? signbit(rhs) - signbit(lhs) : (lhs < rhs) - (lhs > rhs);
-   }
    template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _div(Val lhs, Val rhs) {
       auto res = lhs / rhs;
       if (MNL_LIKELY(isfinite(res))) return res;
@@ -215,6 +215,9 @@ namespace aux {
       auto res = fmod(lhs, rhs);
       if (MNL_LIKELY(!isnan(res))) return res;
       err_Undefined();
+   }
+   template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, int> _order(Val lhs, Val rhs) {
+      return signbit(lhs) ^ signbit(rhs) ? signbit(rhs) - signbit(lhs) : (lhs > rhs) - (lhs < rhs);
    }
    template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _fma(Val a1, Val a2, Val a3) {
       auto res = fma(a1, a2, a3);
@@ -266,9 +269,6 @@ namespace aux {
       auto res = log2(rhs);
       if (MNL_LIKELY(isfinite(res))) return res;
       MNL_ERR(!isnan(res) ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res); // as per C99 and IEEE Std 1003.1 (POSIX) log never results in overflow
-   }
-   template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _sqr(Val rhs) {
-      return _mul(rhs, rhs);
    }
    template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _sqrt(Val rhs) {
       auto res = sqrt(rhs);
@@ -351,17 +351,17 @@ namespace aux {
       MNL_ERR(rhs <= 0 && trunc(rhs) == rhs ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow"), rhs); // pole error for negative integers (contrary to POSIX)
    }
    template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _lgamma(Dat rhs) {
-      int _; auto res = (lgamma_r)(rhs, &_); // introduced by POSIX (std::lgamma not thread-safe under POSIX)
+      int _; auto res = (lgamma_r)(rhs, &_); // introduced by POSIX (std::lgamma is not thread-safe under POSIX)
       if (MNL_LIKELY(!isinf(res))) return res;
       MNL_ERR(rhs <= 0 && trunc(rhs) == rhs ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow"), rhs); // pole error for nonpositive integers as per POSIX
    }
    template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _jn(long long _n, Val rhs) {
-      // specified by POSIX, and in more detail by glibc (not in C99/11)
+      // specified by POSIX, and in more detail in glibc (not in C99/11)
       if (MNL_UNLIKELY((int)_n != _n)) MNL_ERR(MNL_SYM("LimitExceeded"));
       return (int)_n == 0 ? (j0)(rhs) : (int)_n == 1 ? (j1)(rhs) : (jn)(_n, rhs); // dynamic specialization
    }
    template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _yn(long long _n, Val rhs) {
-      // specified by POSIX, and in more detail by glibc (not in C99/11)
+      // specified by POSIX, and in more detail in glibc (not in C99/11)
       if (MNL_UNLIKELY((int)_n != _n)) MNL_ERR(MNL_SYM("LimitExceeded"));
       auto res = (int)_n == 0 ? (y0)(rhs) : (int)_n == 1 ? (y1)(rhs) : (yn)(_n, rhs); // dynamic specialization
       if (MNL_LIKELY(isfinite(res))) return res;
@@ -388,7 +388,7 @@ namespace aux {
       return sprintf(res, "%.8e", rhs), res;
    }
    template<typename Val>
-   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, std::string> _str(Val rhs, const string &format) {
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, std::string> _str(Val rhs, const std::string &format) {
       auto pc = format.c_str();
       for (;;) { switch (*pc) case ' ': case '#': case '+': case '-': case '0': { ++pc; continue; } break; }
       if (isdigit(*pc) && isdigit(*++pc)) ++pc;
@@ -405,19 +405,23 @@ namespace aux {
 
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-   template<typename Dat> MNL_INLINE static inline enable_same<Val, unsigned> _shl(Val lhs, Val rhs) { return MNL_LIKELY(rhs < 32) ? lhs << rhs : 0; }
-   template<typename Dat> MNL_INLINE static inline enable_same<Val, unsigned> _shr(Val lhs, Val rhs) { return MNL_LIKELY(rhs < 32) ? lhs << rhs : 0; }
-   template<typename Dat> MNL_INLINE static inline enable_same<Val, unsigned> _asr(Val lhs, Val rhs) { return MNL_LIKELY(rhs < 32) ? (int)lhs >> rhs : 0; }
-   template<typename Dat> MNL_INLINE static inline enable_same<Val, unsigned> _rol(Val lhs, Val rhs) { return lhs << (rhs & 0x1F) | lhs >> (-rhs & 0x1F); }
-   template<typename Dat> MNL_INLINE static inline enable_same<Val, unsigned> _ror(Val lhs, Val rhs) { return lhs >> (rhs & 0x1F) | lhs << (-rhs & 0x1F); }
-   template<typename Dat> MNL_INLINE static inline enable_same<Val, unsigned> _clz(Val rhs)          { return rhs ? __builtin_clz(rsh) : 32; }
-   template<typename Dat> MNL_INLINE static inline enable_same<Val, unsigned> _ctz(Val rhs)          { return rhs ? __builtin_ctz(rsh) : 32; }
+   template<typename Val> MNL_INLINE static inline enable_same<Val, unsigned> _shl(Val lhs, Val rhs) { return MNL_LIKELY(rhs < 32) ? lhs << rhs : 0; }
+   template<typename Val> MNL_INLINE static inline enable_same<Val, unsigned> _shr(Val lhs, Val rhs) { return MNL_LIKELY(rhs < 32) ? lhs << rhs : 0; }
+   template<typename Val> MNL_INLINE static inline enable_same<Val, unsigned> _asr(Val lhs, Val rhs) { return MNL_LIKELY(rhs < 32) ? (int)lhs >> rhs : 0; }
+   template<typename Val> MNL_INLINE static inline enable_same<Val, unsigned> _rol(Val lhs, Val rhs) { return lhs << (rhs & 0x1F) | lhs >> (-rhs & 0x1F); }
+   template<typename Val> MNL_INLINE static inline enable_same<Val, unsigned> _ror(Val lhs, Val rhs) { return lhs >> (rhs & 0x1F) | lhs << (-rhs & 0x1F); }
+   template<typename Val> MNL_INLINE static inline enable_same<Val, unsigned> _clz(Val rhs)          { return rhs ? __builtin_clz(rsh) : 32; }
+   template<typename Val> MNL_INLINE static inline enable_same<Val, unsigned> _ctz(Val rhs)          { return rhs ? __builtin_ctz(rsh) : 32; }
    // _asr relies on the implementation-specific behavior of the C++ implementation but that's OK for our target platforms
 
    // TODO: constraints rhs != 0 is logical since the result is unclear if there're no stopping 1-s
    // on the other hand, we actually *count* 0-s (until a stopping 1 or *end* of word, in which case it naturally gives the word width)
 
-   template<typename Dat> MNL_INLINE static inline enable_same<Dat, unsigned, string> _str(Dat rhs, const string &format) {
+   template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, unsigned>, std::string> _str(Val rhs) {
+      char res[sizeof(unsigned) * 2 + sizeof "0x"];
+      return sprintf(res, "0x%08X", rhs, res;
+   }
+   template<typename Val> MNL_INLINE static inline enable_same<Val, unsigned, std::string> _str(Val rhs, const std::string &format) {
       auto pc = format.c_str();
       for (;;) { switch (*pc) case ' ': case '#': case '+': case '-': case '0': { ++pc; continue; } break; }
       if (isdigit(*pc) && isdigit(*++pc)) ++pc;
@@ -654,13 +658,16 @@ namespace aux {
                   if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
                   return aux::_ceil(self);
                case sym::id("Clone"): case sym::id("DeepClone"):
+                  if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
                   return self;
                case sym::id("Int"):
+                  if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
                   return aux::_int(self);
                }
                return [self, &op, argc, argv]() MNL_NOINLINE->val{
-                  switch (MNL_EARLY(disp{"Rem", "FMA", "Exp", "Expm1", "Log", "Log1p", "Log10", "Log2", "Hypot", "Cbrt", "Pow", "Sin", "Cos", "Tan", "Asin",
-                     "Acos", "Atan", "Sinh", "Cosh", "Tanh", "Asinh", "Acosh", "Atanh", "Erf", "Erfc", "Gamma", "LogGamma", "BesselJ", "BesselY", "Str"})[op]) {
+                  switch (MNL_EARLY(disp{"Rem", "FMA", "Exp", "Expm1", "Log", "Log1p", "Log10", "Log2", "Hypot", "Cbrt", "Pow",
+                     "Sin", "Cos", "Tan", "Asin", "Acos", "Atan", "Sinh", "Cosh", "Tanh", "Asinh", "Acosh", "Atanh",
+                     "Erf", "Erfc", "Gamma", "LogGamma", "BesselJn", "BesselYn", "Str"})[op]) {
                   case  1: // Rem
                      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
                      if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
@@ -718,7 +725,7 @@ namespace aux {
                   case 17: // Atan
                      if (MNL_LIKELY(argc == 1)) {
                         if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-                        return aux::_atan(self, as<decltype(self)>(argv[0]));
+                        return aux::_atan(self, as<decltype(self)>(argv[0])); // atan(lhs / rhs) with extensions (IEEE 754)
                      }
                      if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
                      return aux::_atan(self);
@@ -752,11 +759,11 @@ namespace aux {
                   case 27: // LogGamma
                      if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
                      return aux::_lgamma(self);
-                  case 28: // BesselJ
+                  case 28: // BesJn (Bessel function of the first kind of integer order)
                      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
                      if (MNL_UNLIKELY(!is<long long>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
                      return aux::_jn(as<long long>(argv[0]), self);
-                  case 29: // BesselY
+                  case 29: // BesYn (Bessel function of the second kind of integer order)
                      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
                      if (MNL_UNLIKELY(!is<long long>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
                      return aux::_yn(as<long long>(argv[0]), self);
@@ -774,34 +781,36 @@ namespace aux {
             };
          default:
             dispatch(as<double>(self), op, argc, argv);
-         case val::tag_f32:
-            dispatch(as<float >(self), op, argc, argv);
+         case rep::_f32:
+            dispatch(as<float> (self), op, argc, argv);
          }
-      case val::tag_sym: /////////////////////////////////////////////////////////////////////////////////////////////////////////////// Sym
-         {  switch (op) {
-            case sym::op_eq/*(==)*/:
-               return _eq(as<const sym &>(self), argc, argv);
-            case sym::op_ne/*(<>)*/:
-               return _ne(as<const sym &>(self), argc, argv);
-            case sym::op_Order:
-               if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-               if (MNL_UNLIKELY(!is<sym>(argv[0]))) return self.default_order(argv[0]);
-               return (as<sym>(self) > as<sym>(argv[0])) - (as<sym>(self) < as<sym>(argv[0]));
-            case sym::op_Apply:
-               return as<const sym &>(self)(*argv, argc - 1, argv + 1, argv_out + !!argv_out); // TODO: also a convenience/unification func exists for that
-            case sym::op_Clone: case sym::op_DeepClone:
-               if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-               return std::move(self);
+      case rep::_sym: ////////////////////////////////////////////////////////////////////////////////////////////////////////////////// Sym
+         switch (op) {
+         case sym::id("=="):
+            return _eq(as<const sym &>(self), argc, argv);
+         case sym::id("<>"):
+            return _ne(as<const sym &>(self), argc, argv);
+         case sym::id("Order"):
+            if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
+            if (MNL_UNLIKELY(!is<sym>(argv[0]))) return self.default_order(argv[0]);
+            return (as<sym>(self) > as<sym>(argv[0])) - (as<sym>(self) < as<sym>(argv[0]));
+         case sym::id("Apply"):
+            return as<const sym &>(self)(*argv, argc - 1, argv + 1, argv_out + !!argv_out); // TODO: also a convenience/unification func exists for that
+         case sym::id("Clone"): case sym::id("DeepClone"):
+            if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
+            return std::move(self);
+         }
+         return [&self, &op, argc]() MNL_NOINLINE->val{
+            switch (MNL_EARLY(disp{"Str"})[op]) {
+            case 1: // Str
+               if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+               return (std::string)as<const sym &>(self);
+            default:
+               MNL_UNREACHABLE();
+            case int{}:
             }
-            return [&op, argc]() MNL_NOINLINE->val{
-               switch (op) {
-               case sym::op_Str:
-                  if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-                  return (string)as<const sym &>(self);
-               }
-               err_UnrecognizedOperation();
-            }();
-         }
+            MNL_ERR(MNL_SYM("UnrecognizedOperation"));
+         }();
       case rep::_false: /////////////////////////////////////////////////////////////////////////////////////////////////////////////// Bool
          switch (op) {
          case sym::id("=="):
@@ -833,7 +842,7 @@ namespace aux {
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
             return MNL_EARLY((val)"False");
          }
-         err_UnrecognizedOperation();
+         MNL_ERR(MNL_SYM("UnrecognizedOperation"));
       case rep::_true: //////////////////////////////////////////////////////////////////////////////////////////////////////////////// Bool
          switch (op) {
          case sym::id("=="):
@@ -868,8 +877,8 @@ namespace aux {
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
             return MNL_EARLY((val)"True");
          }
-         err_UnrecognizedOperation();
-      case rep::tag_u32: /////////////////////////////////////////////////////////////////////////////////////////////////////////////// U32
+         MNL_ERR(MNL_SYM("UnrecognizedOperation"));
+      case rep::_u32: ////////////////////////////////////////////////////////////////////////////////////////////////////////////////// U32
          switch (op) {
          case sym::id("+"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
