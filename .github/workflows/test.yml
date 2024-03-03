@@ -20,6 +20,8 @@ jobs:
       run: gcc-13 --version
     - name: make
       run: make --version
+    - name: valgrind
+      run: valgrind --version
     - name: lscpu
       run: lscpu
     - name: free
