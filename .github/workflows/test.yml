@@ -29,8 +29,8 @@ jobs:
     - name: ls
       run: ls -la
     - name: make
-      run: make -B -j2 GCC=gcc-9 GXX=g++-9
-    - name: make
       run: make -B -j3 GCC=gcc-9 GXX=g++-9
-    - name: make
-      run: make -B -j4 GCC=gcc-9 GXX=g++-9
+    - uses: actions/upload-artifact@v4
+      with:
+        name: build
+        path: build
