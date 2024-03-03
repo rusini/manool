@@ -27,4 +27,4 @@ jobs:
     - name: ls
       run: ls -la
     - name: make
-      run: make      
+      run: make -j3
