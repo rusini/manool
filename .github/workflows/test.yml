@@ -29,4 +29,6 @@ jobs:
     - name: make
       run: make -B -j2 GCC=gcc-9 GXX=g++-9
     - name: make
+      run: make -B -j3 GCC=gcc-9 GXX=g++-9
+    - name: make
       run: make -B -j4 GCC=gcc-9 GXX=g++-9
