@@ -27,4 +27,4 @@ jobs:
     - name: ls
       run: ls -la
     - name: make
-      run: make -j3
+      run: make -j3 GCC=gcc-9 GXX=g++-9
