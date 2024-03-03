@@ -11,3 +11,5 @@ jobs:
     steps:
     - name: uname
       run: uname -a
+    - name: gcc
+      run: gcc --version
