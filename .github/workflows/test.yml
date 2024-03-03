@@ -14,6 +14,8 @@ jobs:
       run: uname -a
     - name: gcc
       run: gcc --version
+    - name: gcc-12
+      run: gcc-12 --version
     - name: make
       run: make --version
     - name: lscpu
