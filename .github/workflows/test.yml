@@ -26,3 +26,5 @@ jobs:
       run: pwd
     - name: ls
       run: ls -la
+    - name: make
+      run: make      
