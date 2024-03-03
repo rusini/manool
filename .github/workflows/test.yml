@@ -9,11 +9,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - name: checkout
+      uses: actions/checkout@v4
     - name: uname
       run: uname -a
-    - name: gcc
-      run: gcc --version
+    - run: gcc --version
     - name: gcc-12
       run: gcc-12 --version
     - name: gcc-13
@@ -22,6 +22,8 @@ jobs:
       run: make --version
     - name: lscpu
       run: lscpu
+    - name: free
+      run: free -h
     - name: id
       run: id
     - name: pwd
