@@ -13,5 +13,13 @@ jobs:
       run: uname -a
     - name: gcc
       run: gcc --version
+    - name: make
+      run: make --version
     - name: lscpu
       run: lscpu
+    - name: id
+      run: id
+    - name: pwd
+      run: pwd
+    - name: ls
+      run: ls -la
