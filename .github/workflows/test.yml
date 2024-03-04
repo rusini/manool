@@ -43,5 +43,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: checkout
+      uses: actions/checkout@v4
     - name: make
       run: make -B -j3 GCC=gcc-9 GXX=g++-9
