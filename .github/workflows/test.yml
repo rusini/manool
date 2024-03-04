@@ -39,3 +39,6 @@ jobs:
       with:
         name: build
         path: build
+  test2:
+    - name: make
+      run: make -B -j3 GCC=gcc-9 GXX=g++-9
