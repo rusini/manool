@@ -14,16 +14,18 @@ jobs:
     - name: Machine Information
       run: lscpu; free -h
     - name: System Information
-      run: uname -a; uptime; cat /etc/lsb-release
+      run: date; uname -a; uptime; cat /etc/lsb-release
     - name: Context Information
       run: id; pwd
+    - name: Update Package DB
+      run: sudo apt-get update
     - name: Install Valgrind
-      run: sudo apt-get update && sudo apt-get --no-install-recommends install valgrind
+      run: sudo apt-get --no-install-recommends install valgrind
     - name: Checkout
       uses: actions/checkout@v4
     - name: Build
       run: make --version && make -j3 GCC=gcc-9 GXX=g++-9
-    - name: Run
+    - name: Check
       run: make run
     - name: Upload Results
       uses: actions/upload-artifact@v4
@@ -32,3 +34,10 @@ jobs:
         path: build
     - name: Run under valgrind
       run: make run-valgrind
+    - name: Performance Testing
+      run: |
+        TIMEFORMAT='Elapsed time: %Rs'
+        for n in {1..5}; do
+           sleep $((RANDOM * 10 / 32768))
+           time make run
+        done
