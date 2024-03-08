@@ -1,7 +1,7 @@
 name: Test
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: {}
   push:
     branches:
     - test
@@ -10,8 +10,6 @@ jobs:
   gcc9:
     name: Build with gcc 9
     runs-on: ubuntu-22.04
-    defaults: {}
-      #continue-on-error: false
     steps:
     - name: Machine Information
       run: lscpu; free -h
@@ -25,11 +23,12 @@ jobs:
       uses: actions/checkout@v4
     - name: Build
       run: make --version && make -j3 GCC=gcc-9 GXX=g++-9
-      continue-on-error: false
-    - run: false
-      continue-on-error: true
+    - name: Run
+      run: make run
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
         name: gcc9
         path: build
+    - name: Run under valgrind
+      run: make run-valgrind
