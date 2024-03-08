@@ -41,4 +41,5 @@ jobs:
            sleep $((RANDOM * 10 / 32768))
            time make run >/dev/null 2>&1
         done
-    - run: find build; cat mnl; cat text.mnl
+    - run: find build; cat mnl; cat test.mnl
+    - run: ./mnl test.mnl
