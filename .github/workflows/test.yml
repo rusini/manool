@@ -20,7 +20,7 @@ jobs:
     - name: Context Information
       run: id; pwd
     - name: Install Valgrind
-      run: sudo apt-get update && sudo apt-get install valgrind && valgrind --version
+      run: sudo apt-get update && sudo apt-get --no-install-recommends install valgrind
     - name: Checkout
       uses: actions/checkout@v4
     - name: Build
