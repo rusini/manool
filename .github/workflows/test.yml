@@ -14,7 +14,7 @@ jobs:
     - name: Machine Information
       run: lscpu; free -h; df -h .
     - name: System Information
-      run: date; uname -a; uptime; cat /etc/lsb-release
+      run: date; uname -a; uptime; cat /etc/lsb-release; ls /boot || true
     - name: Context Information
       run: id; pwd
     - name: Update Package DB
