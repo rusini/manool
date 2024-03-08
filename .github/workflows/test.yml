@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - run: true
+    - run: yes
     - run: sudo apt-get update && sudo apt-get install valgrind
     - name: checkout
       uses: actions/checkout@v4
