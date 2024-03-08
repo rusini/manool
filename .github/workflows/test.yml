@@ -39,5 +39,5 @@ jobs:
         TIMEFORMAT='Elapsed time: %Rs'
         for n in {1..5}; do
            sleep $((RANDOM * 10 / 32768))
-           time make run
+           time make run >/dev/null 2>&1
         done
