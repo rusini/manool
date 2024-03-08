@@ -8,18 +8,25 @@ on:
 
 jobs:
   gcc9:
-    name: Compile with gcc 9
+    name: Build with gcc 9
     runs-on: ubuntu-22.04
+    defaults:
+      continue-on-error: false
     steps:
+    - name: Machine Information
+      run: lscpu; free -h
     - name: System Information
-      run: lscpu; free -h; uname -a; cat /etc/lsb-release; uptime; id; pwd; gcc-9 --version; make --version
+      run: uname -a; uptime; cat /etc/lsb-release
+    - name: Context Information
+      run: id; pwd
     - name: Install Valgrind
       run: sudo apt-get update && sudo apt-get install valgrind && valgrind --version
     - name: Checkout
       uses: actions/checkout@v4
-    - name: Make
-      run: make -j3 GCC=gcc-9 GXX=g++-9
-    - uses: actions/upload-artifact@v4
+    - name: Build
+      run: make --version && make -j3 GCC=gcc-9 GXX=g++-9
+    - name: Upload Results
+      uses: actions/upload-artifact@v4
       with:
         name: gcc9
         path: build
