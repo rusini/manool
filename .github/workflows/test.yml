@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - name: Machine Information
-      run: lscpu; free -h
+      run: lscpu; free -h; df -h .
     - name: System Information
       run: date; uname -a; uptime; cat /etc/lsb-release
     - name: Context Information
