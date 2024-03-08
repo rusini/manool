@@ -24,22 +24,20 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
     - name: Build
-      run: make --version && make -j3 GCC=gcc-9 GXX=g++-9
+      run: make --version; gcc-9 --version; make -j3 GCC=gcc-9 GXX=g++-9
     - name: Check
-      run: make run
+      run: find build; cat mnl; cat test.mnl; make run
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
         name: gcc9
         path: build
     - name: Run under valgrind
-      run: make run-valgrind
+      run: valgrind --version; make run-valgrind
     - name: Performance Testing
       run: |
         TIMEFORMAT='Elapsed time: %Rs'
         for n in {1..5}; do
            sleep $((RANDOM * 10 / 32768))
-           time make run >/dev/null 2>&1
+           time ./mnl test.mnl &>/dev/null
         done
-    - run: find build; cat mnl; cat test.mnl
-    - run: ./mnl test.mnl
