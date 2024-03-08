@@ -26,6 +26,7 @@ jobs:
     - name: Build
       run: make --version && make -j3 GCC=gcc-9 GXX=g++-9
       continue-on-error: false
+    - run: false
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
