@@ -21,7 +21,7 @@ jobs:
     - name: Update Package DB
       run: sudo apt-get update
     - name: Install Multilib
-      run: sudo apt-get install gcc{,-{9..13}}-multilib
+      run: sudo apt-get install g{cc,++}{,-{9..13}}-multilib
     - name: Install Valgrind
       run: sudo apt-get --no-install-recommends install valgrind
     - name: Checkout
