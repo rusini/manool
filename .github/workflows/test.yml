@@ -29,7 +29,7 @@ jobs:
     - name: Build
       run: |
         make --version; gcc-9 --version
-        make -j3 GCC='gcc-9 -m32' GXX='g++-9 -m32' CFLAGS='-O3 -fno-stack-protector -fcf-protection=none' LDFLAGS_SO=
+        make -j3 GCC=clang GXX=clang++ CFLAGS='-O3 -fno-stack-protector -fcf-protection=none' MARCH=-m{32,sse2,fpmath=sse} LDFLAGS_SO=
     - name: Check
       run: find build; cat mnl; cat test.mnl; make run
     - name: Upload Results
