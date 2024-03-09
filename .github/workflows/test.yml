@@ -17,6 +17,7 @@ jobs:
       run: date; uname -a; uptime; cat /etc/lsb-release; ls -C /boot || true
     - name: Context Information
       run: id; pwd
+    - run: dpkg -l | fgrep gcc
     - name: Update Package DB
       run: sudo apt-get update
     - name: Install Multilib
