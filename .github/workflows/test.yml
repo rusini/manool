@@ -24,7 +24,9 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
     - name: Build
-      run: make --version; gcc-9 --version; make -j3 GCC=gcc-9 GXX=g++-9
+      run: |
+        make --version; gcc-9 --version
+        make -j3 GCC=gcc-9 GXX=g++-9 CFLAGS='-O3 -fno-stack-protector -fcf-protection=none' MARCH=-mx32
     - name: Check
       run: find build; cat mnl; cat test.mnl; make run
     - name: Upload Results
