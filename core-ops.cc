@@ -225,7 +225,7 @@ namespace aux {
       err_Overflow();
    }
    template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _sign(Val rhs) {
-      return rhs == 0 ? rhs : copysign((Val)1, rhs);
+      return rhs == 0 ? rhs : copysign((Val)1, rhs); // consistent in some sense with POSIX's "copysign"
    }
    template<typename Val> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Val, double> || std::is_same_v<Val, float>, Val> _sign(Val lhs, Val rhs) {
    # if !__aarch64__
@@ -777,10 +777,6 @@ namespace aux {
          case sym::id("<>"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             return !MNL_LIKELY(is<const sym &>(argv[0])) || as<const sym &>(self) != as<const sym &>(argv[0]);
-         case sym::id("=="):
-            return _eq(as<const sym &>(self), argc, argv);
-         case sym::id("<>"):
-            return _ne(as<const sym &>(self), argc, argv);
          case sym::id("Order"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<sym>(argv[0]))) return self.default_order(argv[0]);
@@ -789,7 +785,7 @@ namespace aux {
             return as<const sym &>(self)(*argv, argc - 1, argv + 1, argv_out + !!argv_out); // TODO: also a convenience/unification func exists for that
          case sym::id("Clone"): case sym::id("DeepClone"):
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-            return std::move(self);
+            return std::move(self); // TODO: consider moving out sym and (re-)constructing val
          }
          return [&self, &op, argc]() MNL_NOINLINE->val{
             switch (MNL_EARLY(disp{"Str"})[op]) {
@@ -970,7 +966,7 @@ namespace aux {
          case sym::id("Log2"): // Log2[rhs] == ~0 for rhs == 0 (on purpose)
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
             return 31 - _clz(as<unsigned>(self)); // definition
-         case sym::id("BitSum"):
+         case sym::id("BitSum"): // so-called popcount ("population count")
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
             return (unsigned)__builtin_popcount(as<unsigned>(self));
          case sym::id("Clone"): case sym::op("DeepClone"):
