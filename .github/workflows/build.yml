@@ -45,7 +45,7 @@ jobs:
     - name: System Information
       run: date; uname -a; uptime; cat /etc/os-release; ls -C /boot || true
     - name: Context Information
-      run: id; pwd
+      run: id; pwd; printf %s\\n "$PATH"
 
     - name: Update Package DB
       run: sudo apt-get update
@@ -74,3 +74,10 @@ jobs:
       with:
         name: build-${{matrix.compiler.descr}}-${{matrix.options.descr}}
         path: build
+
+  gcc8:
+    steps:
+    - name: Update Package DB
+      run: sudo apt-get update
+    - name: Install GCC 8
+      run: sudo apt-get install g++-8
