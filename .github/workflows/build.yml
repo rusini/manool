@@ -75,10 +75,10 @@ jobs:
         name: build-${{matrix.compiler.descr}}-${{matrix.options.descr}}
         path: build
 
-  gcc8:
-    name: Install GCC 8
-    steps:
-    - name: Update Package DB
-      run: sudo apt-get update
-    - name: Install GCC 8
-      run: sudo apt-get install g++-8
+  #gcc8:
+  #  name: Install GCC 8
+  #  steps:
+  #  - name: Update Package DB
+  #    run: sudo apt-get update
+  #  - name: Install GCC 8
+  #    run: sudo apt-get install g++-8
