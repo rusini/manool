@@ -1,0 +1,62 @@
+# .github/workflows/test.yml
+
+name: Build
+
+on:
+  workflow_dispatch: {}
+  #push:
+    #branches: [ test ]
+
+jobs:
+  build:
+
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler:
+        - { descr: "gcc9",    GCC: "gcc-9",    GXX: "g++-9",      libbase: "g++-9"  }
+        - { descr: "gcc10",   GCC: "gcc-10",   GXX: "g++-10",     libbase: "g++-10" }
+        - { descr: "gcc11",   GCC: "gcc-11",   GXX: "g++-11",     libbase: "g++-11" }
+        - { descr: "gcc12",   GCC: "gcc-12",   GXX: "g++-12",     libbase: "g++-12" }
+        - { descr: "gcc13",   GCC: "gcc-13",   GXX: "g++-13",     libbase: "g++-13" }
+        - { descr: "clang13", GCC: "clang-13", GXX: "clang++-13", libbase: "g++" }
+        - { descr: "clang14", GCC: "clang-14", GXX: "clang++-14", libbase: "g++" }
+        - { descr: "clang15", GCC: "clang-15", GXX: "clang++-15", libbase: "g++" }
+        options:
+        - { descr: "64",  MARCH: "-m64" }
+        - { descr: "32",  MARCH: "-m32 -msse2 -mfpmath=sse" }
+        - { descr: "x32", MARCH: "-mx32" }
+    name: Build with ${{matrix.compiler.descr}}/${{matrix.options.descr}}
+    runs-on: ubuntu-22.04
+
+    steps:
+
+    - name: Machine Information
+      run: lscpu; free -h; df -h .
+    - name: System Information
+      run: date; uname -a; uptime; cat /etc/os-release; ls -C /boot || true
+    - name: Context Information
+      run: id; pwd
+
+    - name: Update Package DB
+      run: sudo apt-get update
+    - name: Install Multilib
+      run: sudo apt-get install ${{matrix.compiler.libbase}}-multilib
+    #- name: Install Valgrind
+      #run: sudo apt-get --no-install-recommends install valgrind
+
+    - name: Build Tools Information
+      run: make --version; ${{matrix.compiler.GCC}} --version
+
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Run Make
+      run: |
+        make -j3 GCC='${{matrix.compiler.GCC}}' GXX='${{matrix.compiler.GXX}}' MARCH='${{matrix.options.MARCH}}' run
+
+    - name: Upload Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-${{matrix.compiler.descr}}-${{matrix.options.descr}}
+        path: build

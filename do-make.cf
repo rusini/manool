@@ -1,15 +1,2 @@
-# Local WSL (Ubuntu 18.04 LTS)
-
-#dir=~/develop/build
-#params=(CFLAGS='-O3 -fno-stack-protector')
-
-# SmartBox
-
- host=ssh.smartbox.host port=10110 login=alex dir=manool
-#params=(SCL='scl enable devtoolset-3 --' GXX='g++ -fpermissive')
-#params=(SCL='scl enable devtoolset-4 --' GXX='g++ -fpermissive')
-#params=(SCL='scl enable devtoolset-6 --' GXX='g++ -fpermissive')
-#params=(SCL='scl enable devtoolset-7 --')
- params=(SCL='scl enable devtoolset-8 --')
-#params=(SCL='scl enable devtoolset-7 --' GCC='/opt/gcc/9.1/bin/gcc' GXX='/opt/gcc/9.1/bin/g++' LDFLAGS='-s -Wl,-rpath,/opt/gcc/9.1/lib64')
-#params=(PATH=/home/alex/bin:/opt/gcc/9.1/bin:/opt/rh/devtoolset-7/root/usr/bin:/usr/bin:/bin LD_LIBRARY_PATH=/opt/gcc/9.1/lib64)
+params=(GCC='nice gcc' GXX='nice g++' MARCH=)
+host=devbox dir=manool

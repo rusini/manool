@@ -17,7 +17,7 @@
 CC       = $(SCL) $(GCC) $(PIPE) -w $(MARCH) -pthread -std=c99
 CXX      = $(SCL) $(GXX) $(PIPE) -w $(MARCH) -pthread -std=c++11
 CPPFLAGS =
-CFLAGS   = -O3
+CFLAGS   = -O3 -fno-stack-protector -fcf-protection=none
 CXXFLAGS = $(CFLAGS)
 LDFLAGS  = -s -Wl,--as-needed
 LDLIBS   = -lm -ldl -lrt

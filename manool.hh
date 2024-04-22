@@ -16,6 +16,8 @@
 # ifndef MNL_INCLUDED_MANOOL
 # define MNL_INCLUDED_MANOOL
 
+# include <system_error>
+
 # include "mnl-misc-memmgm.hh"
 
 # include "mnl-aux-core.tcc"

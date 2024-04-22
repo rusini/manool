@@ -182,6 +182,9 @@ namespace aux { MNL_NOINLINE inline sym::tab<signed char> disp(initializer_list<
 }}
 
 // class val ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+template<typename> class box;
+
 namespace aux { namespace pub {
    typedef val ast; // val when used as an Abstract Syntax Tree - for documentation purposes
 
@@ -261,8 +264,8 @@ namespace aux { namespace pub {
       void addref() const noexcept, release() const noexcept;
       template<typename     = decltype(nullptr)> bool test() const noexcept;
       template<typename Dat = decltype(nullptr)> Dat  cast() const noexcept(std::is_nothrow_copy_constructible<Dat>::value);
-      MNL_IF_CLANG(public:)
-      class root;
+      //MNL_IF_CLANG(public:)
+      class root; template<typename> friend class mnl::box;
    public: // Convenience -- Functional application
       /* val operator()(int argc, val argv[], val *argv_out = {}) &&; // essential form */
       MNL_INLINE val operator()(const val &arg, val *arg_out = {}) && { return move(*this)(val(arg), arg_out); }
@@ -321,7 +324,9 @@ namespace aux { namespace pub {
       } vector_const_reverse_iterator_range, vcri_range;
       vcri_range operator-(long) const noexcept;
    public: // Related stuff
-      friend sym;
+      //friend sym;
+      friend val sym::operator()(int, val [], val *) const; // essential
+
       friend val _eq(val &&, val &&), _ne(val &&, val &&), _lt(val &&, val &&), _le(val &&, val &&), _gt(val &&, val &&), _ge(val &&, val &&);
       friend val _add(val &&, val &&), _sub(val &&, val &&), _mul(val &&, val &&), _neg(val &&), _abs(val &&), _xor(val &&, val &&), _not(val &&);
       friend class proc_Min; friend class proc_Max;
@@ -820,7 +825,7 @@ namespace aux { namespace pub {
 
 // Record Composite ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace aux { namespace pub {
-   class record_descr/*iptor*/ { // TODO: record_sign/*ature*/
+   class record_descr/*iptor*/ { // TODO: record_sign/*ature*/, profile?
    public: // Standard operations
       MNL_INLINE record_descr() noexcept: rep(store.end()) {}
       record_descr(const record_descr &) noexcept;
