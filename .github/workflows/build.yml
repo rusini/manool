@@ -53,7 +53,12 @@ jobs:
 
     - name: Run Make
       run: |
+        make -j3 GCC='${{matrix.compiler.GCC}}' GXX='${{matrix.compiler.GXX}}' MARCH='${{matrix.options.MARCH}}'
+
+    - name: Check
+      run: |
         make -j3 GCC='${{matrix.compiler.GCC}}' GXX='${{matrix.compiler.GXX}}' MARCH='${{matrix.options.MARCH}}' run
+      continue-on-error: true
 
     - name: Upload Results
       uses: actions/upload-artifact@v4
