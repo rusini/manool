@@ -76,6 +76,7 @@ jobs:
         path: build
 
   gcc8:
+    name: Install GCC 8
     steps:
     - name: Update Package DB
       run: sudo apt-get update
