@@ -8,7 +8,9 @@ on:
     #branches: [ test ]
 
 jobs:
-  build:
+
+####################################################################################################
+  build-linux:
 
     strategy:
       fail-fast: false
@@ -35,7 +37,7 @@ jobs:
           options:  { descr: "x32" }
         - compiler: { descr: "clang15" }
           options:  { descr: "x32" }
-    name: Build with ${{matrix.compiler.descr}}/${{matrix.options.descr}}
+    name: Build on Linux with ${{matrix.compiler.descr}}/${{matrix.options.descr}}
     runs-on: ubuntu-22.04
 
     steps:
@@ -45,7 +47,7 @@ jobs:
     - name: System Information
       run: date; uname -a; uptime; cat /etc/os-release; ls -C /boot || true
     - name: Context Information
-      run: id; pwd; printf %s\\n "$PATH"
+      run: id; pwd; printf %s\\n "$SHELL"; printf %s\\n "$PATH"
 
     - name: Update Package DB
       run: sudo apt-get update
@@ -75,11 +77,40 @@ jobs:
         name: build-${{matrix.compiler.descr}}-${{matrix.options.descr}}
         path: build
 
-  gcc8:
-    name: Install GCC 8
-    runs-on: ubuntu-20.04
+####################################################################################################
+  build-macos:
+
+    strategy:
+      fail-fast: false
+      matrix:
+        - { descr: "clang14", GCC: "clang-14", GXX: "clang++-14" }
+        - { descr: "64", MARCH: "-m64" }
+    name: Build on Linux with ${{matrix.compiler.descr}}/${{matrix.options.descr}}
+    runs-on: macos-14-large
+
     steps:
-    - name: Update Package DB
-      run: sudo apt-get update
-    - name: Install GCC 8
-      run: sudo apt-get install g++-8
+
+    - name: Machine Information
+      run: lscpu; free -h; df -h .
+      continue-on-error: true
+    - name: System Information
+      run: date; uname -a; uptime; cat /etc/os-release; ls -C /boot || true
+      continue-on-error: true
+    - name: Context Information
+      run: id; pwd; printf %s\\n "$SHELL"; printf %s\\n "$PATH"
+      continue-on-error: true
+
+    - name: Run Make
+      run: |
+        make -j3 GCC='${{matrix.compiler.GCC}}' GXX='${{matrix.compiler.GXX}}' MARCH='${{matrix.options.MARCH}}'
+
+    - name: Check
+      run: |
+        make -j3 GCC='${{matrix.compiler.GCC}}' GXX='${{matrix.compiler.GXX}}' MARCH='${{matrix.options.MARCH}}' run
+      continue-on-error: true
+
+    - name: Upload Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: mac-build-${{matrix.compiler.descr}}-${{matrix.options.descr}}
+        path: build
