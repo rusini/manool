@@ -83,7 +83,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        compiler:
         - { descr: "clang14", GCC: "clang-14", GXX: "clang++-14" }
+        options:
         - { descr: "64", MARCH: "-m64" }
     name: Build on Linux with ${{matrix.compiler.descr}}/${{matrix.options.descr}}
     runs-on: macos-14-large
