@@ -84,7 +84,7 @@ jobs:
       fail-fast: false
       matrix:
         compiler:
-        - { descr: "clang14", GCC: "clang-14", GXX: "clang++-14" }
+        - { descr: "clang14", GCC: "clang", GXX: "clang++" }
         options:
         - { descr: "64", MARCH: "-m64" }
     name: Build on MacOS with ${{matrix.compiler.descr}}/${{matrix.options.descr}}
