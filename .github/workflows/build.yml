@@ -102,6 +102,9 @@ jobs:
       run: id; pwd; printf %s\\n "$SHELL"; printf %s\\n "$PATH"
       continue-on-error: true
 
+    - name: Checkout
+      uses: actions/checkout@v4
+
     - name: Run Make
       run: |
         make -j3 GCC='${{matrix.compiler.GCC}}' GXX='${{matrix.compiler.GXX}}' MARCH='${{matrix.options.MARCH}}'
