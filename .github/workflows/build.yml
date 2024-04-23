@@ -102,6 +102,8 @@ jobs:
       run: id; pwd; printf %s\\n "$SHELL"; printf %s\\n "$PATH"
       continue-on-error: true
 
+    - run: cat /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/math.h
+
     - name: Checkout
       uses: actions/checkout@v4
 
