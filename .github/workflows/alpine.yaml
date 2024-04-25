@@ -54,8 +54,10 @@ jobs:
     #- name: Build Tools Information
     #  run: make --version; ${{matrix.compiler.GCC}} --version
 
-    #- name: Checkout
-    #  uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - run: ls -la
 
     #- name: Run Make
     #  run: |
