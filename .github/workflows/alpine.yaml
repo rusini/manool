@@ -23,6 +23,8 @@ jobs:
 
     steps:
 
+    - run: ls -l /etc/resolv.conf; cat /etc/resolv.conf
+
     - name: Machine Information
       run: |
         lscpu; free -h; df -h .
@@ -69,16 +71,11 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Run Make
+    - name: Run Make (and Check)
       run: |
         sudo chroot /srv/alpine su - runner <<'END'
-           make -j3 MARCH= CFLAGS='-Wno-psabi -O1 -fno-stack-protector -fcf-protection=none' run
+           make -j3 MARCH= CFLAGS='-Wno-psabi -O2 -fno-stack-protector -fcf-protection=none' run
         END
-
-    #- name: Check
-    #  run: |
-    #    make -j3 GCC='${{matrix.compiler.GCC}}' GXX='${{matrix.compiler.GXX}}' MARCH='${{matrix.options.MARCH}}' run
-    #  continue-on-error: true
 
     - name: Upload Results
       uses: actions/upload-artifact@v4
