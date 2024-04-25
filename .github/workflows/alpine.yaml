@@ -22,17 +22,16 @@ jobs:
     - name: Machine Information
       run: lscpu; free -h; df -h .
     - name: System Information
-      run: |
-        date; uname -a; uptime; cat /etc/os-release; ls -C /boot || :
+      run: | date; uname -a; uptime; cat /etc/os-release; ls -C /boot || :
       #shell: bash
     - name: Context Information
       #shell: bash
       run: tty || :; id; printf %s\\n "$SHELL"; pwd; printf %s\\n "$PATH"
 
     - name: Update Package DB
-      run: sudo apt update
+      run: sudo apt-get update
     - name: Install QEMU
-      run: sudo apt -y install qemu-user-static
+      run: sudo apt-get install qemu-user-static
 
     - name: Setup Alpine Linux
       run: |
