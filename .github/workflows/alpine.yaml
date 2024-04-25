@@ -71,17 +71,19 @@ jobs:
            id && pwd && ls -la
         END
 
-    #- name: Run Make
-    #  run: |
-    #    make -j3 GCC='${{matrix.compiler.GCC}}' GXX='${{matrix.compiler.GXX}}' MARCH='${{matrix.options.MARCH}}'
+    - name: Run Make
+      run: |
+        sudo chroot /srv/alpine su - runner <<'END'
+           make -j3 MARCH=
+        END
 
     #- name: Check
     #  run: |
     #    make -j3 GCC='${{matrix.compiler.GCC}}' GXX='${{matrix.compiler.GXX}}' MARCH='${{matrix.options.MARCH}}' run
     #  continue-on-error: true
 
-    #- name: Upload Results
-    #  uses: actions/upload-artifact@v4
-    #  with:
-    #    name: build-${{matrix.compiler.descr}}-${{matrix.options.descr}}
-    #    path: build
+    - name: Upload Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-${{matrix.label}}
+        path: build
