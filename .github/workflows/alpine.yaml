@@ -45,7 +45,7 @@ jobs:
         (for d in dev proc sys; do sudo mount --rbind -o ro {,/srv/alpine}/"$d"; done)
         (for d in run tmp; do sudo mount {-t,}tmpfs /srv/alpine/"$d"; done)
 
-        sudo chroot /src/alpine su - <<'END'
+        sudo chroot /srv/alpine su - <<'END'
            uname -a
            echo $PATH
            pwd
