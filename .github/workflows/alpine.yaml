@@ -17,8 +17,7 @@ jobs:
     name: Build on Alpine Linux for ${{matrix.label}}
     runs-on: ubuntu-22.04
 
-    defaults:
-      run:
+    defaults: run:
         shell: bash
 
     steps:
