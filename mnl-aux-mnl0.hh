@@ -27,7 +27,7 @@
    # endif
 # endif
 # if !(__i386__ && __SSE2_MATH__ || __x86_64__ || __AARCH64EL__ || __ARMEL__ && __VFP_FP__) || __SIZEOF_LONG__ != __SIZEOF_POINTER__
-   # error "Unsupported or not tested target ISA or ABI"
+   //# error "Unsupported or not tested target ISA or ABI"
 # endif
 # if __cplusplus // even more paranoid ABI check
    static_assert(sizeof(long) == sizeof(void *), "sizeof(long) == sizeof(void *)");

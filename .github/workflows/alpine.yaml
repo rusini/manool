@@ -1,0 +1,64 @@
+# .github/workflows/alpine.yaml
+
+name: Build on Alpine
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [ test ]
+
+jobs:
+
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        label: ["x86_64", "x86", "aarch64", "armhf", "ppc64le"]
+    name: Build on Alpine Linux for ${{matrix.label}}
+    runs-on: ubuntu-22.04
+
+    steps:
+
+    - name: Machine Information
+      run: lscpu; free -h; df -h .
+    - name: System Information
+      run: date; uname -a; uptime; cat /etc/os-release; ls -C /boot || true
+    - name: Context Information
+      run: tty; id; pwd; printf %s\\n "$SHELL"; printf %s\\n "$PATH"
+
+    - name: Update Package DB
+      run: sudo apt update
+    - name: Install QEMU
+      run: sudo apt -y install qemu-user-static
+
+    - name: Setup Alpine Linux
+      run: |
+        sudo mkdir /srv/alpine
+        wget -q -O- https://dl-cdn.alpinelinux.org/alpine/v3.19/releases/aarch64/alpine-minirootfs-3.19.1-${{matrix.label}}.tar.gz | sudo tar xz -C /srv/alpine
+        for d in dev proc sys; do sudo mount --rbind -o ro {,/src/alpine}/"$d"; done
+
+        sudo chroot /src/alpine su - <<-'END'
+           echo $PATH
+           pwd
+	END
+
+    #- name: Build Tools Information
+    #  run: make --version; ${{matrix.compiler.GCC}} --version
+
+    #- name: Checkout
+    #  uses: actions/checkout@v4
+
+    #- name: Run Make
+    #  run: |
+    #    make -j3 GCC='${{matrix.compiler.GCC}}' GXX='${{matrix.compiler.GXX}}' MARCH='${{matrix.options.MARCH}}'
+
+    #- name: Check
+    #  run: |
+    #    make -j3 GCC='${{matrix.compiler.GCC}}' GXX='${{matrix.compiler.GXX}}' MARCH='${{matrix.options.MARCH}}' run
+    #  continue-on-error: true
+
+    #- name: Upload Results
+    #  uses: actions/upload-artifact@v4
+    #  with:
+    #    name: build-${{matrix.compiler.descr}}-${{matrix.options.descr}}
+    #    path: build
