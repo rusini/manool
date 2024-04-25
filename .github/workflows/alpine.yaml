@@ -56,7 +56,7 @@ jobs:
         sudo mount --rbind . /srv/alpine/home/runner
 
         sudo chroot /srv/alpine su - <<'END'
-           set -x; apk add g++ make
+           set -x; apk update && apk add g++ make
         END
 
     #- name: Build Tools Information
