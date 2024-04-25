@@ -22,7 +22,7 @@ jobs:
     - name: Machine Information
       run: lscpu; free -h; df -h .
     - name: System Information
-      run: date; uname -a; uptime; cat /etc/os-release; ls -C /boot || :
+      run: "date; uname -a; uptime; cat /etc/os-release; ls -C /boot || :"
       shell: bash
     - name: Context Information
       #shell: bash
