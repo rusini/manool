@@ -17,7 +17,8 @@ jobs:
     name: Build on Alpine Linux for ${{matrix.label}}
     runs-on: ubuntu-22.04
 
-    defaults: run:
+    defaults:
+      run:
         shell: bash
 
     steps:
@@ -28,9 +29,7 @@ jobs:
     - name: System Information
       run: |
         date; uname -a; uptime; cat /etc/os-release; ls -C /boot || :
-      #shell: bash
     - name: Context Information
-      #shell: bash
       run: |
         tty || :; id; printf %s\\n "$SHELL"; pwd; printf %s\\n "$PATH"
 
@@ -41,11 +40,12 @@ jobs:
 
     - name: Setup Alpine Linux
       run: |
-        #sudo mkdir /srv/alpine
         wget -q -O- https://dl-cdn.alpinelinux.org/alpine/v3.19/releases/${{matrix.label}}/alpine-minirootfs-3.19.1-${{matrix.label}}.tar.gz |
            (sudo mkdir /srv/alpine && sudo tar xz -C /srv/alpine)
-        ls -la /srv/alpine
-        #for d in dev proc sys; do sudo mount --rbind -o ro {,/src/alpine}/"$d"; done
+        (for d in dev proc sys; do sudo mount --rbind -o ro {,/srv/alpine}/"$d"; done)
+        (for d in run tmp; do sudo mount {-t,}tmpfs /srv/alpine/"$d"; done)
+        df -h /srv/alpine/proc
+        df -h /srv/alpine/tmp
 
         #sudo chroot /src/alpine su - <<-'END'
         #   echo $PATH
