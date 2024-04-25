@@ -45,7 +45,7 @@ jobs:
            (sudo mkdir /srv/alpine && sudo tar xz -C /srv/alpine)
         (for d in dev proc sys; do sudo mount --rbind -o ro {,/srv/alpine}/"$d"; done)
         (for d in run tmp; do sudo mount {-t,}tmpfs /srv/alpine/"$d"; done)
-        cp -aL /etc/resolv.conf /srv/alpine/etc
+        sudo cp -L /etc/resolv.conf /srv/alpine/etc
 
         sudo chroot /srv/alpine su - <<'END'
            uname -a && pwd && printf %s\\n "$PATH"
