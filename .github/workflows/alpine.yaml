@@ -23,6 +23,7 @@ jobs:
       run: lscpu; free -h; df -h .
     - name: System Information
       run: date; uname -a; uptime; cat /etc/os-release; ls -C /boot || :
+      shell: bash
     - name: Context Information
       #shell: bash
       run: tty || :; id; printf %s\\n "$SHELL"; pwd; printf %s\\n "$PATH"
