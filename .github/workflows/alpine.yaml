@@ -54,27 +54,25 @@ jobs:
         sudo chroot /srv/alpine su - <<'END'
            set -x; addgroup -g127 docker && adduser -D -u1001 -Gdocker -s/bin/ash runner && delgroup runner docker
         END
-        sudo mount --rbind . /srv/alpine/home/runner
+        (set -x; sudo mount --rbind . /srv/alpine/home/runner)
 
         sudo chroot /srv/alpine su - <<'END'
-           set -x; apk update && apk add g++ make
+           apk update && apk add g++ make
         END
 
-    #- name: Build Tools Information
-    #  run: make --version; ${{matrix.compiler.GCC}} --version
+    - name: Build Tools Information
+      run: |
+        sudo chroot /srv/alpine su - <<'END'
+           make --version; gcc --version
+        END
 
     - name: Checkout
       uses: actions/checkout@v4
 
-    - run: |
-        sudo chroot /srv/alpine su - runner <<'END'
-           id && pwd && ls -la
-        END
-
     - name: Run Make
       run: |
         sudo chroot /srv/alpine su - runner <<'END'
-           make -j3 MARCH=
+           make -j3 MARCH= CFLAGS='-Wno-psabi -O1 -fno-stack-protector -fcf-protection=none' run
         END
 
     #- name: Check
