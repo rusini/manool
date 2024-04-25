@@ -24,7 +24,7 @@ jobs:
     - name: System Information
       run: date; uname -a; uptime; cat /etc/os-release; ls -C /boot || true
     - name: Context Information
-      shell: bash
+      #shell: bash
       run: tty || :; id; pwd; printf %s\\n "$SHELL"; printf %s\\n "$PATH"
 
     - name: Update Package DB
