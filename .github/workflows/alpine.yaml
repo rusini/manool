@@ -17,16 +17,23 @@ jobs:
     name: Build on Alpine Linux for ${{matrix.label}}
     runs-on: ubuntu-22.04
 
+    defaults:
+      run:
+        shell: bash
+
     steps:
 
     - name: Machine Information
-      run: lscpu; free -h; df -h .
+      run: |
+        lscpu; free -h; df -h .
     - name: System Information
-      run: | date; uname -a; uptime; cat /etc/os-release; ls -C /boot || :
+      run: |
+        date; uname -a; uptime; cat /etc/os-release; ls -C /boot || :
       #shell: bash
     - name: Context Information
       #shell: bash
-      run: tty || :; id; printf %s\\n "$SHELL"; pwd; printf %s\\n "$PATH"
+      run: |
+        tty || :; id; printf %s\\n "$SHELL"; pwd; printf %s\\n "$PATH"
 
     - name: Update Package DB
       run: sudo apt-get update
