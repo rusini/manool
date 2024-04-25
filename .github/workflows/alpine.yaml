@@ -22,9 +22,9 @@ jobs:
     - name: Machine Information
       run: lscpu; free -h; df -h .
     - name: System Information
-      run: date; uname -a; uptime; cat /etc/os-release; ls -C /boot || true
+      run: date; uname -a; uptime; cat /etc/os-release; ls -C /boot || :
     - name: Context Information
-      run: tty; id; pwd; printf %s\\n "$SHELL"; printf %s\\n "$PATH"
+      run: tty || :; id; pwd; printf %s\\n "$SHELL"; printf %s\\n "$PATH"
 
     - name: Update Package DB
       run: sudo apt update
