@@ -45,6 +45,7 @@ jobs:
            (sudo mkdir /srv/alpine && sudo tar xz -C /srv/alpine)
         (for d in dev proc sys; do sudo mount --rbind -o ro {,/srv/alpine}/"$d"; done)
         (for d in run tmp; do sudo mount {-t,}tmpfs /srv/alpine/"$d"; done)
+        cp -a /etc/resolv.conf /srv/alpine/etc
 
         sudo chroot /srv/alpine su - <<'END'
            uname -a && pwd && printf %s\\n "$PATH"
@@ -56,6 +57,10 @@ jobs:
         sudo mount --rbind . /srv/alpine/home/runner
 
         sudo chroot /srv/alpine su - <<'END'
+           ping -c3 8.8.8.8
+           cat /etc/hosts
+           ping -c3 dl-cdn.alpinelinux.org
+
            set -x; apk update && apk add g++ make
         END
 
