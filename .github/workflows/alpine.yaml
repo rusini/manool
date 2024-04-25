@@ -34,8 +34,8 @@ jobs:
     - name: Setup Alpine Linux
       run: |
         sudo mkdir /srv/alpine
-        wget -q -O- https://dl-cdn.alpinelinux.org/alpine/v3.19/releases/aarch64/alpine-minirootfs-3.19.1-${{matrix.label}}.tar.gz | sudo tar xz -C /srv/alpine
-        for d in dev proc sys; do sudo mount --rbind -o ro {,/src/alpine}/"$d"; done
+        #wget -q -O- https://dl-cdn.alpinelinux.org/alpine/v3.19/releases/aarch64/alpine-minirootfs-3.19.1-${{matrix.label}}.tar.gz | sudo tar xz -C /srv/alpine
+        #for d in dev proc sys; do sudo mount --rbind -o ro {,/src/alpine}/"$d"; done
 
         #sudo chroot /src/alpine su - <<-'END'
         #   echo $PATH
