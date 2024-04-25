@@ -57,11 +57,11 @@ jobs:
         sudo mount --rbind . /srv/alpine/home/runner
 
         sudo chroot /srv/alpine su - <<'END'
-           ping -c3 8.8.8.8
-           cat /etc/hosts
-           ping -c3 dl-cdn.alpinelinux.org
-
            set -x; apk update && apk add g++ make
+        END
+
+        sudo chroot /srv/alpine su - runner <<'END'
+           id && pwd && ls -la
         END
 
     #- name: Build Tools Information
