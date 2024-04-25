@@ -47,13 +47,13 @@ jobs:
         (for d in run tmp; do sudo mount {-t,}tmpfs /srv/alpine/"$d"; done)
 
         sudo chroot /srv/alpine su - <<'END'
-           set -x; uname -a; pwd; printf %s\\n "$PATH"
+           uname -a && pwd && printf %s\\n "$PATH"
         END
 
         sudo chroot /srv/alpine su - <<'END'
            set -x; addgroup -g127 docker && adduser -D -u1001 -Gdocker -s/bin/ash runner && delgroup runner docker
         END
-        mount --rbind . /srv/alpine/home/runner
+        sudo mount --rbind . /srv/alpine/home/runner
 
         sudo chroot /srv/alpine su - <<'END'
            set -x; apk add g++ make
