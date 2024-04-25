@@ -38,6 +38,7 @@ jobs:
         sudo mkdir /srv/alpine
         wget -q -O- https://dl-cdn.alpinelinux.org/alpine/v3.19/releases/${{matrix.label}}/alpine-minirootfs-3.19.1-${{matrix.label}}.tar.gz |
            sudo tar xz -C /srv/alpine
+        ls -la /srv/alpine
         #for d in dev proc sys; do sudo mount --rbind -o ro {,/src/alpine}/"$d"; done
 
         #sudo chroot /src/alpine su - <<-'END'
