@@ -25,7 +25,7 @@ jobs:
       run: date; uname -a; uptime; cat /etc/os-release; ls -C /boot || true
     - name: Context Information
       shell: bash
-      run: tty || true; id; pwd; printf %s\\n "$SHELL"; printf %s\\n "$PATH"
+      run: tty || :; id; pwd; printf %s\\n "$SHELL"; printf %s\\n "$PATH"
 
     - name: Update Package DB
       run: sudo apt update
