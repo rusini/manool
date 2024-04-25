@@ -12,22 +12,45 @@ jobs:
 ####################################################################################################
   build-linux:
 
+20.04 g++-8   -m64
+20.04 g++     -m64
+20.04 g++     -m32
+20.04 g++     -mx32
+20.04 clang++-8  -m64
+20.04 clang++    -m64
+
+22.04 g++        -m64
+22.04 g++        -m32
+22.04 g++-12     -m64
+22.04 g++-13     -m64
+22.04 clang++    -m64
+22.04 clang++-15 -m64
+
+22.04 aarch64-linux-gnu-g++
+22.04 arm-linux-gnueabihf-g++
+22.04 Alpine
+
+
     strategy:
       fail-fast: false
       matrix:
         compiler:
-        - { descr: "gcc9",    GCC: "gcc-9",    GXX: "g++-9",      libbase: "g++-9"  }
-        - { descr: "gcc10",   GCC: "gcc-10",   GXX: "g++-10",     libbase: "g++-10" }
-        - { descr: "gcc11",   GCC: "gcc-11",   GXX: "g++-11",     libbase: "g++-11" }
-        - { descr: "gcc12",   GCC: "gcc-12",   GXX: "g++-12",     libbase: "g++-12" }
-        - { descr: "gcc13",   GCC: "gcc-13",   GXX: "g++-13",     libbase: "g++-13" }
-        - { descr: "clang13", GCC: "clang-13", GXX: "clang++-13", libbase: "g++" }
-        - { descr: "clang14", GCC: "clang-14", GXX: "clang++-14", libbase: "g++" }
-        - { descr: "clang15", GCC: "clang-15", GXX: "clang++-15", libbase: "g++" }
+        - { label: "gcc8",    osver: "20.04", GCC: "gcc-8",    GXX: "g++-8",      setup: "apt-get install g++-8"  }
+        - { label: "gcc9",    osver: "20.04", GCC: "gcc-9",    GXX: "g++-9",      setup: ""  }
+        - { label: "gcc10",   osver: "20.04", GCC: "gcc-10",   GXX: "g++-10",     setup: "apt-get install g++-10-multilib"  }
+        - { label: "gcc10",   osver: "22.04", GCC: "gcc-10",   GXX: "g++-10",     setup: "g++-10-multilib" }
+        - { label: "gcc11",   osver: "22.04", GCC: "gcc-11",   GXX: "g++-11",     setup: "g++-11-multilib" }
+        - { label: "gcc12",   osver: "22.04", GCC: "gcc-12",   GXX: "g++-12",     setup: "g++-12-multilib" }
+        - { label: "gcc13",   osver: "22.04", GCC: "gcc-13",   GXX: "g++-13",     setup: "g++-13-multilib" }
+        - { label: "clang8",  osver: "20.04", GCC: "clang-8",  GXX: "clang++-8",  setup: "apt-get install clang-8" }
+        - { label: "clang10", osver: "20.04", GCC: "clang-10", GXX: "clang++-10", setup: "" }
+        - { label: "clang13", osver: "22.04", GCC: "clang-13", GXX: "clang++-13", setup: "" }
+        - { label: "clang14", osver: "22.04", GCC: "clang-14", GXX: "clang++-14", setup: "" }
+        - { label: "clang15", osver: "22.04", GCC: "clang-15", GXX: "clang++-15", setup: "g++-multilib" }
         options:
-        - { descr: "64",  MARCH: "-m64" }
-        - { descr: "32",  MARCH: "-m32 -msse2 -mfpmath=sse" }
-        - { descr: "x32", MARCH: "-mx32" }
+        - { label: "64",  MARCH: "-m64" }
+        - { label: "32",  MARCH: "-m32 -msse2 -mfpmath=sse" }
+        - { label: "x32", MARCH: "-mx32" }
         exclude:
         - compiler: { descr: "gcc9" }
           options:  { descr: "x32" }
@@ -75,49 +98,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: build-${{matrix.compiler.descr}}-${{matrix.options.descr}}
-        path: build
-
-####################################################################################################
-  build-macos:
-
-    strategy:
-      fail-fast: false
-      matrix:
-        compiler:
-        - { descr: "clang14", GCC: "clang", GXX: "clang++" }
-        options:
-        - { descr: "64", MARCH: "-m64" }
-    name: Build on MacOS with ${{matrix.compiler.descr}}/${{matrix.options.descr}}
-    runs-on: macos-14
-
-    steps:
-
-    - name: Machine Information
-      run: lscpu; free -h; df -h .
-      continue-on-error: true
-    - name: System Information
-      run: date; uname -a; uptime; cat /etc/os-release; ls -C /boot || true
-      continue-on-error: true
-    - name: Context Information
-      run: id; pwd; printf %s\\n "$SHELL"; printf %s\\n "$PATH"
-      continue-on-error: true
-
-    - run: cat /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/math.h
-
-    - name: Checkout
-      uses: actions/checkout@v4
-
-    - name: Run Make
-      run: |
-        make -j3 GCC='${{matrix.compiler.GCC}}' GXX='${{matrix.compiler.GXX}}' MARCH='${{matrix.options.MARCH}}'
-
-    #- name: Check
-    #  run: |
-    #    make -j3 GCC='${{matrix.compiler.GCC}}' GXX='${{matrix.compiler.GXX}}' MARCH='${{matrix.options.MARCH}}' run
-    #  continue-on-error: true
-
-    - name: Upload Results
-      uses: actions/upload-artifact@v4
-      with:
-        name: mac-build-${{matrix.compiler.descr}}-${{matrix.options.descr}}
         path: build
