@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform:
+        target:
         - { label: "aarch64-linux-gnu" }
         - { label: "arm-linux-gnueabihf" }
         - { label: "powerpc64le-linux-gnu" }
@@ -29,25 +29,25 @@ jobs:
         - { ver: "11", osver: "22.04" }
         - { ver: "12", osver: "22.04" }
         exclude:
-        - platform: { label: "mipsel-linux-gnu" }
+        - target:   { label: "mipsel-linux-gnu" }
           compiler: { ver:   "8"  }
-        - platform: { label: "mipsel-linux-gnu" }
+        - target:   { label: "mipsel-linux-gnu" }
           compiler: { ver:   "11" }
-        - platform: { label: "mipsel-linux-gnu" }
+        - target:   { label: "mipsel-linux-gnu" }
           compiler: { ver:   "12" }
-        - platform: { label: "mips64el-linux-gnuabi64" }
+        - target:   { label: "mips64el-linux-gnuabi64" }
           compiler: { ver:   "8"  }
-        - platform: { label: "mips64el-linux-gnuabi64" }
+        - target:   { label: "mips64el-linux-gnuabi64" }
           compiler: { ver:   "11" }
-        - platform: { label: "mips64el-linux-gnuabi64" }
+        - target:   { label: "mips64el-linux-gnuabi64" }
           compiler: { ver:   "12" }
-        - platform: { label: "mipsisa64r6el-linux-gnuabi64" }
+        - target:   { label: "mipsisa64r6el-linux-gnuabi64" }
           compiler: { ver:   "8"  }
-        - platform: { label: "mipsisa64r6el-linux-gnuabi64" }
+        - target:   { label: "mipsisa64r6el-linux-gnuabi64" }
           compiler: { ver:   "11" }
-        - platform: { label: "mipsisa64r6el-linux-gnuabi64" }
+        - target:   { label: "mipsisa64r6el-linux-gnuabi64" }
           compiler: { ver:   "12" }
-    name: Build with ${{matrix.platform.label}}-gcc-${{matrix.compiler.ver}}
+    name: Build with ${{matrix.target.label}}-gcc-${{matrix.compiler.ver}}
     runs-on: ubuntu-${{matrix.compiler.osver}}
 
     defaults:
@@ -66,36 +66,29 @@ jobs:
       run: |
         tty || :; id; printf %s\\n "$SHELL"; printf %s\\n "$PATH"; pwd
 
-    - run: ps -eH --sort pid -o pid,user:12,group:12,comm:24,rsz,vsz,thcount,bsdstart,state,tname
-
-    - name: Update Package DB
-      run: sudo apt-get update
-    - name: Install QEMU
-      run: sudo apt-get install qemu-user
-    - name: Install GCC
-      run: sudo apt-get install g++-${{matrix.compiler.ver}}-${{matrix.platform.label}}
+    - name: Setup
+      run: |
+        sudo apt-get update
+        sudo apt-get install g++-${{matrix.compiler.ver}}-${{matrix.target.label}} qemu-user
 
     - name: Build Tools Information
       run: |
-        make --version; ${{matrix.platform.label}}-gcc-${{matrix.compiler.ver}} --version
+        make --version; ${{matrix.target.label}}-gcc-${{matrix.compiler.ver}} --version
 
     - name: Checkout
       uses: actions/checkout@v4
 
     - name: Run Make (and Check)
       run: |
-        QEMU_LD_PREFIX=/usr/${{matrix.platform.label}} \
+        QEMU_LD_PREFIX=/usr/${{matrix.target.label}} \
         make -j3 run \
-           GCC='${{matrix.platform.label}}-gcc-${{matrix.compiler.ver}}' \
-           GXX='${{matrix.platform.label}}-g++-${{matrix.compiler.ver}}' \
+           GCC='${{matrix.target.label}}-gcc-${{matrix.compiler.ver}}' \
+           GXX='${{matrix.target.label}}-g++-${{matrix.compiler.ver}}' \
            CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none' \
            MARCH=
-      #continue-on-error: true
-
-    #- run: ldd build/mnlexec
 
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
-        name: build-gcc-${{matrix.compiler.ver}}-${{matrix.platform.label}}
+        name: build-gcc-${{matrix.compiler.ver}}-${{matrix.target.label}}
         path: build
