@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        label: ["x86_64", "x86", "aarch64", "armhf", "ppc64le"]
+        label: [ "x86_64", "x86", "aarch64", "armhf", "ppc64le", "armv7" ]
     name: Build on Alpine Linux for ${{matrix.label}}
     runs-on: ubuntu-22.04
 
