@@ -97,7 +97,7 @@ jobs:
            MARCH='${{matrix.platform.flags}}'
       #continue-on-error: true
 
-    - run: ldd build/mnlexec
+    #- run: ldd build/mnlexec
 
     - name: Upload Results
       uses: actions/upload-artifact@v4
