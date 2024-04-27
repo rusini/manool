@@ -90,6 +90,7 @@ jobs:
 
     - name: Run Make
       run: |
+        export QEMU_LD_PREFIX=/usr/${{matrix.platform.label}}
         make -j3 \
            GCC='${{matrix.platform.label}}-gcc-${{matrix.compiler.ver}}' \
            GXX='${{matrix.platform.label}}-g++-${{matrix.compiler.ver}}' \
