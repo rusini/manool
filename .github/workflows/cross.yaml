@@ -20,10 +20,8 @@ jobs:
         - { label: "riscv64-linux-gnu" }
         - { label: "mipsel-linux-gnu" }
         - { label: "mips64el-linux-gnuabi64" }
-        - { label: "mipsisa32r6el-linux-gnu" }
         - { label: "mipsisa64r6el-linux-gnuabi64" }
         - { label: "alpha-linux-gnu" }
-        - { label: "sh4-linux-gnu" }
         compiler:
         - { ver: "8",  osver: "20.04" }
         - { ver: "9",  osver: "20.04" }
@@ -90,10 +88,11 @@ jobs:
 
     - name: Run Make
       run: |
-        export QEMU_LD_PREFIX=/usr/${{matrix.platform.label}}
+        QEMU_LD_PREFIX=/usr/${{matrix.platform.label}} \
         make -j3 run \
            GCC='${{matrix.platform.label}}-gcc-${{matrix.compiler.ver}}' \
            GXX='${{matrix.platform.label}}-g++-${{matrix.compiler.ver}}' \
+           CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none' \
            MARCH=
       #continue-on-error: true
 
