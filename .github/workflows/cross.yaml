@@ -41,12 +41,6 @@ jobs:
           compiler: { ver:   "11" }
         - platform: { label: "mips64el-linux-gnuabi64" }
           compiler: { ver:   "12" }
-        - platform: { label: "mipsisa32r6el-linux-gnu" }
-          compiler: { ver:   "8"  }
-        - platform: { label: "mipsisa32r6el-linux-gnu" }
-          compiler: { ver:   "11" }
-        - platform: { label: "mipsisa32r6el-linux-gnu" }
-          compiler: { ver:   "12" }
         - platform: { label: "mipsisa64r6el-linux-gnuabi64" }
           compiler: { ver:   "8"  }
         - platform: { label: "mipsisa64r6el-linux-gnuabi64" }
