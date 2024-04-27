@@ -14,15 +14,15 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-        - { label: "aarch64-linux-gnu",            flags: ""; dynlinker: "/lib/ld-linux-aarch64.so.1" }
+        - { label: "aarch64-linux-gnu",            flags: "" }
         - { label: "arm-linux-gnueabihf",          flags: "" }
         - { label: "powerpc64le-linux-gnu",        flags: "" }
         - { label: "powerpc-linux-gnu",            flags: "-mlittle-endian" }
         - { label: "riscv64-linux-gnu",            flags: "" }
-        - { label: "mipsel-linux-gnu",             flags: "" } # up to 10
-        - { label: "mips64el-linux-gnuabi64",      flags: "" } # up to 10
-        - { label: "mipsisa32r6el-linux-gnu",      flags: "" } # up to 10
-        - { label: "mipsisa64r6el-linux-gnuabi64", flags: "" } # up to 10
+        - { label: "mipsel-linux-gnu",             flags: "" }
+        - { label: "mips64el-linux-gnuabi64",      flags: "" }
+        - { label: "mipsisa32r6el-linux-gnu",      flags: "" }
+        - { label: "mipsisa64r6el-linux-gnuabi64", flags: "" }
         - { label: "alpha-linux-gnu",              flags: "" }
         - { label: "sh4-linux-gnu",                flags: "" }
         compiler:
@@ -31,6 +31,31 @@ jobs:
         - { ver: "10", osver: "22.04" }
         - { ver: "11", osver: "22.04" }
         - { ver: "12", osver: "22.04" }
+        exclude:
+        - platform: { label: "mipsel-linux-gnu" }
+          compiler: { ver:   "9"  }
+        - platform: { label: "mipsel-linux-gnu" }
+          compiler: { ver:   "11" }
+        - platform: { label: "mipsel-linux-gnu" }
+          compiler: { ver:   "12" }
+        - platform: { label: "mips64el-linux-gnu" }
+          compiler: { ver:   "9"  }
+        - platform: { label: "mips64el-linux-gnu" }
+          compiler: { ver:   "11" }
+        - platform: { label: "mips64el-linux-gnu" }
+          compiler: { ver:   "12" }
+        - platform: { label: "mipsisa32r6el-linux-gnu" }
+          compiler: { ver:   "9"  }
+        - platform: { label: "mipsisa32r6el-linux-gnu" }
+          compiler: { ver:   "11" }
+        - platform: { label: "mipsisa32r6el-linux-gnu" }
+          compiler: { ver:   "12" }
+        - platform: { label: "mipsisa64r6el-linux-gnu" }
+          compiler: { ver:   "9"  }
+        - platform: { label: "mipsisa64r6el-linux-gnu" }
+          compiler: { ver:   "11" }
+        - platform: { label: "mipsisa64r6el-linux-gnu" }
+          compiler: { ver:   "12" }
     name: Build with ${{matrix.platform.label}}-gcc-${{matrix.compiler.ver}}
     runs-on: ubuntu-${{matrix.compiler.osver}}
 
