@@ -66,6 +66,8 @@ jobs:
       run: |
         tty || :; id; printf %s\\n "$SHELL"; printf %s\\n "$PATH"; pwd
 
+    - run: ps -eH --sort pid -o pid,user:12,group:12,comm:24,rsz,vsz,thcount,bsdstart,state,tname
+
     - name: Update Package DB
       run: sudo apt-get update
     - name: Install QEMU
