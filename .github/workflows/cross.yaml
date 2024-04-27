@@ -69,7 +69,7 @@ jobs:
     - name: Update Package DB
       run: sudo apt-get update
     - name: Install QEMU
-      run: sudo apt-get install qemu-user-static
+      run: sudo apt-get install qemu-user
     - name: Install GCC
       run: sudo apt-get install g++-${{matrix.compiler.ver}}-${{matrix.platform.label}}
 
