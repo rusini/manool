@@ -88,6 +88,10 @@ jobs:
            CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none' \
            MARCH=
 
+    - run: |
+        QEMU_LD_PREFIX=/usr/${{matrix.target.label}} \
+        ./mnl <(echo '{{extern "manool.org.18/std/0.6/all"} in Out.WriteLine[Pi]}')
+
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
