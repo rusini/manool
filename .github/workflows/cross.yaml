@@ -1,0 +1,81 @@
+# .github/workflows/cross.yaml
+
+name: Cross-Build
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [ test ]
+
+  build:
+
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler:
+        - { ver: "8",  osver: "20.04" }
+        - { ver: "9",  osver: "20.04" }
+        - { ver: "10", osver: "22.04" }
+        - { ver: "11", osver: "22.04" }
+        - { ver: "12", osver: "22.04" }
+        - { ver: "13", osver: "22.04" }
+        platform:
+        - { label: "aarch64-linux-gnu",            flags: "" }
+        - { label: "arm-linux-gnueabihf",          flags: "" }
+        - { label: "powerpc64le-linux-gnu",        flags: "" }
+        - { label: "powerpc-linux-gnu",            flags: "-mlittle-endian" }
+        - { label: "riscv64-linux-gnu",            flags: "" }
+        - { label: "mipsel-linux-gnu",             flags: "" }
+        - { label: "mips64el-linux-gnuabi64",      flags: "" }
+        - { label: "mipsisa32r6el-linux-gnu",      flags: "" }
+        - { label: "mipsisa64r6el-linux-gnuabi64", flags: "" }
+        - { label: "alpha-linux-gnu",              flags: "" }
+        - { label: "sh4-linux-gnu",                flags: "" }
+    name: Build with ${{matrix.platform.label}}-gcc-${{matrix.compiler.ver}}
+    runs-on: ubuntu-${{matrix.compiler.osver}}
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+
+    - name: Machine Information
+      run: |
+        lscpu; free -h; df -h .
+    - name: System Information
+      run: |
+        date; uname -a; uptime; cat /etc/os-release; ls -C /boot || :
+    - name: Context Information
+      run: |
+        tty || :; id; printf %s\\n "$SHELL"; printf %s\\n "$PATH"; pwd
+
+    - name: Update Package DB
+      run: sudo apt-get update
+    - name: Install QEMU
+      run: sudo apt-get install qemu-user-static
+    - name: Install GCC
+      run: sudo apt-get install g++-${{matrix.compiler.ver}}-${{matrix.platform.label}}
+
+    - name: Build Tools Information
+      run: |
+        make --version; ${{matrix.platform.label}}-gcc-${{matrix.compiler.ver}} --version
+
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Run Make
+      run: |
+        make -j3 run \
+           GCC='${{matrix.platform.label}}-gcc-${{matrix.compiler.ver}}' \
+           GXX='${{matrix.platform.label}}-g++-${{matrix.compiler.ver}}' \
+           MARCH='${{matrix.platform.flags}}'
+      #continue-on-error: true
+
+    - run: ldd build/mnlexec
+
+    - name: Upload Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-gcc-${{matrix.compiler.ver}}-${{matrix.platform.label}}
+        path: build
