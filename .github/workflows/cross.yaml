@@ -80,7 +80,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Run Make
+    - name: Run Make (and Check)
       run: |
         QEMU_LD_PREFIX=/usr/${{matrix.platform.label}} \
         make -j3 run \
