@@ -14,17 +14,16 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-        - { label: "aarch64-linux-gnu",            flags: "" }
-        - { label: "arm-linux-gnueabihf",          flags: "" }
-        - { label: "powerpc64le-linux-gnu",        flags: "" }
-        - { label: "powerpc-linux-gnu",            flags: "-mlittle-endian" }
-        - { label: "riscv64-linux-gnu",            flags: "" }
-        - { label: "mipsel-linux-gnu",             flags: "" }
-        - { label: "mips64el-linux-gnuabi64",      flags: "" }
-        - { label: "mipsisa32r6el-linux-gnu",      flags: "" }
-        - { label: "mipsisa64r6el-linux-gnuabi64", flags: "" }
-        - { label: "alpha-linux-gnu",              flags: "" }
-        - { label: "sh4-linux-gnu",                flags: "" }
+        - { label: "aarch64-linux-gnu" }
+        - { label: "arm-linux-gnueabihf" }
+        - { label: "powerpc64le-linux-gnu" }
+        - { label: "riscv64-linux-gnu" }
+        - { label: "mipsel-linux-gnu" }
+        - { label: "mips64el-linux-gnuabi64" }
+        - { label: "mipsisa32r6el-linux-gnu" }
+        - { label: "mipsisa64r6el-linux-gnuabi64" }
+        - { label: "alpha-linux-gnu" }
+        - { label: "sh4-linux-gnu" }
         compiler:
         - { ver: "8",  osver: "20.04" }
         - { ver: "9",  osver: "20.04" }
@@ -94,7 +93,7 @@ jobs:
         make -j3 \
            GCC='${{matrix.platform.label}}-gcc-${{matrix.compiler.ver}}' \
            GXX='${{matrix.platform.label}}-g++-${{matrix.compiler.ver}}' \
-           MARCH='${{matrix.platform.flags}}'
+           MARCH=
       #continue-on-error: true
 
     #- run: ldd build/mnlexec
