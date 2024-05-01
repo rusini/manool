@@ -72,7 +72,7 @@ jobs:
     - name: Build Tools Information
       run: |
         sudo chroot /srv/alpine su - <<'END'
-           make --version; gcc --version
+           make --version; ${{matrix.compiler.GCC}} --version
         END
 
     - name: Checkout
