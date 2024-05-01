@@ -22,7 +22,7 @@ jobs:
         - { apk: "clang15", GCC: "clang-15", GXX: "clang++-15" }
         - { apk: "clang16", GCC: "clang-16", GXX: "clang++-16" }
         - { apk: "clang17", GCC: "clang-17", GXX: "clang++-17" }
-    name: Build on Alpine Linux for ${{matrix.target}} with ${{matrix.compiler.apk}}
+    name: Build on Alpine Linux for ${{matrix.target}} with ${{matrix.compiler.GCC}}
     runs-on: ubuntu-22.04
 
     defaults:
@@ -91,5 +91,5 @@ jobs:
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
-        name: build-${{matrix.label}}
+        name: build-${{matrix.target}}-${{matrix.compiler.GCC}}
         path: build
