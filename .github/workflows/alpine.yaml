@@ -46,6 +46,7 @@ jobs:
         set -x
         sudo apt-get update
         sudo apt-get install qemu-user-static
+
     - name: Setup Alpine Linux Chroot
       run: |
 
@@ -56,13 +57,13 @@ jobs:
         sudo cp -L /etc/resolv.conf /srv/alpine/etc
 
         sudo chroot /srv/alpine su - <<'END'
-           uname -a && pwd && printf %s\\n "$PATH"
-        END
-
-        sudo chroot /srv/alpine su - <<'END'
            set -x; addgroup -g127 docker && adduser -D -u1001 -Gdocker -s/bin/ash runner && delgroup runner docker
         END
         (set -x; sudo mount --rbind . /srv/alpine/home/runner)
+
+        sudo chroot /srv/alpine su - runner <<'END'
+           uname -a && printf %s\\n "$SHELL"; printf %s\\n "$PATH" && pwd
+        END
 
         sudo chroot /srv/alpine su - <<'END'
            apk update && apk add ${{matrix.compiler.apk}} libc-dev make
@@ -70,7 +71,7 @@ jobs:
 
     - name: Build Tools Information
       run: |
-        sudo chroot /srv/alpine su - <<'END'
+        sudo chroot /srv/alpine su - runner <<'END'
            make --version; ${{matrix.compiler.GCC}} --version
         END
 
