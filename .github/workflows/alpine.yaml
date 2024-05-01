@@ -65,7 +65,7 @@ jobs:
         (set -x; sudo mount --rbind . /srv/alpine/home/runner)
 
         sudo chroot /srv/alpine su - <<'END'
-           apk update && apk add ${{matrix.compiler.apk}} make
+           apk update && apk add ${{matrix.compiler.apk}} libc-dev make
         END
 
     - name: Build Tools Information
