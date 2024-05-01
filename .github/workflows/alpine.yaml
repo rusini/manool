@@ -13,7 +13,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [ "x86_64", "x86", "aarch64", "armhf", "ppc64le", "armv7" ]
+        target: [
+          "x86_64", "x86", "aarch64", "armhf", "ppc64le", "armv7"
+        ]
         compiler:
         - { apk: "g++",     GCC: "gcc",      GXX: "g++"        }
         - { apk: "clang14", GCC: "clang-14", GXX: "clang++-14" }
