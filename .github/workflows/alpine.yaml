@@ -1,6 +1,6 @@
 # .github/workflows/alpine.yaml
 
-name: Build on Alpine
+name: Build on Alpine Linux
 
 on:
   workflow_dispatch: {}
