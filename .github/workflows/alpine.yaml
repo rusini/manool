@@ -13,8 +13,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        label: [ "x86_64", "x86", "aarch64", "armhf", "ppc64le", "armv7" ]
-    name: Build on Alpine Linux for ${{matrix.label}}
+        target: [
+          "x86_64", "x86", "aarch64", "armhf", "ppc64le", "armv7"
+        ]
+        compiler:
+        - { apk: "g++";     GCC: "gcc";      GXX: "g++"        }
+        - { apk: "clang14"; GCC: "clang-14"; GXX: "clang++-14" }
+        - { apk: "clang15"; GCC: "clang-15"; GXX: "clang++-15" }
+        - { apk: "clang16"; GCC: "clang-16"; GXX: "clang++-16" }
+        - { apk: "clang17"; GCC: "clang-17"; GXX: "clang++-17" }
+    name: Build on Alpine Linux for ${{matrix.target}} with ${{matrix.compiler.apk}}
     runs-on: ubuntu-22.04
 
     defaults:
@@ -57,7 +65,7 @@ jobs:
         (set -x; sudo mount --rbind . /srv/alpine/home/runner)
 
         sudo chroot /srv/alpine su - <<'END'
-           apk update && apk add g++ make
+           apk update && apk add ${{matrix.compiler.apk}} make
         END
 
     - name: Build Tools Information
@@ -72,7 +80,7 @@ jobs:
     - name: Run Make (and Check)
       run: |
         sudo chroot /srv/alpine su - runner <<'END'
-           make -j3 MARCH= CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none' run
+           make -j3 MARCH= CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none' GCC='${{matrix.compiler.GCC}}' GXX='${{matrix.compiler.GXX}}' run
         END
 
     - name: Upload Results
