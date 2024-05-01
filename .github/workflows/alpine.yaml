@@ -49,7 +49,7 @@ jobs:
     - name: Setup Alpine Linux
       run: |
 
-        wget -q -O- https://dl-cdn.alpinelinux.org/alpine/v3.19/releases/${{matrix.label}}/alpine-minirootfs-3.19.1-${{matrix.label}}.tar.gz |
+        wget -q -O- https://dl-cdn.alpinelinux.org/alpine/v3.19/releases/${{matrix.target}}/alpine-minirootfs-3.19.1-${{matrix.target}}.tar.gz |
            (sudo mkdir /srv/alpine && sudo tar xz -C /srv/alpine)
         (for d in dev proc sys; do sudo mount --rbind -o ro {,/srv/alpine}/"$d"; done)
         (for d in run tmp; do sudo mount {-t,}tmpfs /srv/alpine/"$d"; done)
