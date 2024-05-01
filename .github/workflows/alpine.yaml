@@ -41,12 +41,13 @@ jobs:
       run: |
         tty || :; id; printf %s\\n "$SHELL"; printf %s\\n "$PATH"; pwd
 
-    - name: Update Package DB
-      run: sudo apt-get update
-    - name: Install QEMU
-      run: sudo apt-get install qemu-user-static
+    - name: Setup Host System
+      run: |
+        set -x
+        sudo apt-get update
+        sudo apt-get install qemu-user-static
 
-    - name: Setup Alpine Linux
+    - name: Setup Alpine Linux Chroot
       run: |
 
         wget -q -O- https://dl-cdn.alpinelinux.org/alpine/v3.19/releases/${{matrix.target}}/alpine-minirootfs-3.19.1-${{matrix.target}}.tar.gz |
@@ -80,7 +81,11 @@ jobs:
     - name: Run Make (and Check)
       run: |
         sudo chroot /srv/alpine su - runner <<'END'
-           make -j3 MARCH= CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none' GCC='${{matrix.compiler.GCC}}' GXX='${{matrix.compiler.GXX}}' run
+           make -j3 run \
+              CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none' \
+              GCC='${{matrix.compiler.GCC}}' \
+              GXX='${{matrix.compiler.GXX}}' \
+              MARCH=
         END
 
     - name: Upload Results
