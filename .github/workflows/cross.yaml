@@ -1,6 +1,6 @@
 # .github/workflows/cross.yaml
 
-name: Cross-Build
+name: Cross-Building
 
 on:
   workflow_dispatch: {}

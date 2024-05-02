@@ -8,8 +8,8 @@ on:
     branches: [ test ]
 
 jobs:
-
   build:
+
     strategy:
       fail-fast: false
       matrix:
@@ -82,9 +82,9 @@ jobs:
       run: |
         sudo chroot /srv/alpine su - runner <<'END'
            make -j3 run \
-              CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none' \
               GCC='${{matrix.compiler.GCC}}' \
               GXX='${{matrix.compiler.GXX}}' \
+              CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none' \
               MARCH=
         END
 
