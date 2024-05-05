@@ -5,7 +5,7 @@ name: Cross-Building
 on:
   workflow_dispatch: {}
   push:
-    branches: [ test ]
+    branches: [ "test" ]
 
 jobs:
   build:
@@ -13,15 +13,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target:
-        - { label: "aarch64-linux-gnu" }
-        - { label: "arm-linux-gnueabihf" }
-        - { label: "powerpc64le-linux-gnu" }
-        - { label: "riscv64-linux-gnu" }
-        - { label: "mipsel-linux-gnu" }
-        - { label: "mips64el-linux-gnuabi64" }
-        - { label: "mipsisa64r6el-linux-gnuabi64" }
-        - { label: "alpha-linux-gnu" }
+        target: [
+          "aarch64-linux-gnu", "arm-linux-gnueabihf",
+          "powerpc64le-linux-gnu",
+          "riscv64-linux-gnu",
+          "mipsel-linux-gnu", "mips64el-linux-gnuabi64", "mipsisa64r6el-linux-gnuabi64",
+          "alpha-linux-gnu"
+        ]
         compiler:
         - { ver: "8",  osver: "20.04" }
         - { ver: "9",  osver: "20.04" }
@@ -29,25 +27,25 @@ jobs:
         - { ver: "11", osver: "22.04" }
         - { ver: "12", osver: "22.04" }
         exclude:
-        - target:   { label: "mipsel-linux-gnu" }
+        - target:   "mipsel-linux-gnu"
           compiler: { ver:   "8"  }
-        - target:   { label: "mipsel-linux-gnu" }
+        - target:   "mipsel-linux-gnu"
           compiler: { ver:   "11" }
-        - target:   { label: "mipsel-linux-gnu" }
+        - target:   "mipsel-linux-gnu"
           compiler: { ver:   "12" }
-        - target:   { label: "mips64el-linux-gnuabi64" }
+        - target:   "mips64el-linux-gnuabi64"
           compiler: { ver:   "8"  }
-        - target:   { label: "mips64el-linux-gnuabi64" }
+        - target:   "mips64el-linux-gnuabi64"
           compiler: { ver:   "11" }
-        - target:   { label: "mips64el-linux-gnuabi64" }
+        - target:   "mips64el-linux-gnuabi64"
           compiler: { ver:   "12" }
-        - target:   { label: "mipsisa64r6el-linux-gnuabi64" }
+        - target:   "mipsisa64r6el-linux-gnuabi64"
           compiler: { ver:   "8"  }
-        - target:   { label: "mipsisa64r6el-linux-gnuabi64" }
+        - target:   "mipsisa64r6el-linux-gnuabi64"
           compiler: { ver:   "11" }
-        - target:   { label: "mipsisa64r6el-linux-gnuabi64" }
+        - target:   "mipsisa64r6el-linux-gnuabi64"
           compiler: { ver:   "12" }
-    name: Build with ${{matrix.target.label}}-gcc-${{matrix.compiler.ver}}
+    name: Build with ${{matrix.target}}-gcc-${{matrix.compiler.ver}}
     runs-on: ubuntu-${{matrix.compiler.osver}}
 
     defaults:
@@ -70,30 +68,26 @@ jobs:
       run: |
         set -x
         sudo apt-get update
-        sudo apt-get install g++-${{matrix.compiler.ver}}-${{matrix.target.label}} qemu-user
+        sudo apt-get install g++-${{matrix.compiler.ver}}-${{matrix.target}} qemu-user
 
     - name: Build Tools Information
       run: |
-        make --version; ${{matrix.target.label}}-gcc-${{matrix.compiler.ver}} --version
+        make --version; ${{matrix.target}}-gcc-${{matrix.compiler.ver}} --version
 
     - name: Checkout
       uses: actions/checkout@v4
 
     - name: Run Make (and Check)
       run: |
-        QEMU_LD_PREFIX=/usr/${{matrix.target.label}} \
+        QEMU_LD_PREFIX=/usr/${{matrix.target}} \
         make -j3 run \
-           GCC='${{matrix.target.label}}-gcc-${{matrix.compiler.ver}}' \
-           GXX='${{matrix.target.label}}-g++-${{matrix.compiler.ver}}' \
+           GCC='${{matrix.target}}-gcc-${{matrix.compiler.ver}}' \
+           GXX='${{matrix.target}}-g++-${{matrix.compiler.ver}}' \
            CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none' \
            MARCH=
-
-    - run: |
-        QEMU_LD_PREFIX=/usr/${{matrix.target.label}} \
-        ./mnl <(echo '{{extern "manool.org.18/std/0.6/all"} in Out.WriteLine[Acos[F64[(~1)$]] " " Acos[F32[(~1)$]]]}')
 
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
-        name: build-gcc-${{matrix.compiler.ver}}-${{matrix.target.label}}
+        name: build-gcc-${{matrix.compiler.ver}}-${{matrix.target}}
         path: build

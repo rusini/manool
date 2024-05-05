@@ -5,7 +5,7 @@ name: Build on Alpine Linux (Chroot)
 on:
   workflow_dispatch: {}
   push:
-    branches: [ test ]
+    branches: [ "test" ]
 
 jobs:
   build:
