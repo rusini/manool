@@ -3,7 +3,7 @@
 name: Cross-Building
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
   push:
     branches: [ "test" ]
 
@@ -28,23 +28,23 @@ jobs:
         - { ver: "12", osver: "22.04" }
         exclude:
         - target:   "mipsel-linux-gnu"
-          compiler: { ver:   "8"  }
+          compiler: { ver: "8"  }
         - target:   "mipsel-linux-gnu"
-          compiler: { ver:   "11" }
+          compiler: { ver: "11" }
         - target:   "mipsel-linux-gnu"
-          compiler: { ver:   "12" }
+          compiler: { ver: "12" }
         - target:   "mips64el-linux-gnuabi64"
-          compiler: { ver:   "8"  }
+          compiler: { ver: "8"  }
         - target:   "mips64el-linux-gnuabi64"
-          compiler: { ver:   "11" }
+          compiler: { ver: "11" }
         - target:   "mips64el-linux-gnuabi64"
-          compiler: { ver:   "12" }
+          compiler: { ver: "12" }
         - target:   "mipsisa64r6el-linux-gnuabi64"
-          compiler: { ver:   "8"  }
+          compiler: { ver: "8"  }
         - target:   "mipsisa64r6el-linux-gnuabi64"
-          compiler: { ver:   "11" }
+          compiler: { ver: "11" }
         - target:   "mipsisa64r6el-linux-gnuabi64"
-          compiler: { ver:   "12" }
+          compiler: { ver: "12" }
     name: Build with ${{matrix.target}}-gcc-${{matrix.compiler.ver}}
     runs-on: ubuntu-${{matrix.compiler.osver}}
 
