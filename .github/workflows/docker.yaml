@@ -44,17 +44,16 @@ jobs:
 
     - name: Build Tools Information
       run: |
-        make --version; ${{matrix.target}}-gcc-${{matrix.compiler.ver}} --version
+        make --version; gcc --version
 
     - name: Checkout
       uses: actions/checkout@v4
 
     - name: Run Make (and Check)
       run: |
-        QEMU_LD_PREFIX=/usr/${{matrix.target}} \
         make -j3 run \
-           GCC='${{matrix.target}}-gcc-${{matrix.compiler.ver}}' \
-           GXX='${{matrix.target}}-g++-${{matrix.compiler.ver}}' \
+           GCC='gcc' \
+           GXX='g++' \
            CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none' \
            MARCH=
 
