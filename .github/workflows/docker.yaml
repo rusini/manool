@@ -1,0 +1,65 @@
+# .github/workflows/docker.yaml
+
+name: Building in Containers
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "test" ]
+
+jobs:
+  build:
+
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [
+          "node:10.16-jessie"
+        ]
+    name: Build under ${{matrix.target}}
+    runs-on: ubuntu-22.04
+    container: ${{matrix.target}}
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+
+    - name: Machine Information
+      run: |
+        lscpu; free -h; df -h .
+    - name: System Information
+      run: |
+        date; uname -a; uptime; cat /etc/os-release; ls -C /boot || :
+    - name: Context Information
+      run: |
+        tty || :; id; printf %s\\n "$SHELL"; printf %s\\n "$PATH"; pwd
+
+    #- name: Setup
+    #  run: |
+    #    set -x
+    #    sudo apt-get update
+    #    sudo apt-get install g++-${{matrix.compiler.ver}}-${{matrix.target}} qemu-user
+
+    - name: Build Tools Information
+      run: |
+        make --version; ${{matrix.target}}-gcc-${{matrix.compiler.ver}} --version
+
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Run Make (and Check)
+      run: |
+        QEMU_LD_PREFIX=/usr/${{matrix.target}} \
+        make -j3 run \
+           GCC='${{matrix.target}}-gcc-${{matrix.compiler.ver}}' \
+           GXX='${{matrix.target}}-g++-${{matrix.compiler.ver}}' \
+           CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none' \
+           MARCH=
+
+    - name: Upload Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-${{matrix.target}}
+        path: build
