@@ -47,7 +47,7 @@ jobs:
     #    sudo apt-get update
     #    sudo apt-get install g++-${{matrix.compiler.ver}}-${{matrix.target}} qemu-user
 
-    - run: zypper install -y make gcc-c++
+    - run: zypper install -y make gcc-c++ tar
 
     - name: Build Tools Information
       run: |
