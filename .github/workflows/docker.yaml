@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         target: [
-          "debian:unstable"
+          "debian:stable"
         ]
     name: Build under ${{matrix.target}}
     runs-on: ubuntu-22.04
