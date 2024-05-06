@@ -45,7 +45,7 @@ jobs:
     #    sudo apt-get update
     #    sudo apt-get install g++-${{matrix.compiler.ver}}-${{matrix.target}} qemu-user
 
-    - run: dnf install make g++
+    - run: dnf -y install make g++
 
     - name: Build Tools Information
       run: |
