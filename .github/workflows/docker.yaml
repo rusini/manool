@@ -26,6 +26,8 @@ jobs:
 
     steps:
 
+    - run: dnf -y install procps-ng
+
     - name: Machine Information
       run: |
         lscpu; free -h; df -h .
