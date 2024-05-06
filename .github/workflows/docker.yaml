@@ -62,7 +62,7 @@ jobs:
         make -j3 run \
            GCC='gcc' \
            GXX='g++' \
-           CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none' \
+           CFLAGS='-Wno-psabi -O3 -fno-stack-protector' \
            MARCH=
 
     - name: Upload Results
