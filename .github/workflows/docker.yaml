@@ -14,11 +14,11 @@ jobs:
       fail-fast: false
       matrix:
         target: [
-          "opensuse/leap"
+          "debian:unstable"
         ]
     name: Build under ${{matrix.target}}
     runs-on: ubuntu-22.04
-    container: ${{matrix.target}}:42.3
+    container: ${{matrix.target}}
 
     defaults:
       run:
@@ -26,7 +26,7 @@ jobs:
 
     steps:
 
-    - run: zypper install -y procps
+    - run: apt-get update; apt-get -y install procps
 
     - name: Machine Information
       run: |
@@ -47,7 +47,7 @@ jobs:
     #    sudo apt-get update
     #    sudo apt-get install g++-${{matrix.compiler.ver}}-${{matrix.target}} qemu-user
 
-    - run: zypper install -y make gcc-c++ tar gzip
+    - run: apt-get -y install make g++
 
     - name: Build Tools Information
       run: |
@@ -62,7 +62,7 @@ jobs:
         make -j3 run \
            GCC='gcc' \
            GXX='g++' \
-           CFLAGS='-Wno-psabi -O3 -fno-stack-protector' \
+           CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none' \
            MARCH=
 
     - name: Upload Results
