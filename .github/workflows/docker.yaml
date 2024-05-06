@@ -29,12 +29,15 @@ jobs:
     - name: Machine Information
       run: |
         lscpu; free -h; df -h .
+      continue-on-error: true
     - name: System Information
       run: |
         date; uname -a; uptime; cat /etc/os-release; ls -C /boot || :
+      continue-on-error: true
     - name: Context Information
       run: |
         tty || :; id; printf %s\\n "$SHELL"; printf %s\\n "$PATH"; pwd
+      continue-on-error: true
 
     #- name: Setup
     #  run: |
@@ -45,6 +48,7 @@ jobs:
     - name: Build Tools Information
       run: |
         make --version; gcc --version
+      continue-on-error: true
 
     - name: Checkout
       uses: actions/checkout@v4
