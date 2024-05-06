@@ -26,7 +26,7 @@ jobs:
 
     steps:
 
-    - run: apt-get update; apt-get install procps
+    - run: apt-get update; apt-get -y install procps
 
     - name: Machine Information
       run: |
@@ -47,7 +47,7 @@ jobs:
     #    sudo apt-get update
     #    sudo apt-get install g++-${{matrix.compiler.ver}}-${{matrix.target}} qemu-user
 
-    - run: apt-get install make g++
+    - run: apt-get -y install make g++
 
     - name: Build Tools Information
       run: |
