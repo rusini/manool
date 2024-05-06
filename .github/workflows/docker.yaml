@@ -26,7 +26,7 @@ jobs:
 
     steps:
 
-    - run: apt-get install procps
+    - run: apt-get update; apt-get install procps
 
     - name: Machine Information
       run: |
