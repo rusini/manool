@@ -15,7 +15,7 @@ jobs:
       matrix:
         target:
         - { label: "debian", os: "debian",
-          preinstall: "sudo apt-get update; apt-get -y install procps", install: "sudo apt-get -y install make g++" }
+          preinstall: "apt-get update; apt-get -y install procps", install: "apt-get -y install make g++" }
         - { label: "rhel",   os: "almalinux",
           preinstall: "sudo dnf -y install procps-ng",                  install: "sudo dnf -y install make g++" }
         - { label: "suse",   os: "opensuse/tumbleweed",
