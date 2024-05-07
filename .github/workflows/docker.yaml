@@ -1,6 +1,6 @@
 # .github/workflows/docker.yaml
 
-name: Building in Containers
+name: Build in Docker Containers
 
 on:
   workflow_dispatch:
@@ -13,12 +13,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [
-          "debian"
-        ]
-    name: Build under ${{matrix.target}}
+        target:
+        - { label: "debian", os: "debian",
+          preinstall: "sudo apt-get update; apt-get -y install procps", install: "sudo apt-get -y install make g++" }
+        - { label: "rhel",   os: "almalinux",
+          preinstall: "sudo dnf -y install procps-ng",                  install: "sudo dnf -y install make g++" }
+        - { label: "suse",   os: "opensuse/tumbleweed",
+          preinstall: "sudo zypper install -y procps tar unzip",        install: "sudo zypper install -y make gcc-g++" }
+    name: Build under ${{matrix.target.os}}
     runs-on: ubuntu-22.04
-    container: ${{matrix.target}}
+    container: ${{matrix.target.os}}
 
     defaults:
       run:
@@ -26,33 +30,25 @@ jobs:
 
     steps:
 
-    - run: apt-get update; apt-get -y install procps
+    - name: Pre-Setup
+      run: ${{matrix.target.preinstall}}
 
     - name: Machine Information
       run: |
         lscpu; free -h; df -h .
-      continue-on-error: true
     - name: System Information
       run: |
         date; uname -a; uptime; cat /etc/os-release; ls -C /boot || :
-      continue-on-error: true
     - name: Context Information
       run: |
         tty || :; id; printf %s\\n "$SHELL"; printf %s\\n "$PATH"; pwd
-      continue-on-error: true
 
-    #- name: Setup
-    #  run: |
-    #    set -x
-    #    sudo apt-get update
-    #    sudo apt-get install g++-${{matrix.compiler.ver}}-${{matrix.target}} qemu-user
-
-    - run: apt-get -y install make g++
+    - name: Setup
+      run: ${{matrix.target.install}}
 
     - name: Build Tools Information
       run: |
         make --version; gcc --version
-      continue-on-error: true
 
     - name: Checkout
       uses: actions/checkout@v4
@@ -68,5 +64,5 @@ jobs:
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
-        name: build-${{matrix.target}}
+        name: build-${{matrix.target.label}}
         path: build
