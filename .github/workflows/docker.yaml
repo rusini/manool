@@ -16,7 +16,7 @@ jobs:
         target:
         - { label: "debian", os: "debian",              preinstall: "apt-get update; apt-get -y install procps", install: "apt-get -y install make g++" }
         - { label: "rhel",   os: "almalinux",           preinstall: "dnf -y install procps-ng",                  install: "dnf -y install make g++" }
-        - { label: "suse",   os: "opensuse/tumbleweed", preinstall: "sudo zypper install -y procps tar unzip",   install: "sudo zypper install -y make gcc-g++" }
+        - { label: "suse",   os: "opensuse/tumbleweed", preinstall: "zypper install -y procps tar unzip",        install: "zypper install -y make gcc-g++" }
     name: Build under ${{matrix.target.os}}
     runs-on: ubuntu-22.04
     container: ${{matrix.target.os}}
@@ -35,7 +35,7 @@ jobs:
         lscpu; free -h; df -h .
     - name: System Information
       run: |
-        date; uname -a; uptime; cat /etc/os-release; ls -C /boot || :
+        date; uname -a; uptime; cat /etc/os-release
     - name: Context Information
       run: |
         tty || :; id; printf %s\\n "$SHELL"; printf %s\\n "$PATH"; pwd
