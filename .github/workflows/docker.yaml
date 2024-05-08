@@ -28,7 +28,7 @@ jobs:
     steps:
 
     - name: Pre-Setup
-      run: ${{matrix.target.preinstall}}
+      run: ${{matrix.target.preinstall}}; rpm -ql procps
 
     - name: Machine Information
       run: |
