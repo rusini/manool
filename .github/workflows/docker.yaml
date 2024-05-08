@@ -28,14 +28,14 @@ jobs:
     steps:
 
     - name: Pre-Setup
-      run: ${{matrix.target.preinstall}}; rpm -ql procps-ng
+      run: ${{matrix.target.preinstall}}
 
     - name: Machine Information
       run: |
         lscpu; free -h; df -h .
     - name: System Information
       run: |
-        date; uname -a; uptime; cat /etc/os-release
+        date; uname -a; w | head -1; cat /etc/os-release
     - name: Context Information
       run: |
         tty || :; id; printf %s\\n "$SHELL"; printf %s\\n "$PATH"; pwd
