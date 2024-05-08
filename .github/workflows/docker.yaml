@@ -16,7 +16,8 @@ jobs:
         target:
         - { label: "debian", os: "debian",              preinstall: "apt-get update; apt-get -y install procps", install: "apt-get -y install make g++" }
         - { label: "rhel",   os: "almalinux",           preinstall: "dnf -y install procps-ng",                  install: "dnf -y install make g++" }
-        - { label: "suse",   os: "opensuse/tumbleweed", preinstall: "",        install: "zypper install -y make gcc-c++" }
+        - { label: "suse",   os: "opensuse/tumbleweed", preinstall: "",                                          install: "zypper install -y make gcc-c++" }
+        - { label: "arch",   os: "archlinux",           preinstall: "pacman -Syu",                               install: "pacman -S gcc" }
     name: Build under ${{matrix.target.os}}
     runs-on: ubuntu-22.04
     container: ${{matrix.target.os}}
