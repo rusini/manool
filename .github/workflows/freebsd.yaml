@@ -1,0 +1,52 @@
+# .github/workflows/cross.yaml
+
+name: Build on a FreeBSD VM
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "test" ]
+
+jobs:
+  build:
+
+    name: Build
+    runs-on: ubuntu-22.04
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+
+    - name: Machine Information
+      run: |
+        lscpu; free -h; df -h .
+    - name: System Information
+      run: |
+        date; uname -a; uptime; cat /etc/os-release; ls -C /boot || :
+    - name: Context Information
+      run: |
+        tty || :; id; printf %s\\n "$SHELL"; printf %s\\n "$PATH"; pwd
+
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Test in FreeBSD
+      uses: vmactions/freebsd-vm@v1
+      with:
+        usesh: true
+        prepare: |
+          pkg install -y curl
+        run: |
+          pwd
+          ls -lah
+          whoami
+          env
+          freebsd-version
+
+    - name: Upload Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-gcc-${{matrix.compiler.ver}}-${{matrix.target}}
+        path: build
