@@ -32,8 +32,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Test in FreeBSD
-      id: test
+    - name: Build under FreeBSD
       uses: vmactions/freebsd-vm@v1
       with:
         usesh: true
