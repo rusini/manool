@@ -38,13 +38,16 @@ jobs:
       with:
         usesh: true
         prepare: |
+          set -x
           freebsd-version
           pkg install -y gmake
+          gmake --version
+          clang++ --version
         run: |
+          set -x
           whoami
           pwd
           ls -lah
-          clang++ --version
 
     - name: Upload Results
       uses: actions/upload-artifact@v4
