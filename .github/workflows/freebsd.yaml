@@ -32,18 +32,20 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    #- name: Test in FreeBSD
-    #  uses: vmactions/freebsd-vm@v1
-    #  with:
-    #    usesh: true
-    #    prepare: |
-    #      pkg install -y curl
-    #    run: |
-    #      pwd
-    #      ls -lah
-    #      whoami
-    #      env
-    #      freebsd-version
+    - name: Test in FreeBSD
+      id: test
+      uses: vmactions/freebsd-vm@v1
+      with:
+        envs: 'FOO BAR'
+        usesh: true
+        prepare: |
+          pkg install -y curl
+        run: |
+          pwd
+          ls -lah
+          whoami
+          env
+          freebsd-version
 
     - name: Upload Results
       uses: actions/upload-artifact@v4
