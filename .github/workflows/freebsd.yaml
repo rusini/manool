@@ -36,16 +36,15 @@ jobs:
       id: test
       uses: vmactions/freebsd-vm@v1
       with:
-        envs: 'FOO BAR'
         usesh: true
         prepare: |
-          pkg install -y curl
+          freebsd-version
+          pkg install -y gmake
         run: |
+          whoami
           pwd
           ls -lah
-          whoami
-          env
-          freebsd-version
+          clang++ --version
 
     - name: Upload Results
       uses: actions/upload-artifact@v4
