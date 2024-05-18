@@ -38,16 +38,14 @@ jobs:
         usesh: true
         prepare: |
           set -x
-          sysctl hw.physmem
-          freebsd-version
+          sysctl hw.physmem; df -h .
+          date; uname -a; freebsd-version
           pkg install -y gmake
           gmake --version
           clang++ --version
         run: |
           set -x
-          whoami
-          pwd
-          ls -lah
+          tty || :; id; printf %s\\n "$SHELL"; printf %s\\n "$PATH"; pwd
           gmake -j3 run GCC=clang GXX=clang++ CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none' MARCH=
 
     - name: Upload Results
