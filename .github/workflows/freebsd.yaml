@@ -38,9 +38,9 @@ jobs:
         usesh: true
         prepare: |
           set -x
-          vmstat -s
           freebsd-version
-          pkg install -y gmake
+          pkg install -y gmake procinfo
+          procinfo
           gmake --version
           clang++ --version
         run: |
