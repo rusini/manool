@@ -38,9 +38,9 @@ jobs:
         usesh: true
         prepare: |
           set -x
+          sysctl hw.physmem
           freebsd-version
-          pkg install -y gmake procinfo
-          procinfo
+          pkg install -y gmake
           gmake --version
           clang++ --version
         run: |
