@@ -1,0 +1,22 @@
+# .github/workflows/tmate.yaml
+
+name: Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "test" ]
+
+jobs:
+  build:
+
+    name: Test
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: mxschmitt/action-tmate@v3
