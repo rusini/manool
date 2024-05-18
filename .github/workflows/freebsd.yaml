@@ -48,5 +48,5 @@ jobs:
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
-        name: build-gcc-${{matrix.compiler.ver}}-${{matrix.target}}
+        name: build
         path: build
