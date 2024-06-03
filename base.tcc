@@ -23,6 +23,12 @@ namespace aux {
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    // Constant value evaluated before evaluation of an expression, during its compilation
+   struct _i48 { unsigned long long rep; }; // I48 value stored as val::rep
+   struct _u32 { unsigned long long rep; }; // U32 value stored as val::rep
+
+
+
+
    template< typename Val = const val &, typename Value = std::remove_cv_t<std::remove_reference_t<Val>>,
       bool is_special = std::is_empty_v<Value> &&
          std::is_trivially_default_constructible_v<Value> && std::is_trivially_constructible_v<Val, Value>,

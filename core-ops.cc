@@ -485,37 +485,34 @@ namespace aux {
          }();
       case rep::_i48: ////////////////////////////////////////////////////////////////////////////////////////////////////////////////// I48
          switch (op) {
-         case sym::id("+"):    // addition and identity (unary plus)
-            if (MNL_UNLIKELY(argc != 1)) {
-               if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-               return +as<long long>(self);
-            }
+         case sym::id("+"):   // addition
+            if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
             return aux::_add(as<long long>(self), as<long long>(argv[0]));
-         case sym::id("-"):    // subtraction and negation (unary minus)
+         case sym::id("-"):   // subtraction and negation (unary minus)
             if (MNL_UNLIKELY(argc != 1)) {
                if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
                return aux::_neg(as<long long>(self));
             }
             if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
             return aux::_sub(as<long long>(self), as<long long>(argv[0]));
-         case sym::id("*"):    // multiplication
+         case sym::id("*"):   // multiplication
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
             return aux::_mul(as<long long>(self), as<long long>(argv[0]));
-         case sym::id("/"):    // integer division (truncating, i.e. rounding toward zero)
+         case sym::id("/"):   // integer division (truncating, i.e. rounding toward zero)
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
             return aux::_div(as<long long>(self), as<long long>(argv[0]));
-         case sym::id("Rem"):  // remainder after "/"
+         case sym::id("Rem"): // remainder after "/"
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
             return aux::_rem(as<long long>(self), as<long long>(argv[0]));
-         case sym::id("Div"):  // division with flooring (rounding toward -infinity)
+         case sym::id("Div"): // division with flooring (rounding toward -infinity)
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
             return aux::_dif(as<long long>(self), as<long long>(argv[0]));
-         case sym::id("Mod"):  // remainder after "Div" (modulo)
+         case sym::id("Mod"): // remainder after "Div" (modulo)
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
             return aux::_mod(as<long long>(self), as<long long>(argv[0]));
@@ -568,25 +565,22 @@ namespace aux {
       ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// F64/F32
          {  static constexpr auto dispatch = [](auto self, auto &op, auto &argc, auto &argv) MNL_INLINE->val{
                switch (op) {
-               case sym::id("+"):    // addition and identity (unary plus)
-                  if (MNL_UNLIKELY(argc != 1)) {
-                     if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-                     return +self;
-                  }
+               case sym::id("+"):   // addition
+                  if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
                   if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) err_TypeMismatch();
                   return aux::_add(self, as<decltype(self)>(argv[0]));
-               case sym::id("-"):    // subtraction and negation (unary minus)
+               case sym::id("-"):   // subtraction and negation (unary minus)
                   if (MNL_UNLIKELY(argc != 1)) {
                      if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
                      return aux::_neg(self);
                   }
                   if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) err_TypeMismatch();
                   return aux::_sub(self, as<decltype(self)>(argv[0]));
-               case sym::id("*"):    // multiplication
+               case sym::id("*"):   // multiplication
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
                   if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) err_TypeMismatch();
                   return aux::_mul(self, as<decltype(self)>(argv[0]));
-               case sym::id("/"):    // division
+               case sym::id("/"):   // division
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
                   if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) err_TypeMismatch();
                   return aux::_div(self, as<decltype(self)>(argv[0]));
@@ -867,21 +861,18 @@ namespace aux {
          MNL_ERR(MNL_SYM("UnrecognizedOperation"));
       case rep::_u32: ////////////////////////////////////////////////////////////////////////////////////////////////////////////////// U32
          switch (op) {
-         case sym::id("+"):    // addition and identity (unary plus)
-            if (MNL_UNLIKELY(argc != 1)) {
-               if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-               return +as<unsigned>(self);
-            }
+         case sym::id("+"):   // addition
+            if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) err_TypeMismatch();
             return as<unsigned>(self) + as<unsigned>(argv[0]);
-         case sym::id("-"):    // subtraction and negation (unary minus)
+         case sym::id("-"):   // subtraction and negation (unary minus)
             if (MNL_UNLIKELY(argc != 1)) {
                if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
                return -as<unsigned>(self);
             }
             if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) err_TypeMismatch();
             return as<unsigned>(self) - as<unsigned>(argv[0]);
-         case sym::id("*"):    // multiplication
+         case sym::id("*"):   // multiplication
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) err_TypeMismatch();
             return as<unsigned>(self) * as<unsigned>(argv[0]);
