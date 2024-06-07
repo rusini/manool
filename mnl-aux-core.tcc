@@ -1219,7 +1219,141 @@ namespace aux::pub {
    };
    // (+); (-); (*); (<); (<=); (>); (>=) //////////////////////////////////////////////////////////////////////////////////////////////////
 
+   template<> struct val::ops::_op<sym::id("+")> {
+   public:
+      MNL_INLINE val operator()(const val &lhs, const val &rhs) const { return _apply(lhs, rhs); }
+      MNL_INLINE val operator()(const val &lhs, val &&rhs) const { return _apply(lhs, std::move(rhs)); }
+      MNL_INLINE val operator()(val &&lhs, const val &rhs) const { return _apply(std::move(lhs), rhs); }
+      MNL_INLINE val operator()(val &&lhs, val &&rhs) const { return _apply(std::move(lhs), std::move(rhs)); }
+   public:
+      template<typename Rhs, std::enable_if_t<!std::is_same_v<Rhs, val>, decltype(nullptr)> = decltype(nullptr){}>
+      MNL_INLINE auto operator()(const val &lhs, Rhs rhs) const { return _apply(lhs, rhs); }
+      template<typename Rhs, std::enable_if_t<!std::is_same_v<Rhs, val>, decltype(nullptr)> = decltype(nullptr){}>
+      MNL_INLINE auto operator()(val &&lhs, Rhs rhs) const { return _apply(std::move(lhs), rhs); }
+   public:
+      template<typename Lhs, std::enable_if_t<!std::is_same_v<Lhs, val>, decltype(nullptr)> = decltype(nullptr){}>
+      MNL_INLINE auto operator()(Lhs lhs, const val &rhs) const { return _apply(lhs, rhs); }
+      template<typename Lhs, std::enable_if_t<!std::is_same_v<Lhs, val>, decltype(nullptr)> = decltype(nullptr){}>
+      MNL_INLINE auto operator()(Lhs lhs, val &&rhs) const { return _apply(std::move(lhs), rhs); }
+   private:
+      template< typename Lhs, typename Rhs, std::enable_if_t<
+         (std::is_same_v<Lhs, const val &> | std::is_same_v<Lhs, val>) &
+         (std::is_same_v<Rhs, const val &> | std::is_same_v<Rhs, val>),
+         decltype(nullptr) > = decltype(nullptr){} >
+      MNL_INLINE val operator()(Lhs &&lhs, Rhs &&rhs) const {
+         if (MNL_UNLIKELY(is<bit<unsigned>>(lhs)))   // U32
+            return (*this)(as<bit<unsigned>>(lhs), std::forward<Rhs>(rhs));
+         if (MNL_LIKELY(is<bit<long long>>(lhs)))    // I48
+            return (*this)(as<bit<long long>>(lhs), std::forward<Rhs>(rhs));
+         if (MNL_UNLIKELY(is<float>(lhs)))           // F32
+            return (*this)(as<float>(lhs), std::forward<Rhs>(rhs));
+         if (MNL_LIKELY(is<double>(lhs)))            // F64
+            return (*this)(as<double>(lhs), std::forward<Rhs>(rhs));
+         if (MNL_LIKELY(lhs.rep.tag() == rep::_box)) // BoxPtr (fallback)
+            return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs),
+               *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
+         err_UnrecognizedOperation();
+      }
+      template< typename Lhs, typename Rhs, std::enable_if_t<
+         (std::is_same_v<Lhs, const val &> | std::is_same_v<Lhs, val>) &
+         (std::is_same_v<Rhs, bit<long long>> | std::is_same_v<Rhs, bit<unsigned>> | std::is_same_v<Rhs, double> | std::is_same_v<Rhs, float>),
+         decltype(nullptr) > = decltype(nullptr){} >
+      MNL_INLINE val operator()(Lhs &&lhs, Rhs &&rhs) const {
+         if (MNL_UNLIKELY(is<Rsh>(lhs)))
+            return _add(as<Rsh>(lhs), rhs);
+         if (MNL_LIKELY(lhs.rep.tag() == rep::_box))
+            return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs),
+               *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
+         err_UnrecognizedOperation();
+      }
+      template< typename Lhs, typename Rhs, std::enable_if_t<
+         (std::is_same_v<Lhs, bit<long long>> | std::is_same_v<Lhs, bit<unsigned>> | std::is_same_v<Lhs, double> | std::is_same_v<Lhs, float>) &
+         (std::is_same_v<Rhs, const val &> | std::is_same_v<Rhs, val>),
+         decltype(nullptr) > = decltype(nullptr){} >
+      MNL_INLINE auto operator()(Lhs lhs, Rhs &&rhs) const {
+         if (MNL_UNLIKELY(is<Lhs>(rhs))) err_TypeMismatch();
+         return _add(lhs, as<Lhs>(rhs));
+      }
+   };
+
+   template<> struct val::ops::_op<sym::id("==")> {
+      template< typename Lhs, typename Rhs, std::enable_if_t<
+         (std::is_same_v<Lhs, const val &> | std::is_same_v<Lhs, val>) &
+         (std::is_same_v<Rhs, const val &> | std::is_same_v<Rhs, val>),
+         decltype(nullptr) > = decltype(nullptr){} >
+      MNL_INLINE val operator()(Lhs &&lhs, Rhs &&rhs) const {
+         if (MNL_LIKELY(lhs.rep.tag() != rep::_box))
+            return (unsigned long long)lhs.rep == (unsigned long long)lhs.rep;
+         return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs),
+            *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
+      }
+      template< typename Lhs, typename Rhs, std::enable_if_t<
+         (std::is_same_v<Lhs, const val &> | std::is_same_v<Lhs, val>) &
+         (std::is_same_v<Rhs, bit<long long>> | std::is_same_v<Rhs, bit<unsigned>> | std::is_same_v<Rhs, double> | std::is_same_v<Rhs, float>),
+         decltype(nullptr) > = decltype(nullptr){} >
+      MNL_INLINE val operator()(Lhs &&lhs, Rhs &&rhs) const {
+         if (MNL_UNLIKELY(is<Rsh>(lhs)))
+            return _add(as<Rsh>(lhs), rhs);
+         if (MNL_LIKELY(lhs.rep.tag() == rep::_box))
+            return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs),
+               *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
+         err_UnrecognizedOperation();
+      }
+      template< typename Lhs, typename Rhs, std::enable_if_t<
+         (std::is_same_v<Lhs, bit<long long>> | std::is_same_v<Lhs, bit<unsigned>> | std::is_same_v<Lhs, double> | std::is_same_v<Lhs, float>) &
+         (std::is_same_v<Rhs, const val &> | std::is_same_v<Rhs, val>),
+         decltype(nullptr) > = decltype(nullptr){} >
+      MNL_INLINE auto operator()(Lhs lhs, Rhs &&rhs) const {
+         if (MNL_UNLIKELY(is<Lhs>(rhs))) err_TypeMismatch();
+         return _add(lhs, as<Lhs>(rhs));
+      }
+   };
+
    template<enum sym::id Id> template<> struct val::ops::_op<Id> {
+
+      template< typename Rhs, std::enable_if_t<
+         (std::is_same_v<Rhs, const val &> | std::is_same_v<Rhs, val>),
+         decltype(nullptr) > = decltype(nullptr){} >
+      MNL_INLINE val operator()(Rhs &&rhs) const {
+         switch (Id) { // compile-time
+         case sym::id("~"):
+            switch (rhs.rep.tag()) {
+            default:
+               MNL_UNREACHABLE();
+            case rep::_box: // BoxPtr (fallback)
+               return static_cast<root *>(rhs.rep.template dat<void *>())->invoke(std::forward<Rhs>(rhs), *this);
+            case rep::_i48: case rep::_nil: case rep::_sym:
+               MNL_ERR(MNL_SYM("UnrecognizedOperation"));
+            case rep::_false:
+               return true;
+            case rep::_true:
+               return false;
+            case rep::_u32:
+               return (*this)(as<bit<unsigned>>(rhs));
+         }
+         case sym::id("-"): case sym::id("Abs"):
+            if (MNL_UNLIKELY(is<unsigned>(rhs))) return (*this)(as<bit<unsigned>>(rhs));
+            if (MNL_LIKELY(is<long long>(rhs)))  return (*this)(as<bit<long long>>(rhs));
+            if (MNL_UNLIKELY(is<float>(lhs)))    return (*this)(as<float>(rhs));
+            if (MNL_LIKELY(is<double>(lhs)))     return (*this)(as<double>(rhs));
+            if (MNL_LIKELY(lhs.rep.tag() == rep::_box)) // BoxPtr (fallback)
+               return static_cast<root *>(rhs.rep.template dat<void *>())->invoke(std::forward<Rhs>(rhs), *this);
+            MNL_ERR(MNL_SYM("UnrecognizedOperation"));
+         }
+         return ((sym)*this)(std::forward<Rhs>(rhs));
+      }
+
+      template<typename Val> static Val op(Val rhs) {
+         if constexpr(Id == sym::id("Neg")) return aux::_neg(rhs);
+         if constexpr(Id == sym::id("Abs")) return aux::_abs(rhs);
+      }
+
+      template<typename Val> static Val op(bit<Val> rhs) {
+         switch (Id) { // compile-time
+         case sym::id("~"):
+         }
+      }
+
 
       template< typename Lhs, typename Rhs, std::enable_if_t<
          (std::is_same_v<Lhs, const val &> | std::is_same_v<Lhs, val>) &
@@ -1227,15 +1361,6 @@ namespace aux::pub {
          decltype(nullptr) > = decltype(nullptr){} >
       MNL_INLINE val operator()(Lhs &&lhs, Rhs &&rhs) const {
          switch (Id) { // compile-time
-         default:
-         # if true
-            if (MNL_LIKELY(lhs.rep.tag() == rep::_box)) // BoxPtr (fallback)
-               return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs),
-                  *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
-            err_UnrecognizedOperation();
-         # else
-            MNL_UNREACHABLE();
-         # endif
          case sym::id("+"): case sym::id("-"): case sym::id("*"): case sym::id("<"): case sym::id("<="): case sym::id(">"): case sym::id(">="):
             if (MNL_UNLIKELY(is<unsigned>(lhs)))        // U32
                return (*this)(as<bit<unsigned>>(lhs), std::forward<Rhs>(rhs));
@@ -1260,7 +1385,24 @@ namespace aux::pub {
                   *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
             return (unsigned long long)lhs.rep != (unsigned long long)rhs.rep;
          }
+         return ((sym)*this)(std::forward<Lhs>(lhs), std::forward<Rhs>(rhs));
       }
+
+      template< typename Lhs, typename Rhs, std::enable_if_t<
+         (std::is_same_v<Lhs, const val &> | std::is_same_v<Lhs, val>) &
+         (std::is_same_v<Rhs, bit<long long>> | std::is_same_v<Rhs, bit<unsigned>> | std::is_same_v<Rhs, double> | std::is_same_v<Rhs, float>),
+         decltype(nullptr) > = decltype(nullptr){} >
+      MNL_INLINE val operator()(Lhs &&lhs, Rhs &&rhs) const {
+         if (MNL_UNLIKELY(is<Rsh>(lhs)))
+            return (*this)(as<Rsh>(lhs), rhs);
+         if (MNL_LIKELY(lhs.rep.tag() == rep::_box))
+            return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs),
+               *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
+         err_UnrecognizedOperation();
+      }
+      // TODO: the rhs rep should depend on the operation:
+      // for +-* it's double, for ==<> it's bits<double>...
+      // we can do it!
 
       template< typename Lhs, typename Rhs, std::enable_if_t<
          is_same_v<Lhs, bit<long long>> & std::is_same_v<Rhs, const val &>,
@@ -1270,12 +1412,25 @@ namespace aux::pub {
          return (*this)(lhs, as<bit<long long>>(rhs));
       }
 
+
+      template< typename Lhs, typename Rhs, std::enable_if_t< // also covers bit<>; what about imm?
+         !is_same_v<Lhs, const val &> & !std::is_same_v<Lhs, val>,
+         decltype(nullptr) > = decltype(nullptr){} >
+      MNL_INLINE auto operator()(Lhs lhs, Rhs &&rhs) const {
+         if (MNL_UNLIKELY(is<Lhs>(rhs))) err_TypeMismatch();
+         return (*this)(lhs, as<Lhs>(rhs));
+      }
+
+
+
+
          if (MNL_UNLIKELY(is<long long>(rhs))) err_TypeMismatch();
          long long res;
          if (MNL_UNLIKELY(__builtin_add_overflow((long long)(unsigned long long)lhs.rep, (long long)(unsigned long long)rhs.rep, &res))) err_Overflow();
          MNL_ASSUME((((unsigned long long)res ^ (rep::_i48 * 2 ^ rep::_i48)) & 0xFFFF) == rep::_i48);
          return {(unsigned long long)res ^ (rep::_i48 * 2 ^ rep::_i48)};
       }
+
 
 
 
