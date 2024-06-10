@@ -1219,28 +1219,32 @@ namespace aux::pub {
    };
    // (+); (-); (*); (<); (<=); (>); (>=) //////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+
+
    template<> struct val::ops::_op<sym::id("+")> {
    public:
-      MNL_INLINE val operator()(const val &lhs, const val &rhs) const { return _apply(lhs, rhs); }
-      MNL_INLINE val operator()(const val &lhs, val &&rhs) const { return _apply(lhs, std::move(rhs)); }
-      MNL_INLINE val operator()(val &&lhs, const val &rhs) const { return _apply(std::move(lhs), rhs); }
-      MNL_INLINE val operator()(val &&lhs, val &&rhs) const { return _apply(std::move(lhs), std::move(rhs)); }
+      MNL_INLINE val operator()(const val &lhs, const val &rhs) const { return _apply0(lhs, rhs); }
+      MNL_INLINE val operator()(const val &lhs, val &&rhs) const { return _apply0(lhs, std::move(rhs)); }
+      MNL_INLINE val operator()(val &&lhs, const val &rhs) const { return _apply0(std::move(lhs), rhs); }
+      MNL_INLINE val operator()(val &&lhs, val &&rhs) const { return _apply0(std::move(lhs), std::move(rhs)); }
    public:
-      template<typename Rhs, std::enable_if_t<!std::is_same_v<Rhs, val>, decltype(nullptr)> = decltype(nullptr){}>
-      MNL_INLINE auto operator()(const val &lhs, Rhs rhs) const { return _apply(lhs, rhs); }
-      template<typename Rhs, std::enable_if_t<!std::is_same_v<Rhs, val>, decltype(nullptr)> = decltype(nullptr){}>
-      MNL_INLINE auto operator()(val &&lhs, Rhs rhs) const { return _apply(std::move(lhs), rhs); }
-   public:
-      template<typename Lhs, std::enable_if_t<!std::is_same_v<Lhs, val>, decltype(nullptr)> = decltype(nullptr){}>
-      MNL_INLINE auto operator()(Lhs lhs, const val &rhs) const { return _apply(lhs, rhs); }
-      template<typename Lhs, std::enable_if_t<!std::is_same_v<Lhs, val>, decltype(nullptr)> = decltype(nullptr){}>
-      MNL_INLINE auto operator()(Lhs lhs, val &&rhs) const { return _apply(std::move(lhs), rhs); }
-   private:
-      template< typename Lhs, typename Rhs, std::enable_if_t<
-         (std::is_same_v<Lhs, const val &> | std::is_same_v<Lhs, val>) &
-         (std::is_same_v<Rhs, const val &> | std::is_same_v<Rhs, val>),
+      template< typename Lhs, std::enable_if_t<
+         (std::is_same_v<Lhs, bit<long long>> | std::is_same_v<Lhs, bit<unsigned>> | std::is_same_v<Lhs, double> | std::is_same_v<Lhs, float>),
          decltype(nullptr) > = decltype(nullptr){} >
-      MNL_INLINE val operator()(Lhs &&lhs, Rhs &&rhs) const {
+      MNL_INLINE Lhs operator()(Lhs lhs, const val &rhs) const { return _apply1(lhs, rhs); }
+   public:
+      template< typename Rhs, std::enable_if_t<
+         (std::is_same_v<Rhs, bit<long long>> | std::is_same_v<Rhs, bit<unsigned>> | std::is_same_v<Rhs, double> | std::is_same_v<Rhs, float>),
+         decltype(nullptr) > = decltype(nullptr){} >
+      MNL_INLINE val operator()(const val &lhs, Rhs rhs) const { return _apply2(lhs, rhs); }
+      template< typename Rhs, std::enable_if_t<
+         (std::is_same_v<Rhs, bit<long long>> | std::is_same_v<Rhs, bit<unsigned>> | std::is_same_v<Rhs, double> | std::is_same_v<Rhs, float>),
+         decltype(nullptr) > = decltype(nullptr){} >
+      MNL_INLINE val operator()(val &&lhs, Rhs rhs) const { return _apply2(std::move(lhs), rhs); }
+   private:
+      template<typename Lhs, typename Rhs>
+      MNL_INLINE val _apply0(Lhs &&lhs, Rhs &&rhs) const {
          if (MNL_UNLIKELY(is<bit<unsigned>>(lhs)))   // U32
             return (*this)(as<bit<unsigned>>(lhs), std::forward<Rhs>(rhs));
          if (MNL_LIKELY(is<bit<long long>>(lhs)))    // I48
@@ -1254,11 +1258,14 @@ namespace aux::pub {
                *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
          err_UnrecognizedOperation();
       }
-      template< typename Lhs, typename Rhs, std::enable_if_t<
-         (std::is_same_v<Lhs, const val &> | std::is_same_v<Lhs, val>) &
-         (std::is_same_v<Rhs, bit<long long>> | std::is_same_v<Rhs, bit<unsigned>> | std::is_same_v<Rhs, double> | std::is_same_v<Rhs, float>),
-         decltype(nullptr) > = decltype(nullptr){} >
-      MNL_INLINE val operator()(Lhs &&lhs, Rhs &&rhs) const {
+      template<typename Lhs, typename Rhs>
+      MNL_INLINE auto _apply1(Lhs lhs, Rhs &&rhs) const {
+      //MNL_INLINE auto _apply1(Lhs lhs, const val &rhs) const {
+         if (MNL_UNLIKELY(is<Lhs>(rhs))) err_TypeMismatch();
+         return _add(lhs, as<Lhs>(rhs));
+      }
+      template<typename Lhs, typename Rhs>
+      MNL_INLINE val _apply2(Lhs &&lhs, Rhs rhs) const {
          if (MNL_UNLIKELY(is<Rsh>(lhs)))
             return _add(as<Rsh>(lhs), rhs);
          if (MNL_LIKELY(lhs.rep.tag() == rep::_box))
@@ -1266,17 +1273,39 @@ namespace aux::pub {
                *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
          err_UnrecognizedOperation();
       }
-      template< typename Lhs, typename Rhs, std::enable_if_t<
-         (std::is_same_v<Lhs, bit<long long>> | std::is_same_v<Lhs, bit<unsigned>> | std::is_same_v<Lhs, double> | std::is_same_v<Lhs, float>) &
-         (std::is_same_v<Rhs, const val &> | std::is_same_v<Rhs, val>),
-         decltype(nullptr) > = decltype(nullptr){} >
-      MNL_INLINE auto operator()(Lhs lhs, Rhs &&rhs) const {
-         if (MNL_UNLIKELY(is<Lhs>(rhs))) err_TypeMismatch();
-         return _add(lhs, as<Lhs>(rhs));
-      }
    };
 
    template<> struct val::ops::_op<sym::id("==")> {
+   public:
+      MNL_INLINE val operator()(const val &lhs, const val &rhs) const { return _apply0(lhs, rhs); }
+      MNL_INLINE val operator()(const val &lhs, val &&rhs) const { return _apply0(lhs, std::move(rhs)); }
+      MNL_INLINE val operator()(val &&lhs, const val &rhs) const { return _apply0(std::move(lhs), rhs); }
+      MNL_INLINE val operator()(val &&lhs, val &&rhs) const { return _apply0(std::move(lhs), std::move(rhs)); }
+   public:
+      template< typename Lhs, std::enable_if_t<
+         (std::is_same_v<Lhs, bit<long long>> | std::is_same_v<Lhs, bit<unsigned>> | std::is_same_v<Lhs, bit<double>> | std::is_same_v<Lhs, bit<float>> |
+          std::is_same_v<Lhs, decltype(nullptr)> | std::is_same_v<Lhs, bool> | std::is_same_v<Lhs, sym> | std::is_same_v<Lhs, std::string>),
+         decltype(nullptr) > = decltype(nullptr){} >
+      MNL_INLINE bool operator()(Lhs lhs, const val &rhs) const { return _apply1(lhs, rhs); }
+      template< typename Lhs, std::enable_if_t<
+         (std::is_same_v<Lhs, sym> | std::is_same_v<Lhs, std::string>),
+         decltype(nullptr) > = decltype(nullptr){} >
+      MNL_INLINE bool operator()(const Lhs &lhs, const val &rhs) const { return _apply1(lhs, rhs); }
+   public:
+      template< typename Rhs, std::enable_if_t<
+         (std::is_same_v<Rhs, bit<long long>> | std::is_same_v<Rhs, bit<unsigned>> | std::is_same_v<Rhs, double> | std::is_same_v<Rhs, float>),
+         decltype(nullptr) > = decltype(nullptr){} >
+      MNL_INLINE val operator()(const val &lhs, Rhs rhs) const { return _apply2(lhs, rhs); }
+      template< typename Rhs, std::enable_if_t<
+         (std::is_same_v<Rhs, bit<long long>> | std::is_same_v<Rhs, bit<unsigned>> | std::is_same_v<Rhs, double> | std::is_same_v<Rhs, float>),
+         decltype(nullptr) > = decltype(nullptr){} >
+      MNL_INLINE val operator()(val &&lhs, Rhs rhs) const { return _apply2(std::move(lhs), rhs); }
+
+
+
+
+
+
       template< typename Lhs, typename Rhs, std::enable_if_t<
          (std::is_same_v<Lhs, const val &> | std::is_same_v<Lhs, val>) &
          (std::is_same_v<Rhs, const val &> | std::is_same_v<Rhs, val>),
@@ -1308,6 +1337,10 @@ namespace aux::pub {
          return _add(lhs, as<Lhs>(rhs));
       }
    };
+
+
+
+
 
    template<enum sym::id Id> template<> struct val::ops::_op<Id> {
 

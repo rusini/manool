@@ -23,12 +23,6 @@ namespace aux {
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    // Constant value evaluated before evaluation of an expression, during its compilation
-   struct _i48 { unsigned long long rep; }; // I48 value stored as val::rep
-   struct _u32 { unsigned long long rep; }; // U32 value stored as val::rep
-
-
-
-
    template< typename Val = const val &, typename Value = std::remove_cv_t<std::remove_reference_t<Val>>,
       bool is_special = std::is_empty_v<Value> &&
          std::is_trivially_default_constructible_v<Value> && std::is_trivially_constructible_v<Val, Value>,
@@ -189,7 +183,7 @@ namespace aux {
    template<class Target, class Arg0, class Arg1>
    struct expr_apply<2, Target, Arg0, Arg1>:
       std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue> {
-      Target target; Arg0 arg0; Arg1 arg1; loc _loc;
+      [[no_unique_address]] Target target; [[no_unique_address]] Arg0 arg0; [[no_unique_address]] Arg1 arg1; loc _loc;
       static_assert(std::is_base_of_v<code, Target> || std::is_base_of_v<rvalue, Target>);
       static_assert(std::is_base_of_v<code, Arg0>   || std::is_base_of_v<rvalue, Arg0>);
       static_assert(std::is_base_of_v<code, Arg1>   || std::is_base_of_v<rvalue, Arg1>);
