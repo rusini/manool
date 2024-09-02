@@ -183,6 +183,14 @@ namespace aux { MNL_NOINLINE inline sym::tab<signed char> disp(initializer_list<
 
 // class val ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/* Design decisions:
+   - Use a lightweight (trivial) variant of `val` for more efficient interaction across routine boundaries? - NO
+   - Use NaN coding? - YES
+   - Use HL (bit-fields) or LL (bitwise ops) to describe the representation (in case of NaN coding)? - bit-fields
+   - Expose as raw bit patterns (in case of using bitwise ops) for potentially more efficient op implementation? - N/A, NO
+   - Which order for tag/value? - directly compatible with IEEE 754
+*/
+
 template<typename> class box;
 
 namespace aux { namespace pub {
@@ -222,12 +230,12 @@ namespace aux { namespace pub {
       long rc /*reference counter*/() const noexcept;
       int default_order(const val &) const noexcept; // actually from MANOOL API
    private: // Concrete representation
-      static_assert(sizeof(double) == 8, "sizeof(double) == 8");
-      class MNL_ALIGN(8) rep { // bit-layout management - IEEE 754 FP representation and uniform FP endianness are assumed (and NOT checked)
-         static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__, "__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__"); // support for BE can be added on-demand
+      static_assert(sizeof(double) == 8);
+      class MNL_ALIGN(8) rep { // bit-layout management - assumed IEEE 754 FP representation and uniform FP endianness (and NOT checked)
+         static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__); // support for BE can be added on-demand
          union {
             MNL_PACK signed long long _int: 48;
-            MNL_PACK uintptr_t _ptr: sizeof(void *) == 4 ? 32 : sizeof(void *) == 8 ? 48 : 0;
+            MNL_PACK std::uintptr_t _ptr: sizeof(void *) == 4 ? 32 : sizeof(void *) == 8 ? 48 : 0;
             sym _sym; // standard-layout struct
          };
          unsigned short _tag;
@@ -734,10 +742,137 @@ namespace aux { namespace pub {
    val _eq(val &&, val &&), _ne(val &&, val &&), _lt(val &&, val &&), _le(val &&, val &&), _gt(val &&, val &&), _ge(val &&, val &&);
    val _add(val &&, val &&), _sub(val &&, val &&), _mul(val &&, val &&), _neg(val &&), _abs(val &&), _xor(val &&, val &&), _not(val &&);
 
+# if true
+   template<typename Lhs, typename Rhs, std::enable_if_t<
+      (std::is_same_v<Lhs, const val &> | std::is_same_v<Lhs, val>) &
+      (std::is_same_v<Rhs, const val &> | std::is_same_v<Rhs, val>),
+      decltype(nullptr)> = decltype(nullptr){}>
+   MNL_INLINE inline val _eq(val &&lhs, val &&rhs) {
+      switch (lhs.rep.tag()) {
+      case 0x7FF8u: return return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs), // BoxPtr (fallback)
+         MNL_SYM("=="), 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
+      case 0x7FF9u: return  test<>(rhs);
+      case 0x7FFAu: return  _eq(cast<long long>  (lhs), std::forward<Rhs>(rhs));
+      default:      return  _eq(cast<double>     (lhs), std::forward<Rhs>(rhs));
+      case 0x7FFCu: return  _eq(cast<float>      (lhs), std::forward<Rhs>(rhs));
+      case 0x7FFBu: return  _eq(cast<const sym &>(lhs), std::forward<Rhs>(rhs));
+      case 0x7FFEu: return  rhs.rep.tag() == 0x7FFEu;
+      case 0x7FFFu: return  rhs.rep.tag() == 0x7FFFu;
+      case 0x7FFDu: return  _eq(cast<unsigned>   (lhs), std::forward<Rhs>(rhs));
+      }
+   }
+   MNL_INLINE inline val _ne(val &&lhs, val &&rhs) {
+      switch (lhs.rep.tag()) {
+      case 0x7FF8u: return  static_cast<val::root *>(lhs.rep.dat<void *>())->invoke(move(lhs), MNL_SYM("<>"), 1, &rhs);
+      case 0x7FF9u: return !test<>(rhs);
+      case 0x7FFAu: return !MNL_LIKELY(test<long long>(rhs)) || cast<long long>(lhs) != cast<long long>(rhs);
+      default:      return !MNL_LIKELY(test<double>(rhs)) || cast<double>(lhs) != cast<double>(rhs);
+      case 0x7FFCu: return !MNL_LIKELY(test<float>(rhs)) || cast<float>(lhs) != cast<float>(rhs);
+      case 0x7FFBu: return !MNL_LIKELY(test<sym>(rhs)) || cast<const sym &>(lhs) != cast<const sym &>(rhs);
+      case 0x7FFEu: return  rhs.rep.tag() != 0x7FFEu;
+      case 0x7FFFu: return  rhs.rep.tag() != 0x7FFFu;
+      case 0x7FFDu: return !MNL_LIKELY(test<unsigned>(rhs)) || cast<unsigned>(lhs) != cast<unsigned>(rhs);
+      }
+   }
+   # define MNL_M(OP, SYM) \
+   template<typename Lhs, typename Rhs, std::enable_if_t< \
+      (std::is_same_v<Lhs, const val &> | std::is_same_v<Lhs, val>) & \
+      (std::is_same_v<Rhs, const val &> | std::is_same_v<Rhs, val>), \
+      decltype(nullptr)> = decltype(nullptr){}> \
+   MNL_INLINE inline val OP(Lhs &&lhs, Rhs &&rhs) { \
+      switch (lhs.rep.tag()) { \
+      case 0x7FF9u: case 0x7FFBu: case 0x7FFEu: case 0x7FFFu: \
+         MNL_ERR(MNL_SYM("UnrecognizedOperation")); \
+      case 0x7FF8u: /* BoxPtr (fallback) */ \
+         return static_cast<val::root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs), \
+            MNL_SYM(SYM), 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs)); \
+      \
+      case 0x7FFAu: /* I48 */ return OP(cast<long long>(lhs), std::forward<Rhs>(rhs)); \
+      default:      /* F64 */ return OP(cast<double>   (lhs), std::forward<Rhs>(rhs)); \
+      case 0x7FFCu: /* F32 */ return OP(cast<float>    (lhs), std::forward<Rhs>(rhs)); \
+      case 0x7FFDu: /* U32 */ return OP(cast<unsigned> (lhs), std::forward<Rhs>(rhs)); \
+      } \
+   } \
+   // end # define MNL_M(OP, SYM)
+   MNL_M(_lt, "<") MNL_M(_le, "<=") MNL_M(_gt, ">") MNL_M(_ge, ">=")
+   # undef MNL_M
+   # define MNL_M(OP, SYM) \
+   template<typename Lhs, typename Rhs, std::enable_if_t< \
+      (std::is_same_v<Lhs, const val &> | std::is_same_v<Lhs, val>) & \
+      (std::is_same_v<Rhs, const val &> | std::is_same_v<Rhs, val>), \
+      decltype(nullptr)> = decltype(nullptr){}> \
+   MNL_INLINE inline val OP(Lhs &&lhs, Rhs &&rhs) { \
+      switch (lhs.rep.tag()) /*jumptable*/ { \
+      case 0x7FF9u: case 0x7FFBu: case 0x7FFEu: case 0x7FFFu: \
+         MNL_ERR(MNL_SYM("UnrecognizedOperation")); \
+      case 0x7FF8u: /* BoxPtr (fallback) */ \
+         return static_cast<val::root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs), \
+            MNL_SYM(SYM), 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs)); \
+      \
+      case 0x7FFAu: /* I48 */ return OP(cast<long long>(lhs), std::forward<Rhs>(rhs)); \
+      default:      /* F64 */ return OP(cast<double>   (lhs), std::forward<Rhs>(rhs)); \
+      case 0x7FFCu: /* F32 */ return OP(cast<float>    (lhs), std::forward<Rhs>(rhs)); \
+      case 0x7FFDu: /* U32 */ return OP(cast<unsigned> (lhs), std::forward<Rhs>(rhs)); \
+      } \
+   } \
+   // end # define MNL_M(OP, SYM)
+   MNL_M(_add, "+") MNL_M(_sub, "-") MNL_M(_mul, "*")
+   MNL_M(_lt, "<") MNL_M(_le, "<=") MNL_M(_gt, ">") MNL_M(_ge, ">=")
+   # undef MNL_M
+   # define MNL_M(OP, SYM) MNL_INLINE inline val OP(val &&rhs) { \
+      switch (rhs.rep.tag()) { \
+      case 0x7FF8u: /* BoxPtr (fallback) */ \
+         return static_cast<val::root *>(rhs.rep.dat<void *>())->invoke(move(rhs), MNL_SYM(SYM), 0, {}); \
+      case 0x7FF9u: case 0x7FFBu: case 0x7FFEu: case 0x7FFFu: \
+         MNL_ERR(MNL_SYM("UnrecognizedOperation")); \
+      case 0x7FFAu: return -(cast<long long>(rhs)); \
+      default:      return -(cast<double>(rhs)); \
+      case 0x7FFCu: return -(cast<float>(rhs)); \
+      case 0x7FFDu: return -(cast<unsigned>(rhs)); \
+      } \
+   } \
+   // end # define MNL_M(OP, SYM)
+   MNL_M(_neg, "Neg") MNL_M(_abs, "Abs")
+   # undef MNL_M
+   MNL_INLINE inline val _xor(val &&lhs, val &&rhs) {
+      switch (lhs.rep.tag()) {
+      case 0x7FF8u: // BoxPtr (fallback)
+         return static_cast<val::root *>(lhs.rep.dat<void *>())->invoke(move(lhs), MNL_SYM("Xor"), 1, &rhs);
+      default:
+         MNL_ERR(MNL_SYM("UnrecognizedOperation"));
+      case 0x7FFEu: // Bool/False
+         if (MNL_UNLIKELY(!test<bool>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch"));
+         return val{decltype(val::rep){rhs.rep.tag()}};
+      case 0x7FFFu: // Bool/True
+         if (MNL_UNLIKELY(!test<bool>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch"));
+         return val{decltype(val::rep){rhs.rep.tag() ^ 1}};
+      case 0x7FFDu: // U32
+         if (MNL_UNLIKELY(!test<unsigned>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch"));
+         return cast<unsigned>(lhs) ^ cast<unsigned>(rhs);
+      }
+   }
+   MNL_INLINE inline val _not(val &&rhs) {
+      switch (rhs.rep.tag()) {
+      case 0x7FF8u: // BoxPtr (fallback)
+         return static_cast<val::root *>(rhs.rep.dat<void *>())->invoke(move(rhs), MNL_SYM("~"), 0, {});
+      case 0x7FF9u: case 0x7FFBu:
+         MNL_ERR(MNL_SYM("UnrecognizedOperation"));
+      case 0x7FFEu: return true;
+      case 0x7FFFu: return false;
+      case 0x7FFDu: return ~cast<unsigned>(rhs);
+      case 0x7FFAu: return aux::_neg(cast<long long>(rhs)); // Neg(ation)
+      default:      return aux::_neg(cast<double>(rhs));    // Neg(ation)
+      case 0x7FFCu: return aux::_neg(cast<float>(rhs));     // Neg(ation)
+      }
+   }
+# endif
+
    // I48, F64, F32, U32 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, val> _eq (val &&lhs, Dat rhs)
       { if (MNL_LIKELY(test<Dat>(lhs))) return cast<Dat>(lhs) == rhs; return _eq(move(lhs), (val)rhs); }
+   template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, val> _eq (const val &lhs, Dat rhs)
+      { if (MNL_LIKELY(test<Dat>(lhs))) return cast<Dat>(lhs) == rhs; return _eq((val)lhs, (val)rhs); }
    template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, val> _ne (val &&lhs, Dat rhs)
       { if (MNL_LIKELY(test<Dat>(lhs))) return cast<Dat>(lhs) != rhs; return _ne(move(lhs), (val)rhs); }
    template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, val> _lt (val &&lhs, Dat rhs)
@@ -750,10 +885,23 @@ namespace aux { namespace pub {
       { if (MNL_LIKELY(test<Dat>(lhs))) return cast<Dat>(lhs) >= rhs; return _ge(move(lhs), (val)rhs); }
    template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, val> _add(val &&lhs, Dat rhs)
       { if (MNL_LIKELY(test<Dat>(lhs))) return aux::_add(cast<Dat>(lhs), rhs); return _add(move(lhs), (val)rhs); }
+   //template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, val> _add(const val &lhs, Dat rhs) // @@@
+   //   { if (MNL_LIKELY(test<Dat>(lhs))) return aux::_add(cast<Dat>(lhs), rhs); return _add((val)lhs, (val)rhs); }
    template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, val> _sub(val &&lhs, Dat rhs)
       { if (MNL_LIKELY(test<Dat>(lhs))) return aux::_sub(cast<Dat>(lhs), rhs); return _sub(move(lhs), (val)rhs); }
    template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, val> _mul(val &&lhs, Dat rhs)
       { if (MNL_LIKELY(test<Dat>(lhs))) return aux::_mul(cast<Dat>(lhs), rhs); return _mul(move(lhs), (val)rhs); }
+
+   //inline val _eq (const val &lhs, val &&rhs) { return _eq ((val)lhs, (move)(rhs)); } // @@@
+   //inline val _ne (const val &lhs, val &&rhs) { return _ne ((val)lhs, (move)(rhs)); } // @@@
+   //inline val _lt (const val &lhs, val &&rhs) { return _lt ((val)lhs, (move)(rhs)); } // @@@
+   //inline val _le (const val &lhs, val &&rhs) { return _le ((val)lhs, (move)(rhs)); } // @@@
+   //inline val _gt (const val &lhs, val &&rhs) { return _gt ((val)lhs, (move)(rhs)); } // @@@
+   //inline val _ge (const val &lhs, val &&rhs) { return _ge ((val)lhs, (move)(rhs)); } // @@@
+   //inline val _add(const val &lhs, val &&rhs) { return _add((val)lhs, (move)(rhs)); } // @@@
+   //inline val _sub(const val &lhs, val &&rhs) { return _sub((val)lhs, (move)(rhs)); } // @@@
+   //inline val _mul(const val &lhs, val &&rhs) { return _mul((val)lhs, (move)(rhs)); } // @@@
+
 
    template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, bool> _eq (Dat lhs, val &&rhs) noexcept
       { return  MNL_LIKELY(test<Dat>(rhs)) && lhs == cast<Dat>(rhs); }
