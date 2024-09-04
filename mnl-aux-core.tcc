@@ -231,14 +231,29 @@ namespace aux { namespace pub {
       int default_order(const val &) const noexcept; // actually from MANOOL API
    private: // Concrete representation
       static_assert(sizeof(double) == 8);
-      class MNL_ALIGN(8) rep { // bit-layout management - assumed IEEE 754 FP representation and uniform FP endianness (and NOT checked)
-         static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__); // support for BE can be added on-demand
+
+   # if !__STDC_IEC_559__ || (defined(__FLOAT_WORD_ORDER__) && __FLOAT_WORD_ORDER__ != __BYTE_ORDER__)
+      // __STDC_IEC_559__ defined AFTER including standard headers on clang++! (nonconformant); just ASSUME "uniform" for clang or where not defined
+      # error "Unsupported FP interchange format"
+   # endif
+
+   # ifdef __FLOAT_WORD_ORDER__ // just ASSUME "uniform" for clang or where not defined
+      # if __FLOAT_WORD_ORDER__ != __BYTE_ORDER__
+         # error "Unsupported FP interchange format"
+      # endif
+   # endif
+      class MNL_ALIGN(8) rep { // bit-layout management - assumed IEEE 754 FP representation and uniform FP endianness (and half checked)
+      # if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+         unsigned short _tag;
+      # endif
          union {
             MNL_PACK signed long long _int: 48;
             MNL_PACK std::uintptr_t _ptr: sizeof(void *) == 4 ? 32 : sizeof(void *) == 8 ? 48 : 0;
             sym _sym; // standard-layout struct
          };
+      # if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
          unsigned short _tag;
+      # endif
       public:
          MNL_INLINE rep() noexcept /*unused*/ {}
          MNL_INLINE ~rep() {}
@@ -889,10 +904,18 @@ namespace aux { namespace pub {
       }
 
       template< typename Lhs, typename Rhs, std::enable_if_t<
-         !(std::is_same_v<Lhs, const val &> | std::is_same_v<Lhs, val &> | std::is_same_v<Lhs, val>) & std::is_same_v<Rhs, val>,
+         !std::is_same_v<Lhs, val> & std::is_same_v<Rhs, val>,
+         decltype(nullptr) > = decltype(nullptr){} >
+      MNL_INLINE auto operator()(const Lhs &lhs, const Rhs &rhs) const {
+         if (MNL_LIKELY(test<Lhs>(rhs))) return (*this)(lhs, cast<Lhs>(rhs)); // TODO: as<Lhs>(rhs) should use const T & when appropriate
+         MNL_ERR(MNL_SYM("TypeMismatch"));
+      }
+
+      template< typename Lhs, typename Rhs, std::enable_if_t<
+         (std::is_same_v<Lhs, const val &> | std::is_same_v<Lhs, val &> | std::is_same_v<Lhs, val>) & !std::is_same_v<Rhs, val>,
          decltype(nullptr) > = decltype(nullptr){} >
       MNL_INLINE auto operator()(Lhs &&lhs, const Rhs &rhs) const {
-         if (MNL_LIKELY(is<Lhs>(rhs))) return (*this)(lhs, as<Lhs>(rhs));
+         if (MNL_LIKELY(test<Rhs>(lhs))) return (*this)(cast<Rhs>(lhs), rhs);
          MNL_ERR(MNL_SYM("TypeMismatch"));
          MNL_UNREACHABLE();
       }
