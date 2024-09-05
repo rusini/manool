@@ -232,8 +232,9 @@ namespace aux { namespace pub {
    private: // Concrete representation
       static_assert(sizeof(double) == 8);
 
-   # if !__STDC_IEC_559__ || (defined(__FLOAT_WORD_ORDER__) && __FLOAT_WORD_ORDER__ != __BYTE_ORDER__)
-      // __STDC_IEC_559__ defined AFTER including standard headers on clang++! (nonconformant); just ASSUME "uniform" for clang or where not defined
+   # if !__STDC_IEC_559__ | (defined(__FLOAT_WORD_ORDER__) & __FLOAT_WORD_ORDER__ != __BYTE_ORDER__)
+   // 1. __STDC_IEC_559__ is defined AFTER #including some standard header on clang (nonconforming)
+   // 2. just ASSUME "uniform" for clang and/or other compilers where __FLOAT_WORD_ORDER__ is absent
       # error "Unsupported FP interchange format"
    # endif
 
