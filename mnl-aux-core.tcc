@@ -875,16 +875,12 @@ namespace aux { namespace pub {
    template<enum sym::id Id> template<> struct val::ops::_op<Id> {
 
    public:
-      MNL_INLINE val operator()(const Lhs &lhs, const Rhs &rhs) const { return _apply(lhs, rhs); }
-      MNL_INLINE val operator()(const Lhs &lhs, Rhs &&rhs) const      { return _apply(lhs, std::move(rhs)); }
-      MNL_INLINE val operator()(Lhs &&lhs, const Rhs &rhs) const      { return _apply(std::move(lhs), rhs); }
-      MNL_INLINE val operator()(Lhs &&lhs, Rhs &&rhs) const           { return _apply(std::move(lhs), std::move(rhs)); }
+      MNL_INLINE val operator()(const Lhs  &lhs, const Rhs  &rhs) const { return _apply(          lhs ,           rhs ); }
+      MNL_INLINE val operator()(const Lhs  &lhs,       Rhs &&rhs) const { return _apply(          lhs , std::move(rhs)); }
+      MNL_INLINE val operator()(      Lhs &&lhs, const Rhs  &rhs) const { return _apply(std::move(lhs),           rhs ); }
+      MNL_INLINE val operator()(      Lhs &&lhs,       Rhs &&rhs) const { return _apply(std::move(lhs), std::move(rhs)); }
    private:
-      template< class Lhs, class Rhs, std::enable_if_t<
-         std::is_same_v<std::remove_const_t<std::remove_reference_t<Lhs>>, val> &
-         std::is_same_v<std::remove_const_t<std::remove_reference_t<Rhs>>, val>,
-         decltype(nullptr) > = decltype(nullptr){} >
-      MNL_INLINE val _apply(Lhs &&lhs, Rhs &&rhs) const {
+      template<class Lhs, class Rhs> static MNL_INLINE val _apply(Lhs &&lhs, Rhs &&rhs) {
          if constexpr (
             Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") |
             Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") )
@@ -914,11 +910,11 @@ namespace aux { namespace pub {
          } else
             return ((sym)*this)(std::forward<Lhs>(lhs), std::forward<Rhs>(rhs));
       }
-
+   public:
       template< typename Lhs, class Rhs, std::enable_if_t<
          (std::is_same_v<Lhs, long long> | std::is_same_v<Lhs, double> | std::is_same_v<Lhs, float> | std::is_same_v<Lhs, unsigned>) &
-         std::is_same_v<Rhs, val>, decltype(nullptr) > False = decltype(nullptr){} >
-      MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const {
+         std::is_same_v<Rhs, val>, decltype(nullptr) > = decltype(nullptr){} >
+      MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const noexcept(Id == sym::id("==") | Id == sym::id("<>")) {
          if constexpr (Id == sym::id("=="))
             return  MNL_LIKELY(test<Lhs>(rhs)) && lhs == cast<Lhs>(rhs);
          else
@@ -932,11 +928,16 @@ namespace aux { namespace pub {
          else
             return ((sym)*this)(lhs, rhs);
       }
+      template< typename Lhs, class Rhs, std::enable_if_t<
+         std::is_same_v<Lhs, int> &
+         std::is_same_v<Rhs, val>, decltype(nullptr) > = decltype(nullptr){} >
+      MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const noexcept(Id == sym::id("==") | Id == sym::id("<>"))
+         { return (*this)((long long)lhs, rhs); }
 
       template< typename Lhs, class Rhs, std::enable_if_t<
          (std::is_same_v<Lhs, decltype(nullptr)>) &
          std::is_same_v<Rhs, val>, decltype(nullptr) > False = decltype(nullptr){} >
-      MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const {
+      MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const noexcept(Id == sym::id("==") | Id == sym::id("<>")) {
          if constexpr (Id == sym::id("=="))
             return  test<decltype(nullptr)>(rhs);
          else
@@ -946,17 +947,17 @@ namespace aux { namespace pub {
             return ((sym)*this)(lhs, rhs);
       }
 
-
       template< class Lhs, typename Rhs, std::enable_if_t<
          std::is_same_v<std::remove_const_t<std::remove_reference_t<Lhs>>, val> &
          (std::is_same_v<Rhs, long long> | std::is_same_v<Rhs, double> | std::is_same_v<Rhs, float> | std::is_same_v<Rhs, unsigned>),
          decltype(nullptr) > = decltype(nullptr){} >
       MNL_INLINE val operator()(Lhs &&lhs, Rhs rhs) const {
          if constexpr (Id == sym::id("==")) {
-            return  MNL_LIKELY(test<Rhs>(lhs)) && lhs == cast<Lhs>(rhs);
+            if (MNL_LIKELY(test<Rhs>(lhs))) return cast<Rhs>(lhs) == rhs;
          } else
-         if constexpr (Id == sym::id("<>"))
-            return !MNL_LIKELY(test<Rhs>(lhs)) || lhs != cast<Lhs>(rhs);
+         if constexpr (Id == sym::id("<>")) {
+            if (MNL_LIKELY(test<Rhs>(lhs))) return cast<Rhs>(lhs) != rhs;
+         } else
          if constexpr (
             Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") |
             Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") ) {
@@ -975,10 +976,12 @@ namespace aux { namespace pub {
             case 0x7FFDu/*U32*/:               return (*this)(cast<unsigned> (lhs),   std::forward<Rhs>(rhs));
             } else
          }
-         if (MNL_UNLIKELY(lhs.rep.tag() == 0x7FF8u)) return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs),
-            MNL_SYM(SYM), 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
+         if (MNL_LIKELY(lhs.rep.tag() == 0x7FF8u)) return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(
+            std::forward<Lhs>(lhs), (sym)*this, 1, &const_cast<val &>((const val &)(val)rhs));
+         MNL_ERR(MNL_SYM("UnrecognizedOperation"));
       }
 
+   private:
       template<typename Lhs, typename Rhs>
       MNL_INLINE auto _op(Lhs lhs, Rhs rhs) const {
               if constexpr (Id == sym::id( "<" )) return op::_lt (std::forward<Lhs>(lhs), std::forward<Rhs>(rhs));
@@ -989,14 +992,12 @@ namespace aux { namespace pub {
          else if constexpr (Id == sym::id( "-" )) return op::_sub(std::forward<Lhs>(lhs), std::forward<Rhs>(rhs));
          else if constexpr (Id == sym::id( "*" )) return op::_mul(std::forward<Lhs>(lhs), std::forward<Rhs>(rhs));
          else if constexpr (Id == sym::id("Xor")) return op::_mul(std::forward<Lhs>(lhs), std::forward<Rhs>(rhs));
-         else                                     return op::none(std::forward<Lhs>(lhs), std::forward<Rhs>(rhs));
       }
       template<typename Rhs>,
-      MNL_INLINE auto op(Rhs &rhs) const {
+      MNL_INLINE auto op(Rhs rhs) const {
               if constexpr (Id == sym::id( "-" )) return op::_neg(std::forward<Rhs>(rhs));
          else if constexpr (Id == sym::id("Abs")) return op::_abs(std::forward<Rhs>(rhs));
          else if constexpr (Id == sym::id( "~" )) return op::_not(std::forward<Rhs>(rhs));
-         else                                     return op::none(std::forward<Rhs>(rhs));
       }
 
    };
