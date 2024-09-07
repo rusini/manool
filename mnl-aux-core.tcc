@@ -935,22 +935,36 @@ namespace aux { namespace pub {
          { return (*this)((long long)lhs, rhs); }
 
       template< typename Lhs, class Rhs, std::enable_if_t<
-         (std::is_same_v<Lhs, decltype(nullptr)>) &
-         std::is_same_v<Rhs, val>, decltype(nullptr) > False = decltype(nullptr){} >
+         std::is_same_v<Lhs, sym> &&
+         std::is_same_v<Rhs, val>, decltype(nullptr) > MNL_IF_LEAN_AND_MEAN(False) = decltype(nullptr){} >
+      MNL_INLINE auto operator()(const Lhs &lhs, const Rhs &rhs) const noexcept(Id == sym::id("==") | Id == sym::id("<>")) {
+         if (false);
+         else if constexpr (Id == sym::id("==")) return  test<Lhs>(rhs) && lhs == test<Lhs>(rhs);
+         else if constexpr (Id == sym::id("<>")) return !test<Lhs>(rhs) && lhs != test<Lhs>(rhs);
+      # if MNL_LEAN_AND_MEAN
+         else { return val{}; static_assert(False, "Use sym::operator() or undefine MNL_LEAN_AND_MEAN"); }
+      # else
+         else return ((sym)*this)(lhs, rhs);
+      # endif
+      }
+
+      template< typename Lhs, class Rhs, std::enable_if_t<
+         std::is_same_v<Lhs, decltype(nullptr)> &&
+         std::is_same_v<Rhs, val>, decltype(nullptr) > MNL_IF_LEAN_AND_MEAN(False) = decltype(nullptr){} >
       MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const noexcept(Id == sym::id("==") | Id == sym::id("<>")) {
          if constexpr (Id == sym::id("=="))
-            return  test<decltype(nullptr)>(rhs);
+            return  test<>(rhs);
          else
          if constexpr (Id == sym::id("<>"))
-            return !test<decltype(nullptr)>(rhs);
+            return !test<>(rhs);
          else
             return ((sym)*this)(lhs, rhs);
       }
 
       template< class Lhs, typename Rhs, std::enable_if_t<
-         std::is_same_v<std::remove_const_t<std::remove_reference_t<Lhs>>, val> &
-         (std::is_same_v<Rhs, long long> | std::is_same_v<Rhs, double> | std::is_same_v<Rhs, float> | std::is_same_v<Rhs, unsigned>),
-         decltype(nullptr) > = decltype(nullptr){} >
+         std::is_same_v<std::remove_const_t<std::remove_reference_t<Lhs>>, val> &&
+         std::is_same_v<Rhs, long long> | std::is_same_v<Rhs, double> | std::is_same_v<Rhs, float> | std::is_same_v<Rhs, unsigned>,
+         decltype(nullptr) > MNL_IF_LEAN_AND_MEAN(False) = decltype(nullptr){} >
       MNL_INLINE val operator()(Lhs &&lhs, Rhs rhs) const {
          if constexpr (Id == sym::id("==")) {
             if (MNL_LIKELY(test<Rhs>(lhs))) return cast<Rhs>(lhs) == rhs;
@@ -962,23 +976,38 @@ namespace aux { namespace pub {
             Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") |
             Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") ) {
             if (MNL_LIKELY(test<Rhs>(lhs))) return _op(cast<Rhs>(lhs), rhs);
-            if (MNL_LIKELY(lhs.rep.tag() == 0x7FF8u)) return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(
-               std::forward<Lhs>(lhs), MNL_SYM(Id), 1, &const_cast<val &>((const val &)(val)rhs));
-            [tag = ]
-            switch (lhs.rep.tag()) /*jumptable*/ {
-            case 0x7FF9u: case 0x7FFBu: case 0x7FFEu: case 0x7FFFu:
-               MNL_ERR(MNL_SYM("UnrecognizedOperation"));
-            case 0x7FF8u/*BoxPtr (fallback)*/: return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs),
-               MNL_SYM(SYM), 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
-            case 0x7FFAu/*I48*/:               return (*this)(cast<long long>(lhs),   std::forward<Rhs>(rhs));
-            default     /*F64*/:               return (*this)(cast<double>(lhs),      std::forward<Rhs>(rhs));
-            case 0x7FFCu/*F32*/:               return (*this)(cast<float>(lhs),       std::forward<Rhs>(rhs));
-            case 0x7FFDu/*U32*/:               return (*this)(cast<unsigned> (lhs),   std::forward<Rhs>(rhs));
-            } else
          }
+      # if MNL_LEAN_AND_MEAN
+         else static_assert(False, "Use sym::operator() or undefine MNL_LEAN_AND_MEAN");
+      # endif
          if (MNL_LIKELY(lhs.rep.tag() == 0x7FF8u)) return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(
-            std::forward<Lhs>(lhs), (sym)*this, 1, &const_cast<val &>((const val &)(val)rhs));
-         MNL_ERR(MNL_SYM("UnrecognizedOperation"));
+            std::forward<Lhs>(lhs), (sym)*this, 1, &const_cast<val &>((const val &)rhs));
+         return ((sym)*this)(std::forward<Lhs>(lhs), rhs);
+      }
+      template< class Lhs, typename Rhs, std::enable_if_t<
+         std::is_same_v<std::remove_const_t<std::remove_reference_t<Lhs>>, val> &&
+         std::is_same_v<Rhs, int>,
+         decltype(nullptr) > = decltype(nullptr){} >
+      MNL_INLINE val operator()(Lhs &&lhs, Rhs rhs) const
+         { return (*this)(std::forward<Lhs>(lhs), (long long)rhs); }
+
+      template< class Lhs, typename Rhs, std::enable_if_t<
+         std::is_same_v<std::remove_const_t<std::remove_reference_t<Lhs>>, val> &&
+         std::is_same_v<Rhs, decltype(nullptr)>,
+         decltype(nullptr) > MNL_IF_LEAN_AND_MEAN(False) = decltype(nullptr){} >
+      MNL_INLINE val operator()(Lhs &&lhs, Rhs rhs) const {
+         if constexpr (Id == sym::id("==")) {
+            if (MNL_LIKELY(test<>(lhs))) return true;
+         } else
+         if constexpr (Id == sym::id("<>")) {
+            if (MNL_LIKELY(test<>(lhs))) return false;
+         }
+      # if MNL_LEAN_AND_MEAN
+         else static_assert(False, "Use sym::operator() or undefine MNL_LEAN_AND_MEAN");
+      # endif
+         if (MNL_LIKELY(lhs.rep.tag() == 0x7FF8u)) return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(
+            std::forward<Lhs>(lhs), (sym)*this, 1, &const_cast<val &>((const val &)val{}));
+         return ((sym)*this)(lhs, rhs);
       }
 
    private:
