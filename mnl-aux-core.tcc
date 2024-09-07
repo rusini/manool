@@ -964,10 +964,10 @@ namespace aux { namespace pub {
       template< class Lhs, typename Rhs, std::enable_if_t<
          std::is_same_v<std::remove_const_t<std::remove_reference_t<Lhs>>, val> &&
          std::is_same_v<Rhs, long long> | std::is_same_v<Rhs, double> | std::is_same_v<Rhs, float> | std::is_same_v<Rhs, unsigned>,
-         decltype(nullptr) > MNL_IF_LEAN_AND_MEAN(False) = decltype(nullptr){} >
+         decltype(nullptr) > = decltype(nullptr){} >
       MNL_INLINE val operator()(Lhs &&lhs, Rhs rhs) const {
          if (false);
-         else if constexpr (Id == sym::id("=="))
+         else if constexpr (Id == sym::id("==")) {
             { if (MNL_LIKELY(test<Rhs>(lhs))) return cast<Rhs>(lhs) == rhs; }
          else if constexpr (Id == sym::id("<>"))
             { if (MNL_LIKELY(test<Rhs>(lhs))) return cast<Rhs>(lhs) != rhs; }
@@ -975,10 +975,13 @@ namespace aux { namespace pub {
             Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") |
             Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") )
             { if (MNL_LIKELY(test<Rhs>(lhs))) return _op(cast<Rhs>(lhs), rhs); }
-         MNL_IF_LEAN_AND_MEAN(else static_assert(False, "Use sym::operator() or undefine MNL_LEAN_AND_MEAN");)
+         else {
+            return ((sym)*this)(std::forward<Lhs>(lhs), rhs);
+            MNL_IF_LEAN_AND_MEAN(static_assert(false && Id, "Use sym::operator() or undefine MNL_LEAN_AND_MEAN");)
+         }
          if (MNL_LIKELY(lhs.rep.tag() == 0x7FF8u)) return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(
             std::forward<Lhs>(lhs), (sym)*this, 1, &const_cast<val &>((const val &)rhs));
-         return ((sym)*this)(std::forward<Lhs>(lhs), rhs);
+         return ((sym)*this)(lhs, rhs);
       }
       template< class Lhs, typename Rhs, std::enable_if_t<
          std::is_same_v<std::remove_const_t<std::remove_reference_t<Lhs>>, val> && std::is_same_v<Rhs, int>,
