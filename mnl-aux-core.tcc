@@ -888,7 +888,7 @@ namespace aux { namespace pub {
          case 0x7FF9u: case 0x7FFBu: case 0x7FFEu: case 0x7FFFu:
             MNL_ERR(MNL_SYM("UnrecognizedOperation"));
          case 0x7FF8u/*BoxPtr (fallback)*/: return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs),
-            MNL_SYM(SYM), 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
+            (sym)*this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
          case 0x7FFAu/*I48*/:               return (*this)(cast<long long>(lhs),   std::forward<Rhs>(rhs));
          default     /*F64*/:               return (*this)(cast<double>(lhs),      std::forward<Rhs>(rhs));
          case 0x7FFCu/*F32*/:               return (*this)(cast<float>(lhs),       std::forward<Rhs>(rhs));
@@ -899,7 +899,7 @@ namespace aux { namespace pub {
          switch (lhs.rep.tag()) {
          default:    /*F64*/:               return (*this)(cast<double>(lhs),      std::forward<Rhs>(rhs));
          case 0x7FF8u/*BoxPtr (fallback)*/: return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs),
-            MNL_SYM(SYM), 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
+            (sym)*this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
          case 0x7FF9u/*Nil*/:               return (*this)(nullptr                 std::forward<Rhs>(rhs));
          case 0x7FFAu/*I48*/:               return (*this)(cast<long long>(lhs),   std::forward<Rhs>(rhs));
          case 0x7FFCu/*F32*/:               return (*this)(cast<float>(lhs),       std::forward<Rhs>(rhs));
@@ -907,26 +907,27 @@ namespace aux { namespace pub {
          case 0x7FFEu/*Bool/False*/:        return (*this)(false,                  std::forward<Rhs>(rhs));
          case 0x7FFFu/*Bool/True*/:         return (*this)(true,                   std::forward<Rhs>(rhs));
          case 0x7FFDu/*U32*/:               return (*this)(cast<unsigned>(lhs),    std::forward<Rhs>(rhs));
-         } else
+         } else {
             return ((sym)*this)(std::forward<Lhs>(lhs), std::forward<Rhs>(rhs));
+            MNL_IF_LEAN_AND_MEAN(static_assert(false && Id, "Use sym::operator() or undefine MNL_LEAN_AND_MEAN");)
+         }
       }
    public:
       template< typename Lhs, class Rhs, std::enable_if_t<
-         (std::is_same_v<Lhs, long long> | std::is_same_v<Lhs, double> | std::is_same_v<Lhs, float> | std::is_same_v<Lhs, unsigned>) &
+         std::is_same_v<Lhs, long long> | std::is_same_v<Lhs, double> | std::is_same_v<Lhs, float> | std::is_same_v<Lhs, unsigned> &&
          std::is_same_v<Rhs, val>, decltype(nullptr) > = decltype(nullptr){} >
       MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const noexcept(Id == sym::id("==") | Id == sym::id("<>")) {
-         if constexpr (Id == sym::id("=="))
-            return  MNL_LIKELY(test<Lhs>(rhs)) && lhs == cast<Lhs>(rhs);
-         else
-         if constexpr (Id == sym::id("<>"))
-            return !MNL_LIKELY(test<Lhs>(rhs)) || lhs != cast<Lhs>(rhs);
-         else
-         if constexpr (
+         if (false);
+         else if constexpr (Id == sym::id("==")) return  MNL_LIKELY(test<Lhs>(rhs)) && lhs == cast<Lhs>(rhs);
+         else if constexpr (Id == sym::id("<>")) return !MNL_LIKELY(test<Lhs>(rhs)) || lhs != cast<Lhs>(rhs);
+         else if constexpr (
             Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") |
-            Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") )
+            Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") ) {
             { if (MNL_LIKELY(test<Lhs>(rhs))) return _op(lhs, cast<Lhs>(rhs)); MNL_ERR(MNL_SYM("TypeMismatch")); }
-         else
+         else {
             return ((sym)*this)(lhs, rhs);
+            MNL_IF_LEAN_AND_MEAN(static_assert(false && Id, "Use sym::operator() or undefine MNL_LEAN_AND_MEAN");)
+         }
       }
       template< typename Lhs, class Rhs, std::enable_if_t<
          std::is_same_v<Lhs, int> &
