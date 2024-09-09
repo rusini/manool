@@ -390,14 +390,22 @@ namespace aux { namespace pub {
    # else // __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
       memcpy(static_cast<unsigned char *>(this) + sizeof _tag, &dat, sizeof dat);
    # endif
-      if ()
    }
    MNL_INLINE inline val::rep::rep(unsigned tag, long long dat) noexcept
       : _tag(tag), _int(dat) {}
    MNL_INLINE inline val::rep::rep(unsigned tag, void *dat) noexcept
       : _tag(tag), _ptr(reinterpret_cast<uintptr_t>(dat)) {}
-   MNL_INLINE inline val::rep::rep(double dat) noexcept
-      { memcpy(this, &dat, sizeof dat); }
+   MNL_INLINE inline val::rep::rep(double dat) noexcept {
+      memcpy(this, &dat, sizeof dat);
+      if (rep.tag() == 0x7FF8u) MNL_UNREACHABLE; // trick fails on icpc
+      if (rep.tag() == 0x7FF9u) MNL_UNREACHABLE;
+      if (rep.tag() == 0x7FFAu) MNL_UNREACHABLE;
+      if (rep.tag() == 0x7FFBu) MNL_UNREACHABLE;
+      if (rep.tag() == 0x7FFCu) MNL_UNREACHABLE;
+      if (rep.tag() == 0x7FFDu) MNL_UNREACHABLE;
+      if (rep.tag() == 0x7FFEu) MNL_UNREACHABLE;
+      if (rep.tag() == 0x7FFFu) MNL_UNREACHABLE;
+   }
    MNL_INLINE inline val::rep::rep(unsigned tag, const sym &dat) noexcept
       : _tag(tag), _sym(dat) {}
 
