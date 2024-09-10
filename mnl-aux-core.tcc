@@ -920,7 +920,7 @@ namespace aux { namespace pub {
          // TODO: xor!!!
          else {
             return ((sym)*this)(std::forward<Lhs>(lhs), std::forward<Rhs>(rhs));
-            MNL_IF_LEAN_AND_MEAN(static_assert(false && Id, "Use sym::operator() or undefine MNL_LEAN_AND_MEAN");)
+            static_assert(!(Id, lean_and_mean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN");
          }
       }
    public:
@@ -1054,6 +1054,44 @@ namespace aux { namespace pub {
          }
          return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(
             std::forward<Lhs>(lhs), (sym)*this, 1, &const_cast<val &>((const val &)rhs));
+      }
+   public:
+      // numeric
+      template< class Lhs, typename Rhs, std::enable_if_t<
+         std::is_same_v<std::remove_const_t<std::remove_reference_t<Rhs>>, val>,
+         decltype(nullptr) > = decltype(nullptr){} >
+      MNL_INLINE val operator()(Rhs &&rhs) const {
+         if (false);
+         else if constexpr (
+            Id == sym::id("-") | Id == sym::id("Abs") )
+         switch (rhs.rep.tag()) {
+         case 0x7FF9u: case 0x7FFBu: case 0x7FFEu: case 0x7FFFu:
+            MNL_ERR(MNL_SYM("UnrecognizedOperation"));
+         case 0x7FF8u: // BoxPtr (fallback)
+            return static_cast<root *>(rhs.rep.template dat<void *>())->invoke(std::move(rhs), (sym)*this, 0, {});
+         case 0x7FFAu: return _op(cast<long long>(rhs));
+         default:      return _op(cast<double>(rhs));
+         case 0x7FFCu: return _op(cast<float>(rhs));
+         case 0x7FFDu: return _op(cast<unsigned>(rhs));
+         }
+         else if constexpr (
+            Id == sym::id("~") )
+         switch (rhs.rep.tag()) {
+         case 0x7FF9u: case 0x7FFBu:
+            MNL_ERR(MNL_SYM("UnrecognizedOperation"));
+         case 0x7FF8u: // BoxPtr (fallback)
+            return static_cast<root *>(rhs.rep.template dat<void *>())->invoke(std::move(rhs), (sym)*this, 0, {});
+         case 0x7FFEu: return true;
+         case 0x7FFFu: return false;
+         case 0x7FFDu: return ~cast<unsigned>(rhs);
+         case 0x7FFAu: return aux::_neg(cast<long long>(rhs)); // Neg(ation)
+         default:      return aux::_neg(cast<double>(rhs));    // Neg(ation)
+         case 0x7FFCu: return aux::_neg(cast<float>(rhs));     // Neg(ation)
+         }
+         else {
+            return ((sym)*this)(std::forward<Rhs>(rhs));
+            static_assert(!(Id, lean_and_mean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN");
+         }
       }
 
    private:
