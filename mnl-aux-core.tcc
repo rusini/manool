@@ -245,7 +245,7 @@ namespace aux { namespace pub {
             MNL_PACK signed long long _int: 48;
             MNL_PACK std::uintptr_t _ptr: sizeof(void *) == 4 ? 32 : sizeof(void *) == 8 ? 48 : 0;
             sym _sym; // standard-layout struct
-         };
+         }; // TODO: maybe using "union trick" affects less the optimizer?
       # if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
          unsigned short _tag;
       # elif __BYTE_ORDER__ != __ORDER_BIG_ENDIAN__
@@ -388,7 +388,7 @@ namespace aux { namespace pub {
    # if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
       memcpy(this, &dat, sizeof dat);
    # else // __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-      memcpy(static_cast<unsigned char *>(this) + sizeof _tag, &dat, sizeof dat);
+      memcpy(reinterpret_cast<unsigned char *>(this) + sizeof _tag, &dat, sizeof dat);
    # endif
    }
    MNL_INLINE inline val::rep::rep(unsigned tag, long long dat) noexcept
@@ -416,11 +416,10 @@ namespace aux { namespace pub {
       static_assert(sizeof dat <= 6, "sizeof dat <= 6");
       static_assert(!std::is_pointer<Dat>::value, "!std::is_pointer<Dat>::value");
    # if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-      memcpy(&dat, this, sizeof dat);
+      memcpy(&dat, this, sizeof dat); return dat;
    # else // __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-      memcpy(&dat, static_cast<const unsigned char *>(this) + sizeof _tag, sizeof dat);
+      memcpy(&dat, reinterpret_cast<const unsigned char *>(this) + sizeof _tag, sizeof dat); return dat;
    # endif
-      return dat;
    }
    template<> MNL_INLINE inline long long val::rep::dat() const noexcept
       { return _int; }
@@ -963,8 +962,10 @@ namespace aux { namespace pub {
          if (false);
          else if constexpr (Id == sym::id("==")) return  test<>(rhs);
          else if constexpr (Id == sym::id("<>")) return !test<>(rhs);
-         else
-            { return ((sym)*this)(lhs, rhs); static_assert(!(Id, lean_and_mean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN"); }
+         else {
+            return ((sym)*this)(val{}, rhs);
+            static_assert(!(Id, lean_and_mean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN");
+         }
       }
       // Bool
       template< typename Lhs, class Rhs, std::enable_if_t<
@@ -978,6 +979,7 @@ namespace aux { namespace pub {
             { return ((sym)*this)(lhs, rhs); static_assert(!(Id, lean_and_mean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN"); }
       }
    public:
+      // numeric
       template< class Lhs, typename Rhs, std::enable_if_t<
          std::is_same_v<std::remove_const_t<std::remove_reference_t<Lhs>>, val> &&
          std::is_same_v<Rhs, long long> | std::is_same_v<Rhs, double> | std::is_same_v<Rhs, float> | std::is_same_v<Rhs, unsigned>,
@@ -985,30 +987,33 @@ namespace aux { namespace pub {
       MNL_INLINE val operator()(Lhs &&lhs, Rhs rhs) const {
          if (false);
          else if constexpr (Id == sym::id("==")) {
-            { if (MNL_LIKELY(test<Rhs>(lhs))) return cast<Rhs>(lhs) == rhs; }
-         else if constexpr (Id == sym::id("<>"))
-            { if (MNL_LIKELY(test<Rhs>(lhs))) return cast<Rhs>(lhs) != rhs; }
+            if (MNL_LIKELY(test<Rhs>(lhs))) return cast<decltype(rhs)>(lhs) == rhs;
+            if (MNL_LIKELY(lhs.rep.tag() != 0x7FF8u)) return false;
+         }
+         else if constexpr (Id == sym::id("<>")) { if (MNL_LIKELY(test<Rhs>(lhs))) return cast<decltype(rhs)>(lhs) != rhs; }
          else if constexpr (
             Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") |
             Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") )
-            { if (MNL_LIKELY(test<Rhs>(lhs))) return _op(cast<Rhs>(lhs), rhs); }
+            { if (MNL_LIKELY(test<Rhs>(lhs))) return _op(cast<decltype(rhs)>(lhs), rhs); }
          else {
             return ((sym)*this)(std::forward<Lhs>(lhs), rhs);
-            MNL_IF_LEAN_AND_MEAN(static_assert(false && Id, "Use sym::operator() or undefine MNL_LEAN_AND_MEAN");)
+            static_assert(!(Id, lean_and_mean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN");
          }
          if (MNL_LIKELY(lhs.rep.tag() == 0x7FF8u)) return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(
             std::forward<Lhs>(lhs), (sym)*this, 1, &const_cast<val &>((const val &)rhs));
-         return ((sym)*this)(lhs, rhs);
+         return ((sym)*this)(lhs, rhs); // raise appropriate signal TODO: also implements partly ==/<>!!!
       }
       template< class Lhs, typename Rhs, std::enable_if_t<
-         std::is_same_v<std::remove_const_t<std::remove_reference_t<Lhs>>, val> && std::is_same_v<Rhs, int>,
+         std::is_same_v<std::remove_const_t<std::remove_reference_t<Lhs>>, val> &&
+         std::is_same_v<Rhs, int>,
          decltype(nullptr) > = decltype(nullptr){} >
-      MNL_INLINE val operator()(Lhs &&lhs, Rhs rhs) const { return (*this)(std::forward<Lhs>(lhs), (long long)rhs); }
+      MNL_INLINE val operator()(Lhs &&lhs, Rhs rhs) const
+         { return (*this)(std::forward<Lhs>(lhs), (long long)rhs); }
 
       template< class Lhs, typename Rhs, std::enable_if_t<
          std::is_same_v<std::remove_const_t<std::remove_reference_t<Lhs>>, val> &&
          std::is_same_v<Rhs, decltype(nullptr)>,
-         decltype(nullptr) > MNL_IF_LEAN_AND_MEAN(False) = decltype(nullptr){} >
+         decltype(nullptr) > = decltype(nullptr){} >
       MNL_INLINE val operator()(Lhs &&lhs, Rhs rhs) const {
          if (false);
          else if constexpr (Id == sym::id("==")) { if (MNL_LIKELY(test<>(lhs))) return true;  }
@@ -1018,7 +1023,7 @@ namespace aux { namespace pub {
       # endif
          if (MNL_LIKELY(lhs.rep.tag() == 0x7FF8u)) return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(
             std::forward<Lhs>(lhs), (sym)*this, 1, &const_cast<val &>((const val &)val{}));
-         return ((sym)*this)(lhs, rhs);
+         return ((sym)*this)(lhs, val{});
       }
 
    private:
