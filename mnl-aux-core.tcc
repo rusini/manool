@@ -887,12 +887,12 @@ namespace aux { namespace pub {
       MNL_INLINE val operator()(const Lhs  &lhs,       Rhs &&rhs) const { return _apply(          lhs , std::move(rhs)); }
       MNL_INLINE val operator()(      Lhs &&lhs, const Rhs  &rhs) const { return _apply(std::move(lhs),           rhs ); }
       MNL_INLINE val operator()(      Lhs &&lhs,       Rhs &&rhs) const { return _apply(std::move(lhs), std::move(rhs)); }
-   private:
+   private: // TODO: now unsigned becomes a special type due to support for Xor...
       template<class Lhs, class Rhs> static MNL_INLINE val _apply(Lhs &&lhs, Rhs &&rhs) {
          if (false);
          else if constexpr (
-            Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") |
-            Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") )
+            Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") | Id == sym::id("Xor") |
+            Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=" ) )
          switch (lhs.rep.tag()) /*jumptable*/ {
          case 0x7FF9u: case 0x7FFBu: case 0x7FFEu: case 0x7FFFu:
             MNL_ERR(MNL_SYM("UnrecognizedOperation"));
@@ -913,17 +913,18 @@ namespace aux { namespace pub {
          case 0x7FFAu/*I48*/:               return (*this)(cast<long long>(lhs),   std::forward<Rhs>(rhs));
          case 0x7FFCu/*F32*/:               return (*this)(cast<float>(lhs),       std::forward<Rhs>(rhs));
          case 0x7FFBu/*Sym*/:               return (*this)(cast<const sym &>(lhs), std::forward<Rhs>(rhs));
-         case 0x7FFEu/*Bool/False*/:        return (*this)(false,                  std::forward<Rhs>(rhs));
+         case 0x7FFEu/*Bool/False*/:        return (*this)(false,                  std::forward<Rhs>(rhs)); // TODO: may actually get rid of relying on operator() in THIS case
          case 0x7FFFu/*Bool/True*/:         return (*this)(true,                   std::forward<Rhs>(rhs));
          case 0x7FFDu/*U32*/:               return (*this)(cast<unsigned>(lhs),    std::forward<Rhs>(rhs));
          }
+         // TODO: xor!!!
          else {
             return ((sym)*this)(std::forward<Lhs>(lhs), std::forward<Rhs>(rhs));
             MNL_IF_LEAN_AND_MEAN(static_assert(false && Id, "Use sym::operator() or undefine MNL_LEAN_AND_MEAN");)
          }
       }
    public:
-      // numeric
+      // numeric   TODO: now unsigned becomes a special type due to support for Xor... also for bool
       template< typename Lhs, class Rhs, std::enable_if_t<
          std::is_same_v<Lhs, long long> | std::is_same_v<Lhs, double> | std::is_same_v<Lhs, float> | std::is_same_v<Lhs, unsigned> &&
          std::is_same_v<Rhs, val>, decltype(nullptr) > = decltype(nullptr){} >
@@ -962,10 +963,8 @@ namespace aux { namespace pub {
          if (false);
          else if constexpr (Id == sym::id("==")) return  test<>(rhs);
          else if constexpr (Id == sym::id("<>")) return !test<>(rhs);
-         else {
-            return ((sym)*this)(val{}, rhs);
-            static_assert(!(Id, lean_and_mean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN");
-         }
+         else
+            { return ((sym)*this)(lhs, rhs); static_assert(!(Id, lean_and_mean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN"); }
       }
       // Bool
       template< typename Lhs, class Rhs, std::enable_if_t<
