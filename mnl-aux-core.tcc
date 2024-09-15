@@ -898,18 +898,18 @@ namespace aux { namespace pub {
             MNL_ERR(MNL_SYM("UnrecognizedOperation"));
          case 0x7FF8u/*BoxPtr (fallback)*/: return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs),
             (sym)*this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
-         case 0x7FFAu/*I48*/:               return (*this)(cast<long long>(lhs),   std::forward<Rhs>(rhs));
-         default     /*F64*/:               return (*this)(cast<double>(lhs),      std::forward<Rhs>(rhs));
-         case 0x7FFCu/*F32*/:               return (*this)(cast<float>(lhs),       std::forward<Rhs>(rhs));
-         case 0x7FFDu/*U32*/:               return (*this)(cast<unsigned> (lhs),   std::forward<Rhs>(rhs));
+         case 0x7FFAu/*I48*/:               return (*this)(cast<long long>(lhs),   rhs);
+         default     /*F64*/:               return (*this)(cast<double>(lhs),      rhs);
+         case 0x7FFCu/*F32*/:               return (*this)(cast<float>(lhs),       rhs);
+         case 0x7FFDu/*U32*/:               return (*this)(cast<unsigned> (lhs),   rhs);
          }
          else if constexpr (
             Id == sym::id("==") | Id == sym::id("<>") )
          switch (lhs.rep.tag()) {
-         default:    /*F64*/:               return (*this)(cast<double>(lhs),      std::forward<Rhs>(rhs));
+         default:    /*F64*/:               return (*this)(cast<double>(lhs),      rhs);
          case 0x7FF8u/*BoxPtr (fallback)*/: return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs),
             (sym)*this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
-         case 0x7FF9u/*Nil*/:               return (*this)(nullptr                 std::forward<Rhs>(rhs));
+         case 0x7FF9u/*Nil*/:               return (*this)(nullptr                 rhs);
          case 0x7FFAu/*I48*/:               return (*this)(cast<long long>(lhs),   std::forward<Rhs>(rhs));
          case 0x7FFCu/*F32*/:               return (*this)(cast<float>(lhs),       std::forward<Rhs>(rhs));
          case 0x7FFBu/*Sym*/:               return (*this)(cast<const sym &>(lhs), std::forward<Rhs>(rhs));
@@ -918,6 +918,23 @@ namespace aux { namespace pub {
          case 0x7FFDu/*U32*/:               return (*this)(cast<unsigned>(lhs),    std::forward<Rhs>(rhs));
          }
          // TODO: xor!!!
+         else if constexpr (
+            Id == sym::id("Xor") )
+         switch (lhs.rep.tag()) {
+         case 0x7FF8u: // BoxPtr (fallback)
+            return static_cast<val::root *>(lhs.rep.dat<void *>())->invoke(move(lhs), MNL_SYM("Xor"), 1, &rhs);
+         default:
+            MNL_ERR(MNL_SYM("UnrecognizedOperation"));
+         case 0x7FFEu: // Bool/False
+            if (MNL_UNLIKELY(!test<bool>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch"));
+            return val{decltype(val::rep){rhs.rep.tag()}};
+         case 0x7FFFu: // Bool/True
+            if (MNL_UNLIKELY(!test<bool>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch"));
+            return val{decltype(val::rep){rhs.rep.tag() ^ 1}};
+         case 0x7FFDu: // U32
+            if (MNL_UNLIKELY(!test<unsigned>(rhs))) MNL_ERR(MNL_SYM("TypeMismatch"));
+            return cast<unsigned>(lhs) ^ cast<unsigned>(rhs);
+         }
          else {
             return ((sym)*this)(std::forward<Lhs>(lhs), std::forward<Rhs>(rhs));
             static_assert(!(Id, lean_and_mean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN");
@@ -934,8 +951,9 @@ namespace aux { namespace pub {
          else if constexpr (Id == sym::id("<>")) return !MNL_LIKELY(test<Lhs>(rhs)) || lhs != cast<decltype(lhs)>(rhs);
          else if constexpr (
             Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") |
-            Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") ) {
-            { if (MNL_LIKELY(test<Lhs>(rhs))) return _op(lhs, cast<Lhs>(rhs)); MNL_ERR(MNL_SYM("TypeMismatch")); }
+            Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") |
+            std::is_same_v<Lhs, unsigned> & (Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|")) ) {
+            { if (MNL_LIKELY(test<Lhs>(rhs))) return _op(lhs, cast<decltype(lhs)>(rhs)); MNL_ERR(MNL_SYM("TypeMismatch")); }
          else
             { return ((sym)*this)(lhs, rhs); static_assert(!(Id, lean_and_mean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN"); }
       }
@@ -947,7 +965,7 @@ namespace aux { namespace pub {
       // Sym, string
       template< typename Lhs, class Rhs, std::enable_if_t<
          std::is_same_v<Lhs, sym> | std::is_same_v<Lhs, std::string> &&
-         std::is_same_v<Rhs, val>, decltype(nullptr) > MNL_IF_LEAN_AND_MEAN(False) = decltype(nullptr){} >
+         std::is_same_v<Rhs, val>, decltype(nullptr) > = decltype(nullptr){} >
       MNL_INLINE auto operator()(const Lhs &lhs, const Rhs &rhs) const noexcept(Id == sym::id("==") | Id == sym::id("<>")) {
          if (false);
          else if constexpr (Id == sym::id("==")) return  MNL_LIKELY(test<Lhs>(rhs)) && lhs == cast<decltype(lhs)>(rhs);
@@ -955,6 +973,11 @@ namespace aux { namespace pub {
          else
             { return ((sym)*this)(lhs, rhs); static_assert(!(Id, lean_and_mean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN"); }
       }
+      template< typename Lhs, class Rhs, std::enable_if_t<
+         std::is_same_v<Lhs, const char *> &&
+         std::is_same_v<Rhs, val>, decltype(nullptr) > = decltype(nullptr){} >
+      MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const noexcept(Id == sym::id("==") | Id == sym::id("<>"))
+         { return (*this)((std::string)lhs, rhs); }
       // Nil
       template< typename Lhs, class Rhs, std::enable_if_t<
          std::is_same_v<Lhs, decltype(nullptr)> &&
