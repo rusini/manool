@@ -887,7 +887,7 @@ namespace aux { namespace pub {
       MNL_INLINE val operator()(const Lhs  &lhs,       Rhs &&rhs) const { return _apply(          lhs , std::move(rhs)); }
       MNL_INLINE val operator()(      Lhs &&lhs, const Rhs  &rhs) const { return _apply(std::move(lhs),           rhs ); }
       MNL_INLINE val operator()(      Lhs &&lhs,       Rhs &&rhs) const { return _apply(std::move(lhs), std::move(rhs)); }
-   private: // TODO: now unsigned becomes a special type due to support for Xor...
+   private:
       template<class Lhs, class Rhs> static MNL_INLINE val _apply(Lhs &&lhs, Rhs &&rhs) {
          if (false);
          else if constexpr (
@@ -935,11 +935,13 @@ namespace aux { namespace pub {
          }
       }
    public:
-      // numeric   TODO: now unsigned becomes a special type due to support for Xor... also for bool
+      // numeric
       template< typename Lhs, class Rhs, std::enable_if_t<
          std::is_same_v<Lhs, long long> | std::is_same_v<Lhs, double> | std::is_same_v<Lhs, float> | std::is_same_v<Lhs, unsigned> &&
          std::is_same_v<Rhs, val>, decltype(nullptr) > = decltype(nullptr){} >
       MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const noexcept(Id == sym::id("==") | Id == sym::id("<>")) {
+      // this "specialization" can be obtained by scalar value propagation in _apply
+      // not needed, strictly speaking, but used in _apply as part of its architecture
          if (false);
          else if constexpr (Id == sym::id("==")) return  MNL_LIKELY(test<Lhs>(rhs)) && lhs == cast<decltype(lhs)>(rhs);
          else if constexpr (Id == sym::id("<>")) return !MNL_LIKELY(test<Lhs>(rhs)) || lhs != cast<decltype(lhs)>(rhs);
@@ -1007,6 +1009,8 @@ namespace aux { namespace pub {
          std::is_same_v<Rhs, long long> | std::is_same_v<Rhs, double> | std::is_same_v<Rhs, float> | std::is_same_v<Rhs, unsigned>,
          decltype(nullptr) > = decltype(nullptr){} >
       MNL_INLINE val operator()(Lhs &&lhs, Rhs rhs) const {
+      // this "specialization" cannot be obtained by scalar value propagation in _apply
+      // needed for performance reasons
          if (false);
          else if constexpr (Id == sym::id("==")) {
             if (MNL_LIKELY(test<Rhs>(lhs))) return cast<decltype(rhs)>(lhs) == rhs;
@@ -1018,7 +1022,8 @@ namespace aux { namespace pub {
          }
          else if constexpr (
             Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") |
-            Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") ) {
+            Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") |
+            std::is_same_v<Rhs, unsigned> & (Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|")) ) {
             if (MNL_LIKELY(test<Rhs>(lhs))) return _op(cast<decltype(rhs)>(lhs), rhs);
             if (MNL_UNLIKELY(lhs.rep.tag() != 0x7FF8u)) return ((sym)*this)(lhs, rhs); // raise appropriate signal
          }
@@ -1078,6 +1083,9 @@ namespace aux { namespace pub {
          return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(
             std::forward<Lhs>(lhs), (sym)*this, 1, &const_cast<val &>((const val &)rhs));
       }
+   public:
+      MNL_INLINE val operator()(const Rhs  &rhs) const { return _apply(          rhs ); }
+      MNL_INLINE val operator()(      Rhs &&rhs) const { return _apply(std::move(rhs)); }
    public:
       // numeric
       template< class Lhs, typename Rhs, std::enable_if_t<
