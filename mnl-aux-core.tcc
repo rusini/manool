@@ -1157,23 +1157,10 @@ namespace aux { namespace pub {
       { if (MNL_LIKELY(test<Dat>(lhs))) return cast<Dat>(lhs) >= rhs; return _ge(move(lhs), (val)rhs); }
    template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, val> _add(val &&lhs, Dat rhs)
       { if (MNL_LIKELY(test<Dat>(lhs))) return aux::_add(cast<Dat>(lhs), rhs); return _add(move(lhs), (val)rhs); }
-   //template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, val> _add(const val &lhs, Dat rhs) // @@@
-   //   { if (MNL_LIKELY(test<Dat>(lhs))) return aux::_add(cast<Dat>(lhs), rhs); return _add((val)lhs, (val)rhs); }
    template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, val> _sub(val &&lhs, Dat rhs)
       { if (MNL_LIKELY(test<Dat>(lhs))) return aux::_sub(cast<Dat>(lhs), rhs); return _sub(move(lhs), (val)rhs); }
    template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, val> _mul(val &&lhs, Dat rhs)
       { if (MNL_LIKELY(test<Dat>(lhs))) return aux::_mul(cast<Dat>(lhs), rhs); return _mul(move(lhs), (val)rhs); }
-
-   //inline val _eq (const val &lhs, val &&rhs) { return _eq ((val)lhs, (move)(rhs)); } // @@@
-   //inline val _ne (const val &lhs, val &&rhs) { return _ne ((val)lhs, (move)(rhs)); } // @@@
-   //inline val _lt (const val &lhs, val &&rhs) { return _lt ((val)lhs, (move)(rhs)); } // @@@
-   //inline val _le (const val &lhs, val &&rhs) { return _le ((val)lhs, (move)(rhs)); } // @@@
-   //inline val _gt (const val &lhs, val &&rhs) { return _gt ((val)lhs, (move)(rhs)); } // @@@
-   //inline val _ge (const val &lhs, val &&rhs) { return _ge ((val)lhs, (move)(rhs)); } // @@@
-   //inline val _add(const val &lhs, val &&rhs) { return _add((val)lhs, (move)(rhs)); } // @@@
-   //inline val _sub(const val &lhs, val &&rhs) { return _sub((val)lhs, (move)(rhs)); } // @@@
-   //inline val _mul(const val &lhs, val &&rhs) { return _mul((val)lhs, (move)(rhs)); } // @@@
-
 
    template<typename Dat> MNL_INLINE inline enable_core_numeric<Dat, bool> _eq (Dat lhs, val &&rhs) noexcept
       { return  MNL_LIKELY(test<Dat>(rhs)) && lhs == cast<Dat>(rhs); }
