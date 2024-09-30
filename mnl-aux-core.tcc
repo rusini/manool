@@ -273,7 +273,7 @@ namespace aux { namespace pub {
    # endif
       class MNL_ALIGN(8) rep { // bit-layout management - for IEEE 754 FP representation and uniform FP endianness
       # if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-         unsigned short _tag;
+         short _tag;
       # endif
          union {
             MNL_PACK signed long long _int: 48;
@@ -281,7 +281,7 @@ namespace aux { namespace pub {
             sym _sym; // standard-layout struct
          }; // TODO: maybe using "union trick" affects less the optimizer?
       # if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-         unsigned short _tag;
+         short _tag;
       # elif __BYTE_ORDER__ != __ORDER_BIG_ENDIAN__
          # error "Unsupported mixed endianness"
       # endif
@@ -541,7 +541,7 @@ namespace aux { namespace pub {
       vcri_range{cast<const pair<vector<ast>, loc> &>().first.rbegin(), cast<const pair<vector<ast>, loc> &>().first.rend() - sn}; }
 
 // Resource Management Helpers /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-# if 0
+# if false
    MNL_INLINE inline void val::addref() const noexcept {
       switch (rep.tag()) {
       case 0x7FFBu: rep.dat<const sym &>().addref(); return;
@@ -556,7 +556,7 @@ namespace aux { namespace pub {
          MNL_IF_WITH_MT(__atomic_sub_fetch(&static_cast<root *>(rep.dat<void *>())->_rc, 1, __ATOMIC_ACQ_REL)) )) delete static_cast<root *>(rep.dat<void *>());
       }
    }
-# else // alternative implementation
+# elseif false
    MNL_INLINE inline void val::addref() const noexcept {
       if (MNL_UNLIKELY(rep.tag() == 0x7FF8u)) // should improve branch prediction compared to a switch
          MNL_IF_WITHOUT_MT(++static_cast<root *>(rep.dat<void *>())->_rc)
@@ -576,11 +576,30 @@ namespace aux { namespace pub {
          rep.dat<const sym &>().release();
       }
    }
+# else // alternative implementation
+   MNL_INLINE inline void val::addref() const noexcept {
+      if (MNL_UNLIKELY(rep.tag() >= 0b110 - 8))
+      if (MNL_UNLIKELY(rep.tag() == 0b110 - 8))
+         rep.dat<const sym &>().addref();
+      else
+         MNL_IF_WITHOUT_MT(++static_cast<root *>(rep.dat<void *>())->_rc)
+         MNL_IF_WITH_MT(__atomic_add_fetch(&static_cast<root *>(rep.dat<void *>())->_rc, 1, __ATOMIC_RELAXED));
+   }
+   MNL_INLINE inline void val::release() const noexcept {
+      if (MNL_UNLIKELY(rep.tag() >= 0b110 - 8))
+      if (MNL_UNLIKELY(rep.tag() == 0b110 - 8))
+         rep.dat<const sym &>().release();
+      else
+      if (MNL_UNLIKELY(!
+         MNL_IF_WITHOUT_MT(--static_cast<root *>(rep.dat<void *>())->_rc)
+         MNL_IF_WITH_MT(__atomic_sub_fetch(&static_cast<root *>(rep.dat<void *>())->_rc, 1, __ATOMIC_ACQ_REL)) ))
+         delete static_cast<root *>(rep.dat<void *>());
+   }
 # endif
 
 // val Extractors //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    template<typename Dat> MNL_INLINE inline bool val::test() const noexcept {
-      return MNL_LIKELY(rep.tag() == 0x7FF8u) &&
+      return MNL_LIKELY(rep.tag() == 0b111 - 8) &&
          typeid(*static_cast<root *>(rep.dat<void *>())) == typeid(box<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type>);
    }
    template<typename Dat> MNL_INLINE inline Dat val::cast() const noexcept(std::is_nothrow_copy_constructible<Dat>::value) {
@@ -603,23 +622,29 @@ namespace aux { namespace pub {
    template<> MNL_INLINE inline bool val::test<int>() const noexcept       { return test<long long>(); }
    template<> MNL_INLINE inline long long val::cast() const noexcept { return rep.dat<long long>(); }
    template<> MNL_INLINE inline int       val::cast() const noexcept { return cast<long long>(); }
+   template<> MNL_INLINE inline auto val::test<const long long &>() const noexcept { return test<long long>(); }
+   template<> MNL_INLINE inline auto val::cast<const long long &>() const noexcept { return cast<long long>(); }
+   template<> MNL_INLINE inline auto val::test<const int &>() const noexcept { return test<int>(); }
+   template<> MNL_INLINE inline auto val::cast<const int &>() const noexcept { return cast<int>(); }
 
-   template<> MNL_INLINE inline bool val::test<double>() const noexcept { return rep.tag() < 0b000u - 8; }
+   template<> MNL_INLINE inline bool val::test<double>() const noexcept { return rep.tag() < 0b000 - 8; }
    template<> MNL_INLINE inline double val::cast() const noexcept { return rep.dat<double>(); }
+   template<> MNL_INLINE inline auto val::test<const double &>() const noexcept { return test<double>(); }
+   template<> MNL_INLINE inline auto val::cast<const double &>() const noexcept { return cast<double>(); }
 
-   template<> MNL_INLINE inline bool val::test<float>() const noexcept { return rep.tag() == 0x7FFCu; }
+   template<> MNL_INLINE inline bool val::test<float>() const noexcept { return rep.tag() == 0b010 - 8; }
    template<> MNL_INLINE inline float val::cast() const noexcept { return rep.dat<float>(); }
 
-   template<> MNL_INLINE inline bool val::test<const sym &>() const noexcept { return rep.tag() == 0x7FFBu; }
+   template<> MNL_INLINE inline bool val::test<const sym &>() const noexcept { return rep.tag() == 0b110 - 8; }
    template<> MNL_INLINE inline bool val::test<sym>() const noexcept         { return test<const sym &>(); }
    template<> MNL_INLINE inline const sym &val::cast() const noexcept { return rep.dat<const sym &>(); }
    template<> MNL_INLINE inline sym        val::cast() const noexcept { return cast<const sym &>(); }
    MNL_INLINE inline bool val::operator==(const sym &rhs) const noexcept { return test<sym>() && cast<const sym &>() == rhs; }
 
-   template<> MNL_INLINE inline bool val::test<bool>() const noexcept { return (rep.tag() & 0x7FFEu) == 0x7FFEu; }
-   template<> MNL_INLINE inline bool val::cast() const noexcept { return rep.tag() & 1u; }
+   template<> MNL_INLINE inline bool val::test<bool>() const noexcept { return (rep.tag() | true) == (0b100 - 8 | true); }
+   template<> MNL_INLINE inline bool val::cast() const noexcept { return rep.tag() & true; }
 
-   template<> MNL_INLINE inline bool val::test<unsigned>() const noexcept { return rep.tag() == 0x7FFDu; }
+   template<> MNL_INLINE inline bool val::test<unsigned>() const noexcept { return rep.tag() == 0b011 - 8; }
    template<> MNL_INLINE inline bool val::test<char>() const noexcept     { return test<unsigned>(); }
    template<> MNL_INLINE inline unsigned val::cast() const noexcept { return rep.dat<unsigned>(); }
    template<> MNL_INLINE inline char     val::cast() const noexcept { return cast<unsigned>(); }
