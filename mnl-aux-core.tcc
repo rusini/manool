@@ -49,6 +49,14 @@ namespace MNL_AUX_UUID {
       - http://www.boost.org/doc/libs/1_66_0/doc/html/atomic/usage_examples.html  */
 
 // Utilities for Static Initialization /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   # define MNL_AUX_EARLY(...) []() noexcept->auto &{ \
+      static constexpr auto init_lambda = []() noexcept{ return (__VA_ARGS__); }; \
+      static decltype(init_lambda()) (*const init_func)() = init_lambda; \
+      return ::mnl::aux::early<init_func>; \
+   }()
+   namespace aux { template<const auto &Init> extern const auto early = Init(); }
+
+
    # define MNL_AUX_INIT(...) []()noexcept->const decltype(__VA_ARGS__) &{ \
       struct traits { MNL_INLINE static decltype(__VA_ARGS__) _() noexcept { return (__VA_ARGS__); } }; \
       return ::mnl::aux::_init<traits>::_; \
@@ -82,7 +90,7 @@ namespace aux { namespace pub {
       MNL_INLINE ~sym() { release(); }
       MNL_INLINE sym &operator=(const sym &rhs) noexcept { rhs.addref(), release(), rep = rhs.rep; return *this; }
       MNL_INLINE sym &operator=(sym &&rhs) noexcept { swap(rhs); return *this; }
-      MNL_INLINE void swap(sym &rhs) noexcept { using std::swap; swap(rep, rhs.rep); }
+      MNL_INLINE void swap(sym &rhs) noexcept { std::swap(rep, rhs.rep); }
       MNL_INLINE friend bool operator==(const sym &lhs, const sym &rhs) noexcept { return lhs.rep == rhs; }
       MNL_INLINE friend bool operator< (const sym &lhs, const sym &rhs) noexcept { auto mask = MNL_AUX_RAND(unsigned); return (lhs ^ mask) < (rhs ^ mask); }
       MNL_INLINE explicit operator bool() const noexcept { return rep; }
@@ -107,9 +115,9 @@ namespace aux { namespace pub {
       template<enum id> static const sym from_id;
    private: // Concrete representation
       enum: unsigned short {} rep;
-      static map<string, const decltype(rep)> dict;
+      static std::map<std::string, const decltype(rep)> dict;
       static decltype(dict)::const_iterator inverse[];
-      static vector<decltype(rep)> pool;
+      static std::vector<decltype(rep)> pool;
       MNL_IF_WITH_MT(static std::mutex mutex;)
       static /*atomic*/ long rc[];
       MNL_INLINE explicit sym(decltype(rep) rep) noexcept: rep(rep) { addref(); }
@@ -186,19 +194,19 @@ MNL_INLINE constexpr auto aux::pub::sym::id(const char *lab/*el*/) noexcept->enu
 # if __has_builtin(__builtin_is_constant_evaluated)
    if (__builtin_is_constant_evaluated())
 # endif
-   {  constexpr auto eq/*ual*/ = [](auto lhs, auto rhs) constexpr{ // constexpr replacement for std::strcmp
-         while (*lhs == *rhs && *lhs) ++lhs, ++rhs;
+   {  constexpr auto eq/*ual*/ = [](auto lhs, auto rhs) constexpr MNL_NOINLINE{ // constexpr replacement for std::strcmp
+         while (MNL_LIKELY(*lhs == *rhs) && MNL_LIKELY(*lhs)) ++lhs, ++rhs;
          return *lhs == *rhs;
       };
-      int id = 0;
-   # define MNL_ID(LAB) if (++id, eq(lab, LAB)) return static_cast<enum id>(id);
+      int count = {};
+   # define MNL_ID(LAB) if (MNL_UNLIKELY(eq(lab, LAB))) return static_cast<enum id>(count); ++count;
       # include "wks.tcc"
    # undef MNL_ID
    }
    return (sym)lab; // not meant to introduce new symbols, since it aborts on exceptions
 }
 
-template<enum id Id> const aux::pub::sym aux::pub::sym::from_id(static_cast<decltype(rep)>(Id));
+template<enum id Id> const aux::pub::sym aux::pub::sym::from_id{static_cast<decltype(rep)>(Id)};
 
 
    # define MNL_SYM(TXT)  MNL_AUX_INIT(::mnl::sym(TXT))
@@ -224,24 +232,24 @@ namespace aux { namespace pub {
 
    class val/*ue*/ {
    public: // Standard operations
-      MNL_INLINE val(decltype(nullptr) = {}) noexcept: rep{0x7FF9u} {}
+      MNL_INLINE val(decltype(nullptr) = {}) noexcept: rep{-8 + 0b000} {}
       MNL_INLINE val(const val &rhs) noexcept: rep(rhs.rep) { addref(); }
-      MNL_INLINE val(val &&rhs) noexcept: rep(rhs.rep) { rhs.rep = {0x7FF9u}; }
+      MNL_INLINE val(val &&rhs) noexcept: rep(rhs.rep) { rhs.rep = {-8 + 0b000}; }
       MNL_INLINE ~val() { release(); }
       MNL_INLINE val &operator=(const val &rhs) noexcept { rhs.addref(), release(), rep = rhs.rep; return *this; }
-      MNL_INLINE val &operator=(val &&rhs) noexcept { release(), rep = rhs.rep, rhs.rep = {0x7FF9u}; return *this; }
+      MNL_INLINE val &operator=(val &&rhs) noexcept { release(), rep = rhs.rep, rhs.rep = {-8 + 0b000}; return *this; }
       MNL_INLINE void swap(val &rhs) noexcept { using std::swap; swap(rep, rhs.rep); }
       MNL_INLINE explicit operator bool() const noexcept { return *this != nullptr; }
    public: // Construction -- Implicit conversion (to)
-      MNL_INLINE val(long long dat) noexcept: rep{0x7FFAu, dat} {} // valid range: min_i48 .. max_i48
+      MNL_INLINE val(long long dat) noexcept: rep{-8 + 0b001, dat} {} // valid range: min_i48 .. max_i48
       MNL_INLINE val(int dat) noexcept:       val((long long)dat) {}
       MNL_INLINE val(double dat) noexcept: rep(dat) {}
-      MNL_INLINE val(float dat) noexcept: rep{0x7FFCu, dat} {}
-      MNL_INLINE val(const sym &dat) noexcept: rep{0x7FFBu, dat} {}
-      MNL_INLINE val(bool dat) noexcept: rep{0x7FFEu | dat} {}
-      MNL_INLINE val(unsigned dat) noexcept: rep{0x7FFDu, dat} {}
+      MNL_INLINE val(float dat) noexcept: rep{-8 + 0b010, dat} {}
+      MNL_INLINE val(const sym &dat) noexcept: rep{-8 + 0b110, dat} {}
+      MNL_INLINE val(bool dat) noexcept: rep{-8 + 0b100 | dat} {}
+      MNL_INLINE val(unsigned dat) noexcept: rep{-8 + 0b011, dat} {}
       MNL_INLINE val(char dat) noexcept:     val((unsigned)(unsigned char)dat) {}
-      template<typename Dat> val(Dat dat): rep{0x7FF8u, (void *)(root *)new box<Dat>{(move)(dat)}} {}
+      template<typename Dat> val(Dat dat): rep{-8 + 0b111, (void *)(root *)new box<Dat>{(move)(dat)}} {}
       val(const char *);
       MNL_INLINE val(char *dat): val((const char *)dat) {}
    public: // Extraction
@@ -587,16 +595,16 @@ namespace aux { namespace pub {
    template<> MNL_INLINE inline const val &val::cast() const noexcept { return *this; }
    template<> MNL_INLINE inline val        val::cast() const noexcept { return cast<const val &>(); }
 
-   template<> MNL_INLINE inline bool val::test<decltype(nullptr)>() const noexcept { return rep.tag() == 0x7FF9u; }
+   template<> MNL_INLINE inline bool val::test<decltype(nullptr)>() const noexcept { return rep.tag() == 0b000 - 8; }
    template<> MNL_INLINE inline decltype(nullptr) val::cast() const noexcept { return nullptr; }
    MNL_INLINE inline bool val::operator==(decltype(nullptr)) const noexcept { return test<>(); }
 
-   template<> MNL_INLINE inline bool val::test<long long>() const noexcept { return rep.tag() == 0x7FFAu; }
+   template<> MNL_INLINE inline bool val::test<long long>() const noexcept { return rep.tag() == 0b001 - 8; }
    template<> MNL_INLINE inline bool val::test<int>() const noexcept       { return test<long long>(); }
    template<> MNL_INLINE inline long long val::cast() const noexcept { return rep.dat<long long>(); }
    template<> MNL_INLINE inline int       val::cast() const noexcept { return cast<long long>(); }
 
-   template<> MNL_INLINE inline bool val::test<double>() const noexcept { return (rep.tag() & 0x7FF8u) != 0x7FF8u; }
+   template<> MNL_INLINE inline bool val::test<double>() const noexcept { return rep.tag() < 0b000u - 8; }
    template<> MNL_INLINE inline double val::cast() const noexcept { return rep.dat<double>(); }
 
    template<> MNL_INLINE inline bool val::test<float>() const noexcept { return rep.tag() == 0x7FFCu; }
