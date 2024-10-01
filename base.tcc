@@ -52,6 +52,21 @@ namespace aux {
 
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+   template<
+      int Argc, class Target = code,
+      typename Arg0 = std::conditional_t<Argc >= 1 && Argc <= 2, code, void>,
+      typename Arg1 = std::conditional_t<Argc >= 2 && Argc <= 2, code, void>
+   # if !MNL_LEAN
+      ,
+      std::enable_if_t<Argc >= 0 && Argc <= 4,                                                decltype(nullptr)> = decltype(nullptr){},
+      std::enable_if_t<std::is_class_v<Target>,                                               decltype(nullptr)> = decltype(nullptr){},
+      std::enable_if_t<Argc >= 1 && Argc <= 2 ? std::is_class_v<Arg0> : std::is_void_v<Arg0>, decltype(nullptr)> = decltype(nullptr){},
+      std::enable_if_t<Argc >= 2 && Argc <= 2 ? std::is_class_v<Arg1> : std::is_void_v<Arg1>, decltype(nullptr)> = decltype(nullptr){}
+   # endif
+      >
+   class expr_apply;
+
+
    template<typename Target = code> struct expr_apply0 {
       MNL_RVALUE()
       Target target; loc _loc;

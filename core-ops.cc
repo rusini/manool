@@ -33,107 +33,24 @@ namespace MNL_AUX_UUID { using namespace aux;
    }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-# define MNL_M \
-   MNL_S(_sym0,          "`") \
-   MNL_S(op_shl,         "Shl") \
-   MNL_S(op_shr,         "Shr") \
-   MNL_S(op_ashr,        "Ashr") \
-   MNL_S(op_rotl,        "Rotl") \
-   MNL_S(op_rotr,        "Rotr") \
-   MNL_S(op_ctz,         "Ctz") \
-   MNL_S(op_clz,         "Clz") \
-   MNL_S(op_c1s,         "C1s") \
-   MNL_S(op_size,        "Size") \
-   MNL_S(op_elems,       "Elems") \
-   MNL_S(op_keys,        "Keys") \
-   MNL_S(op_lo,          "Lo") \
-   MNL_S(op_hi,          "Hi") \
-   MNL_S(op_repl,        "Repl") \
-   MNL_S(op_divf,        "Div") \
-   MNL_S(op_mod,         "Mod") \
-   MNL_S(op_add,         "+") \
-   MNL_S(op_sub,         "-") \
-   MNL_S(op_mul,         "*") \
-   MNL_S(op_div,         "/") \
-   MNL_S(op_rem,         "Rem") \
-   MNL_S(op_neg,         "Neg") \
-   MNL_S(op_and,         "&") \
-   MNL_S(op_or,          "|") \
-   MNL_S(op_xor,         "Xor") \
-   MNL_S(op_not,         "~") \
-   MNL_S(op_apply,       "Apply") \
-   MNL_S(op_caret,       "^") \
-   MNL_S(op_eq,          "==") \
-   MNL_S(op_ne,          "<>") \
-   MNL_S(op_order,       "Order") \
-   MNL_S(op_clone,       "Clone") \
-   MNL_S(op_deep_clone,  "DeepClone") \
-   MNL_S(op_str,         "Str") \
-   MNL_S(op_int,         "Int") \
-   MNL_S(op_lt,          "<") \
-   MNL_S(op_le,          "<=") \
-   MNL_S(op_gt,          ">") \
-   MNL_S(op_ge,          ">=") \
-   MNL_S(op_abs,         "Abs") \
-   MNL_S(op_log2,        "Log2") \
-   MNL_S(op_set,         "Set") \
-   MNL_S(op_weak,        "Weak") \
-   MNL_S(op_fma,         "Fma") \
-   MNL_S(op_sign,        "Sign") \
-   MNL_S(op_exp,         "Exp") \
-   MNL_S(op_expm1,       "Expm1") \
-   MNL_S(op_log,         "Log") \
-   MNL_S(op_log1p,       "Log1p") \
-   MNL_S(op_log10,       "Log10") \
-   MNL_S(op_sqr,         "Sqr") \
-   MNL_S(op_sqrt,        "Sqrt") \
-   MNL_S(op_hypot,       "Hypot") \
-   MNL_S(op_cbrt,        "Cbrt") \
-   MNL_S(op_pow,         "Pow") \
-   MNL_S(op_sin,         "Sin") \
-   MNL_S(op_cos,         "Cos") \
-   MNL_S(op_tan,         "Tan") \
-   MNL_S(op_asin,        "Asin") \
-   MNL_S(op_acos,        "Acos") \
-   MNL_S(op_atan,        "Atan") \
-   MNL_S(op_sinh,        "Sinh") \
-   MNL_S(op_cosh,        "Cosh") \
-   MNL_S(op_tanh,        "Tanh") \
-   MNL_S(op_asinh,       "Asinh") \
-   MNL_S(op_acosh,       "Acosh") \
-   MNL_S(op_atanh,       "Atanh") \
-   MNL_S(op_erf,         "Erf") \
-   MNL_S(op_erfc,        "Erfc") \
-   MNL_S(op_gamma,       "Gamma") \
-   MNL_S(op_lgamma,      "Lgamma") \
-   MNL_S(op_jn,          "Jn") \
-   MNL_S(op_yn,          "Yn") \
-   MNL_S(op_trunc,       "Trunc") \
-   MNL_S(op_round,       "Round") \
-   MNL_S(op_floor,       "Floor") \
-   MNL_S(op_ceil,        "Ceil") \
-// end # define MNL_M
-   enum sym::rep: unsigned short { // see: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=90324
-   # define MNL_S(ID, TXT) ID,
-      MNL_M
+   MNL_PRIORITY(1001) decltype(sym::dict) sym::dict = []() MNL_INLINE->decltype(dict){
+      int count = {};
+   # define MNL_S(LAB) {LAB, static_cast<decltype(rep)>(count++)},
+      return {
+      # include "wks.tcc"
+      };
+   # undef MNL_S
+   }();
+   MNL_PRIORITY(1002) std::remove_extent_t<decltype(sym::inverse)> sym::inverse[(unsigned short)-1 + 1] = {
+   # define MNL_S(LAB) dict.find(LAB),
+      # include "wks.tcc"
    # undef MNL_S
    };
-   MNL_PRIORITY(1001) decltype(sym::dict) sym::dict{
-   # define MNL_S(ID, TXT) {TXT, ID},
-      MNL_M
+   std::remove_extent_t<decltype(sym::rc)> sym::rc[(unsigned short)-1 + 1] = {
+   # define MNL_S(LAB) 1,
+      # include "wks.tcc"
    # undef MNL_S
    };
-   MNL_PRIORITY(1002) std::remove_extent<decltype(sym::inverse)>::type sym::inverse[lim<unsigned short>::max() + 1]{
-   # define MNL_S(ID, TXT) dict.find(TXT),
-      MNL_M
-   # undef MNL_S
-   };
-   std::remove_extent<decltype(sym::rc)>::type sym::rc[lim<unsigned short>::max() + 1]{
-   # define MNL_S(ID, TXT) 1,
-      MNL_M
-   # undef MNL_S
-   };
-# undef MNL_M
 
 // Primitive Operations ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -924,6 +841,7 @@ namespace aux {
          MNL_ERR(MNL_SYM("UnrecognizedOperation"));
       }
    }
+# if false
    val pub::_eq(val &&lhs, val &&rhs) {
       switch (lhs.rep.tag()) {
       case 0x7FF8u: return  static_cast<val::root *>(lhs.rep.dat<void *>())->invoke(move(lhs), MNL_SYM("=="), 1, &rhs);
@@ -1045,6 +963,7 @@ namespace aux {
       case 0x7FFCu: return aux::_neg(cast<float>(rhs));     // Neg(ation)
       }
    }
+# endif
 
    val proc_Min::invoke(val &&self, const sym &op, int argc, val argv[], val *) {
       if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
