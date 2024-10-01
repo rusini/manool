@@ -49,7 +49,7 @@ namespace MNL_AUX_UUID {
       - http://www.boost.org/doc/libs/1_66_0/doc/html/atomic/usage_examples.html  */
 
 // Utilities for Static Initialization /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-# if false // triggers a compiler crash in clang++
+# if false // most straightforward - triggers a compiler crash in clang++
    # define MNL_AUX_EARLY(...) []() noexcept->auto &{ \
       static constexpr auto init = []() noexcept{ return (__VA_ARGS__); }; \
       return ::mnl::aux::_early<init>; \
@@ -58,7 +58,7 @@ namespace MNL_AUX_UUID {
 # else // works with both g++ and clang++
    # define MNL_AUX_EARLY(...) []() noexcept->auto &{ \
       static constexpr auto init_lambda = []() noexcept{ return (__VA_ARGS__); }; \
-      static decltype(init_lambda()) (*const init_func)() = init_lambda; \
+      static decltype(init_lambda()) (*const init_func)() noexcept = init_lambda; \
       return ::mnl::aux::_early<init_func>; \
    }()
    namespace aux { template<const auto &Init> extern const auto _early = Init(); }
