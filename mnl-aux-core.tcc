@@ -49,12 +49,20 @@ namespace MNL_AUX_UUID {
       - http://www.boost.org/doc/libs/1_66_0/doc/html/atomic/usage_examples.html  */
 
 // Utilities for Static Initialization /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# if false // triggers a compiler crash in clang++
+   # define MNL_AUX_EARLY(...) []() noexcept->auto &{ \
+      static constexpr auto init = []() noexcept{ return (__VA_ARGS__); }; \
+      return ::mnl::aux::_early<init>; \
+   }()
+   namespace aux { template<const auto &Init> extern const auto _early = Init(); }
+# else // works with both g++ and clang++
    # define MNL_AUX_EARLY(...) []() noexcept->auto &{ \
       static constexpr auto init_lambda = []() noexcept{ return (__VA_ARGS__); }; \
       static decltype(init_lambda()) (*const init_func)() = init_lambda; \
-      return ::mnl::aux::early<init_func>; \
+      return ::mnl::aux::_early<init_func>; \
    }()
-   namespace aux { template<const auto &Init> extern const auto early = Init(); }
+   namespace aux { template<const auto &Init> extern const auto _early = Init(); }
+# endif
 
 
    # define MNL_AUX_INIT(...) []()noexcept->const decltype(__VA_ARGS__) &{ \
@@ -577,18 +585,18 @@ namespace aux { namespace pub {
       }
    }
 # else // alternative implementation
-   MNL_INLINE inline void val::addref() const noexcept {
+   MNL_INLINE inline void val::hold() const noexcept {
       if (MNL_UNLIKELY(rep.tag() >= 0b110 - 8))
       if (MNL_UNLIKELY(rep.tag() == 0b110 - 8))
-         rep.dat<const sym &>().addref();
+         rep.dat<const sym &>().hold();
       else
          MNL_IF_WITHOUT_MT(++static_cast<root *>(rep.dat<void *>())->_rc)
          MNL_IF_WITH_MT(__atomic_add_fetch(&static_cast<root *>(rep.dat<void *>())->_rc, 1, __ATOMIC_RELAXED));
    }
-   MNL_INLINE inline void val::release() const noexcept {
+   MNL_INLINE inline void val::unhold() const noexcept {
       if (MNL_UNLIKELY(rep.tag() >= 0b110 - 8))
       if (MNL_UNLIKELY(rep.tag() == 0b110 - 8))
-         rep.dat<const sym &>().release();
+         rep.dat<const sym &>().unhold();
       else
       if (MNL_UNLIKELY(!
          MNL_IF_WITHOUT_MT(--static_cast<root *>(rep.dat<void *>())->_rc)
