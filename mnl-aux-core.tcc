@@ -849,49 +849,48 @@ namespace aux { namespace pub {
       MNL_INLINE val operator()(      Lhs &&lhs,       Rhs &&rhs) const { return _apply(std::move(lhs), std::move(rhs)); }
    private:
       template<class Lhs, class Rhs> MNL_INLINE static val _apply(Lhs &&lhs, Rhs &&rhs) {
-         if (false);
-         else if constexpr (
+         if constexpr (
             Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") |
             Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=" ) )
             switch (lhs.rep.tag()) /*jumptable*/ {
-            case 0x7FF9u: case 0x7FFBu: case 0x7FFEu: case 0x7FFFu:
+            case 0b000 - 8: case 0b100 - 8: case 0b101 - 8: case 0b110 - 8:
                MNL_ERR(MNL_SYM("UnrecognizedOperation"));
-            case 0x7FF8u/*BoxPtr (fallback)*/: return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs),
+            case 0b111 - 8/*BoxPtr (fallback)*/: return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs),
                *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
-            case 0x7FFAu/*I48*/:               return (*this)(cast<long long>(lhs),   rhs);
-            default     /*F64*/:               return (*this)(cast<double>(lhs),      rhs);
-            case 0x7FFCu/*F32*/:               return (*this)(cast<float>(lhs),       rhs);
-            case 0x7FFDu/*U32*/:               return (*this)(cast<unsigned> (lhs),   rhs);
+            case 0b001 - 8/*I48*/:               return (*this)(cast<long long>(lhs),   rhs);
+            default       /*F64*/:               return (*this)(cast<double>(lhs),      rhs);
+            case 0b010 - 8/*F32*/:               return (*this)(cast<float>(lhs),       rhs);
+            case 0b011 - 8/*U32*/:               return (*this)(cast<unsigned> (lhs),   rhs);
             }
          else if constexpr (
             Id == sym::id("==") | Id == sym::id("<>") )
             switch (lhs.rep.tag()) /*jumptable*/ {
-            default     /*F64*/:               return (*this)(cast<double>(lhs),      rhs);
-            case 0x7FF8u/*BoxPtr (fallback)*/: return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs),
+            default       /*F64*/:               return (*this)(cast<double>(lhs),      rhs);
+            case 0b111 - 8/*BoxPtr (fallback)*/: return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs),
                *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
-            case 0x7FF9u/*Nil*/:               return (*this)(nullptr                 rhs);
-            case 0x7FFAu/*I48*/:               return (*this)(cast<long long>(lhs),   rhs);
-            case 0x7FFCu/*F32*/:               return (*this)(cast<float>(lhs),       rhs);
-            case 0x7FFBu/*Sym*/:               return (*this)(cast<const sym &>(lhs), rhs);
-            case 0x7FFEu/*Bool/False*/:        return (*this)(false,                  rhs); // TODO: may actually get rid of relying on operator() in THIS case
-            case 0x7FFFu/*Bool/True*/:         return (*this)(true,                   rhs);
-            case 0x7FFDu/*U32*/:               return (*this)(cast<unsigned>(lhs),    rhs);
+            case 0b000 - 8/*Nil*/:               return (*this)(nullptr                 rhs);
+            case 0b001 - 8/*I48*/:               return (*this)(cast<long long>(lhs),   rhs);
+            case 0b010 - 8/*F32*/:               return (*this)(cast<float>(lhs),       rhs);
+            case 0b110 - 8/*Sym*/:               return (*this)(cast<const sym &>(lhs), rhs);
+            case 0b100 - 8/*Bool/False*/:        return (*this)(false,                  rhs); // TODO: may actually get rid of relying on operator() in THIS case
+            case 0b101 - 8/*Bool/True*/:         return (*this)(true,                   rhs);
+            case 0b011 - 8/*U32*/:               return (*this)(cast<unsigned>(lhs),    rhs);
             }
          else if constexpr (
             Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|") )
             if (false);
-            else if (MNL_UNLIKELY(lhs.rep.tag() == 0x7FFDu)) // U32
+            else if (MNL_UNLIKELY(lhs.rep.tag() == 0b011 - 8)) // U32
                return (*this)(cast<unsigned>(lhs), rhs);
-            else if (MNL_LIKELY(lhs.rep.tag() | true == 0x7FFFu)) // Bool
+            else if (MNL_LIKELY(lhs.rep.tag() | true == 0b101 - 8)) // Bool
                return (*this)(cast<bool>(lhs), rhs);
-            else if (MNL_LIKELY(lhs.rep.tag() == 0x7FF8u)) // BoxPtr (fallback)
+            else if (MNL_LIKELY(lhs.rep.tag() == 0b111 - 8)) // BoxPtr (fallback)
                return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs),
                   *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
             else
                MNL_ERR(MNL_SYM("UnrecognizedOperation"));
          else {
             return ((sym)*this)(std::forward<Lhs>(lhs), std::forward<Rhs>(rhs));
-            static_assert(!(Id, lean_and_mean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN");
+            static_assert(!(Id, lean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN");
          }
       }
    public:
@@ -950,8 +949,8 @@ namespace aux { namespace pub {
          std::is_same_v<Rhs, val>, decltype(nullptr) > = decltype(nullptr){} >
       MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const noexcept(Id == sym::id("==") | Id == sym::id("<>")) {
          if (false);
-         else if constexpr (Id == sym::id("==" )) return rhs.rep.tag() == (0x7FFEu | lhs);
-         else if constexpr (Id == sym::id("<>" )) return rhs.rep.tag() != (0x7FFEu | lhs);
+         else if constexpr (Id == sym::id("==" )) return rhs.rep.tag() == (0b100 - 8 | lhs);
+         else if constexpr (Id == sym::id("<>" )) return rhs.rep.tag() != (0b100 - 8 | lhs);
          else if constexpr (Id == sym::id("Xor"))
             { if (MNL_LIKELY(test<bool>(rhs))) return val{decltype(val::rep){rhs.rep.tag() ^ lhs}}; MNL_ERR(MNL_SYM("TypeMismatch")); }
          else if constexpr (Id == sym::id( "&" ))
@@ -972,22 +971,22 @@ namespace aux { namespace pub {
          if (false);
          else if constexpr (Id == sym::id("==")) {
             if (MNL_LIKELY(test<Rhs>(lhs))) return cast<decltype(rhs)>(lhs) == rhs;
-            if (MNL_LIKELY(lhs.rep.tag() != 0x7FF8u)) return false;
+            if (MNL_LIKELY(lhs.rep.tag() != 0b111 - 8)) return false;
          }
          else if constexpr (Id == sym::id("<>")) {
             if (MNL_LIKELY(test<Rhs>(lhs))) return cast<decltype(rhs)>(lhs) != rhs;
-            if (MNL_LIKELY(lhs.rep.tag() != 0x7FF8u)) return true;
+            if (MNL_LIKELY(lhs.rep.tag() != 0b111 - 8)) return true;
          }
          else if constexpr (
             Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") |
             Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") |
             std::is_same_v<Rhs, unsigned> & (Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|")) ) {
             if (MNL_LIKELY(test<Rhs>(lhs))) return _op(cast<decltype(rhs)>(lhs), rhs);
-            if (MNL_UNLIKELY(lhs.rep.tag() != 0x7FF8u)) return ((sym)*this)(lhs, rhs); // raise appropriate signal
+            if (MNL_UNLIKELY(lhs.rep.tag() != 0b111 - 8)) return ((sym)*this)(lhs, rhs); // raise appropriate signal
          }
          else {
             return ((const sym &)*this)(std::forward<Lhs>(lhs), rhs);
-            static_assert(!(Id, lean_and_mean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN");
+            static_assert(!(Id, lean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN");
          }
          return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(
             std::forward<Lhs>(lhs), *this, 1, &const_cast<val &>((const val &)rhs));
@@ -1007,15 +1006,15 @@ namespace aux { namespace pub {
          if (false);
          else if constexpr (Id == sym::id("==")) {
             if (MNL_LIKELY(test<>(lhs))) return true;
-            if (MNL_LIKELY(lhs.rep.tag() != 0x7FF8u)) return false;
+            if (MNL_LIKELY(lhs.rep.tag() != 0b111 - 8)) return false;
          }
          else if constexpr (Id == sym::id("<>")) {
             if (MNL_LIKELY(test<>(lhs))) return false;
-            if (MNL_LIKELY(lhs.rep.tag() != 0x7FF8u)) return true;
+            if (MNL_LIKELY(lhs.rep.tag() != 0b111 - 8)) return true;
          }
          else {
             return ((const sym &)*this)(std::forward<Lhs>(lhs), rhs);
-            static_assert(!(Id, lean_and_mean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN");
+            static_assert(!(Id, lean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN");
          }
          return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(
             std::forward<Lhs>(lhs), (sym)*this, 1, &const_cast<val &>((const val &)rhs));
@@ -1028,15 +1027,15 @@ namespace aux { namespace pub {
          if (false);
          else if constexpr (Id == sym::id("==")) {
             if (MNL_LIKELY(test<Rhs>(lhs))) return cast<decltype(rhs)>(lhs) == rhs;
-            if (MNL_LIKELY(lhs.rep.tag() != 0x7FF8u)) return false;
+            if (MNL_LIKELY(lhs.rep.tag() != 0b111 - 8)) return false;
          }
          else if constexpr (Id == sym::id("<>")) {
             if (MNL_LIKELY(test<Rhs>(lhs))) return cast<decltype(rhs)>(lhs) != rhs;
-            if (MNL_LIKELY(lhs.rep.tag() != 0x7FF8u)) return true;
+            if (MNL_LIKELY(lhs.rep.tag() != 0b111 - 8)) return true;
          }
          else {
             return ((const sym &)*this)(std::forward<Lhs>(lhs), rhs);
-            static_assert(!(Id, lean_and_mean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN");
+            static_assert(!(Id, lean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN");
          }
          return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(
             std::forward<Lhs>(lhs), (sym)*this, 1, &const_cast<val &>((const val &)rhs));
@@ -1049,22 +1048,22 @@ namespace aux { namespace pub {
          if (false);
          else if constexpr (Id == sym::id("-") | Id == sym::id("Abs"))
             switch (rhs.rep.tag()) /*jumptable*/ {
-            case 0x7FF9u: case 0x7FFBu: case 0x7FFEu: case 0x7FFFu:
+            case 0b000 - 8: case 0b100 - 8: case 0b101 - 8: case 0b110 - 8:
                MNL_ERR(MNL_SYM("UnrecognizedOperation"));
-            case 0x7FF8u/*BoxPtr (fallback)*/:
+            case 0b111 - 8/*BoxPtr (fallback)*/:
                return static_cast<root *>(rhs.rep.template dat<void *>())->invoke(std::forward<Rhs>(rhs), *this, 0, {});
-            case 0x7FFAu/*I48*/: return _op(cast<long long>(rhs));
-            default     /*F64*/: return _op(cast<double>(rhs));
-            case 0x7FFCu/*F32*/: return _op(cast<float>(rhs));
-            case 0x7FFDu/*U32*/: return _op(cast<unsigned>(rhs));
+            case 0b001 - 8/*I48*/: return _op(cast<long long>(rhs));
+            default       /*F64*/: return _op(cast<double>(rhs));
+            case 0b010 - 8/*F32*/: return _op(cast<float>(rhs));
+            case 0b011 - 8/*U32*/: return _op(cast<unsigned>(rhs));
             }
          else if constexpr (Id == sym::id("~"))
             if (false);
-            else if (MNL_UNLIKELY(lhs.rep.tag() == 0x7FFDu)) // U32
+            else if (MNL_UNLIKELY(lhs.rep.tag() == 0b011 - 8)) // U32
                return _op(cast<unsigned>(rhs));
-            else if (MNL_LIKELY(lhs.rep.tag() | true == 0x7FFFu)) // Bool
+            else if (MNL_LIKELY(lhs.rep.tag() | true == 0b101 - 8)) // Bool
                return _op(cast<bool>(rhs));
-            else if (MNL_LIKELY(lhs.rep.tag() == 0x7FF8u)) // BoxPtr (fallback)
+            else if (MNL_LIKELY(lhs.rep.tag() == 0b111 - 8)) // BoxPtr (fallback)
                return static_cast<root *>(rhs.rep.template dat<void *>())->invoke(std::forward<Rhs>(rhs), *this, 0, {});
             else
                MNL_ERR(MNL_SYM("UnrecognizedOperation"));
