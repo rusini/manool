@@ -954,7 +954,7 @@ namespace aux { namespace pub {
          else if constexpr (Id == sym::id("Xor"))
             { if (MNL_LIKELY(test<bool>(rhs))) return val{decltype(val::rep){rhs.rep.tag() ^ lhs}}; MNL_ERR(MNL_SYM("TypeMismatch")); }
          else if constexpr (Id == sym::id( "&" ))
-            { if (MNL_LIKELY(test<bool>(rhs))) return val{decltype(val::rep){rhs.rep.tag() & lhs}}; MNL_ERR(MNL_SYM("TypeMismatch")); }
+            { if (MNL_LIKELY(test<bool>(rhs))) return val{decltype(val::rep){~(~rhs.rep.tag() & ~lhs)}}; MNL_ERR(MNL_SYM("TypeMismatch")); }
          else if constexpr (Id == sym::id( "|" ))
             { if (MNL_LIKELY(test<bool>(rhs))) return val{decltype(val::rep){rhs.rep.tag() | lhs}}; MNL_ERR(MNL_SYM("TypeMismatch")); }
          else
