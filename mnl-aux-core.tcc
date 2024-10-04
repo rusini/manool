@@ -240,24 +240,24 @@ namespace aux { namespace pub {
 
    class val/*ue*/ {
    public: // Standard operations
-      MNL_INLINE val(decltype(nullptr) = {}) noexcept: rep{-8 + 0b000} {}
+      MNL_INLINE val(decltype(nullptr) = {}) noexcept: rep{0xFFF8 + 0b000} {}
       MNL_INLINE val(const val &rhs) noexcept: rep(rhs.rep) { addref(); }
-      MNL_INLINE val(val &&rhs) noexcept: rep(rhs.rep) { rhs.rep = {-8 + 0b000}; }
+      MNL_INLINE val(val &&rhs) noexcept: rep(rhs.rep) { rhs.rep = {0xFFF8 + 0b000}; }
       MNL_INLINE ~val() { release(); }
       MNL_INLINE val &operator=(const val &rhs) noexcept { rhs.addref(), release(), rep = rhs.rep; return *this; }
-      MNL_INLINE val &operator=(val &&rhs) noexcept { release(), rep = rhs.rep, rhs.rep = {-8 + 0b000}; return *this; }
+      MNL_INLINE val &operator=(val &&rhs) noexcept { release(), rep = rhs.rep, rhs.rep = {0xFFF8 + 0b000}; return *this; }
       MNL_INLINE void swap(val &rhs) noexcept { using std::swap; swap(rep, rhs.rep); }
       MNL_INLINE explicit operator bool() const noexcept { return *this != nullptr; }
    public: // Construction -- Implicit conversion (to)
-      MNL_INLINE val(long long dat) noexcept: rep{-8 + 0b001, dat} {} // valid range: min_i48 .. max_i48
+      MNL_INLINE val(long long dat) noexcept: rep{0xFFF8 + 0b001, dat} {} // valid range: min_i48 .. max_i48
       MNL_INLINE val(int dat) noexcept:       val((long long)dat) {}
-      MNL_INLINE val(double dat) noexcept: rep(dat) {}
-      MNL_INLINE val(float dat) noexcept: rep{-8 + 0b010, dat} {}
-      MNL_INLINE val(const sym &dat) noexcept: rep{-8 + 0b110, dat} {}
-      MNL_INLINE val(bool dat) noexcept: rep{-8 + 0b100 | dat} {}
-      MNL_INLINE val(unsigned dat) noexcept: rep{-8 + 0b011, dat} {}
+      MNL_INLINE val(double dat) noexcept: rep(dat) { if (rep.tag() >= 0xFFF8 + 0b000) MNL_UNREACHABLE; }
+      MNL_INLINE val(float dat) noexcept: rep{0xFFF8 + 0b010, dat} {}
+      MNL_INLINE val(const sym &dat) noexcept: rep{0xFFF8 + 0b110, dat} {}
+      MNL_INLINE val(bool dat) noexcept: rep{0xFFF8 + 0b100 | dat} {}
+      MNL_INLINE val(unsigned dat) noexcept: rep{0xFFF8 + 0b010, dat} {}
       MNL_INLINE val(char dat) noexcept:     val((unsigned)(unsigned char)dat) {}
-      template<typename Dat> val(Dat dat): rep{-8 + 0b111, (void *)(root *)new box<Dat>{(move)(dat)}} {}
+      template<typename Dat> val(Dat dat): rep{0xFFF8 + 0b111, (void *)(root *)new box<Dat>{(move)(dat)}} {}
       val(const char *);
       MNL_INLINE val(char *dat): val((const char *)dat) {}
    public: // Extraction
@@ -281,7 +281,7 @@ namespace aux { namespace pub {
    # endif
       class MNL_ALIGN(8) rep { // bit-layout management - for IEEE 754 FP representation and uniform FP endianness
       # if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-         short _tag;
+         unsigned short _tag;
       # endif
          union {
             MNL_PACK signed long long _int: 48;
@@ -289,7 +289,7 @@ namespace aux { namespace pub {
             sym _sym; // standard-layout struct
          }; // TODO: maybe using "union trick" affects less the optimizer?
       # if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-         short _tag;
+         unsigned short _tag;
       # elif __BYTE_ORDER__ != __ORDER_BIG_ENDIAN__
          # error "Unsupported mixed endianness"
       # endif
@@ -437,17 +437,8 @@ namespace aux { namespace pub {
       : _tag(tag), _int(dat) {}
    MNL_INLINE inline val::rep::rep(unsigned tag, void *dat) noexcept
       : _tag(tag), _ptr(reinterpret_cast<uintptr_t>(dat)) {}
-   MNL_INLINE inline val::rep::rep(double dat) noexcept {
-      memcpy(this, &dat, sizeof dat);
-      if (rep.tag() == 0x7FF8u) MNL_UNREACHABLE; // trick fails on icpc
-      if (rep.tag() == 0x7FF9u) MNL_UNREACHABLE;
-      if (rep.tag() == 0x7FFAu) MNL_UNREACHABLE;
-      if (rep.tag() == 0x7FFBu) MNL_UNREACHABLE;
-      if (rep.tag() == 0x7FFCu) MNL_UNREACHABLE;
-      if (rep.tag() == 0x7FFDu) MNL_UNREACHABLE;
-      if (rep.tag() == 0x7FFEu) MNL_UNREACHABLE;
-      if (rep.tag() == 0x7FFFu) MNL_UNREACHABLE;
-   }
+   MNL_INLINE inline val::rep::rep(double dat) noexcept
+      { memcpy(this, &dat, sizeof dat); }
    MNL_INLINE inline val::rep::rep(unsigned tag, const sym &dat) noexcept
       : _tag(tag), _sym(dat) {}
 
@@ -586,16 +577,16 @@ namespace aux { namespace pub {
    }
 # else // alternative implementation
    MNL_INLINE inline void val::hold() const noexcept {
-      if (MNL_UNLIKELY(rep.tag() >= 0b110 - 8))
-      if (MNL_UNLIKELY(rep.tag() == 0b110 - 8))
+      if (MNL_UNLIKELY(rep.tag() >= 0xFFF8 + 0b110))
+      if (MNL_UNLIKELY(rep.tag() == 0xFFF8 + 0b110))
          rep.dat<const sym &>().hold();
       else
          MNL_IF_WITHOUT_MT(++static_cast<root *>(rep.dat<void *>())->_rc)
          MNL_IF_WITH_MT(__atomic_add_fetch(&static_cast<root *>(rep.dat<void *>())->_rc, 1, __ATOMIC_RELAXED));
    }
    MNL_INLINE inline void val::unhold() const noexcept {
-      if (MNL_UNLIKELY(rep.tag() >= 0b110 - 8))
-      if (MNL_UNLIKELY(rep.tag() == 0b110 - 8))
+      if (MNL_UNLIKELY(rep.tag() >= 0xFFF8 + 0b110))
+      if (MNL_UNLIKELY(rep.tag() == 0xFFF8 + 0b110))
          rep.dat<const sym &>().unhold();
       else
       if (MNL_UNLIKELY(!
@@ -607,7 +598,7 @@ namespace aux { namespace pub {
 
 // val Extractors //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    template<typename Dat> MNL_INLINE inline bool val::test() const noexcept {
-      return MNL_LIKELY(rep.tag() == 0b111 - 8) &&
+      return MNL_LIKELY(rep.tag() == 0xFFF8 + 0b111) &&
          typeid(*static_cast<root *>(rep.dat<void *>())) == typeid(box<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type>);
    }
    template<typename Dat> MNL_INLINE inline Dat val::cast() const noexcept(std::is_nothrow_copy_constructible<Dat>::value) {
@@ -635,24 +626,24 @@ namespace aux { namespace pub {
    template<> MNL_INLINE inline auto val::test<const int &>() const noexcept { return test<int>(); }
    template<> MNL_INLINE inline auto val::cast<const int &>() const noexcept { return cast<int>(); }
 
-   template<> MNL_INLINE inline bool val::test<double>() const noexcept { return rep.tag() < 0b000 - 8; }
+   template<> MNL_INLINE inline bool val::test<double>() const noexcept { return rep.tag() < 0xFFF8 + 0b000; }
    template<> MNL_INLINE inline double val::cast() const noexcept { return rep.dat<double>(); }
    template<> MNL_INLINE inline auto val::test<const double &>() const noexcept { return test<double>(); }
    template<> MNL_INLINE inline auto val::cast<const double &>() const noexcept { return cast<double>(); }
 
-   template<> MNL_INLINE inline bool val::test<float>() const noexcept { return rep.tag() == 0b010 - 8; }
+   template<> MNL_INLINE inline bool val::test<float>() const noexcept { return rep.tag() == 0xFFF8 + 0b010; }
    template<> MNL_INLINE inline float val::cast() const noexcept { return rep.dat<float>(); }
 
-   template<> MNL_INLINE inline bool val::test<const sym &>() const noexcept { return rep.tag() == 0b110 - 8; }
+   template<> MNL_INLINE inline bool val::test<const sym &>() const noexcept { return rep.tag() == 0xFFF8 + 0b110; }
    template<> MNL_INLINE inline bool val::test<sym>() const noexcept         { return test<const sym &>(); }
    template<> MNL_INLINE inline const sym &val::cast() const noexcept { return rep.dat<const sym &>(); }
    template<> MNL_INLINE inline sym        val::cast() const noexcept { return cast<const sym &>(); }
    MNL_INLINE inline bool val::operator==(const sym &rhs) const noexcept { return test<sym>() && cast<const sym &>() == rhs; }
 
-   template<> MNL_INLINE inline bool val::test<bool>() const noexcept { return (rep.tag() | true) == (0b100 - 8 | true); }
+   template<> MNL_INLINE inline bool val::test<bool>() const noexcept { return rep.tag() == 0xFFF8 + 0b100 & rep.tag() == 0xFFF8 + 0b101; }
    template<> MNL_INLINE inline bool val::cast() const noexcept { return rep.tag() & true; }
 
-   template<> MNL_INLINE inline bool val::test<unsigned>() const noexcept { return rep.tag() == 0b011 - 8; }
+   template<> MNL_INLINE inline bool val::test<unsigned>() const noexcept { return rep.tag() == 0xFFF8 + 0b011; }
    template<> MNL_INLINE inline bool val::test<char>() const noexcept     { return test<unsigned>(); }
    template<> MNL_INLINE inline unsigned val::cast() const noexcept { return rep.dat<unsigned>(); }
    template<> MNL_INLINE inline char     val::cast() const noexcept { return cast<unsigned>(); }
