@@ -121,7 +121,7 @@ namespace aux { namespace pub {
       // For multiple arguments
       val operator()(int argc, val argv[], val *argv_out = {}) const;
    // Convenience
-      template<std::size_t Argc> val operator()(const val &self, std::array<val, Argc>, val *args_out = {}) const;
+      template<std::size_t Argc> val operator()(const val &self, std::array<val, Argc>, val *args_out = {}) const; // TODO: avoid ambiguity
       template<std::size_t Argc> val operator()(val &&self, std::array<val, Argc>, val *args_out = {}) const;
       template<std::size_t Argc> val operator()(std::array<val, Argc>, val *args_out = {}) const;
    // For completeness
