@@ -409,27 +409,27 @@ namespace aux { namespace pub {
    template<typename Dat> Dat  cast(const val &) noexcept(std::is_nothrow_copy_constructible<Dat>::value);
 
    // Forward-declared as members of class sym
-   MNL_INLINE inline val sym::operator()(const val  &self, int argc, val argv[], val *argv_out = {}) const
-      { return val::_invoke(          self,  *this, argc, argv, argv_out); }
-   MNL_INLINE inline val sym::operator()(      val &&self, int argc, val argv[], val *argv_out = {}) const
+   MNL_INLINE inline val sym::operator()(const val &self, int argc, val argv[], val *argv_out = {}) const
+      { return val::_invoke(self, *this, argc, argv, argv_out); }
+   MNL_INLINE inline val sym::operator()(val &&self, int argc, val argv[], val *argv_out = {}) const
       { return val::_invoke(std::move(self), *this, argc, argv, argv_out); }
    // For one argument
-   MNL_INLINE inline val sym::operator()(const val  &arg0) const { return (*this)(          arg0,  0, {}); }
-   MNL_INLINE inline val sym::operator()(      val &&arg0) const { return (*this)(std::move(arg0), 0, {}); }
+   MNL_INLINE inline val sym::operator()(const val &arg0) const { return (*this)(arg0, 0, {}); }
+   MNL_INLINE inline val sym::operator()(val &&arg0) const { return (*this)(std::move(arg0), 0, {}); }
    // For two arguments
-   MNL_INLINE inline val sym::operator()(const val  &arg0, const val  &arg1) const { return (*this)(          arg0,  (val)arg1); }
-   MNL_INLINE inline val sym::operator()(const val  &arg0,       val &&arg1) const { return (*this)(          arg0,  1,  &arg1); }
-   MNL_INLINE inline val sym::operator()(      val &&arg0, const val  &arg1) const { return (*this)(std::move(arg0), (val)arg1); }
-   MNL_INLINE inline val sym::operator()(      val &&arg0,       val &&arg1) const { return (*this)(std::move(arg0), 1,  &arg1); }
+   MNL_INLINE inline val sym::operator()(const val &arg0, const val &arg1) const { return (*this)(arg0, (val)arg1); }
+   MNL_INLINE inline val sym::operator()(const val &arg0, val &&arg1) const { return (*this)(arg0, 1, &arg1); }
+   MNL_INLINE inline val sym::operator()(val &&arg0, const val &arg1) const { return (*this)(std::move(arg0), (val)arg1); }
+   MNL_INLINE inline val sym::operator()(val &&arg0, val &&arg1) const { return (*this)(std::move(arg0), 1, &arg1); }
    // For multiple arguments
    MNL_INLINE inline val sym::operator()(int argc, val argv[], val *argv_out = {}) const {
       if (MNL_UNLIKELY(!argc)) MNL_ERR(MNL_SYM("InvalidInvocation"));
       return (*this)(std::move(*argv), argc - 1, argc ? argv + 1 : nullptr, argv_out + !!argv_out);
    }
    // Convenience
-   template<std::size_t Argc> MNL_INLINE inline val sym::operator()(const val  &self, std::array<val, Argc> args, val *args_out) const
-      { return (*this)(          self,  Argc, args.data(), args_out); }
-   template<std::size_t Argc> MNL_INLINE inline val sym::operator()(      val &&self, std::array<val, Argc> args, val *args_out) const
+   template<std::size_t Argc> MNL_INLINE inline val sym::operator()(const val &self, std::array<val, Argc> args, val *args_out) const
+      { return (*this)(self, Argc, args.data(), args_out); }
+   template<std::size_t Argc> MNL_INLINE inline val sym::operator()(val &&self, std::array<val, Argc> args, val *args_out) const
       { return (*this)(std::move(self), Argc, args.data(), args_out); }
    template<std::size_t Argc> MNL_INLINE inline val sym::operator()(std::array<val, Argc> args, val *args_out) const
       { return (*this)(Argc, args.data(), args_out); }
