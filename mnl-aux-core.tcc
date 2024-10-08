@@ -370,6 +370,9 @@ namespace aux { namespace pub {
          { return val(*this)(loc, move(args), args_out); }
       MNL_INLINE val operator()(const loc &loc) const &
          { return val(*this)(loc); }
+   private: // Implementation of sym::operator()
+      template<typename Self> static val _invoke(Self &&, const sym &op, int argc, val argv[], val *argv_out); // Self == const val & || Self == val
+      friend val sym::operator()(const val &, int, val [], val *) const, sym::operator()(val &&, int, val [], val *) const;
    public: // Convenience -- Direct comparison with other types
       bool operator==(decltype(nullptr)) const noexcept, operator==(const sym &) const noexcept;
       MNL_INLINE bool operator!=(decltype(nullptr)) const noexcept { return !(*this == nullptr); }
