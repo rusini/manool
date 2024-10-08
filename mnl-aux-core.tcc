@@ -107,7 +107,7 @@ namespace aux { namespace pub {
       explicit sym(decltype(nullptr));
       MNL_INLINE explicit operator const string &() const noexcept { return inverse[rep]->first; } // no sync required
       MNL_INLINE explicit operator const char *() const noexcept { return ((const string &)*this).c_str(); }
-   public: // Functional application
+   public: // Functional application (and Repl)
       static constexpr int max_argc = 999;
    // Essential for performance (argv_out[-1] corresponds to self; !argc < !argv)
       val operator()(const val &self, int argc, val argv[], val *argv_out = {}) const;
@@ -276,8 +276,6 @@ namespace aux { namespace pub {
       template<typename Dat = decltype(nullptr)> MNL_INLINE friend Dat  cast(const val &rhs) noexcept(std::is_nothrow_copy_constructible<Dat>::value)
          { return rhs.cast<Dat>(); }
    public: // Misc essentials
-      static constexpr int max_argc = sym::max_argc;
-      val operator()(int argc, val argv[], val *argv_out = {}) &&; // functional application - !argc => !argv && !argv_out
       val default_invoke(const sym &op, int argc, val argv[]);
       long rc /*reference counter*/() const noexcept;
       int default_order(const val &) const noexcept; // actually from MANOOL API
@@ -338,8 +336,82 @@ namespace aux { namespace pub {
       template<typename Dat = decltype(nullptr)> Dat  cast() const noexcept(std::is_nothrow_copy_constructible<Dat>::value);
       //MNL_IF_CLANG(public:)
       class root; template<typename> friend class mnl::box;
-   public: // Convenience -- Functional application
+   public: // Functional application (and Repl)
+      static constexpr int max_argc = sym::max_argc;
+//!argc => !argv && !argv_out
+
+   // Essential for performance (argv_out[-1] corresponds to target; !argc < !argv)
+      MNL_INLINE val operator()(int argc, val argv[], val *argv_out = {}) const & { return _apply(*this, argc, argv, argv_out); }
+      MNL_INLINE val operator()(int argc, val argv[], val *argv_out = {}) && { return _apply(_mv(*this), argc, argv, argv_out); }
+   // Essential for metaprogramming
+      // For one argument
+      MNL_INLINE val operator()(const val &arg0) const & { return _apply(*this, arg0); }
+      MNL_INLINE val operator()(val &&arg0) const & { return _apply(*this, _mv(arg0)); }
+      MNL_INLINE val operator()(const sym &arg0) const & { return _apply(*this, arg0); }
+      MNL_INLINE val operator()(const val &arg0) && { return _apply(_mv(*this), arg0); }
+      MNL_INLINE val operator()(val &&arg0) && { return _apply(_mv(*this), _mv(arg0)); }
+      MNL_INLINE val operator()(const sym &arg0) && { return _apply(_mv(*this), arg0); }
+      // For two arguments
+      MNL_INLINE val operator()(const val &arg0, const val &arg1) const & { return _apply(*this, arg0, arg1); }
+      MNL_INLINE val operator()(const val &arg0, val &&arg1) const & { return _apply(*this, arg0, _mv(arg1)); }
+      MNL_INLINE val operator()(const val &arg0, const sym &arg1) const & { return _apply(*this, arg0, arg1); }
+      MNL_INLINE val operator()(val &&arg0, const val &arg1) const & { return _apply(*this, _mv(arg0), arg1); }
+      MNL_INLINE val operator()(val &&arg0, val &&arg1) const & { return _apply(*this, _mv(arg0), _mv(arg1)); }
+      MNL_INLINE val operator()(val &&arg0, const sym &arg1) const & { return _apply(*this, _mv(arg0), arg1); }
+      MNL_INLINE val operator()(const val &arg0, const val &arg1) && { return _apply(_mv(*this), arg0, arg1); }
+      MNL_INLINE val operator()(const val &arg0, val &&arg1) && { return _apply(_mv(*this), arg0, _mv(arg1)); }
+      MNL_INLINE val operator()(const val &arg0, const sym &arg1) && { return _apply(_mv(*this), arg0, arg1); }
+      MNL_INLINE val operator()(val &&arg0, const val &arg1) && { return _apply(_mv(*this), _mv(arg0), arg1); }
+      MNL_INLINE val operator()(val &&arg0, val &&arg1) && { return _apply(_mv(*this), _mv(arg0), _mv(arg1)); }
+      MNL_INLINE val operator()(val &&arg0, const sym &arg1) && { return _apply(_mv(*this), _mv(arg0), arg1); }
+      // For two arguments
+      MNL_NODISCARD MNL_INLINE val repl(const val &arg0, const val &arg1) && { return _repl(_mv(*this), arg0, arg1); }
+      MNL_NODISCARD MNL_INLINE val repl(const val &arg0, val &&arg1) && { return _repl(_mv(*this), arg0, _mv(arg1)); }
+      MNL_NODISCARD MNL_INLINE val repl(val &&arg0, const val &arg1) && { return _repl(_mv(*this), _mv(arg0), arg1); }
+      MNL_NODISCARD MNL_INLINE val repl(val &&arg0, val &&arg1) && { return _repl(_mv(*this), _mv(arg0), _mv(arg1)); }
+      MNL_NODISCARD MNL_INLINE val repl(const sym &arg0, const val &arg1) && { return _repl(_mv(*this), arg0, arg1); }
+      MNL_NODISCARD MNL_INLINE val repl(const sym &arg0, val &&arg1) && { return _repl(_mv(*this), arg0, _mv(arg1)); }
+      // For three arguments
+      MNL_NODISCARD MNL_INLINE val repl(const val &arg0, const val &arg1, const val &arg2) && { return _repl(_mv(*this), arg0, arg1, arg2); }
+      MNL_NODISCARD MNL_INLINE val repl(const val &arg0, const val &arg1, val &&arg2) && { return _repl(_mv(*this), arg0, arg1, _mv(arg2)); }
+      MNL_NODISCARD MNL_INLINE val repl(const val &arg0, val &&arg1, const val &arg2) && { return _repl(_mv(*this), arg0, _mv(arg1), arg2); }
+      MNL_NODISCARD MNL_INLINE val repl(const val &arg0, val &&arg1, val &&arg2) && { return _repl(_mv(*this), arg0, _mv(arg1), _mv(arg2)); }
+      MNL_NODISCARD MNL_INLINE val repl(const val &arg0, const sym &arg1, const val &arg2) && { return _repl(_mv(*this), arg0, arg1, arg2); }
+      MNL_NODISCARD MNL_INLINE val repl(const val &arg0, const sym &arg1, val &&arg2) && { return _repl(_mv(*this), arg0, arg1, _mv(arg2)); }
+      MNL_NODISCARD MNL_INLINE val repl(val &&arg0, const val &arg1, const val &arg2) && { return _repl(_mv(*this), _mv(arg0), arg1, arg2); }
+      MNL_NODISCARD MNL_INLINE val repl(val &&arg0, const val &arg1, val &&arg2) && { return _repl(_mv(*this), _mv(arg0), arg1, _mv(arg2)); }
+      MNL_NODISCARD MNL_INLINE val repl(val &&arg0, val &&arg1, const val &arg2) && { return _repl(_mv(*this), _mv(arg0), _mv(arg1), arg2); }
+      MNL_NODISCARD MNL_INLINE val repl(val &&arg0, val &&arg1, val &&arg2) && { return _repl(_mv(*this), _mv(arg0), _mv(arg1), _mv(arg2)); }
+      MNL_NODISCARD MNL_INLINE val repl(val &&arg0, const sym &arg1, const val &arg2) && { return _repl(_mv(*this), _mv(arg0), arg1, arg2); }
+      MNL_NODISCARD MNL_INLINE val repl(val &&arg0, const sym &arg1, val &&arg2) && { return _repl(_mv(*this), _mv(arg0), arg1, _mv(arg2)); }
+   // Convenience
+      template<std::size_t Argc> MNL_INLINE val operator()(std::array<val, Argc> args, val *args_out = {}) const &
+         { return (*this)(Argc, args.data(), args_out); }
+      template<std::size_t Argc> MNL_INLINE val operator()(std::array<val, Argc> args, val *args_out = {}) &&
+         { return _mv(*this)(Argc, args.data(), args_out); }
+      // For no arguments
+      MNL_INLINE val operator()() const &
+         { return (*this)(0, {}); }
+      MNL_INLINE val operator()() &&
+         { return _mv(*this)(0, {}); }
+      // Alternative notation
+      MNL_INLINE val invoke(const sym *op, int argc, val argv[], val *argv_out = {}) const &
+         { return op(*this, argc, argv, argv_out); }
+      MNL_INLINE val invoke()(const sym *op, int argc, val argv[], val *argv_out = {}) &&
+         { return op(_mv(*this), argc, argv, argv_out); }
+      template<std::size_t Argc> MNL_INLINE val invoke(const sym *op, std::array<val, Argc> args, val *args_out = {}) const &
+         { return op(*this, Argc, args.data(), args_out); }
+      template<std::size_t Argc> MNL_INLINE val invoke()(const sym *op, std::array<val, Argc> args, val *args_out = {}) &&
+         { return op(_mv(*this), Argc, args.data(), args_out); }
+
+
+
+
+
+         val operator()(int argc, val argv[], val *argv_out = {}) &&; // functional application - !argc => !argv && !argv_out
       /* val operator()(int argc, val argv[], val *argv_out = {}) &&; // essential form */
+
+
       MNL_INLINE val operator()(const val &arg, val *arg_out = {}) && { return move(*this)(val(arg), arg_out); }
       MNL_INLINE val operator()(val &&arg, val *arg_out = {}) && { return move(*this)(1, &arg, arg_out); }
       template<size_t Argc> MNL_INLINE val operator()(args<Argc> &&args, val *args_out = {}) && { return move(*this)((int)Argc, args.data(), args_out); }
@@ -370,6 +442,8 @@ namespace aux { namespace pub {
          { return val(*this)(loc, move(args), args_out); }
       MNL_INLINE val operator()(const loc &loc) const &
          { return val(*this)(loc); }
+
+
    private: // Implementation of sym::operator()
       template<typename Self> static val _invoke(Self &&, const sym &op, int argc, val argv[], val *argv_out); // Self == const val & || Self == val
       friend val sym::operator()(const val &, int, val [], val *) const, sym::operator()(val &&, int, val [], val *) const;
