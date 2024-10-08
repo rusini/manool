@@ -403,47 +403,14 @@ namespace aux { namespace pub {
          { return op(*this, Argc, args.data(), args_out); }
       template<std::size_t Argc> MNL_INLINE val invoke()(const sym *op, std::array<val, Argc> args, val *args_out = {}) &&
          { return op(_mv(*this), Argc, args.data(), args_out); }
-
-
-
-
-
-         val operator()(int argc, val argv[], val *argv_out = {}) &&; // functional application - !argc => !argv && !argv_out
-      /* val operator()(int argc, val argv[], val *argv_out = {}) &&; // essential form */
-
-
-      MNL_INLINE val operator()(const val &arg, val *arg_out = {}) && { return move(*this)(val(arg), arg_out); }
-      MNL_INLINE val operator()(val &&arg, val *arg_out = {}) && { return move(*this)(1, &arg, arg_out); }
-      template<size_t Argc> MNL_INLINE val operator()(args<Argc> &&args, val *args_out = {}) && { return move(*this)((int)Argc, args.data(), args_out); }
-      MNL_INLINE val operator()() && { return move(*this)(0, {}); }
-      MNL_INLINE val operator()(int argc, val argv[], val *argv_out = {}) const & { return val(*this)(argc, argv, argv_out); }
-      MNL_INLINE val operator()(const val &arg, val *arg_out = {}) const & { return val(*this)(arg, arg_out); }
-      MNL_INLINE val operator()(val &&arg, val *arg_out = {}) const & { return val(*this)(move(arg), arg_out); }
-      template<size_t Argc> val operator()(args<Argc> &&args, val *args_out = {}) const & { return val(*this)(move(args), args_out); }
-      MNL_INLINE val operator()() const & { return val(*this)(); }
-      // ...and their tracing counterparts:
-      MNL_INLINE val operator()(const loc &loc, int argc, val argv[], val *argv_out = {}) &&
-         { try { return move(*this)(argc, argv, argv_out); } catch (...) { MNL_NORETURN void trace_execute(const mnl::loc &); trace_execute(loc); } }
-      MNL_INLINE val operator()(const loc &loc, const val &arg, val *arg_out = {}) &&
-         { try { return move(*this)(arg, arg_out); } catch (...) { MNL_NORETURN void trace_execute(const mnl::loc &); trace_execute(loc); } }
-      MNL_INLINE val operator()(const loc &loc, val &&arg, val *arg_out = {}) &&
-         { try { return move(*this)(move(arg), arg_out); } catch (...) { MNL_NORETURN void trace_execute(const mnl::loc &); trace_execute(loc); } }
-      template<size_t Argc> MNL_INLINE val operator()(const loc &loc, args<Argc> &&args, val *args_out = {}) &&
-         { try { return move(*this)(move(args), args_out); } catch (...) { MNL_NORETURN void trace_execute(const mnl::loc &); trace_execute(loc); } }
-      MNL_INLINE val operator()(const loc &loc) &&
-         { try { return move(*this)(); } catch (...) { MNL_NORETURN void trace_execute(const mnl::loc &); trace_execute(loc); } }
-      MNL_INLINE val operator()(const loc &loc, int argc, val argv[], val *argv_out = {}) const &
-         { return val(*this)(loc, argc, argv, argv_out); }
-      MNL_INLINE val operator()(const loc &loc, const val &arg, val *arg_out = {}) const &
-         { return val(*this)(loc, arg, arg_out); }
-      MNL_INLINE val operator()(const loc &loc, val &&arg, val *arg_out = {}) const &
-         { return val(*this)(loc, move(arg), arg_out); }
-      template<size_t Argc> MNL_INLINE val operator()(const loc &loc, args<Argc> &&args, val *args_out = {}) const &
-         { return val(*this)(loc, move(args), args_out); }
-      MNL_INLINE val operator()(const loc &loc) const &
-         { return val(*this)(loc); }
-
-
+   private: // Implementation of the above
+      // _apply
+      template<typename Target>                               static val _apply(Target &&, int argc, val [], val *argv_out);
+      template<typename Target, typename Arg0>                static val _apply(Target &&, Arg0 &&);
+      template<typename Target, typename Arg0, typename Arg1> static val _apply(Target &&, Arg0 &&, Arg1 &&);
+      // _repl
+      template<typename Target, typename Arg0, typename Arg1>                static val _repl(Target &&, Arg0 &&, Arg1 &&);
+      template<typename Target, typename Arg0, typename Arg1, typename Arg2> static val _repl(Target &&, Arg0 &&, Arg1 &&, Arg2 &&);
    private: // Implementation of sym::operator()
       template<typename Self> static val _invoke(Self &&, const sym &op, int argc, val argv[], val *argv_out); // Self == const val & || Self == val
       friend val sym::operator()(const val &, int, val [], val *) const, sym::operator()(val &&, int, val [], val *) const;
