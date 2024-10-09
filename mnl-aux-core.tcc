@@ -336,7 +336,7 @@ namespace aux { namespace pub {
       template<typename Dat = decltype(nullptr)> Dat  cast() const noexcept(std::is_nothrow_copy_constructible<Dat>::value);
       //MNL_IF_CLANG(public:)
       class root; template<typename> friend class mnl::box;
-   public: // Functional application (and Repl)
+   public: // Functional application (and Repl) -- TODO: (maybe) we need facilities for _fetch
       static constexpr int max_argc = sym::max_argc;
 //!argc => !argv && !argv_out
 
