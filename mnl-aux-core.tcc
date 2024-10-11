@@ -546,8 +546,6 @@ namespace aux { namespace pub {
    private:
       const unsigned _tag; // assume 64-bit small/medium code model or x32 ABI or 32-bit ISA
       MNL_ATOMIC long _rc = 1;
-      virtual val invoke(val &&, const sym &, int, val [], val * = {}) = 0;
-
    private: // 44 VMT entries
       MNL_NOINLINE MNL_HOT virtual val _invoke(const val &self, const sym &op, int argc, val [], val *argv_out = {}) = 0; // argv_out[-1] corresponds to self
       MNL_NOINLINE MNL_HOT virtual val _invoke(val &&self,      const sym &op, int argc, val [], val *argv_out = {}) = 0; // ditto
@@ -601,7 +599,6 @@ namespace aux { namespace pub {
       MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, val &&, const sym &, const val &) = 0;
       MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, val &&, const sym &, val &&) = 0;
    public: // Friendship
-      friend sym;
       friend val;
    };
    template<typename Dat> class box final: val::root {
@@ -723,22 +720,7 @@ namespace aux { namespace pub {
          val argv[] = {std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::forward<Arg2>(arg2)};
          return _invoke(std::forward<Self>(self), MNL_SYM("Repl"), std::size(argv), argv);
       }
-
-
-
-
-
-      val invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) override { return dat.invoke(std::move(self), op, argc, argv, argv_out); }
    };
-   template<> class box<decltype(nullptr)>; // to be left incomplete to improve diagnostics
-   template<> class box<long long>;         // ditto
-   template<> class box<int>;               // ditto
-   template<> class box<double>;            // ditto
-   template<> class box<float>;             // ditto
-   template<> class box<sym>;               // ditto
-   template<> class box<bool>;              // ditto
-   template<> class box<unsigned>;          // ditto
-   template<> class box<char>;              // ditto
 
    template<> val box<std::string>::invoke(val &&, const sym &, int, val [], val *);
    template<> val box<std::pair<std::vector<ast>, loc>>::invoke(val &&, const sym &, int, val [], val *);
@@ -1152,7 +1134,7 @@ namespace aux { namespace pub {
             switch (lhs.rep.tag()) /*jumptable*/ {
             case 0b000 - 8: case 0b100 - 8: case 0b101 - 8: case 0b110 - 8:
                MNL_ERR(MNL_SYM("UnrecognizedOperation"));
-            case 0b111 - 8/*BoxPtr (fallback)*/: return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs),
+            case 0b111 - 8/*BoxPtr (fallback)*/: return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs),
                *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
             case 0b001 - 8/*I48*/:               return (*this)(cast<long long>(lhs),   rhs);
             default       /*F64*/:               return (*this)(cast<double>(lhs),      rhs);
@@ -1163,7 +1145,7 @@ namespace aux { namespace pub {
             Id == sym::id("==") | Id == sym::id("<>") )
             switch (lhs.rep.tag()) /*jumptable*/ {
             default       /*F64*/:               return (*this)(cast<double>(lhs),      rhs);
-            case 0b111 - 8/*BoxPtr (fallback)*/: return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs),
+            case 0b111 - 8/*BoxPtr (fallback)*/: return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs),
                *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
             case 0b000 - 8/*Nil*/:               return (*this)(nullptr                 rhs);
             case 0b001 - 8/*I48*/:               return (*this)(cast<long long>(lhs),   rhs);
@@ -1181,7 +1163,7 @@ namespace aux { namespace pub {
             else if (MNL_LIKELY(lhs.rep.tag() | true == 0b101 - 8)) // Bool
                return (*this)(cast<bool>(lhs), rhs);
             else if (MNL_LIKELY(lhs.rep.tag() == 0b111 - 8)) // BoxPtr (fallback)
-               return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(std::forward<Lhs>(lhs),
+               return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs),
                   *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
             else
                MNL_ERR(MNL_SYM("UnrecognizedOperation"));
@@ -1285,7 +1267,7 @@ namespace aux { namespace pub {
             return ((const sym &)*this)(std::forward<Lhs>(lhs), rhs);
             static_assert(!(Id, lean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN");
          }
-         return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(
+         return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(
             std::forward<Lhs>(lhs), *this, 1, &const_cast<val &>((const val &)rhs));
       }
       template< class Lhs, typename Rhs, std::enable_if_t<
@@ -1313,7 +1295,7 @@ namespace aux { namespace pub {
             return ((const sym &)*this)(std::forward<Lhs>(lhs), rhs);
             static_assert(!(Id, lean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN");
          }
-         return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(
+         return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(
             std::forward<Lhs>(lhs), (sym)*this, 1, &const_cast<val &>((const val &)rhs));
       // Sym
       template< class Lhs, typename Rhs, std::enable_if_t<
@@ -1334,7 +1316,7 @@ namespace aux { namespace pub {
             return ((const sym &)*this)(std::forward<Lhs>(lhs), rhs);
             static_assert(!(Id, lean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN");
          }
-         return static_cast<root *>(lhs.rep.template dat<void *>())->invoke(
+         return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(
             std::forward<Lhs>(lhs), (sym)*this, 1, &const_cast<val &>((const val &)rhs));
       }
    public:
@@ -1348,7 +1330,7 @@ namespace aux { namespace pub {
             case 0b000 - 8: case 0b100 - 8: case 0b101 - 8: case 0b110 - 8:
                MNL_ERR(MNL_SYM("UnrecognizedOperation"));
             case 0b111 - 8/*BoxPtr (fallback)*/:
-               return static_cast<root *>(rhs.rep.template dat<void *>())->invoke(std::forward<Rhs>(rhs), *this, 0, {});
+               return static_cast<root *>(rhs.rep.template dat<void *>())->_invoke(std::forward<Rhs>(rhs), *this, 0, {});
             case 0b001 - 8/*I48*/: return _op(cast<long long>(rhs));
             default       /*F64*/: return _op(cast<double>(rhs));
             case 0b010 - 8/*F32*/: return _op(cast<float>(rhs));
@@ -1361,7 +1343,7 @@ namespace aux { namespace pub {
             else if (MNL_LIKELY(lhs.rep.tag() | true == 0b101 - 8)) // Bool
                return _op(cast<bool>(rhs));
             else if (MNL_LIKELY(lhs.rep.tag() == 0b111 - 8)) // BoxPtr (fallback)
-               return static_cast<root *>(rhs.rep.template dat<void *>())->invoke(std::forward<Rhs>(rhs), *this, 0, {});
+               return static_cast<root *>(rhs.rep.template dat<void *>())->_invoke(std::forward<Rhs>(rhs), *this, 0, {});
             else
                MNL_ERR(MNL_SYM("UnrecognizedOperation"));
          else {
