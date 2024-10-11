@@ -544,8 +544,8 @@ namespace aux { namespace pub {
    protected:
       long rc() const { return MNL_IF_WITHOUT_MT(_rc) MNL_IF_WITH_MT(__atomic_load_n(&_rc, __ATOMIC_RELAXED)); }
    private:
-      const unsigned _tag; // assume 64-bit small/medium memory model or x32 ABI or 32-bit ISA
-      /*atomic*/ long _rc = 1;
+      const unsigned _tag; // assume 64-bit small/medium code model or x32 ABI or 32-bit ISA
+      MNL_ATOMIC long _rc = 1;
       virtual val invoke(val &&, const sym &, int, val [], val * = {}) = 0;
 
    private: // 44 VMT entries
