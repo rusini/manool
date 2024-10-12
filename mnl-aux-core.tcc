@@ -542,7 +542,7 @@ namespace aux { namespace pub {
       root(const root &) = delete;
       root &operator=(const root &) = delete;
    protected:
-      long rc() const { return MNL_IF_WITHOUT_MT(_rc) MNL_IF_WITH_MT(__atomic_load_n(&_rc, __ATOMIC_RELAXED)); }
+      long rc() const noexcept { return MNL_UNLESS_MT(_rc, __atomic_load_n(&_rc, __ATOMIC_RELAXED)); }
    private:
       const unsigned _tag; // assume 64-bit small/medium code model or x32 ABI or 32-bit ISA
       MNL_NOTE(atomic) long _rc = 1;
@@ -606,7 +606,7 @@ namespace aux { namespace pub {
       explicit box(Dat &&dat): root(_tag), dat(std::move(dat)) {}
       ~box() {}
    private:
-      static constexpr std::byte tag{};
+      static constexpr std::byte _tag{};
       friend val;
    private: // 44 VMT entries
       MNL_NOINLINE MNL_HOT val _invoke(const val &self, const sym &op, int argc, val argv[], val *argv_out = {}) override
