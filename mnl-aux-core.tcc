@@ -1064,7 +1064,7 @@ namespace aux { namespace pub {
       MNL_ERR(MNL_SYM("UnrecognizedOperation"));
    }
    template<typename Target, typename Arg0, typename Arg1>
-   MNL_INLINE inline val _apply(Target &&target, Arg0 &&arg0, Arg1 &&arg1) {
+   MNL_INLINE inline val val::_apply(Target &&target, Arg0 &&arg0, Arg1 &&arg1) {
       if (MNL_LIKELY(target.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
          return static_cast<root *>(target.rep.template dat<void *>())->
             apply(std::forward<Target>(target), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1));
@@ -1075,26 +1075,25 @@ namespace aux { namespace pub {
 
    // Repl
 
-   template<typename Target>
-   MNL_INLINE inline val _repl(Target &&target, int argc, val argv[]) {
-      if (MNL_LIKELY(target.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
-         return static_cast<root *>(target.rep.template dat<void *>())->
-            invoke(std::forward<Target>(target), MNL_SYM("Repl"), argc, argv);
-      MNL_ERR(MNL_SYM("UnrecognizedOperation"));
-   }
-   template<typename Target, std::size_t Argc> // TODO: need this convenience? If yes, move to the val class def
-   MNL_INLINE inline val _repl(Target &&target, std::array<val, Argc> &&args)
-      { return std::forward<Target>(target).repl(Argc, args.data()); }
-
+   //template<typename Target>
+   //MNL_INLINE inline val val::_repl(Target &&target, int argc, val argv[]) {
+   //   if (MNL_LIKELY(target.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
+   //      return static_cast<root *>(target.rep.template dat<void *>())->
+   //         invoke(std::forward<Target>(target), MNL_SYM("Repl"), argc, argv);
+   //   MNL_ERR(MNL_SYM("UnrecognizedOperation"));
+   //}
+   //template<typename Target, std::size_t Argc> // TODO: need this convenience? If yes, move to the val class def
+   //MNL_INLINE inline val val::_repl(Target &&target, std::array<val, Argc> &&args)
+   //   { return std::forward<Target>(target).repl(Argc, args.data()); }
    template< typename Target, typename Arg0, typename Arg1>
-   MNL_INLINE inline val _repl(Target &&target, Arg0 &&arg0, Arg1 &&arg1) {
+   MNL_INLINE inline val val::_repl(Target &&target, Arg0 &&arg0, Arg1 &&arg1) {
       if (MNL_LIKELY(target.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
          return static_cast<root *>(target.rep.template dat<void *>())->
             repl(std::forward<Target>(target), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1));
       MNL_ERR(MNL_SYM("UnrecognizedOperation"));
    }
    template<typename Target, typename Arg0, typename Arg1, typename Arg2>
-   MNL_INLINE inline val _repl(Target &&target, Arg0 &&arg0, Arg1 &&arg1, Arg2 &&arg2) {
+   MNL_INLINE inline val val::_repl(Target &&target, Arg0 &&arg0, Arg1 &&arg1, Arg2 &&arg2) {
       if (MNL_LIKELY(target.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
          return static_cast<root *>(target.rep.template dat<void *>())->
             repl(std::forward<Target>(target), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::forward<Arg2>(arg2));
@@ -1102,20 +1101,6 @@ namespace aux { namespace pub {
    }
 
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-   MNL_INLINE inline val val::operator()(int argc, val argv[], val *argv_out) && {
-      if (MNL_LIKELY(rep.tag() == 0x7FF8u)) // BoxPtr (fallback)
-         return static_cast<root *>(rep.dat<void *>())->invoke(move(*this), MNL_SYM("Apply"), argc, argv, argv_out);
-      if (MNL_LIKELY(rep.tag() == 0x7FFBu)) // Sym
-         return cast<const sym &>()(argc, argv, argv_out);
-      MNL_ERR(MNL_SYM("UnrecognizedOperation"));
-   }
-
-   val _eq(val &&, val &&), _ne(val &&, val &&), _lt(val &&, val &&), _le(val &&, val &&), _gt(val &&, val &&), _ge(val &&, val &&);
-   val _add(val &&, val &&), _sub(val &&, val &&), _mul(val &&, val &&), _neg(val &&), _abs(val &&), _xor(val &&, val &&), _not(val &&);
 
 
    template<enum sym::id Id> struct val::ops::_op {
@@ -1449,6 +1434,9 @@ namespace aux { namespace pub {
       { return  test<>(rhs); }
    template<typename Dat> MNL_INLINE inline enable_same<Dat, decltype(nullptr), bool> _ne(Dat, val &&rhs) noexcept
       { return !test<>(rhs); }
+
+
+
 
 }} // namespace aux::pub
 
