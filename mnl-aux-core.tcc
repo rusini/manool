@@ -1120,7 +1120,7 @@ namespace aux { namespace pub {
 
    template<enum sym::id Id> struct val::ops::_op {
    public:
-      MNL_INLINE operator const sym &() const { return sym::from_id<Id>; }
+      MNL_INLINE operator const sym &() const noexcept { return sym::from_id<Id>; }
    public:
       MNL_INLINE val operator()(const Lhs  &lhs, const Rhs  &rhs) const { return _apply(          lhs ,           rhs ); }
       MNL_INLINE val operator()(const Lhs  &lhs,       Rhs &&rhs) const { return _apply(          lhs , std::move(rhs)); }
@@ -1131,7 +1131,7 @@ namespace aux { namespace pub {
          if constexpr (
             Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") |
             Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=" ) )
-            switch (lhs.rep.tag()) /*jumptable*/ {
+            switch (lhs.rep.tag()) MNL_NOTE(jumptable) {
             case 0b000 - 8: case 0b100 - 8: case 0b101 - 8: case 0b110 - 8:
                MNL_ERR(MNL_SYM("UnrecognizedOperation"));
             case 0b111 - 8/*BoxPtr (fallback)*/: return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs),
@@ -1143,7 +1143,7 @@ namespace aux { namespace pub {
             }
          else if constexpr (
             Id == sym::id("==") | Id == sym::id("<>") )
-            switch (lhs.rep.tag()) /*jumptable*/ {
+            switch (lhs.rep.tag()) MNL_NOTE(jumptable) {
             default       /*F64*/:               return (*this)(cast<double>(lhs),      rhs);
             case 0b111 - 8/*BoxPtr (fallback)*/: return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs),
                *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
@@ -1326,7 +1326,7 @@ namespace aux { namespace pub {
       template<class Rhs> static MNL_INLINE val operator()(Rhs &&rhs) const {
          if (false);
          else if constexpr (Id == sym::id("-") | Id == sym::id("Abs"))
-            switch (rhs.rep.tag()) /*jumptable*/ {
+            switch (rhs.rep.tag()) MNL_NOTE(jumptable) {
             case 0b000 - 8: case 0b100 - 8: case 0b101 - 8: case 0b110 - 8:
                MNL_ERR(MNL_SYM("UnrecognizedOperation"));
             case 0b111 - 8/*BoxPtr (fallback)*/:
