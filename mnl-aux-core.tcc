@@ -786,9 +786,12 @@ namespace aux { namespace pub {
    template<typename Dat> MNL_INLINE inline bool val::test() const noexcept {
       return MNL_LIKELY(rep.tag() == 0xFFF8 + 0b111) &&
          typeid(*static_cast<root *>(rep.dat<void *>())) == typeid(box<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type>);
+
+      return MNL_LIKELY(rep.tag() == 0xFFF8 + 0b111) && static_cast<const root *>(rep.dat<void *>())->_tag ==
+         (decltype(root::_tag))reinterpret_cast<std::uintptr_t>(&box<std::remove_cv_t<std::remove_reference_t<Dat>>>::_tag);
    }
    template<typename Dat> MNL_INLINE inline Dat val::cast() const noexcept(std::is_nothrow_copy_constructible<Dat>::value) {
-      return static_cast<box<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type> *>(static_cast<root *>(rep.dat<void *>()))->dat;
+      return static_cast<box<std::remove_cv_t<std::remove_reference_t<Dat>>> *>(static_cast<root *>(rep.dat<void *>()))->dat;
    }
    MNL_INLINE inline long val::rc() const noexcept
       { return static_cast<const root *>(rep.dat<void *>())->rc(); }
