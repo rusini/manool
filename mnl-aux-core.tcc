@@ -785,10 +785,10 @@ namespace aux { namespace pub {
 // val Extractors //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    template<typename Dat> MNL_INLINE inline bool val::test() const noexcept {
       return MNL_LIKELY(rep.tag() == 0xFFF8 + 0b111) && static_cast<const root *>(rep.dat<void *>())->_tag ==
-         (decltype(root::_tag))reinterpret_cast<std::uintptr_t>(&box<std::remove_cv_t<std::remove_reference_t<Dat>>>::_tag);
+         (decltype(root::_tag))reinterpret_cast<std::uintptr_t>(&box<std::decay_t<Dat>>::_tag);
    }
    template<typename Dat> MNL_INLINE inline Dat val::cast() const noexcept(std::is_nothrow_copy_constructible_v<Dat>) {
-      return static_cast<box<std::remove_cv_t<std::remove_reference_t<Dat>>> *>(static_cast<root *>(rep.dat<void *>()))->dat;
+      return static_cast<box<std::decay_t<Dat>> *>(static_cast<root *>(rep.dat<void *>()))->dat;
    }
    MNL_INLINE inline long val::rc() const noexcept
       { return static_cast<const root *>(rep.dat<void *>())->rc(); }
