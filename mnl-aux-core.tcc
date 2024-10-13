@@ -763,42 +763,6 @@ namespace aux { namespace pub {
       vcri_range{cast<const pair<vector<ast>, loc> &>().first.rbegin(), cast<const pair<vector<ast>, loc> &>().first.rend() - sn}; }
 
 // Resource Management Helpers /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-# if false
-   MNL_INLINE inline void val::addref() const noexcept {
-      switch (rep.tag()) {
-      case 0x7FFBu: rep.dat<const sym &>().addref(); return;
-      case 0x7FF8u: MNL_IF_WITHOUT_MT(++static_cast<root *>(rep.dat<void *>())->_rc)
-         MNL_IF_WITH_MT(__atomic_add_fetch(&static_cast<root *>(rep.dat<void *>())->_rc, 1, __ATOMIC_RELAXED));
-      }
-   }
-   MNL_INLINE inline void val::release() const noexcept {
-      switch (rep.tag()) {
-      case 0x7FFBu: rep.dat<const sym &>().release(); return;
-      case 0x7FF8u: if (MNL_UNLIKELY(! MNL_IF_WITHOUT_MT(--static_cast<root *>(rep.dat<void *>())->_rc)
-         MNL_IF_WITH_MT(__atomic_sub_fetch(&static_cast<root *>(rep.dat<void *>())->_rc, 1, __ATOMIC_ACQ_REL)) )) delete static_cast<root *>(rep.dat<void *>());
-      }
-   }
-# elseif false
-   MNL_INLINE inline void val::addref() const noexcept {
-      if (MNL_UNLIKELY(rep.tag() == 0x7FF8u)) // should improve branch prediction compared to a switch
-         MNL_IF_WITHOUT_MT(++static_cast<root *>(rep.dat<void *>())->_rc)
-         MNL_IF_WITH_MT(__atomic_add_fetch(&static_cast<root *>(rep.dat<void *>())->_rc, 1, __ATOMIC_RELAXED));
-      else
-      if (MNL_UNLIKELY(rep.tag() == 0x7FFBu))
-         rep.dat<const sym &>().addref();
-   }
-   MNL_INLINE inline void val::release() const noexcept {
-      if (MNL_UNLIKELY(rep.tag() == 0x7FF8u)) {
-         if (MNL_UNLIKELY(!
-            MNL_IF_WITHOUT_MT(--static_cast<root *>(rep.dat<void *>())->_rc)
-            MNL_IF_WITH_MT(__atomic_sub_fetch(&static_cast<root *>(rep.dat<void *>())->_rc, 1, __ATOMIC_ACQ_REL)) ))
-            delete static_cast<root *>(rep.dat<void *>());
-      } else
-      if (MNL_UNLIKELY(rep.tag() == 0x7FFBu)) {
-         rep.dat<const sym &>().release();
-      }
-   }
-# else // alternative implementation
    MNL_INLINE inline void val::hold() const noexcept {
       if (MNL_UNLIKELY(rep.tag() >= 0xFFF8 + 0b110))
       if (MNL_UNLIKELY(rep.tag() == 0xFFF8 + 0b110)) // Sym
@@ -817,7 +781,6 @@ namespace aux { namespace pub {
          MNL_IF_WITH_MT(__atomic_sub_fetch(&static_cast<root *>(rep.dat<void *>())->_rc, 1, __ATOMIC_ACQ_REL)) ))
          delete static_cast<root *>(rep.dat<void *>());
    }
-# endif
 
 // val Extractors //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    template<typename Dat> MNL_INLINE inline bool val::test() const noexcept {
