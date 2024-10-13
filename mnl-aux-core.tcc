@@ -1079,38 +1079,38 @@ namespace aux { namespace pub {
          if constexpr (
             Id == sym::id("==") | Id == sym::id("<>") )
             switch (lhs.rep.tag()) MNL_NOTE(jumptable) {
-            default            /*F64*/:               return (*this)(cast<double>(lhs),      rhs);
-            case 0xFFF8 + 0b111/*BoxPtr (fallback)*/: return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs),
+            default             /*F64*/:        return (*this)(cast<double>(lhs),      rhs);
+            case 0xFFF8 + 0b111 /*BoxPtr (fallback)*/: return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs),
                *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
-            case 0xFFF8 + 0b000/*Nil*/:               return (*this)(nullptr                 rhs);
-            case 0xFFF8 + 0b001/*I48*/:               return (*this)(cast<long long>(lhs),   rhs);
-            case 0xFFF8 + 0b010/*F32*/:               return (*this)(cast<float>(lhs),       rhs);
-            case 0xFFF8 + 0b110/*Sym*/:               return (*this)(cast<const sym &>(lhs), rhs);
-            case 0xFFF8 + 0b100/*Bool/False*/:        return (*this)(false,                  rhs); // TODO: may actually get rid of relying on operator() in THIS case
-            case 0xFFF8 + 0b101/*Bool/True*/:         return (*this)(true,                   rhs);
-            case 0xFFF8 + 0b011/*U32*/:               return (*this)(cast<unsigned>(lhs),    rhs);
+            case 0xFFF8 + 0b000 /*Nil*/:        return (*this)(nullptr                 rhs);
+            case 0xFFF8 + 0b001 /*I48*/:        return (*this)(cast<long long>(lhs),   rhs);
+            case 0xFFF8 + 0b010 /*F32*/:        return (*this)(cast<float>(lhs),       rhs);
+            case 0xFFF8 + 0b110 /*Sym*/:        return (*this)(cast<const sym &>(lhs), rhs);
+            case 0xFFF8 + 0b100 /*Bool/False*/: return (*this)(false,                  rhs);
+            case 0xFFF8 + 0b101 /*Bool/True*/:  return (*this)(true,                   rhs);
+            case 0xFFF8 + 0b011 /*U32*/:        return (*this)(cast<unsigned>(lhs),    rhs);
             }
          else if constexpr (
             Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") |
             Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=" ) )
             switch (lhs.rep.tag()) MNL_NOTE(jumptable) {
-            case 0b000 - 8: case 0b100 - 8: case 0b101 - 8: case 0b110 - 8:
+            case 0xFFF8 + 0b000: case 0xFFF8 + 0b100: case 0xFFF8 + 0b101: case 0xFFF8 + 0b110:
                MNL_ERR(MNL_SYM("UnrecognizedOperation"));
-            case 0b111 - 8/*BoxPtr (fallback)*/: return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs),
+            case 0xFFF8 + 0b111 /*BoxPtr (fallback)*/: return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs),
                *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
-            case 0b001 - 8/*I48*/:               return (*this)(cast<long long>(lhs),   rhs);
-            default       /*F64*/:               return (*this)(cast<double>(lhs),      rhs);
-            case 0b010 - 8/*F32*/:               return (*this)(cast<float>(lhs),       rhs);
-            case 0b011 - 8/*U32*/:               return (*this)(cast<unsigned> (lhs),   rhs);
+            case 0xFFF8 + 0b001 /*I48*/:               return (*this)(cast<long long>(lhs),   rhs);
+            default             /*F64*/:               return (*this)(cast<double>(lhs),      rhs);
+            case 0xFFF8 + 0b010 /*F32*/:               return (*this)(cast<float>(lhs),       rhs);
+            case 0xFFF8 + 0b011 /*U32*/:               return (*this)(cast<unsigned> (lhs),   rhs);
             }
          else if constexpr (
             Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|") )
             if (false);
-            else if (MNL_UNLIKELY(lhs.rep.tag() == 0b011 - 8)) // U32
+            else if (MNL_UNLIKELY(lhs.rep.tag() == 0xFFF8 + 0b011)) // U32
                return (*this)(cast<unsigned>(lhs), rhs);
-            else if (MNL_LIKELY(lhs.rep.tag() | true == 0b101 - 8)) // Bool
+            else if (MNL_LIKELY(lhs.rep.tag() | true == 0xFFF8 + 0b101)) // Bool
                return (*this)(cast<bool>(lhs), rhs);
-            else if (MNL_LIKELY(lhs.rep.tag() == 0b111 - 8)) // BoxPtr (fallback)
+            else if (MNL_LIKELY(lhs.rep.tag() == 0xFFF8 + 0b111)) // BoxPtr (fallback)
                return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs),
                   *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
             else
