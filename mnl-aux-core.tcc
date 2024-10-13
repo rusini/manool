@@ -542,7 +542,7 @@ namespace aux { namespace pub {
       root(const root &) = delete;
       root &operator=(const root &) = delete;
    protected:
-      long rc() const noexcept { return MNL_UNLESS_MT(_rc, __atomic_load_n(&_rc, __ATOMIC_RELAXED)); }
+      long rc() const noexcept { return MNL_IF_WITHOUT_MT(_rc) MNL_IF_WITH_MT(__atomic_load_n(&_rc, __ATOMIC_RELAXED)); }
    private:
       const unsigned _tag; // assume 64-bit small/medium code model or x32 ABI or 32-bit ISA
       MNL_NOTE(atomic) long _rc = 1;
@@ -604,7 +604,7 @@ namespace aux { namespace pub {
    template<typename Dat> class box final: val::root {
       Dat dat;
       explicit box(Dat &&dat): root(_tag), dat(std::move(dat)) {}
-      ~box() {}
+      ~box() = default;
    private:
       static constexpr std::byte _tag{};
       friend val;
@@ -787,7 +787,7 @@ namespace aux { namespace pub {
       return MNL_LIKELY(rep.tag() == 0xFFF8 + 0b111) && static_cast<const root *>(rep.dat<void *>())->_tag ==
          (decltype(root::_tag))reinterpret_cast<std::uintptr_t>(&box<std::remove_cv_t<std::remove_reference_t<Dat>>>::_tag);
    }
-   template<typename Dat> MNL_INLINE inline Dat val::cast() const noexcept(std::is_nothrow_copy_constructible<Dat>::value) {
+   template<typename Dat> MNL_INLINE inline Dat val::cast() const noexcept(std::is_nothrow_copy_constructible_v<Dat>) {
       return static_cast<box<std::remove_cv_t<std::remove_reference_t<Dat>>> *>(static_cast<root *>(rep.dat<void *>()))->dat;
    }
    MNL_INLINE inline long val::rc() const noexcept
