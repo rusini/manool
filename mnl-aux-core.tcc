@@ -1079,16 +1079,16 @@ namespace aux { namespace pub {
          if constexpr (
             Id == sym::id("==") | Id == sym::id("<>") )
             switch (lhs.rep.tag()) MNL_NOTE(jumptable) {
-            default             /*F64*/:        return (*this)(cast<double>(lhs),      rhs);
+            default             /*F64*/:               return (*this)(cast<double>(lhs),      rhs);
             case 0xFFF8 + 0b111 /*BoxPtr (fallback)*/: return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs),
                *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
-            case 0xFFF8 + 0b000 /*Nil*/:        return (*this)(nullptr                 rhs);
-            case 0xFFF8 + 0b001 /*I48*/:        return (*this)(cast<long long>(lhs),   rhs);
-            case 0xFFF8 + 0b010 /*F32*/:        return (*this)(cast<float>(lhs),       rhs);
-            case 0xFFF8 + 0b110 /*Sym*/:        return (*this)(cast<const sym &>(lhs), rhs);
-            case 0xFFF8 + 0b100 /*Bool/False*/: return (*this)(false,                  rhs);
-            case 0xFFF8 + 0b101 /*Bool/True*/:  return (*this)(true,                   rhs);
-            case 0xFFF8 + 0b011 /*U32*/:        return (*this)(cast<unsigned>(lhs),    rhs);
+            case 0xFFF8 + 0b000 /*Nil*/:               return (*this)(nullptr                 rhs);
+            case 0xFFF8 + 0b001 /*I48*/:               return (*this)(cast<long long>(lhs),   rhs);
+            case 0xFFF8 + 0b010 /*F32*/:               return (*this)(cast<float>(lhs),       rhs);
+            case 0xFFF8 + 0b110 /*Sym*/:               return (*this)(cast<const sym &>(lhs), rhs);
+            case 0xFFF8 + 0b100 /*Bool/False*/:        return (*this)(false,                  rhs);
+            case 0xFFF8 + 0b101 /*Bool/True*/:         return (*this)(true,                   rhs);
+            case 0xFFF8 + 0b011 /*U32*/:               return (*this)(cast<unsigned>(lhs),    rhs);
             }
          else if constexpr (
             Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") |
