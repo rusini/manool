@@ -801,17 +801,17 @@ namespace aux { namespace pub {
 # else // alternative implementation
    MNL_INLINE inline void val::hold() const noexcept {
       if (MNL_UNLIKELY(rep.tag() >= 0xFFF8 + 0b110))
-      if (MNL_UNLIKELY(rep.tag() == 0xFFF8 + 0b110))
+      if (MNL_UNLIKELY(rep.tag() == 0xFFF8 + 0b110)) // Sym
          rep.dat<const sym &>().hold();
-      else
+      else // BoxPtr (fallback)
          MNL_IF_WITHOUT_MT(++static_cast<root *>(rep.dat<void *>())->_rc)
          MNL_IF_WITH_MT(__atomic_add_fetch(&static_cast<root *>(rep.dat<void *>())->_rc, 1, __ATOMIC_RELAXED));
    }
    MNL_INLINE inline void val::unhold() const noexcept {
       if (MNL_UNLIKELY(rep.tag() >= 0xFFF8 + 0b110))
-      if (MNL_UNLIKELY(rep.tag() == 0xFFF8 + 0b110))
+      if (MNL_UNLIKELY(rep.tag() == 0xFFF8 + 0b110)) // Sym
          rep.dat<const sym &>().unhold();
-      else
+      else // BoxPtr (fallback)
       if (MNL_UNLIKELY(!
          MNL_IF_WITHOUT_MT(--static_cast<root *>(rep.dat<void *>())->_rc)
          MNL_IF_WITH_MT(__atomic_sub_fetch(&static_cast<root *>(rep.dat<void *>())->_rc, 1, __ATOMIC_ACQ_REL)) ))
@@ -1114,6 +1114,20 @@ namespace aux { namespace pub {
    private:
       template<class Lhs, class Rhs> MNL_INLINE static val _apply(Lhs &&lhs, Rhs &&rhs) {
          if constexpr (
+            Id == sym::id("==") | Id == sym::id("<>") )
+            switch (lhs.rep.tag()) MNL_NOTE(jumptable) {
+            default            /*F64*/:               return (*this)(cast<double>(lhs),      rhs);
+            case 0xFFF8 + 0b111/*BoxPtr (fallback)*/: return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs),
+               *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
+            case 0xFFF8 + 0b000/*Nil*/:               return (*this)(nullptr                 rhs);
+            case 0xFFF8 + 0b001/*I48*/:               return (*this)(cast<long long>(lhs),   rhs);
+            case 0xFFF8 + 0b010/*F32*/:               return (*this)(cast<float>(lhs),       rhs);
+            case 0xFFF8 + 0b110/*Sym*/:               return (*this)(cast<const sym &>(lhs), rhs);
+            case 0xFFF8 + 0b100/*Bool/False*/:        return (*this)(false,                  rhs); // TODO: may actually get rid of relying on operator() in THIS case
+            case 0xFFF8 + 0b101/*Bool/True*/:         return (*this)(true,                   rhs);
+            case 0xFFF8 + 0b011/*U32*/:               return (*this)(cast<unsigned>(lhs),    rhs);
+            }
+         else if constexpr (
             Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") |
             Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=" ) )
             switch (lhs.rep.tag()) MNL_NOTE(jumptable) {
@@ -1125,20 +1139,6 @@ namespace aux { namespace pub {
             default       /*F64*/:               return (*this)(cast<double>(lhs),      rhs);
             case 0b010 - 8/*F32*/:               return (*this)(cast<float>(lhs),       rhs);
             case 0b011 - 8/*U32*/:               return (*this)(cast<unsigned> (lhs),   rhs);
-            }
-         else if constexpr (
-            Id == sym::id("==") | Id == sym::id("<>") )
-            switch (lhs.rep.tag()) MNL_NOTE(jumptable) {
-            default       /*F64*/:               return (*this)(cast<double>(lhs),      rhs);
-            case 0b111 - 8/*BoxPtr (fallback)*/: return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs),
-               *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
-            case 0b000 - 8/*Nil*/:               return (*this)(nullptr                 rhs);
-            case 0b001 - 8/*I48*/:               return (*this)(cast<long long>(lhs),   rhs);
-            case 0b010 - 8/*F32*/:               return (*this)(cast<float>(lhs),       rhs);
-            case 0b110 - 8/*Sym*/:               return (*this)(cast<const sym &>(lhs), rhs);
-            case 0b100 - 8/*Bool/False*/:        return (*this)(false,                  rhs); // TODO: may actually get rid of relying on operator() in THIS case
-            case 0b101 - 8/*Bool/True*/:         return (*this)(true,                   rhs);
-            case 0b011 - 8/*U32*/:               return (*this)(cast<unsigned>(lhs),    rhs);
             }
          else if constexpr (
             Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|") )
