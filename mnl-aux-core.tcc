@@ -958,9 +958,9 @@ namespace aux {
 
    // U32 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _add(Dat lhs, Dat rhs) { return lhs + rhs; }
-   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _sub(Dat lhs, Dat rhs) { return lhs - rhs; }
-   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _mul(Dat lhs, Dat rhs) { return lhs * rhs; }
+   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _add(Dat lhs, Dat rhs) noexcept { return lhs + rhs; }
+   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _sub(Dat lhs, Dat rhs) noexcept { return lhs - rhs; }
+   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _mul(Dat lhs, Dat rhs) noexcept { return lhs * rhs; }
 
 } // namespace aux
 
@@ -1267,20 +1267,20 @@ namespace aux { namespace pub {
          }
       private:
          template<typename Lhs, typename Rhs> MNL_INLINE static auto _op(const Lhs &lhs, const Rhs &rhs) {
-                 if constexpr (Id == sym::id( "<" )) return lhs <  rhs;
+                 if constexpr (Id == sym::id( "+" )) return _add(lhs, rhs);
+            else if constexpr (Id == sym::id( "-" )) return _sub(lhs, rhs);
+            else if constexpr (Id == sym::id( "*" )) return _mul(lhs, rhs);
+            else if constexpr (Id == sym::id( "<" )) return lhs <  rhs;
             else if constexpr (Id == sym::id( "<=")) return lhs <= rhs;
             else if constexpr (Id == sym::id( ">" )) return lhs >  rhs;
             else if constexpr (Id == sym::id( ">=")) return lhs >= rhs;
-            else if constexpr (Id == sym::id( "+" )) return _add(lhs, rhs);
-            else if constexpr (Id == sym::id( "-" )) return _sub(lhs, rhs);
-            else if constexpr (Id == sym::id( "*" )) return _mul(lhs, rhs);
             else if constexpr (Id == sym::id("Xor")) return lhs ^  rhs;
             else if constexpr (Id == sym::id( "&" )) return lhs &  rhs;
             else if constexpr (Id == sym::id( "|" )) return lhs |  rhs;
          }
          template<typename Rhs> MNL_INLINE static auto _op(const Rhs &rhs) {
-                 if constexpr (Id == sym::id( "-" )) return _neg(rhs);
-            else if constexpr (Id == sym::id("Abs")) return _abs(rhs);
+                 if constexpr (Id == sym::id( "-" )) return -rhs;
+            else if constexpr (Id == sym::id("Abs")) return abs(rhs);
             else if constexpr (Id == sym::id( "~" )) return ~rhs;
          }
       };
