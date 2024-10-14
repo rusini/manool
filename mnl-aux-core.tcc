@@ -934,15 +934,6 @@ namespace aux { namespace pub { constexpr auto max_i48 = (1ll << 48 - 1) - 1, mi
 
 namespace aux {
 
-   template<typename Type> using lim = std::numeric_limits<Type>;
-
-   template<typename Lhs, typename Rhs, typename Res = Lhs> using enable_same =
-      typename std::enable_if<std::is_same<Lhs, Rhs>::value, Res>::type;
-   template<typename Dat, typename Res = Dat> using enable_core_numeric  = typename std::enable_if<
-      std::is_same<Dat, long long>::value || std::is_same<Dat, double>::value || std::is_same<Dat, float>::value || std::is_same<Dat, unsigned>::value, Res >::type;
-   template<typename Dat, typename Res = Dat> using enable_core_binfloat = typename std::enable_if<
-      std::is_same<Dat, double>::value || std::is_same<Dat, float>::value, Res >::type;
-
    // I48 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat> _add(Dat lhs, Dat rhs)
