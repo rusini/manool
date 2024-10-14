@@ -952,46 +952,7 @@ namespace aux {
 
    template<typename Dat> MNL_INLINE inline enable_same<Dat, long long> _mul(Dat lhs, Dat rhs) {
       if (MNL_LIKELY(!__builtin_mul_overflow(lhs, rhs, &lhs)) && MNL_LIKELY(lhs >= val::min_i48 & lhs <= val::max_i48)) return lhs;
-
-
-
-   # if __x86_64__ // according to tests, the asm version is slightly faster (in GCC case), for unknown reason
-      unsigned char overflow; __asm ("imulq %2, %0; setob %1" : "+r" (lhs), "=r" (overflow) : "rme" (rhs));
-      if (MNL_LIKELY(!overflow) && MNL_LIKELY(lhs >= min_i48) && MNL_LIKELY(lhs <= max_i48)) return lhs;
       MNL_ERR(MNL_SYM("Overflow"));
-   # elif __aarch64__ && (!__clang__ ? __GNUC__ >= 5 : __clang_major__ * 100 + __clang_minor__ >= 308)
-      if (MNL_LIKELY(!__builtin_mul_overflow(lhs, rhs, &lhs)) && MNL_LIKELY(lhs >= min_i48) && MNL_LIKELY(lhs <= max_i48)) return lhs;
-      MNL_ERR(MNL_SYM("Overflow"));
-   # else
-      if (MNL_LIKELY(lhs > lim<int>::min()) && MNL_LIKELY(lhs <= lim<int>::max()) && MNL_LIKELY(rhs > lim<int>::min()) && MNL_LIKELY(rhs <= lim<int>::max())) {
-         if (lhs *= rhs, MNL_LIKELY(lhs >= min_i48) && MNL_LIKELY(lhs <= max_i48)) return lhs;
-         MNL_ERR(MNL_SYM("Overflow"));
-      }
-      long long res;
-      { // 64-bit multiplication with overflow detection
-         unsigned long long
-            a = abs(lhs),
-            b = abs(rhs);
-         unsigned
-            a0 = a, a1 = a >> 32,
-            b0 = b, b1 = b >> 32;
-         unsigned long long c;
-         if (MNL_LIKELY(!a1))
-            c = (unsigned long long)a0 * b1;
-         else
-         if (MNL_LIKELY(!b1))
-            c = (unsigned long long)b0 * a1;
-         else
-            MNL_ERR(MNL_SYM("Overflow"));
-         if (MNL_UNLIKELY(c & 0xFFFFFFFF00000000)) MNL_ERR(MNL_SYM("Overflow"));
-         c <<= 32;
-         unsigned long long d = c + (unsigned long long)a0 * b0;
-         if (MNL_UNLIKELY(d < c) || MNL_UNLIKELY(d & 0x8000000000000000)) MNL_ERR(MNL_SYM("Overflow"));
-         res = MNL_UNLIKELY(lhs < 0 ^ rhs < 0) ? -(long long)d : (long long)d;
-      }
-      if (MNL_UNLIKELY(res < min_i48) || MNL_UNLIKELY(res > max_i48)) MNL_ERR(MNL_SYM("Overflow"));
-      return res;
-   # endif // # if __x86_64__
    }
 
    // F64, F32 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
