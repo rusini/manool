@@ -1084,10 +1084,8 @@ namespace aux { namespace pub {
                      *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
                else
                   err_UnrecognizedOperation();
-            else {
+            else
                return ((sym)*this)(std::forward<Lhs>(lhs), std::forward<Rhs>(rhs));
-               static_assert(!(Id, lean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN");
-            }
          }
       public:
          // numeric
@@ -1105,12 +1103,12 @@ namespace aux { namespace pub {
                std::is_same_v<Lhs, unsigned> & (Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|")) ) {
                { if (MNL_LIKELY(test<Lhs>(rhs))) return _op(lhs, cast<decltype(lhs)>(rhs)); err_TypeMismatch(); }
             else
-               { return ((sym)*this)(lhs, rhs); static_assert(!(Id, lean_and_mean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN"); }
+               return ((sym)*this)(lhs, rhs);
          }
          template< typename Lhs, class Rhs, std::enable_if_t<
             std::is_same_v<Lhs, int> &&
             std::is_same_v<Rhs, val>, decltype(nullptr) > = decltype(nullptr){} >
-         MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const noexcept(Id == sym::id("==") | Id == sym::id("<>"))
+         MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const noexcept(noexcept((*this)((long long)lhs, rhs)))
             { return (*this)((long long)lhs, rhs); }
          // Sym, string
          template< typename Lhs, class Rhs, std::enable_if_t<
