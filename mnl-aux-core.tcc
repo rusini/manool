@@ -1092,7 +1092,7 @@ namespace aux { namespace pub {
                else
                   err_UnrecognizedOperation();
             else
-               return ((sym)*this)(std::forward<Lhs>(lhs), std::forward<Rhs>(rhs));
+               return ((const sym &)*this)(std::forward<Lhs>(lhs), std::forward<Rhs>(rhs));
          }
       public:
          // numeric
