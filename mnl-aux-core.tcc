@@ -1141,12 +1141,12 @@ namespace aux { namespace pub {
             std::is_same_v<Rhs, val>, decltype(nullptr) > = decltype(nullptr){} >
          MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const noexcept(Id == sym::id("==") | Id == sym::id("<>")) {
             if (bool{});
-            else if constexpr (Id == sym::id("==" )) return rhs.rep.tag() == (0xFFF8 + 0b100 | lhs);
-            else if constexpr (Id == sym::id("<>" )) return rhs.rep.tag() != (0xFFF8 + 0b100 | lhs);
+            else if constexpr (Id == sym::id("==" )) return rhs.rep.tag() == (lhs | 0xFFF8 + 0b100);
+            else if constexpr (Id == sym::id("<>" )) return rhs.rep.tag() != (lhs | 0xFFF8 + 0b100);
             else if constexpr (Id == sym::id("Xor"))
                { if (MNL_LIKELY(test<bool>(rhs))) return val{decltype(rep){rhs.rep.tag() ^ lhs}}; err_TypeMismatch(); }
             else if constexpr (Id == sym::id( "&" ))
-               { if (MNL_LIKELY(test<bool>(rhs))) return val{decltype(rep){rhs.rep.tag() & (lhs | ~1)}}; err_TypeMismatch(); }
+               { if (MNL_LIKELY(test<bool>(rhs))) return val{decltype(rep){rhs.rep.tag() & (lhs | ~1)}}; err_TypeMismatch(); } // TODO: suboptimal!!!
             else if constexpr (Id == sym::id( "|" ))
                { if (MNL_LIKELY(test<bool>(rhs))) return val{decltype(rep){rhs.rep.tag() | lhs}}; err_TypeMismatch(); }
             else
@@ -1159,7 +1159,7 @@ namespace aux { namespace pub {
             std::is_same_v<Rhs, long long> | std::is_same_v<Rhs, double> | std::is_same_v<Rhs, float> | std::is_same_v<Rhs, unsigned>,
             decltype(nullptr) > = decltype(nullptr){} >
          MNL_INLINE val operator()(Lhs &&lhs, Rhs rhs) const {
-         // "specialization" derivable by scalar value propagation in _apply; necessary for performance reasons
+         // "specialization" not derivable by scalar value propagation in _apply; necessary for performance reasons
             if (false);
             else if constexpr (Id == sym::id("==")) {
                if (MNL_LIKELY(test<Rhs>(lhs))) return cast<decltype(rhs)>(lhs) == rhs;
