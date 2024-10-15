@@ -1041,6 +1041,9 @@ namespace aux { namespace pub {
          MNL_INLINE val operator()(      Lhs &&lhs, const Rhs  &rhs) const { return _apply(std::move(lhs),           rhs ); }
          MNL_INLINE val operator()(      Lhs &&lhs,       Rhs &&rhs) const { return _apply(std::move(lhs), std::move(rhs)); }
       private:
+         static MNL_NORETURN void err_UnrecognizedOperation() { MNL_ERR(MNL_SYM("UnrecognizedOperation")); }
+         static MNL_NORETURN void err_TypeMismatch()          { MNL_ERR(MNL_SYM("TypeMismatch")); }
+      private:
          template<class Lhs, class Rhs> MNL_INLINE static val _apply(Lhs &&lhs, Rhs &&rhs) {
             if constexpr (
                Id == sym::id("==") | Id == sym::id("<>") )
@@ -1061,7 +1064,7 @@ namespace aux { namespace pub {
                Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=" ) )
                switch (lhs.rep.tag()) MNL_NOTE(jumptable) {
                case 0xFFF8 + 0b000: case 0xFFF8 + 0b100: case 0xFFF8 + 0b101: case 0xFFF8 + 0b110:
-                  MNL_ERR(MNL_SYM("UnrecognizedOperation"));
+                  err_UnrecognizedOperation();
                case 0xFFF8 + 0b111 /*BoxPtr (fallback)*/: return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs),
                   *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
                case 0xFFF8 + 0b001 /*I48*/:               return (*this)(cast<long long>(lhs),   rhs);
@@ -1072,15 +1075,15 @@ namespace aux { namespace pub {
             else if constexpr (
                Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|") )
                if (bool{});
-               else if (MNL_UNLIKELY(lhs.rep.tag() == 0xFFF8 + 0b011)) // U32
+               else if (MNL_UNLIKELY(test<unsigned>(lhs())))
                   return (*this)(cast<unsigned>(lhs), rhs);
-               else if (MNL_LIKELY(lhs.rep.tag() == 0xFFF8 + 0b100 | lhs.rep.tag() == 0xFFF8 + 0b101)) // Bool
+               else if (MNL_LIKELY(test<bool>(lhs())))
                   return (*this)(cast<bool>(lhs),     rhs);
                else if (MNL_LIKELY(lhs.rep.tag() == 0xFFF8 + 0b111)) // BoxPtr (fallback)
                   return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs),
                      *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
                else
-                  MNL_ERR(MNL_SYM("UnrecognizedOperation"));
+                  err_UnrecognizedOperation();
             else {
                return ((sym)*this)(std::forward<Lhs>(lhs), std::forward<Rhs>(rhs));
                static_assert(!(Id, lean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN");
@@ -1100,7 +1103,7 @@ namespace aux { namespace pub {
                Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") |
                Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") |
                std::is_same_v<Lhs, unsigned> & (Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|")) ) {
-               { if (MNL_LIKELY(test<Lhs>(rhs))) return _op(lhs, cast<decltype(lhs)>(rhs)); MNL_ERR(MNL_SYM("TypeMismatch")); }
+               { if (MNL_LIKELY(test<Lhs>(rhs))) return _op(lhs, cast<decltype(lhs)>(rhs)); err_TypeMismatch(); }
             else
                { return ((sym)*this)(lhs, rhs); static_assert(!(Id, lean_and_mean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN"); }
          }
@@ -1145,11 +1148,11 @@ namespace aux { namespace pub {
             else if constexpr (Id == sym::id("==" )) return rhs.rep.tag() == (0b100 - 8 | lhs);
             else if constexpr (Id == sym::id("<>" )) return rhs.rep.tag() != (0b100 - 8 | lhs);
             else if constexpr (Id == sym::id("Xor"))
-               { if (MNL_LIKELY(test<bool>(rhs))) return val{decltype(val::rep){rhs.rep.tag() ^ lhs}}; MNL_ERR(MNL_SYM("TypeMismatch")); }
+               { if (MNL_LIKELY(test<bool>(rhs))) return val{decltype(val::rep){rhs.rep.tag() ^ lhs}};      err_TypeMismatch(); }
             else if constexpr (Id == sym::id( "&" ))
-               { if (MNL_LIKELY(test<bool>(rhs))) return val{decltype(val::rep){~(~rhs.rep.tag() & ~lhs)}}; MNL_ERR(MNL_SYM("TypeMismatch")); }
+               { if (MNL_LIKELY(test<bool>(rhs))) return val{decltype(val::rep){~(~rhs.rep.tag() & ~lhs)}}; err_TypeMismatch(); }
             else if constexpr (Id == sym::id( "|" ))
-               { if (MNL_LIKELY(test<bool>(rhs))) return val{decltype(val::rep){rhs.rep.tag() | lhs}}; MNL_ERR(MNL_SYM("TypeMismatch")); }
+               { if (MNL_LIKELY(test<bool>(rhs))) return val{decltype(val::rep){rhs.rep.tag() | lhs}};      err_TypeMismatch(); }
             else
                { return ((sym)*this)(lhs, rhs); static_assert(!(Id, lean_and_mean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN"); }
          }
@@ -1242,7 +1245,7 @@ namespace aux { namespace pub {
             else if constexpr (Id == sym::id("-") | Id == sym::id("Abs"))
                switch (rhs.rep.tag()) MNL_NOTE(jumptable) {
                case 0b000 - 8: case 0b100 - 8: case 0b101 - 8: case 0b110 - 8:
-                  MNL_ERR(MNL_SYM("UnrecognizedOperation"));
+                  err_UnrecognizedOperation();
                case 0b111 - 8/*BoxPtr (fallback)*/:
                   return static_cast<root *>(rhs.rep.template dat<void *>())->_invoke(std::forward<Rhs>(rhs), *this, 0, {});
                case 0b001 - 8/*I48*/: return _op(cast<long long>(rhs));
@@ -1259,7 +1262,7 @@ namespace aux { namespace pub {
                else if (MNL_LIKELY(lhs.rep.tag() == 0b111 - 8)) // BoxPtr (fallback)
                   return static_cast<root *>(rhs.rep.template dat<void *>())->_invoke(std::forward<Rhs>(rhs), *this, 0, {});
                else
-                  MNL_ERR(MNL_SYM("UnrecognizedOperation"));
+                  err_UnrecognizedOperation();
             else {
                return ((const sym &)*this)(std::forward<Rhs>(rhs));
                static_assert(!(Id, lean_and_mean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN");
