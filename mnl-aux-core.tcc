@@ -1144,11 +1144,11 @@ namespace aux { namespace pub {
             else if constexpr (Id == sym::id("==" )) return rhs.rep.tag() == (0xFFF8 + 0b100 | lhs);
             else if constexpr (Id == sym::id("<>" )) return rhs.rep.tag() != (0xFFF8 + 0b100 | lhs);
             else if constexpr (Id == sym::id("Xor"))
-               { if (MNL_LIKELY(test<bool>(rhs))) return val{decltype(rep){rhs.rep.tag() ^ lhs}}; err_TypeMismatch(); }
+               { if (MNL_LIKELY(test<bool>(rhs))) return val{decltype(rep){rhs.rep.tag() ^ lhs}};        err_TypeMismatch(); }
             else if constexpr (Id == sym::id( "&" ))
-               { if (MNL_LIKELY(test<bool>(rhs))) return val{decltype(rep){~(~rhs.rep.tag() & ~lhs)}}; err_TypeMismatch(); }
+               { if (MNL_LIKELY(test<bool>(rhs))) return val{decltype(rep){rhs.rep.tag() & (lhs | ~1)}}; err_TypeMismatch(); }
             else if constexpr (Id == sym::id( "|" ))
-               { if (MNL_LIKELY(test<bool>(rhs))) return val{decltype(rep){rhs.rep.tag() | lhs}}; err_TypeMismatch(); }
+               { if (MNL_LIKELY(test<bool>(rhs))) return val{decltype(rep){rhs.rep.tag() | lhs}};        err_TypeMismatch(); }
             else
                return ((sym)*this)(lhs, rhs);
          }
