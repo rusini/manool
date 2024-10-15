@@ -1075,10 +1075,17 @@ namespace aux { namespace pub {
             else if constexpr (
                Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|") )
                if (bool{});
-               else if (MNL_UNLIKELY(test<unsigned>(lhs())))
+               else if (MNL_UNLIKELY(test<unsigned>(lhs()))) // U32
                   return (*this)(cast<unsigned>(lhs), rhs);
-               else if (MNL_LIKELY(test<bool>(lhs())))
-                  return (*this)(cast<bool>(lhs),     rhs);
+               else if (MNL_LIKELY(test<bool>(lhs()))) { // Bool
+                  if (MNL_UNLIKELY(!test<bool>(rhs()) err_TypeMismatch();
+                  unsigned res =
+                     Id == sym::id("Xor") ? lhs.rep.tag() ^ rhs.rep.tag() :
+                     Id == sym::id( "&" ) ? lhs.rep.tag() & rhs.rep.tag() :
+                     Id == sym::id( "~" ) ? lhs.rep.tag() | rhs.rep.tag() : 0;
+                  if (res != 0xFFF8 + 0b100 || res != 0xFFF8 + 0b101) MNL_UNREACHABLE;
+                  return val{res};
+               }
                else if (MNL_LIKELY(lhs.rep.tag() == 0xFFF8 + 0b111)) // BoxPtr (fallback)
                   return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs),
                      *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
@@ -1144,9 +1151,9 @@ namespace aux { namespace pub {
             else if constexpr (Id == sym::id("==" )) return rhs.rep.tag() == (lhs | 0xFFF8 + 0b100);
             else if constexpr (Id == sym::id("<>" )) return rhs.rep.tag() != (lhs | 0xFFF8 + 0b100);
             else if constexpr (Id == sym::id("Xor"))
-               { if (MNL_LIKELY(test<bool>(rhs))) return val{decltype(rep){rhs.rep.tag() ^ lhs}}; err_TypeMismatch(); }
+               { if (MNL_LIKELY(test<bool>(rhs))) return val{decltype(rep){rhs.rep.tag() ^ lhs}}; err_TypeMismatch(); } // TODO: add assume
             else if constexpr (Id == sym::id( "&" ))
-               { if (MNL_LIKELY(test<bool>(rhs))) return val{decltype(rep){rhs.rep.tag() & (lhs | ~1)}}; err_TypeMismatch(); } // TODO: suboptimal!!!
+               { if (MNL_LIKELY(test<bool>(rhs))) return val{decltype(rep){rhs.rep.tag() & (lhs | ~1)}}; err_TypeMismatch(); }
             else if constexpr (Id == sym::id( "|" ))
                { if (MNL_LIKELY(test<bool>(rhs))) return val{decltype(rep){rhs.rep.tag() | lhs}}; err_TypeMismatch(); }
             else
