@@ -1115,34 +1115,32 @@ namespace aux { namespace pub {
             std::is_same_v<Lhs, sym> | std::is_same_v<Lhs, std::string> &&
             std::is_same_v<Rhs, val>, decltype(nullptr) > = decltype(nullptr){} >
          MNL_INLINE auto operator()(const Lhs &lhs, const Rhs &rhs) const noexcept(Id == sym::id("==") | Id == sym::id("<>")) {
-            if (false);
+            if (bool{});
             else if constexpr (Id == sym::id("==")) return  MNL_LIKELY(test<Lhs>(rhs)) && lhs == cast<decltype(lhs)>(rhs);
             else if constexpr (Id == sym::id("<>")) return !MNL_LIKELY(test<Lhs>(rhs)) || lhs != cast<decltype(lhs)>(rhs);
-            else
-               { return ((sym)*this)(lhs, rhs); static_assert(!(Id, lean_and_mean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN"); }
+            else return ((sym)*this)(lhs, rhs);
          }
          template< typename Lhs, class Rhs, std::enable_if_t<
             std::is_same_v<Lhs, const char *> &&
             std::is_same_v<Rhs, val>, decltype(nullptr) > = decltype(nullptr){} >
-         MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const noexcept(Id == sym::id("==") | Id == sym::id("<>"))
+         MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const noexcept(noexcept((*this)((std::string)lhs, rhs)))
             { return (*this)((std::string)lhs, rhs); }
          // Nil
          template< typename Lhs, class Rhs, std::enable_if_t<
             std::is_same_v<Lhs, decltype(nullptr)> &&
             std::is_same_v<Rhs, val>, decltype(nullptr) > = decltype(nullptr){} >
          MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const noexcept(Id == sym::id("==") | Id == sym::id("<>")) {
-            if (false);
+            if (bool{});
             else if constexpr (Id == sym::id("==")) return  test<>(rhs);
             else if constexpr (Id == sym::id("<>")) return !test<>(rhs);
-            else
-               { return ((sym)*this)(lhs, rhs); static_assert(!(Id, lean_and_mean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN"); }
+            else return ((sym)*this)(lhs, rhs);
          }
          // Bool
          template< typename Lhs, class Rhs, std::enable_if_t<
             std::is_same_v<Lhs, bool> &&
             std::is_same_v<Rhs, val>, decltype(nullptr) > = decltype(nullptr){} >
          MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const noexcept(Id == sym::id("==") | Id == sym::id("<>")) {
-            if (false);
+            if (bool{});
             else if constexpr (Id == sym::id("==" )) return rhs.rep.tag() == (0b100 - 8 | lhs);
             else if constexpr (Id == sym::id("<>" )) return rhs.rep.tag() != (0b100 - 8 | lhs);
             else if constexpr (Id == sym::id("Xor"))
