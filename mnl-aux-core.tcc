@@ -1208,7 +1208,7 @@ namespace aux { namespace pub {
                std::forward<Lhs>(lhs), *this, 1, &const_cast<val &>((const val &)rhs));
          // Sym
          template< class Lhs, typename Rhs, std::enable_if_t<
-            std::is_same_v<std::remove_const_t<std::remove_reference_t<Lhs>>, val> && // TODO: using decay logically gives the same res?
+            std::is_same_v<std::remove_const_t<std::remove_reference_t<Lhs>>, val> &&
             std::is_same_v<Rhs, sym>,
             decltype(nullptr) > = decltype(nullptr){} >
          MNL_INLINE val operator()(Lhs &&lhs, const Rhs &rhs) const {
