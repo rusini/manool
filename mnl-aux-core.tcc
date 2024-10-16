@@ -1224,34 +1224,34 @@ namespace aux { namespace pub {
                std::forward<Lhs>(lhs), *this, 1, &const_cast<val &>((const val &)rhs));
          }
       public:
-         MNL_INLINE val operator()(const Rhs  &rhs) const { return _apply(          rhs ); }
-         MNL_INLINE val operator()(      Rhs &&rhs) const { return _apply(std::move(rhs)); }
+         MNL_INLINE val operator()(const Arg  &arg) const { return _apply(          arg ); }
+         MNL_INLINE val operator()(      Arg &&arg) const { return _apply(std::move(arg)); }
       private:
-         template<class Rhs> static MNL_INLINE val _apply(Rhs &&rhs) const {
+         template<class Arg> static MNL_INLINE val _apply(Arg &&arg) const {
             if (bool{});
             else if constexpr (Id == sym::id("-") | Id == sym::id("Abs"))
-               switch (rhs.rep.tag()) MNL_NOTE(jumptable) {
+               switch (arg.rep.tag()) MNL_NOTE(jumptable) {
                case 0xFFF8 + 0b000: case 0xFFF8 + 0b100: case 0xFFF8 + 0b101: case 0xFFF8 + 0b110:
                   err_UnrecognizedOperation();
                case 0xFFF8 + 0b111 /*BoxPtr (fallback)*/:
-                  return static_cast<root *>(rhs.rep.template dat<void *>())->_invoke(std::forward<Rhs>(rhs), *this, 0, {});
-               case 0xFFF8 + 0b001 /*I48*/: return disp_op(cast<long long>(rhs));
-               default             /*F64*/: return disp_op(cast<double>(rhs));
-               case 0xFFF8 + 0b010 /*F32*/: return disp_op(cast<float>(rhs));
-               case 0xFFF8 + 0b011 /*U32*/: return disp_op(cast<unsigned>(rhs));
+                  return static_cast<root *>(arg.rep.template dat<void *>())->_invoke(std::forward<Arg>(arg), *this, 0, {});
+               case 0xFFF8 + 0b001 /*I48*/: return disp_op(cast<long long>(arg));
+               default             /*F64*/: return disp_op(cast<double>(arg));
+               case 0xFFF8 + 0b010 /*F32*/: return disp_op(cast<float>(arg));
+               case 0xFFF8 + 0b011 /*U32*/: return disp_op(cast<unsigned>(arg));
                }
             else if constexpr (Id == sym::id("~"))
                if (bool{});
                else if (MNL_UNLIKELY(test<unsigned>(lhs))) // U32
-                  return ~cast<unsigned>(rhs);
+                  return ~cast<unsigned>(arg);
                else if (MNL_LIKELY(test<bool>(lhs))) // Bool
-                  return !cast<bool>(rhs);
+                  return !cast<bool>(arg);
                else if (MNL_LIKELY(lhs.rep.tag() == 0xFFF8 + 0b111)) // BoxPtr (fallback)
-                  return static_cast<root *>(rhs.rep.template dat<void *>())->_invoke(std::forward<Rhs>(rhs), *this, 0, {});
+                  return static_cast<root *>(arg.rep.template dat<void *>())->_invoke(std::forward<Arg>(arg), *this, 0, {});
                else
                   err_UnrecognizedOperation();
             else
-               return ((const sym &)*this)(std::forward<Rhs>(rhs));
+               return ((const sym &)*this)(std::forward<Arg>(arg));
          }
       private:
          template<typename Lhs, typename Rhs> MNL_INLINE static auto disp_op(Lhs lhs, Rhs rhs) {
