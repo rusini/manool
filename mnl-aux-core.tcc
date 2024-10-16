@@ -1173,10 +1173,8 @@ namespace aux { namespace pub {
                Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") |
                Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") |
                std::is_same_v<Rhs, unsigned> & (Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|")) ) {
-               if (MNL_LIKELY(test<Rhs>(lhs)))
-                  return disp_op(cast<decltype(rhs)>(lhs), rhs);
-               if (MNL_UNLIKELY(lhs.rep.tag() != 0xFFF8 + 0b111))
-                  [&]() MNL_NORETURN{ ((const sym &)_op{})(std::forward<Lhs>(lhs), std::forward<Rhs>(rhs)); }();
+               if (MNL_LIKELY(test<Rhs>(lhs))) return disp_op(cast<decltype(rhs)>(lhs), rhs);
+               if (MNL_UNLIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) [&]() MNL_NORETURN{ ((const sym &)_op{})(lhs, rhs); }();
             }
             else
                return ((const sym &)*this)(std::forward<Lhs>(lhs), rhs);
