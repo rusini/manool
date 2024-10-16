@@ -1257,7 +1257,7 @@ namespace aux { namespace pub {
                return ((const sym &)*this)(std::forward<Rhs>(rhs));
          }
       private:
-         template<typename Lhs, typename Rhs> MNL_INLINE static auto disp_op(const Lhs &lhs, const Rhs &rhs) {
+         template<typename Lhs, typename Rhs> MNL_INLINE static auto disp_op(Lhs lhs, Rhs rhs) {
                  if constexpr (Id == sym::id( "+" )) return _add(lhs, rhs);
             else if constexpr (Id == sym::id( "-" )) return _sub(lhs, rhs);
             else if constexpr (Id == sym::id( "*" )) return _mul(lhs, rhs);
