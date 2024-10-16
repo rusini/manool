@@ -1032,13 +1032,13 @@ namespace aux { namespace pub {
       static MNL_NORETURN void err_UnrecognizedOperation() { MNL_ERR(MNL_SYM("UnrecognizedOperation")); } // to avoid machine code duplication
       static MNL_NORETURN void err_TypeMismatch()          { MNL_ERR(MNL_SYM("TypeMismatch")); }          // (also in hot section)
    private:
-      template<typename Lhs, typename Rhs>
-      static MNL_NORETURN void err_generic(const sym &op, Lhs &&lhs, Rhs &&rhs) { op(std::forward<Lhs>(lhs), std::forward<Rhs>(rhs)); }
-   private:
       template<enum sym::id Id> class val::ops::_op {
       private:
          explicit _op() = default;
          friend ops;
+      private:
+         template<typename Lhs, typename Rhs>
+         static MNL_NORETURN void err_generic(Lhs &&lhs, Rhs &&rhs) { sym::from_id<Id>(std::forward<Lhs>(lhs), std::forward<Rhs>(rhs)); }
       public:
          MNL_INLINE operator const sym &() const noexcept { return sym::from_id<Id>; }
       public:
@@ -1170,7 +1170,7 @@ namespace aux { namespace pub {
             decltype(nullptr) > = decltype(nullptr){} >
          MNL_INLINE val operator()(Lhs &&lhs, Rhs rhs) const {
          // "specialization" not derivable by scalar value propagation in _apply; necessary for performance reasons
-            if (false);
+            if (bool{});
             else if constexpr (Id == sym::id("==")) {
                if (MNL_LIKELY(test<Rhs>(lhs))) return cast<decltype(rhs)>(lhs) == rhs;
                if (MNL_LIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) return false;
@@ -1183,8 +1183,10 @@ namespace aux { namespace pub {
                Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") |
                Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") |
                std::is_same_v<Rhs, unsigned> & (Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|")) ) {
-               if (MNL_LIKELY(test<Rhs>(lhs))) return _op(cast<decltype(rhs)>(lhs), rhs);
-               if (MNL_UNLIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) err_generic(*this, lhs, rhs);
+               if (MNL_LIKELY(test<Rhs>(lhs)))
+                  return _op(cast<decltype(rhs)>(lhs), rhs);
+               if (MNL_UNLIKELY(lhs.rep.tag() != 0xFFF8 + 0b111))
+                  [&]() MNL_NORETURN{ sym::from_id<Id>(std::forward<Lhs>(lhs), std::forward<Rhs>(rhs)); }();
             }
             else
                return ((const sym &)*this)(std::forward<Lhs>(lhs), rhs);
@@ -1203,42 +1205,38 @@ namespace aux { namespace pub {
             std::is_same_v<Rhs, decltype(nullptr)>,
             decltype(nullptr) > = decltype(nullptr){} >
          MNL_INLINE val operator()(Lhs &&lhs, Rhs rhs) const {
-            if (false);
+            if (bool{});
             else if constexpr (Id == sym::id("==")) {
                if (MNL_LIKELY(test<>(lhs))) return true;
-               if (MNL_LIKELY(lhs.rep.tag() != 0b111 - 8)) return false;
+               if (MNL_LIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) return false;
             }
             else if constexpr (Id == sym::id("<>")) {
                if (MNL_LIKELY(test<>(lhs))) return false;
-               if (MNL_LIKELY(lhs.rep.tag() != 0b111 - 8)) return true;
+               if (MNL_LIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) return true;
             }
-            else {
+            else
                return ((const sym &)*this)(std::forward<Lhs>(lhs), rhs);
-               static_assert(!(Id, lean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN");
-            }
             return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(
-               std::forward<Lhs>(lhs), (sym)*this, 1, &const_cast<val &>((const val &)rhs));
+               std::forward<Lhs>(lhs), *this, 1, &const_cast<val &>((const val &)rhs));
          // Sym
          template< class Lhs, typename Rhs, std::enable_if_t<
-            std::is_same_v<std::remove_const_t<std::remove_reference_t<Lhs>>, val> &&
+            std::is_same_v<std::remove_const_t<std::remove_reference_t<Lhs>>, val> && // TODO: using decay logically gives the same res?
             std::is_same_v<Rhs, sym>,
             decltype(nullptr) > = decltype(nullptr){} >
          MNL_INLINE val operator()(Lhs &&lhs, const Rhs &rhs) const {
-            if (false);
+            if (bool{});
             else if constexpr (Id == sym::id("==")) {
                if (MNL_LIKELY(test<Rhs>(lhs))) return cast<decltype(rhs)>(lhs) == rhs;
-               if (MNL_LIKELY(lhs.rep.tag() != 0b111 - 8)) return false;
+               if (MNL_LIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) return false;
             }
             else if constexpr (Id == sym::id("<>")) {
                if (MNL_LIKELY(test<Rhs>(lhs))) return cast<decltype(rhs)>(lhs) != rhs;
-               if (MNL_LIKELY(lhs.rep.tag() != 0b111 - 8)) return true;
+               if (MNL_LIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) return true;
             }
-            else {
+            else
                return ((const sym &)*this)(std::forward<Lhs>(lhs), rhs);
-               static_assert(!(Id, lean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN");
-            }
             return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(
-               std::forward<Lhs>(lhs), (sym)*this, 1, &const_cast<val &>((const val &)rhs));
+               std::forward<Lhs>(lhs), *this, 1, &const_cast<val &>((const val &)rhs));
          }
       public:
          MNL_INLINE val operator()(const Rhs  &rhs) const { return _apply(          rhs ); }
