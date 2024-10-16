@@ -1254,7 +1254,11 @@ namespace aux { namespace pub {
                return ((const sym &)*this)(std::forward<Arg>(arg));
          }
       private:
-         template<typename Lhs, typename Rhs> MNL_INLINE static auto disp_op(Lhs lhs, Rhs rhs) {
+         template<typename Arg, std::enable_if_t<
+            std::is_same_v<Arg, long long> | std::is_same_v<Arg, double> | std::is_same_v<Arg, float> |
+            std::is_same_v<Arg, unsigned> | std::is_same_v<Arg, bool>,
+            decltype(nullptr) > = decltype(nullptr){} >>
+         MNL_INLINE static auto _apply(Arg lhs, Arg rhs) {
                  if constexpr (Id == sym::id( "+" )) return _add(lhs, rhs);
             else if constexpr (Id == sym::id( "-" )) return _sub(lhs, rhs);
             else if constexpr (Id == sym::id( "*" )) return _mul(lhs, rhs);
