@@ -1227,7 +1227,7 @@ namespace aux { namespace pub {
          MNL_INLINE val operator()(const Rhs  &rhs) const { return _apply(          rhs ); }
          MNL_INLINE val operator()(      Rhs &&rhs) const { return _apply(std::move(rhs)); }
       private:
-         template<class Rhs> static MNL_INLINE val operator()(Rhs &&rhs) const {
+         template<class Rhs> static MNL_INLINE val _apply(Rhs &&rhs) const {
             if (bool{});
             else if constexpr (Id == sym::id("-") | Id == sym::id("Abs"))
                switch (rhs.rep.tag()) MNL_NOTE(jumptable) {
