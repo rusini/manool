@@ -1036,9 +1036,6 @@ namespace aux { namespace pub {
       private:
          explicit _op() = default;
          friend ops;
-      private:
-         template<typename Lhs, typename Rhs>
-         static MNL_NORETURN void err_generic(Lhs &&lhs, Rhs &&rhs) { sym::from_id<Id>(std::forward<Lhs>(lhs), std::forward<Rhs>(rhs)); }
       public:
          MNL_INLINE operator const sym &() const noexcept { return sym::from_id<Id>; }
       public:
