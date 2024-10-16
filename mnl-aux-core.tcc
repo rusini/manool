@@ -1247,18 +1247,18 @@ namespace aux { namespace pub {
                   err_UnrecognizedOperation();
                case 0xFFF8 + 0b111 /*BoxPtr (fallback)*/:
                   return static_cast<root *>(rhs.rep.template dat<void *>())->_invoke(std::forward<Rhs>(rhs), *this, 0, {});
-               case 0xFFF8 + 0b001 /*I48*/: return _op(cast<long long>(rhs));
-               default             /*F64*/: return _op(cast<double>(rhs));
-               case 0xFFF8 + 0b010 /*F32*/: return _op(cast<float>(rhs));
-               case 0xFFF8 + 0b011 /*U32*/: return _op(cast<unsigned>(rhs));
+               case 0xFFF8 + 0b001 /*I48*/: return disp_op(cast<long long>(rhs));
+               default             /*F64*/: return disp_op(cast<double>(rhs));
+               case 0xFFF8 + 0b010 /*F32*/: return disp_op(cast<float>(rhs));
+               case 0xFFF8 + 0b011 /*U32*/: return disp_op(cast<unsigned>(rhs));
                }
             else if constexpr (Id == sym::id("~"))
                if (bool{});
-               else if (MNL_UNLIKELY(lhs.rep.tag() == 0b011 - 8)) // U32
-                  return _op(cast<unsigned>(rhs));
-               else if (MNL_LIKELY(lhs.rep.tag() | true == 0b101 - 8)) // Bool
-                  return _op(cast<bool>(rhs));
-               else if (MNL_LIKELY(lhs.rep.tag() == 0b111 - 8)) // BoxPtr (fallback)
+               else if (MNL_UNLIKELY(test<unsigned>(lhs))) // U32
+                  return ~cast<unsigned>(rhs);
+               else if (MNL_LIKELY(test<bool>(lhs))) // Bool
+                  return !cast<bool>(rhs);
+               else if (MNL_LIKELY(lhs.rep.tag() == 0xFFF8 + 0b111)) // BoxPtr (fallback)
                   return static_cast<root *>(rhs.rep.template dat<void *>())->_invoke(std::forward<Rhs>(rhs), *this, 0, {});
                else
                   err_UnrecognizedOperation();
@@ -1281,7 +1281,6 @@ namespace aux { namespace pub {
          template<typename Rhs> MNL_INLINE static auto disp_op(const Rhs &rhs) {
                  if constexpr (Id == sym::id( "-" )) return -rhs;
             else if constexpr (Id == sym::id("Abs")) return abs(rhs);
-            else if constexpr (Id == sym::id( "~" )) return ~rhs;
          }
       };
    public:
