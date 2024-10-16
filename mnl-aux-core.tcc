@@ -1103,7 +1103,7 @@ namespace aux { namespace pub {
                std::is_same_v<Lhs, unsigned> & (Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|")) ) {
                { if (MNL_LIKELY(test<Lhs>(rhs))) return disp_op(lhs, cast<decltype(lhs)>(rhs)); err_TypeMismatch(); }
             else
-               return ((sym)*this)(lhs, rhs);
+               return ((const sym &)*this)(lhs, rhs);
          }
          template< typename Lhs, class Rhs, std::enable_if_t<
             std::is_same_v<Lhs, int> &&
@@ -1118,7 +1118,7 @@ namespace aux { namespace pub {
             if (bool{});
             else if constexpr (Id == sym::id("==")) return  MNL_LIKELY(test<Lhs>(rhs)) && lhs == cast<decltype(lhs)>(rhs);
             else if constexpr (Id == sym::id("<>")) return !MNL_LIKELY(test<Lhs>(rhs)) || lhs != cast<decltype(lhs)>(rhs);
-            else return ((sym)*this)(lhs, rhs);
+            else return ((const sym &)*this)(lhs, rhs);
          }
          template< typename Lhs, class Rhs, std::enable_if_t<
             std::is_same_v<Lhs, const char *> &&
@@ -1133,7 +1133,7 @@ namespace aux { namespace pub {
             if (bool{});
             else if constexpr (Id == sym::id("==")) return  test<>(rhs);
             else if constexpr (Id == sym::id("<>")) return !test<>(rhs);
-            else return ((sym)*this)(lhs, rhs);
+            else return ((const sym &)*this)(lhs, rhs);
          }
          // Bool
          template< typename Lhs, class Rhs, std::enable_if_t<
@@ -1143,14 +1143,11 @@ namespace aux { namespace pub {
             if (bool{});
             else if constexpr (Id == sym::id("==" )) return rhs.rep.tag() == (lhs | 0xFFF8 + 0b100);
             else if constexpr (Id == sym::id("<>" )) return rhs.rep.tag() != (lhs | 0xFFF8 + 0b100);
-            else if constexpr (Id == sym::id("Xor"))
-               { if (MNL_LIKELY(test<bool>(rhs))) return lhs ^ cast<bool>(rhs); err_TypeMismatch(); }
-            else if constexpr (Id == sym::id( "&" ))
-               { if (MNL_LIKELY(test<bool>(rhs))) return lhs & cast<bool>(rhs); err_TypeMismatch(); }
-            else if constexpr (Id == sym::id( "|" ))
-               { if (MNL_LIKELY(test<bool>(rhs))) return lhs | cast<bool>(rhs); err_TypeMismatch(); }
+            else if constexpr (
+               Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|") )
+               { if (MNL_LIKELY(test<bool>(rhs))) return disp_op(lhs, cast<bool>(rhs); err_TypeMismatch(); }
             else
-               return ((sym)*this)(lhs, rhs);
+               return ((const sym &)*this)(lhs, rhs);
          }
       public:
          // numeric
