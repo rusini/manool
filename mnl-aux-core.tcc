@@ -1077,15 +1077,8 @@ namespace aux { namespace pub {
                if (bool{});
                else if (MNL_UNLIKELY(test<unsigned>(lhs()))) // U32
                   return (*this)(cast<unsigned>(lhs), rhs);
-               else if (MNL_LIKELY(test<bool>(lhs()))) { // Bool
-                  if (MNL_UNLIKELY(!test<bool>(rhs()) err_TypeMismatch();
-                  unsigned res =
-                     Id == sym::id("Xor") ? lhs.rep.tag() ^ rhs.rep.tag() :
-                     Id == sym::id( "&" ) ? lhs.rep.tag() & rhs.rep.tag() :
-                     Id == sym::id( "~" ) ? lhs.rep.tag() | rhs.rep.tag() : 0;
-                  if (res != 0xFFF8 + 0b100 || res != 0xFFF8 + 0b101) MNL_UNREACHABLE;
-                  return val{res};
-               }
+               else if (MNL_LIKELY(test<bool>(lhs()))) // Bool
+                  return (*this)(cast<bool>(lhs), rhs);
                else if (MNL_LIKELY(lhs.rep.tag() == 0xFFF8 + 0b111)) // BoxPtr (fallback)
                   return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs),
                      *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
@@ -1108,7 +1101,7 @@ namespace aux { namespace pub {
                Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") |
                Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") |
                std::is_same_v<Lhs, unsigned> & (Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|")) ) {
-               { if (MNL_LIKELY(test<Lhs>(rhs))) return _op(lhs, cast<decltype(lhs)>(rhs)); err_TypeMismatch(); }
+               { if (MNL_LIKELY(test<Lhs>(rhs))) return disp_op(lhs, cast<decltype(lhs)>(rhs)); err_TypeMismatch(); }
             else
                return ((sym)*this)(lhs, rhs);
          }
@@ -1181,7 +1174,7 @@ namespace aux { namespace pub {
                Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") |
                std::is_same_v<Rhs, unsigned> & (Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|")) ) {
                if (MNL_LIKELY(test<Rhs>(lhs)))
-                  return op(cast<decltype(rhs)>(lhs), rhs);
+                  return disp_op(cast<decltype(rhs)>(lhs), rhs);
                if (MNL_UNLIKELY(lhs.rep.tag() != 0xFFF8 + 0b111))
                   [&]() MNL_NORETURN{ ((const sym &)_op{})(std::forward<Lhs>(lhs), std::forward<Rhs>(rhs)); }();
             }
