@@ -1181,9 +1181,9 @@ namespace aux { namespace pub {
                Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") |
                std::is_same_v<Rhs, unsigned> & (Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|")) ) {
                if (MNL_LIKELY(test<Rhs>(lhs)))
-                  return _op(cast<decltype(rhs)>(lhs), rhs);
+                  return op(cast<decltype(rhs)>(lhs), rhs);
                if (MNL_UNLIKELY(lhs.rep.tag() != 0xFFF8 + 0b111))
-                  [&]() MNL_NORETURN{ sym::from_id<Id>(std::forward<Lhs>(lhs), std::forward<Rhs>(rhs)); }();
+                  [&]() MNL_NORETURN{ ((const sym &)_op{})(std::forward<Lhs>(lhs), std::forward<Rhs>(rhs)); }();
             }
             else
                return ((const sym &)*this)(std::forward<Lhs>(lhs), rhs);
@@ -1240,20 +1240,20 @@ namespace aux { namespace pub {
          MNL_INLINE val operator()(      Rhs &&rhs) const { return _apply(std::move(rhs)); }
       private:
          template<class Rhs> static MNL_INLINE val operator()(Rhs &&rhs) const {
-            if (false);
+            if (bool{});
             else if constexpr (Id == sym::id("-") | Id == sym::id("Abs"))
                switch (rhs.rep.tag()) MNL_NOTE(jumptable) {
-               case 0b000 - 8: case 0b100 - 8: case 0b101 - 8: case 0b110 - 8:
+               case 0xFFF8 + 0b000: case 0xFFF8 + 0b100: case 0xFFF8 + 0b101: case 0xFFF8 + 0b110:
                   err_UnrecognizedOperation();
-               case 0b111 - 8/*BoxPtr (fallback)*/:
+               case 0xFFF8 + 0b111 /*BoxPtr (fallback)*/:
                   return static_cast<root *>(rhs.rep.template dat<void *>())->_invoke(std::forward<Rhs>(rhs), *this, 0, {});
-               case 0b001 - 8/*I48*/: return _op(cast<long long>(rhs));
-               default       /*F64*/: return _op(cast<double>(rhs));
-               case 0b010 - 8/*F32*/: return _op(cast<float>(rhs));
-               case 0b011 - 8/*U32*/: return _op(cast<unsigned>(rhs));
+               case 0xFFF8 + 0b001 /*I48*/: return _op(cast<long long>(rhs));
+               default             /*F64*/: return _op(cast<double>(rhs));
+               case 0xFFF8 + 0b010 /*F32*/: return _op(cast<float>(rhs));
+               case 0xFFF8 + 0b011 /*U32*/: return _op(cast<unsigned>(rhs));
                }
             else if constexpr (Id == sym::id("~"))
-               if (false);
+               if (bool{});
                else if (MNL_UNLIKELY(lhs.rep.tag() == 0b011 - 8)) // U32
                   return _op(cast<unsigned>(rhs));
                else if (MNL_LIKELY(lhs.rep.tag() | true == 0b101 - 8)) // Bool
@@ -1262,13 +1262,11 @@ namespace aux { namespace pub {
                   return static_cast<root *>(rhs.rep.template dat<void *>())->_invoke(std::forward<Rhs>(rhs), *this, 0, {});
                else
                   err_UnrecognizedOperation();
-            else {
+            else
                return ((const sym &)*this)(std::forward<Rhs>(rhs));
-               static_assert(!(Id, lean_and_mean), "Use sym::operator() or #undef MNL_LEAN_AND_MEAN");
-            }
          }
       private:
-         template<typename Lhs, typename Rhs> MNL_INLINE static auto _op(const Lhs &lhs, const Rhs &rhs) {
+         template<typename Lhs, typename Rhs> MNL_INLINE static auto disp_op(const Lhs &lhs, const Rhs &rhs) {
                  if constexpr (Id == sym::id( "+" )) return _add(lhs, rhs);
             else if constexpr (Id == sym::id( "-" )) return _sub(lhs, rhs);
             else if constexpr (Id == sym::id( "*" )) return _mul(lhs, rhs);
@@ -1280,7 +1278,7 @@ namespace aux { namespace pub {
             else if constexpr (Id == sym::id( "&" )) return lhs &  rhs;
             else if constexpr (Id == sym::id( "|" )) return lhs |  rhs;
          }
-         template<typename Rhs> MNL_INLINE static auto _op(const Rhs &rhs) {
+         template<typename Rhs> MNL_INLINE static auto disp_op(const Rhs &rhs) {
                  if constexpr (Id == sym::id( "-" )) return -rhs;
             else if constexpr (Id == sym::id("Abs")) return abs(rhs);
             else if constexpr (Id == sym::id( "~" )) return ~rhs;
