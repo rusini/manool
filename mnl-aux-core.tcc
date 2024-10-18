@@ -1028,7 +1028,7 @@ namespace aux { namespace pub {
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    struct val::ops { // empty (aggregate), for code organization and access control
-   private: // TODO: make body not visible
+   private: // TODO: make body not visible; also: what if we forward to other to avoid generating code for throwing here?
       static MNL_NORETURN void err_UnrecognizedOperation() { MNL_ERR(MNL_SYM("UnrecognizedOperation")); } // to avoid machine code duplication
       static MNL_NORETURN void err_TypeMismatch()          { MNL_ERR(MNL_SYM("TypeMismatch")); }          // (also in hot section)
    private:
@@ -1228,7 +1228,7 @@ namespace aux { namespace pub {
                std::forward<Lhs>(lhs), *this, 1, &const_cast<val &>((const val &)rhs));
       private:
          template<typename Rhs> static MNL_NORETURN void err_generic(const val &lhs, Rhs rhs)
-            { ((const sym &)_op{})(lhs, rhs); MNL_UNREACHABLE; } // TODO: make body not visible (explicit instantiation)
+            { ((const sym &)_op{})(lhs, rhs); MNL_UNREACHABLE; }
       public:
          MNL_INLINE val operator()(const val  &arg) const { return _apply(          arg ); }
          MNL_INLINE val operator()(      val &&arg) const { return _apply(std::move(arg)); }
