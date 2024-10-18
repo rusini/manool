@@ -1033,9 +1033,9 @@ namespace aux { namespace pub {
       static MNL_NORETURN void err_TypeMismatch()          { MNL_ERR(MNL_SYM("TypeMismatch")); }          // (also in hot section)
    private:
       template<enum sym::id Id> class val::ops::_op { // surrogate used instead of a sym
-         friend ops;
       private:
          explicit _op() = default;
+         friend ops;
       public:
          MNL_INLINE operator const sym &() const noexcept { return sym::from_id<Id>; }
       public:
@@ -1045,7 +1045,7 @@ namespace aux { namespace pub {
          MNL_INLINE val operator()(      val &&lhs,       val &&rhs) const { return _apply(std::move(lhs), std::move(rhs)); }
       private:
          template<class Lhs, class Rhs, std::enable_if_t<
-            std::is_same_v<std::decay_t<Lhs>, val> & std::is_same_v<std::decay_t<Rhs>, val>,
+            std::is_same_v<std::decay_t<Lhs>, val> && std::is_same_v<std::decay_t<Rhs>, val>,
             decltype(nullptr) > = decltype(nullptr){} >
          MNL_INLINE static val _apply(Lhs &&lhs, Rhs &&rhs) {
             if constexpr (
@@ -1091,19 +1091,19 @@ namespace aux { namespace pub {
                return ((const sym &)*this)(std::forward<Lhs>(lhs), std::forward<Rhs>(rhs));
          }
       public:
+      // "specializations" derivable by scalar value propagation in _apply; not absolutely necessary, but used in _apply as part of its architecture
          // numeric
          template< typename Lhs, class Rhs, std::enable_if_t<
             std::is_same_v<Lhs, long long> | std::is_same_v<Lhs, double> | std::is_same_v<Lhs, float> | std::is_same_v<Lhs, unsigned> &&
             std::is_same_v<Rhs, val>, decltype(nullptr) > = decltype(nullptr){} >
          MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const noexcept(Id == sym::id("==") | Id == sym::id("<>")) {
-         // "specialization" derivable by scalar value propagation in _apply; not absolutely necessary, but used in _apply as part of its architecture
             if (bool{});
             else if constexpr (Id == sym::id("==")) return  MNL_LIKELY(test<Lhs>(rhs)) && lhs == cast<decltype(lhs)>(rhs);
             else if constexpr (Id == sym::id("<>")) return !MNL_LIKELY(test<Lhs>(rhs)) || lhs != cast<decltype(lhs)>(rhs);
             else if constexpr (
                Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") |
-               Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") |
-               std::is_same_v<Lhs, unsigned> & (Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|")) ) {
+               Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") ||
+               std::is_same_v<Lhs, unsigned> && Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|") ) {
                { if (MNL_LIKELY(test<Lhs>(rhs))) return _apply(lhs, cast<decltype(lhs)>(rhs)); err_TypeMismatch(); }
             else
                return ((const sym &)*this)(lhs, rhs);
@@ -1148,18 +1148,18 @@ namespace aux { namespace pub {
             else if constexpr (Id == sym::id("<>" )) return rhs.rep.tag() != (lhs | 0xFFF8 + 0b100);
             else if constexpr (
                Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|") )
-               { if (MNL_LIKELY(test<bool>(rhs))) return _apply(lhs, cast<bool>(rhs); err_TypeMismatch(); }
+               { if (MNL_LIKELY(test<Lhs>(rhs))) return _apply(lhs, cast<decltype(lhs)>(rhs)); err_TypeMismatch(); }
             else
                return ((const sym &)*this)(lhs, rhs);
          }
       public:
+      // "specializations" not derivable by scalar value propagation in _apply; necessary for performance reasons
          // numeric
          template< class Lhs, typename Rhs, std::enable_if_t<
             std::is_same_v<std::remove_const_t<std::remove_reference_t<Lhs>>, val> &&
             std::is_same_v<Rhs, long long> | std::is_same_v<Rhs, double> | std::is_same_v<Rhs, float> | std::is_same_v<Rhs, unsigned>,
             decltype(nullptr) > = decltype(nullptr){} >
          MNL_INLINE val operator()(Lhs &&lhs, Rhs rhs) const {
-         // "specialization" not derivable by scalar value propagation in _apply; necessary for performance reasons
             if (bool{});
             else if constexpr (Id == sym::id("==")) {
                if (MNL_LIKELY(test<Rhs>(lhs))) return cast<decltype(rhs)>(lhs) == rhs;
@@ -1171,10 +1171,10 @@ namespace aux { namespace pub {
             }
             else if constexpr (
                Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") |
-               Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") |
-               std::is_same_v<Rhs, unsigned> & (Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|")) ) {
+               Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") ||
+               std::is_same_v<Rhs, unsigned> && Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|") ) {
                if (MNL_LIKELY(test<Rhs>(lhs))) return _apply(cast<decltype(rhs)>(lhs), rhs);
-               if (MNL_UNLIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) [&]() MNL_NORETURN{ ((const sym &)_op{})(lhs, rhs); }();
+               if (MNL_UNLIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) [&lhs, rhs]() MNL_NORETURN{ ((const sym &)_op{})(lhs, rhs); }();
             }
             else
                return ((const sym &)*this)(std::forward<Lhs>(lhs), rhs);
@@ -1187,25 +1187,6 @@ namespace aux { namespace pub {
             decltype(nullptr) > = decltype(nullptr){} >
          MNL_INLINE val operator()(Lhs &&lhs, Rhs rhs) const
             { return (*this)(std::forward<Lhs>(lhs), (long long)rhs); }
-         // Nil
-         template< class Lhs, typename Rhs, std::enable_if_t<
-            std::is_same_v<std::remove_const_t<std::remove_reference_t<Lhs>>, val> &&
-            std::is_same_v<Rhs, decltype(nullptr)>,
-            decltype(nullptr) > = decltype(nullptr){} >
-         MNL_INLINE val operator()(Lhs &&lhs, Rhs rhs) const {
-            if (bool{});
-            else if constexpr (Id == sym::id("==")) {
-               if (MNL_LIKELY(test<>(lhs))) return true;
-               if (MNL_LIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) return false;
-            }
-            else if constexpr (Id == sym::id("<>")) {
-               if (MNL_LIKELY(test<>(lhs))) return false;
-               if (MNL_LIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) return true;
-            }
-            else
-               return ((const sym &)*this)(std::forward<Lhs>(lhs), rhs);
-            return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(
-               std::forward<Lhs>(lhs), *this, 1, &const_cast<val &>((const val &)rhs));
          // Sym
          template< class Lhs, typename Rhs, std::enable_if_t<
             std::is_same_v<std::remove_const_t<std::remove_reference_t<Lhs>>, val> &&
@@ -1226,6 +1207,25 @@ namespace aux { namespace pub {
             return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(
                std::forward<Lhs>(lhs), *this, 1, &const_cast<val &>((const val &)rhs));
          }
+         // Nil
+         template< class Lhs, typename Rhs, std::enable_if_t<
+            std::is_same_v<std::remove_const_t<std::remove_reference_t<Lhs>>, val> &&
+            std::is_same_v<Rhs, decltype(nullptr)>,
+            decltype(nullptr) > = decltype(nullptr){} >
+         MNL_INLINE val operator()(Lhs &&lhs, Rhs rhs) const {
+            if (bool{});
+            else if constexpr (Id == sym::id("==")) {
+               if (MNL_LIKELY(test<>(lhs))) return true;
+               if (MNL_LIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) return false;
+            }
+            else if constexpr (Id == sym::id("<>")) {
+               if (MNL_LIKELY(test<>(lhs))) return false;
+               if (MNL_LIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) return true;
+            }
+            else
+               return ((const sym &)*this)(std::forward<Lhs>(lhs), rhs);
+            return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(
+               std::forward<Lhs>(lhs), *this, 1, &const_cast<val &>((const val &)rhs));
       public:
          MNL_INLINE val operator()(const val  &arg) const { return _apply(          arg ); }
          MNL_INLINE val operator()(      val &&arg) const { return _apply(std::move(arg)); }
@@ -1288,7 +1288,7 @@ namespace aux { namespace pub {
          }
       };
    public:
-      template<enum sym::id Id> static constexpr _op<Id> op{};
+      template<enum sym::id Id> static constexpr _op<Id> op{}; // TODO: use SFINAE to limit range for Id (even if Id comes mostly from sym::id())
    };
    namespace aux::pub {
       template<enum sym::id Id> constexpr auto op<Id> = val::ops::op<Id>;
