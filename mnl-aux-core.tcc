@@ -1268,7 +1268,8 @@ namespace aux { namespace pub {
             std::is_same_v<Arg, long long> | std::is_same_v<Arg, double> | std::is_same_v<Arg, float> |
             std::is_same_v<Arg, unsigned>  | std::is_same_v<Arg, bool>,
             decltype(nullptr) > = decltype(nullptr){} >
-         MNL_INLINE static auto _apply(Arg lhs, Arg rhs) {
+         MNL_INLINE static auto _apply(Arg lhs, Arg rhs) noexcept(
+            !(Id == sym::id( "+" ) | Id == sym::id( "-" ) | Id == sym::id( "*" ) && std::is_same_v<Arg, unsigned>)) {
             if constexpr (Id == sym::id( "+" )) return _add(lhs, rhs);
             if constexpr (Id == sym::id( "-" )) return _sub(lhs, rhs);
             if constexpr (Id == sym::id( "*" )) return _mul(lhs, rhs);
@@ -1284,7 +1285,7 @@ namespace aux { namespace pub {
             std::is_same_v<Arg, long long> | std::is_same_v<Arg, double> | std::is_same_v<Arg, float> |
             std::is_same_v<Arg, unsigned>  | std::is_same_v<Arg, bool>,
             decltype(nullptr) > = decltype(nullptr){} >
-         MNL_INLINE static auto _apply(Arg arg) {
+         MNL_INLINE static auto _apply(Arg arg) noexcept {
             if constexpr (Id == sym::id( "-" )) return -arg;
             if constexpr (Id == sym::id("Abs")) return abs(arg);
          }
