@@ -1286,7 +1286,7 @@ namespace aux { namespace pub {
          template<typename Arg, std::enable_if_t<
             std::is_same_v<Arg, long long> | std::is_same_v<Arg, double> | std::is_same_v<Arg, float> |
             std::is_same_v<Arg, unsigned> | std::is_same_v<Arg, bool>,
-            decltype(nullptr) > = decltype(nullptr){} >>
+            decltype(nullptr) > = decltype(nullptr){} >
          MNL_INLINE static auto _apply(Arg arg) {
             if (bool{});
             else if constexpr (Id == sym::id( "-" )) return -arg;
@@ -1294,7 +1294,14 @@ namespace aux { namespace pub {
          }
       };
    public:
-      template<enum sym::id Id> static constexpr _op<Id> op{}; // TODO: use SFINAE to limit range for Id (even if Id comes mostly from sym::id())
+      template<enum sym::id Id, std::enable_if_t<
+         Id == sym::id("==" ) | Id == sym::id("<>") |
+         Id == sym::id("+"  ) | Id == sym::id("-" ) | Id == sym::id("*") |
+         Id == sym::id("<"  ) | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") |
+         Id == sym::id("Xor") | Id == sym::id("&" ) | Id == sym::id("|") |
+         Id == sym::id("Abs") | Id == sym::id("~" )
+         decltype(nullptr) > = decltype(nullptr){} >
+      static constexpr _op<Id> op{};
    };
    namespace aux::pub {
       template<enum sym::id Id> constexpr auto op<Id> = val::ops::op<Id>;
