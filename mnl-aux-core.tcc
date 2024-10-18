@@ -1032,7 +1032,7 @@ namespace aux { namespace pub {
       static MNL_NORETURN void err_UnrecognizedOperation() { MNL_ERR(MNL_SYM("UnrecognizedOperation")); } // to avoid machine code duplication
       static MNL_NORETURN void err_TypeMismatch()          { MNL_ERR(MNL_SYM("TypeMismatch")); }          // (including hot section)
    private:
-      static MNL_NORETURN void err_arithmetic_generic(const val &lhs) {
+      static MNL_NORETURN void err_numeric(const val &lhs) { // ditto
          MNL_ERR(test<long long>(lhs) | test<double>(lhs) | test<float>(lhs) | test<unsigned>(lhs) ?
             MNL_SYM("TypeMismatch") : MNL_SYM("UnrecognizedOperation", &lhs);
       }
@@ -1053,8 +1053,8 @@ namespace aux { namespace pub {
             std::is_same_v<std::decay_t<Lhs>, val> && std::is_same_v<std::decay_t<Rhs>, val>,
             decltype(nullptr) > = decltype(nullptr){} >
          MNL_INLINE static val _apply(Lhs &&lhs, Rhs &&rhs) {
-            if constexpr (
-               Id == sym::id("==") | Id == sym::id("<>") )
+            if (bool{});
+            else if constexpr (Id == sym::id("==") | Id == sym::id("<>"))
                switch (lhs.rep.tag()) MNL_NOTE(jumptable) {
                default             /*F64*/:               return (*this)(cast<double>(lhs),      rhs);
                case 0xFFF8 + 0b111 /*BoxPtr (fallback)*/: return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs),
@@ -1080,8 +1080,7 @@ namespace aux { namespace pub {
                case 0xFFF8 + 0b010 /*F32*/:               return (*this)(cast<float>(lhs),       rhs);
                case 0xFFF8 + 0b011 /*U32*/:               return (*this)(cast<unsigned>(lhs),    rhs);
                }
-            else if constexpr (
-               Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|") )
+            else if constexpr (Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|"))
                if (bool{});
                else if (MNL_UNLIKELY(test<unsigned>(lhs()))) // U32
                   return (*this)(cast<unsigned>(lhs), rhs);
@@ -1160,7 +1159,7 @@ namespace aux { namespace pub {
       public:
       // "specializations" not derivable by scalar value propagation in _apply; necessary for performance reasons
          // core numeric
-         template< class Lhs, typename Rhs, std::enable_if_t<
+         template< typename Lhs, typename Rhs, std::enable_if_t<
             std::is_same_v<std::remove_const_t<std::remove_reference_t<Lhs>>, val> &&
             std::is_same_v<Rhs, long long> | std::is_same_v<Rhs, double> | std::is_same_v<Rhs, float> | std::is_same_v<Rhs, unsigned>,
             decltype(nullptr) > = decltype(nullptr){} >
@@ -1179,7 +1178,7 @@ namespace aux { namespace pub {
                Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") ||
                std::is_same_v<Rhs, unsigned> && Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|") ) {
                if (MNL_LIKELY(test<Rhs>(lhs))) return _apply(cast<decltype(rhs)>(lhs), rhs);
-               if (MNL_UNLIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) err_arithmetic_generic(lhs);
+               if (MNL_UNLIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) err_numeric(lhs);
             }
             else
                return ((const sym &)*this)(std::forward<Lhs>(lhs), rhs);
@@ -1253,11 +1252,11 @@ namespace aux { namespace pub {
                }
             else if constexpr (Id == sym::id("~"))
                if (bool{});
-               else if (MNL_UNLIKELY(test<unsigned>(lhs))) // U32
+               else if (MNL_UNLIKELY(test<unsigned>(arg))) // U32
                   return ~cast<unsigned>(arg);
-               else if (MNL_LIKELY(test<bool>(lhs))) // Bool
+               else if (MNL_LIKELY(test<bool>(arg))) // Bool
                   return !cast<bool>(arg);
-               else if (MNL_LIKELY(lhs.rep.tag() == 0xFFF8 + 0b111)) // BoxPtr (fallback)
+               else if (MNL_LIKELY(arg.rep.tag() == 0xFFF8 + 0b111)) // BoxPtr (fallback)
                   return static_cast<root *>(arg.rep.template dat<void *>())->_invoke(std::forward<Arg>(arg), *this, 0, {});
                else
                   err_UnrecognizedOperation();
