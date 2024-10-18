@@ -1027,17 +1027,17 @@ namespace aux { namespace pub {
 
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   struct val::ops { // empty (aggregate), for access control
+   struct val::ops { // empty (aggregate), for code organization and access control
    private:
       static MNL_NORETURN void err_UnrecognizedOperation() { MNL_ERR(MNL_SYM("UnrecognizedOperation")); } // to avoid machine code duplication
       static MNL_NORETURN void err_TypeMismatch()          { MNL_ERR(MNL_SYM("TypeMismatch")); }          // (also in hot section)
    private:
-      template<enum sym::id Id> class val::ops::_op {
+      template<enum sym::id Id> class val::ops::_op { // surrogate used instead of a sym
+      public:
+         MNL_INLINE operator const sym &() const noexcept { return sym::from_id<Id>; }
       private:
          explicit _op() = default;
          friend ops;
-      public:
-         MNL_INLINE operator const sym &() const noexcept { return sym::from_id<Id>; }
       public:
          MNL_INLINE val operator()(const Lhs  &lhs, const Rhs  &rhs) const { return _apply(          lhs ,           rhs ); }
          MNL_INLINE val operator()(const Lhs  &lhs,       Rhs &&rhs) const { return _apply(          lhs , std::move(rhs)); }
