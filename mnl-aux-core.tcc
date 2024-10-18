@@ -947,6 +947,8 @@ namespace aux {
       MNL_ERR(MNL_SYM("Overflow"));
    }
 
+   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat> _abs(Dat arg) noexcept { return abs(arg); }
+
    // F64, F32 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat> _add(Dat lhs, Dat rhs)
@@ -956,11 +958,16 @@ namespace aux {
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat> _mul(Dat lhs, Dat rhs)
       { auto res = lhs * rhs; if (MNL_LIKELY(!isinf(res))) return res; MNL_ERR(MNL_SYM("Overflow")); }
 
+   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat> _abs(Dat arg) noexcept
+      { return abs(arg); }
+
    // U32 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _add(Dat lhs, Dat rhs) noexcept { return lhs + rhs; }
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _sub(Dat lhs, Dat rhs) noexcept { return lhs - rhs; }
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _mul(Dat lhs, Dat rhs) noexcept { return lhs * rhs; }
+
+   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _abs(Dat arg) noexcept { return arg; }
 
 } // namespace aux
 
@@ -1287,7 +1294,7 @@ namespace aux { namespace pub {
             decltype(nullptr) > = decltype(nullptr){} >
          MNL_INLINE static auto _apply(Arg arg) noexcept {
             if constexpr (Id == sym::id( "-" )) return -arg;
-            if constexpr (Id == sym::id("Abs")) return abs(arg);
+            if constexpr (Id == sym::id("Abs")) return _abs(arg);
          }
       };
    public:
