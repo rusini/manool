@@ -1152,6 +1152,9 @@ namespace aux { namespace pub {
             else
                return ((const sym &)*this)(lhs, rhs);
          }
+      private:
+         template<typename Rhs> static MNL_NORETURN void err_generic(const val &lhs, Rhs rhs)
+            { ((const sym &)_op{})(lhs, rhs); MNL_UNREACHABLE; }
       public:
       // "specializations" not derivable by scalar value propagation in _apply; necessary for performance reasons
          // numeric
@@ -1174,7 +1177,8 @@ namespace aux { namespace pub {
                Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") ||
                std::is_same_v<Rhs, unsigned> && Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|") ) {
                if (MNL_LIKELY(test<Rhs>(lhs))) return _apply(cast<decltype(rhs)>(lhs), rhs);
-               if (MNL_UNLIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) [&lhs, rhs]() MNL_NORETURN{ ((const sym &)_op{})(lhs, rhs); }();
+               if (MNL_UNLIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) err_generic(lhs, rhs);
+                  [](const val &lhs, Rhs rhs) MNL_NORETURN{ ((const sym &)_op{})(lhs, rhs); MNL_UNREACHABLE; }(lhs, rhs);
             }
             else
                return ((const sym &)*this)(std::forward<Lhs>(lhs), rhs);
