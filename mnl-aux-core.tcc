@@ -1293,8 +1293,8 @@ namespace aux { namespace pub {
    public:
       template<enum sym::id Id, std::enable_if_t<
          Id == sym::id("==" ) | Id == sym::id("<>") |
-         Id == sym::id("+"  ) | Id == sym::id("-" ) | Id == sym::id("*") |
-         Id == sym::id("<"  ) | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") |
+         Id == sym::id( "+" ) | Id == sym::id("-" ) | Id == sym::id("*") |
+         Id == sym::id( "<" ) | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") |
          Id == sym::id("Xor") | Id == sym::id("&" ) | Id == sym::id("|") |
          Id == sym::id("Abs") | Id == sym::id("~" ),
          decltype(nullptr) > = decltype(nullptr){} >
