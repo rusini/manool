@@ -1270,26 +1270,24 @@ namespace aux { namespace pub {
             std::is_same_v<Arg, unsigned>  | std::is_same_v<Arg, bool>,
             decltype(nullptr) > = decltype(nullptr){} >
          MNL_INLINE static auto _apply(Arg lhs, Arg rhs) {
-            if (bool{});
-            else if constexpr (Id == sym::id( "+" )) return _add(lhs, rhs);
-            else if constexpr (Id == sym::id( "-" )) return _sub(lhs, rhs);
-            else if constexpr (Id == sym::id( "*" )) return _mul(lhs, rhs);
-            else if constexpr (Id == sym::id( "<" )) return lhs <  rhs;
-            else if constexpr (Id == sym::id( "<=")) return lhs <= rhs;
-            else if constexpr (Id == sym::id( ">" )) return lhs >  rhs;
-            else if constexpr (Id == sym::id( ">=")) return lhs >= rhs;
-            else if constexpr (Id == sym::id("Xor")) return lhs ^  rhs;
-            else if constexpr (Id == sym::id( "&" )) return lhs &  rhs;
-            else if constexpr (Id == sym::id( "|" )) return lhs |  rhs;
+            if constexpr (Id == sym::id( "+" )) return _add(lhs, rhs);
+            if constexpr (Id == sym::id( "-" )) return _sub(lhs, rhs);
+            if constexpr (Id == sym::id( "*" )) return _mul(lhs, rhs);
+            if constexpr (Id == sym::id( "<" )) return lhs <  rhs;
+            if constexpr (Id == sym::id( "<=")) return lhs <= rhs;
+            if constexpr (Id == sym::id( ">" )) return lhs >  rhs;
+            if constexpr (Id == sym::id( ">=")) return lhs >= rhs;
+            if constexpr (Id == sym::id("Xor")) return lhs ^  rhs;
+            if constexpr (Id == sym::id( "&" )) return lhs &  rhs;
+            if constexpr (Id == sym::id( "|" )) return lhs |  rhs;
          }
          template<typename Arg, std::enable_if_t<
             std::is_same_v<Arg, long long> | std::is_same_v<Arg, double> | std::is_same_v<Arg, float> |
             std::is_same_v<Arg, unsigned> | std::is_same_v<Arg, bool>,
             decltype(nullptr) > = decltype(nullptr){} >
          MNL_INLINE static auto _apply(Arg arg) {
-            if (bool{});
-            else if constexpr (Id == sym::id( "-" )) return -arg;
-            else if constexpr (Id == sym::id("Abs")) return abs(arg);
+            if constexpr (Id == sym::id( "-" )) return -arg;
+            if constexpr (Id == sym::id("Abs")) return abs(arg);
          }
       };
    public:
