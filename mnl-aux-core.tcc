@@ -1033,18 +1033,21 @@ namespace aux { namespace pub {
       static MNL_NORETURN void err_TypeMismatch()          { MNL_ERR(MNL_SYM("TypeMismatch")); }          // (also in hot section)
    private:
       template<enum sym::id Id> class val::ops::_op { // surrogate used instead of a sym
-      public:
-         MNL_INLINE operator const sym &() const noexcept { return sym::from_id<Id>; }
+         friend ops;
       private:
          explicit _op() = default;
-         friend ops;
       public:
-         MNL_INLINE val operator()(const Lhs  &lhs, const Rhs  &rhs) const { return _apply(          lhs ,           rhs ); }
-         MNL_INLINE val operator()(const Lhs  &lhs,       Rhs &&rhs) const { return _apply(          lhs , std::move(rhs)); }
-         MNL_INLINE val operator()(      Lhs &&lhs, const Rhs  &rhs) const { return _apply(std::move(lhs),           rhs ); }
-         MNL_INLINE val operator()(      Lhs &&lhs,       Rhs &&rhs) const { return _apply(std::move(lhs), std::move(rhs)); }
+         MNL_INLINE operator const sym &() const noexcept { return sym::from_id<Id>; }
+      public:
+         MNL_INLINE val operator()(const val  &lhs, const val  &rhs) const { return _apply(          lhs ,           rhs ); }
+         MNL_INLINE val operator()(const val  &lhs,       val &&rhs) const { return _apply(          lhs , std::move(rhs)); }
+         MNL_INLINE val operator()(      val &&lhs, const val  &rhs) const { return _apply(std::move(lhs),           rhs ); }
+         MNL_INLINE val operator()(      val &&lhs,       val &&rhs) const { return _apply(std::move(lhs), std::move(rhs)); }
       private:
-         template<class Lhs, class Rhs> MNL_INLINE static val _apply(Lhs &&lhs, Rhs &&rhs) {
+         template<class Lhs, class Rhs, std::enable_if_t<
+            std::is_same_v<std::decay_t<Lhs>, val> & std::is_same_v<std::decay_t<Rhs>, val>,
+            decltype(nullptr) > = decltype(nullptr){} >
+         MNL_INLINE static val _apply(Lhs &&lhs, Rhs &&rhs) {
             if constexpr (
                Id == sym::id("==") | Id == sym::id("<>") )
                switch (lhs.rep.tag()) MNL_NOTE(jumptable) {
@@ -1224,10 +1227,13 @@ namespace aux { namespace pub {
                std::forward<Lhs>(lhs), *this, 1, &const_cast<val &>((const val &)rhs));
          }
       public:
-         MNL_INLINE val operator()(const Arg  &arg) const { return _apply(          arg ); }
-         MNL_INLINE val operator()(      Arg &&arg) const { return _apply(std::move(arg)); }
+         MNL_INLINE val operator()(const val  &arg) const { return _apply(          arg ); }
+         MNL_INLINE val operator()(      val &&arg) const { return _apply(std::move(arg)); }
       private:
-         template<class Arg> static MNL_INLINE val _apply(Arg &&arg) const {
+         template<class Arg, std::enable_if_t<
+            std::is_same_v<std::decay_t<Arg>, val>,
+            decltype(nullptr) > = decltype(nullptr){} >
+         MNL_INLINE static val _apply(Arg &&arg) {
             if (bool{});
             else if constexpr (Id == sym::id("-") | Id == sym::id("Abs"))
                switch (arg.rep.tag()) MNL_NOTE(jumptable) {
@@ -1257,7 +1263,7 @@ namespace aux { namespace pub {
          template<typename Arg, std::enable_if_t<
             std::is_same_v<Arg, long long> | std::is_same_v<Arg, double> | std::is_same_v<Arg, float> |
             std::is_same_v<Arg, unsigned> | std::is_same_v<Arg, bool>,
-            decltype(nullptr) > = decltype(nullptr){} >>
+            decltype(nullptr) > = decltype(nullptr){} >
          MNL_INLINE static auto _apply(Arg lhs, Arg rhs) {
             if (bool{});
             else if constexpr (Id == sym::id( "+" )) return _add(lhs, rhs);
