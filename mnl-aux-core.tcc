@@ -1098,7 +1098,7 @@ namespace aux { namespace pub {
          }
       public:
       // "specializations" derivable by scalar value propagation in _apply; not absolutely necessary, but used in _apply as part of its architecture
-         // number
+         // core numeric
          template< typename Lhs, class Rhs, std::enable_if_t<
             std::is_same_v<Lhs, long long> | std::is_same_v<Lhs, double> | std::is_same_v<Lhs, float> | std::is_same_v<Lhs, unsigned> &&
             std::is_same_v<Rhs, val>, decltype(nullptr) > = decltype(nullptr){} >
@@ -1160,7 +1160,7 @@ namespace aux { namespace pub {
          }
       public:
       // "specializations" not derivable by scalar value propagation in _apply; necessary for performance reasons
-         // number
+         // core numeric
          template< class Lhs, typename Rhs, std::enable_if_t<
             std::is_same_v<std::remove_const_t<std::remove_reference_t<Lhs>>, val> &&
             std::is_same_v<Rhs, long long> | std::is_same_v<Rhs, double> | std::is_same_v<Rhs, float> | std::is_same_v<Rhs, unsigned>,
@@ -1231,7 +1231,7 @@ namespace aux { namespace pub {
             else
                return ((const sym &)*this)(std::forward<Lhs>(lhs), rhs);
             return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(
-               std::forward<Lhs>(lhs), *this, 1, &const_cast<val &>((const val &)rhs));
+               std::forward<Lhs>(lhs), *this, 1, &const_cast<val &>((const val &)nullptr));
       public:
          MNL_INLINE val operator()(const val  &arg) const { return _apply(          arg ); }
          MNL_INLINE val operator()(      val &&arg) const { return _apply(std::move(arg)); }
