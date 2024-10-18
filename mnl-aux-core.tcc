@@ -1028,7 +1028,7 @@ namespace aux { namespace pub {
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    struct val::ops { // empty (aggregate), for code organization and access control
-   private:
+   private: // TODO: make body not visible
       static MNL_NORETURN void err_UnrecognizedOperation() { MNL_ERR(MNL_SYM("UnrecognizedOperation")); } // to avoid machine code duplication
       static MNL_NORETURN void err_TypeMismatch()          { MNL_ERR(MNL_SYM("TypeMismatch")); }          // (also in hot section)
    private:
@@ -1152,9 +1152,6 @@ namespace aux { namespace pub {
             else
                return ((const sym &)*this)(lhs, rhs);
          }
-      private:
-         template<typename Rhs> static MNL_NORETURN void err_generic(const val &lhs, Rhs rhs)
-            { ((const sym &)_op{})(lhs, rhs); MNL_UNREACHABLE; }
       public:
       // "specializations" not derivable by scalar value propagation in _apply; necessary for performance reasons
          // numeric
@@ -1229,6 +1226,9 @@ namespace aux { namespace pub {
                return ((const sym &)*this)(std::forward<Lhs>(lhs), rhs);
             return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(
                std::forward<Lhs>(lhs), *this, 1, &const_cast<val &>((const val &)rhs));
+      private:
+         template<typename Rhs> static MNL_NORETURN void err_generic(const val &lhs, Rhs rhs)
+            { ((const sym &)_op{})(lhs, rhs); MNL_UNREACHABLE; } // TODO: make body not visible (explicit instantiation)
       public:
          MNL_INLINE val operator()(const val  &arg) const { return _apply(          arg ); }
          MNL_INLINE val operator()(      val &&arg) const { return _apply(std::move(arg)); }
