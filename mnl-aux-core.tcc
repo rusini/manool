@@ -1101,7 +1101,7 @@ namespace aux { namespace pub {
                Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") |
                Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") |
                std::is_same_v<Lhs, unsigned> & (Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|")) ) {
-               { if (MNL_LIKELY(test<Lhs>(rhs))) return disp_op(lhs, cast<decltype(lhs)>(rhs)); err_TypeMismatch(); }
+               { if (MNL_LIKELY(test<Lhs>(rhs))) return _apply(lhs, cast<decltype(lhs)>(rhs)); err_TypeMismatch(); }
             else
                return ((const sym &)*this)(lhs, rhs);
          }
@@ -1145,7 +1145,7 @@ namespace aux { namespace pub {
             else if constexpr (Id == sym::id("<>" )) return rhs.rep.tag() != (lhs | 0xFFF8 + 0b100);
             else if constexpr (
                Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|") )
-               { if (MNL_LIKELY(test<bool>(rhs))) return disp_op(lhs, cast<bool>(rhs); err_TypeMismatch(); }
+               { if (MNL_LIKELY(test<bool>(rhs))) return _apply(lhs, cast<bool>(rhs); err_TypeMismatch(); }
             else
                return ((const sym &)*this)(lhs, rhs);
          }
@@ -1170,7 +1170,7 @@ namespace aux { namespace pub {
                Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") |
                Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") |
                std::is_same_v<Rhs, unsigned> & (Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|")) ) {
-               if (MNL_LIKELY(test<Rhs>(lhs))) return disp_op(cast<decltype(rhs)>(lhs), rhs);
+               if (MNL_LIKELY(test<Rhs>(lhs))) return _apply(cast<decltype(rhs)>(lhs), rhs);
                if (MNL_UNLIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) [&]() MNL_NORETURN{ ((const sym &)_op{})(lhs, rhs); }();
             }
             else
@@ -1235,10 +1235,10 @@ namespace aux { namespace pub {
                   err_UnrecognizedOperation();
                case 0xFFF8 + 0b111 /*BoxPtr (fallback)*/:
                   return static_cast<root *>(arg.rep.template dat<void *>())->_invoke(std::forward<Arg>(arg), *this, 0, {});
-               case 0xFFF8 + 0b001 /*I48*/: return disp_op(cast<long long>(arg));
-               default             /*F64*/: return disp_op(cast<double>(arg));
-               case 0xFFF8 + 0b010 /*F32*/: return disp_op(cast<float>(arg));
-               case 0xFFF8 + 0b011 /*U32*/: return disp_op(cast<unsigned>(arg));
+               case 0xFFF8 + 0b001 /*I48*/: return _apply(cast<long long>(arg));
+               default             /*F64*/: return _apply(cast<double>(arg));
+               case 0xFFF8 + 0b010 /*F32*/: return _apply(cast<float>(arg));
+               case 0xFFF8 + 0b011 /*U32*/: return _apply(cast<unsigned>(arg));
                }
             else if constexpr (Id == sym::id("~"))
                if (bool{});
