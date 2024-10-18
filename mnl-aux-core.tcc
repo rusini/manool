@@ -1028,7 +1028,7 @@ namespace aux { namespace pub {
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    struct val::ops { // empty (aggregate), for code organization and access control
-   private: // TODO: make body not visible; also: what if we forward to other to avoid generating code for throwing here?
+   private:
       static MNL_NORETURN void err_UnrecognizedOperation() { MNL_ERR(MNL_SYM("UnrecognizedOperation")); } // to avoid machine code duplication
       static MNL_NORETURN void err_TypeMismatch()          { MNL_ERR(MNL_SYM("TypeMismatch")); }          // (also in hot section)
    private:
