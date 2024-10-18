@@ -1299,7 +1299,7 @@ namespace aux { namespace pub {
          Id == sym::id("+"  ) | Id == sym::id("-" ) | Id == sym::id("*") |
          Id == sym::id("<"  ) | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") |
          Id == sym::id("Xor") | Id == sym::id("&" ) | Id == sym::id("|") |
-         Id == sym::id("Abs") | Id == sym::id("~" )
+         Id == sym::id("Abs") | Id == sym::id("~" ),
          decltype(nullptr) > = decltype(nullptr){} >
       static constexpr _op<Id> op{};
    };
