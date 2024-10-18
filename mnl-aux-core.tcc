@@ -1029,13 +1029,12 @@ namespace aux { namespace pub {
 
    struct val::ops { // empty (aggregate), for code organization and access control
    private:
-      static MNL_NORETURN void err_UnrecognizedOperation() // to avoid machine code duplication
-         { MNL_ERR(MNL_SYM("UnrecognizedOperation")); }
-      static MNL_NORETURN void err_TypeMismatch()          // (including hot section)
-         { MNL_ERR(MNL_SYM("TypeMismatch")); }
+      static MNL_NORETURN void err_UnrecognizedOperation() { MNL_ERR(MNL_SYM("UnrecognizedOperation")); } // to avoid machine code duplication
+      static MNL_NORETURN void err_TypeMismatch()          { MNL_ERR(MNL_SYM("TypeMismatch")); }          // (including hot section)
+   private:
       static MNL_NORETURN void err_arithmetic_generic(const val &lhs) {
          MNL_ERR(test<long long>(lhs) | test<double>(lhs) | test<float>(lhs) | test<unsigned>(lhs) ?
-            MNL_SYM("TypeMismatch") : MNL_SYM("UnrecognizedOperation", lhs);
+            MNL_SYM("TypeMismatch") : MNL_SYM("UnrecognizedOperation", &lhs);
       }
    private:
       template<enum sym::id Id> class val::ops::_op { // surrogate used instead of a sym
