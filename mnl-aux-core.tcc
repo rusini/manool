@@ -1092,7 +1092,7 @@ namespace aux { namespace pub {
          }
       public:
       // "specializations" derivable by scalar value propagation in _apply; not absolutely necessary, but used in _apply as part of its architecture
-         // numeric
+         // number
          template< typename Lhs, class Rhs, std::enable_if_t<
             std::is_same_v<Lhs, long long> | std::is_same_v<Lhs, double> | std::is_same_v<Lhs, float> | std::is_same_v<Lhs, unsigned> &&
             std::is_same_v<Rhs, val>, decltype(nullptr) > = decltype(nullptr){} >
@@ -1154,7 +1154,7 @@ namespace aux { namespace pub {
          }
       public:
       // "specializations" not derivable by scalar value propagation in _apply; necessary for performance reasons
-         // numeric
+         // number
          template< class Lhs, typename Rhs, std::enable_if_t<
             std::is_same_v<std::remove_const_t<std::remove_reference_t<Lhs>>, val> &&
             std::is_same_v<Rhs, long long> | std::is_same_v<Rhs, double> | std::is_same_v<Rhs, float> | std::is_same_v<Rhs, unsigned>,
@@ -1174,7 +1174,7 @@ namespace aux { namespace pub {
                Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") ||
                std::is_same_v<Rhs, unsigned> && Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|") ) {
                if (MNL_LIKELY(test<Rhs>(lhs))) return _apply(cast<decltype(rhs)>(lhs), rhs);
-               if (MNL_UNLIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) err_generic(lhs, rhs);
+               if (MNL_UNLIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) err_arithmetic_generic(lhs);
             }
             else
                return ((const sym &)*this)(std::forward<Lhs>(lhs), rhs);
@@ -1229,6 +1229,9 @@ namespace aux { namespace pub {
       private:
          template<typename Rhs> static MNL_NORETURN void err_generic(const val &lhs, Rhs rhs)
             { ((const sym &)_op{})(lhs, rhs); MNL_UNREACHABLE; }
+         static MNL_NORETURN void err_generic(const val &lhs)
+            { test<long long>(lhs) | test<double>(lhs) | test<float>(lhs) | test<unsigned>(lhs) ? err_TypeMismatch() : err_UnrecognizedOperation(); }
+
       public:
          MNL_INLINE val operator()(const val  &arg) const { return _apply(          arg ); }
          MNL_INLINE val operator()(      val &&arg) const { return _apply(std::move(arg)); }
