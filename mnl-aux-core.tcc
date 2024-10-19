@@ -1293,7 +1293,7 @@ namespace aux { namespace pub {
             std::is_same_v<Dat, long long> | std::is_same_v<Dat, double> | std::is_same_v<Dat, float> |
             std::is_same_v<Dat, unsigned>  | std::is_same_v<Dat, bool>,
             decltype(nullptr) > = decltype(nullptr){} >
-         MNL_INLINE static auto _apply(Dat lhs, Dat rhs) MNL_NOTE(!noexcept) {
+         MNL_INLINE static auto _apply(Dat lhs, Dat rhs) noexcept(false) {
             if constexpr (Id == sym::id( "+" )) return (_add)(lhs, rhs); // use internal helpers
             if constexpr (Id == sym::id( "-" )) return (_sub)(lhs, rhs);
             if constexpr (Id == sym::id( "*" )) return (_mul)(lhs, rhs);
@@ -1309,7 +1309,7 @@ namespace aux { namespace pub {
             std::is_same_v<Dat, long long> | std::is_same_v<Dat, double> | std::is_same_v<Dat, float> |
             std::is_same_v<Dat, unsigned>  | std::is_same_v<Dat, bool>,
             decltype(nullptr) > = decltype(nullptr){} >
-         MNL_INLINE static auto _apply(Dat arg) MNL_NOTE(!noexcept) {
+         MNL_INLINE static auto _apply(Dat arg) noexcept(false) {
             if constexpr (Id == sym::id( "-" )) return (_neg)(arg);
             if constexpr (Id == sym::id("Abs")) return (_abs)(arg);
             if constexpr (Id == sym::id( "~" )) return (_not)(arg);
