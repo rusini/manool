@@ -339,6 +339,7 @@ namespace aux { namespace pub {
       class root; template<typename> friend class mnl::box;
    public: // Functional application (and Repl) -- TODO: (maybe) we need facilities for _fetch
       static constexpr int max_argc = sym::max_argc;
+      static constexpr auto max_i48 = (1ll << 48 - 1) - 1, min_i48 = -max_i48;
    // Essential for performance (argv_out[-1] corresponds to target; !argc < !argv)
       MNL_INLINE val operator()(int argc, val argv[], val *argv_out = {}) const & { return _apply(*this, argc, argv, argv_out); }
       MNL_INLINE val operator()(int argc, val argv[], val *argv_out = {}) && { return _apply(_mv(*this), argc, argv, argv_out); }
@@ -929,8 +930,6 @@ namespace aux { namespace pub {
 }} // namespace aux::pub
 
 // Primitive Operations ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-namespace aux { namespace pub { constexpr auto max_i48 = (1ll << 48 - 1) - 1, min_i48 = -max_i48; } }
 
 namespace aux {
 
