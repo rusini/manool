@@ -934,31 +934,39 @@ namespace aux { namespace pub { constexpr auto max_i48 = (1ll << 48 - 1) - 1, mi
 
 namespace aux {
 
+   using std::isinf, std::abs;
+
+   MNL_INLINE inline void err_Overflow()  { MNL_ERR(MNL_SYM("Overflow"));  }
+   MNL_INLINE inline void err_Undefined() { MNL_ERR(MNL_SYM("Undefined")); }
+
    // I48 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat> _add(Dat lhs, Dat rhs)
-      { long long res = lhs + rhs; if (MNL_LIKELY(res >= val::min_i48 & res <= val::max_i48)) return res; MNL_ERR(MNL_SYM("Overflow")); }
+      { long long res = lhs + rhs; if (MNL_LIKELY(res >= val::min_i48 & res <= val::max_i48)) return res; err_Overflow(); }
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat> _sub(Dat lhs, Dat rhs)
-      { long long res = lhs - rhs; if (MNL_LIKELY(res >= val::min_i48 & res <= val::max_i48)) return res; MNL_ERR(MNL_SYM("Overflow")); }
+      { long long res = lhs - rhs; if (MNL_LIKELY(res >= val::min_i48 & res <= val::max_i48)) return res; err_Overflow(); }
 
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat> _mul(Dat lhs, Dat rhs) {
-      long long res; bool flag = __builtin_mul_overflow(lhs, rhs, &res);
-      if (MNL_LIKELY(!flag) && MNL_LIKELY(res >= val::min_i48 & res <= val::max_i48)) return res;
-      MNL_ERR(MNL_SYM("Overflow"));
+      long long res; bool ok = !__builtin_mul_overflow(lhs, rhs, &res);
+      if (MNL_LIKELY(ok) && MNL_LIKELY(res >= val::min_i48 & res <= val::max_i48)) return res;
+      err_Overflow();
    }
 
-   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat> _abs(Dat arg) noexcept { return abs(arg); }
+   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat> _neg(Dat arg) { return -arg; }
+   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat> _abs(Dat arg) { return abs(arg); }
 
    // F64, F32 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat> _add(Dat lhs, Dat rhs)
-      { auto res = lhs + rhs; if (MNL_LIKELY(!isinf(res))) return res; MNL_ERR(MNL_SYM("Overflow")); }
+      { Dat res = lhs + rhs; if (MNL_LIKELY(!isinf(res))) return res; err_Overflow();
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat> _sub(Dat lhs, Dat rhs)
-      { auto res = lhs - rhs; if (MNL_LIKELY(!isinf(res))) return res; MNL_ERR(MNL_SYM("Overflow")); }
+      { Dat res = lhs - rhs; if (MNL_LIKELY(!isinf(res))) return res; err_Overflow();
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat> _mul(Dat lhs, Dat rhs)
-      { auto res = lhs * rhs; if (MNL_LIKELY(!isinf(res))) return res; MNL_ERR(MNL_SYM("Overflow")); }
+      { Dat res = lhs * rhs; if (MNL_LIKELY(!isinf(res))) return res; err_Overflow();
 
-   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat> _abs(Dat arg) noexcept
+   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat> _neg(Dat arg) MNL_NOTE(except)
+      { return -arg; }
+   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat> _abs(Dat arg) MNL_NOTE(except)
       { return abs(arg); }
 
    // U32 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -967,7 +975,11 @@ namespace aux {
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _sub(Dat lhs, Dat rhs) noexcept { return lhs - rhs; }
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _mul(Dat lhs, Dat rhs) noexcept { return lhs * rhs; }
 
-   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _abs(Dat arg) noexcept { return arg; }
+   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _neg(Dat arg) { return -arg; }
+   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _abs(Dat arg) { return  arg; }
+   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _not(Dat arg) { return ~arg; }
+
+   // Bool /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 } // namespace aux
 
@@ -1035,11 +1047,11 @@ namespace aux { namespace pub {
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    struct val::ops { // empty (aggregate), for code organization and access control
+   private: // TODO: MNL_ERR is MNL_NOINLINE, that goes into a non-comdat section when a fragment/specialization is generated in gcc
+      static MNL_INLINE void err_UnrecognizedOperation() { MNL_ERR(MNL_SYM("UnrecognizedOperation")); } // to avoid machine code duplication
+      static MNL_INLINE void err_TypeMismatch()          { MNL_ERR(MNL_SYM("TypeMismatch")); }          // (including hot section)
    private:
-      static MNL_NORETURN void err_UnrecognizedOperation() { MNL_ERR(MNL_SYM("UnrecognizedOperation")); } // to avoid machine code duplication
-      static MNL_NORETURN void err_TypeMismatch()          { MNL_ERR(MNL_SYM("TypeMismatch")); }          // (including hot section)
-   private:
-      static MNL_NORETURN void err_numeric(const val &lhs) { // ditto
+      static MNL_INLINE void err_numeric(const val &lhs) { // ditto
          MNL_ERR(test<long long>(lhs) | test<double>(lhs) | test<float>(lhs) | test<unsigned>(lhs) ?
             MNL_SYM("TypeMismatch") : MNL_SYM("UnrecognizedOperation", &lhs);
       }
