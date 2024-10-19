@@ -1276,7 +1276,7 @@ namespace aux { namespace pub {
             std::is_same_v<Arg, unsigned>  | std::is_same_v<Arg, bool>,
             decltype(nullptr) > = decltype(nullptr){} >
          MNL_INLINE static auto _apply(Arg lhs, Arg rhs) noexcept(
-            !(Id == sym::id( "+" ) | Id == sym::id( "-" ) | Id == sym::id( "*" ) && std::is_same_v<Arg, unsigned>)) {
+            !(Id == sym::id("+") | Id == sym::id("-") | Id == sym::id("*") && std::is_same_v<Arg, unsigned>)) {
             if constexpr (Id == sym::id( "+" )) return _add(lhs, rhs);
             if constexpr (Id == sym::id( "-" )) return _sub(lhs, rhs);
             if constexpr (Id == sym::id( "*" )) return _mul(lhs, rhs);
