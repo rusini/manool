@@ -1272,9 +1272,9 @@ namespace aux { namespace pub {
             else if constexpr (Id == sym::id("~"))
                if (bool{});
                else if (MNL_UNLIKELY(test<unsigned>(arg))) // U32
-                  return ~cast<unsigned>(arg);
+                  return _apply(cast<unsigned>(arg));
                else if (MNL_LIKELY(test<bool>(arg))) // Bool
-                  return !cast<bool>(arg);
+                  return _apply(cast<bool>(arg));
                else if (MNL_LIKELY(arg.rep.tag() == 0xFFF8 + 0b111)) // BoxPtr (fallback)
                   return static_cast<root *>(arg.rep.template dat<void *>())->_invoke(std::forward<Arg>(arg), *this, 0, {});
                else
@@ -1305,17 +1305,18 @@ namespace aux { namespace pub {
             std::is_same_v<Arg, unsigned>  | std::is_same_v<Arg, bool>,
             decltype(nullptr) > = decltype(nullptr){} >
          MNL_INLINE static auto _apply(Arg arg) noexcept {
-            if constexpr (Id == sym::id( "-" )) return -arg;
+            if constexpr (Id == sym::id( "-" )) return _neg(arg);
             if constexpr (Id == sym::id("Abs")) return _abs(arg);
+            if constexpr (Id == sym::id( "~" )) return _not(arg);
          }
       };
    public:
       template<enum sym::id Id, std::enable_if_t<
-         Id == sym::id("==" ) | Id == sym::id("<>") |
-         Id == sym::id( "+" ) | Id == sym::id("-" ) | Id == sym::id("*") |
-         Id == sym::id( "<" ) | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") |
-         Id == sym::id("Xor") | Id == sym::id("&" ) | Id == sym::id("|") |
-         Id == sym::id("Abs") | Id == sym::id("~" ),
+         Id == sym::id( "==") | Id == sym::id( "<>") |
+         Id == sym::id( "+" ) | Id == sym::id( "-" ) | Id == sym::id("*") |
+         Id == sym::id( "<" ) | Id == sym::id( "<=") | Id == sym::id(">") | Id == sym::id(">=") |
+         Id == sym::id("Xor") | Id == sym::id( "&" ) | Id == sym::id("|") |
+         Id == sym::id( "-" ) | Id == sym::id("Abs") | Id == sym::id("~"),
          decltype(nullptr) > = decltype(nullptr){} >
       static constexpr _op<Id> op{};
    };
