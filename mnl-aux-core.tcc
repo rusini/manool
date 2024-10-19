@@ -934,7 +934,7 @@ namespace aux { namespace pub { constexpr auto max_i48 = (1ll << 48 - 1) - 1, mi
 
 namespace aux {
 
-   using std::isinf, std::abs;
+   using std::isinf, std::abs; // TODO: that is not 100% the same as pure ADL - spurious conversions
 
    MNL_INLINE inline void err_Overflow()  { MNL_ERR(MNL_SYM("Overflow"));  }
    MNL_INLINE inline void err_Undefined() { MNL_ERR(MNL_SYM("Undefined")); }
@@ -952,8 +952,8 @@ namespace aux {
       err_Overflow();
    }
 
-   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat> _neg(Dat arg) { return -arg; }
-   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat> _abs(Dat arg) { return abs(arg); }
+   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat> _neg(Dat arg) MNL_NOTE(!noexcept) { return -arg; }
+   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat> _abs(Dat arg) MNL_NOTE(!noexcept) { return abs(arg); }
 
    // F64, F32 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -964,22 +964,24 @@ namespace aux {
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat> _mul(Dat lhs, Dat rhs)
       { Dat res = lhs * rhs; if (MNL_LIKELY(!isinf(res))) return res; err_Overflow();
 
-   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat> _neg(Dat arg) MNL_NOTE(except)
+   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat> _neg(Dat arg) MNL_NOTE(!noexcept)
       { return -arg; }
-   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat> _abs(Dat arg) MNL_NOTE(except)
+   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat> _abs(Dat arg) MNL_NOTE(!noexcept)
       { return abs(arg); }
 
    // U32 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _add(Dat lhs, Dat rhs) noexcept { return lhs + rhs; }
-   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _sub(Dat lhs, Dat rhs) noexcept { return lhs - rhs; }
-   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _mul(Dat lhs, Dat rhs) noexcept { return lhs * rhs; }
+   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _add(Dat lhs, Dat rhs) MNL_NOTE(!noexcept) { return lhs + rhs; }
+   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _sub(Dat lhs, Dat rhs) MNL_NOTE(!noexcept) { return lhs - rhs; }
+   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _mul(Dat lhs, Dat rhs) MNL_NOTE(!noexcept) { return lhs * rhs; }
 
-   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _neg(Dat arg) { return -arg; }
-   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _abs(Dat arg) { return  arg; }
-   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _not(Dat arg) { return ~arg; }
+   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _neg(Dat arg) MNL_NOTE(!noexcept) { return -arg; }
+   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _abs(Dat arg) MNL_NOTE(!noexcept) { return +arg; }
+   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _not(Dat arg) MNL_NOTE(!noexcept) { return ~arg; }
 
    // Bool /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, bool>, Dat> _not(Dat arg) { return !arg; }
 
 } // namespace aux
 
@@ -1063,12 +1065,12 @@ namespace aux { namespace pub {
       public:
          MNL_INLINE operator const sym &() const noexcept { return sym::from_id<Id>; }
       public:
-         MNL_INLINE val operator()(const val  &lhs, const val  &rhs) const { return _apply(          lhs ,           rhs ); }
-         MNL_INLINE val operator()(const val  &lhs,       val &&rhs) const { return _apply(          lhs , std::move(rhs)); }
-         MNL_INLINE val operator()(      val &&lhs, const val  &rhs) const { return _apply(std::move(lhs),           rhs ); }
-         MNL_INLINE val operator()(      val &&lhs,       val &&rhs) const { return _apply(std::move(lhs), std::move(rhs)); }
+         MNL_INLINE val operator()(const val  &lhs, const val  &rhs) const { return _apply(          lhs ,           rhs ); } // argument
+         MNL_INLINE val operator()(const val  &lhs,       val &&rhs) const { return _apply(          lhs , std::move(rhs)); } // implicit
+         MNL_INLINE val operator()(      val &&lhs, const val  &rhs) const { return _apply(std::move(lhs),           rhs ); } // conversion
+         MNL_INLINE val operator()(      val &&lhs,       val &&rhs) const { return _apply(std::move(lhs), std::move(rhs)); } // allowed
       private:
-         template<class Lhs, class Rhs, std::enable_if_t<
+         template<class Lhs, class Rhs, std::enable_if_t< // SFINAE requirements on internal function for disambiguation
             std::is_same_v<std::decay_t<Lhs>, val> && std::is_same_v<std::decay_t<Rhs>, val>,
             decltype(nullptr) > = decltype(nullptr){} >
          MNL_INLINE static val _apply(Lhs &&lhs, Rhs &&rhs) {
@@ -1119,7 +1121,7 @@ namespace aux { namespace pub {
          template< typename Lhs, class Rhs, std::enable_if_t<
             std::is_same_v<Lhs, long long> | std::is_same_v<Lhs, double> | std::is_same_v<Lhs, float> | std::is_same_v<Lhs, unsigned> &&
             std::is_same_v<Rhs, val>, decltype(nullptr) > = decltype(nullptr){} >
-         MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const noexcept(Id == sym::id("==") | Id == sym::id("<>")) {
+         MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const noexcept(Id == sym::id("==") | Id == sym::id("<>")) { // no implicit conversion
             if (bool{});
             else if constexpr (Id == sym::id("==")) return  MNL_LIKELY(test<Lhs>(rhs)) && lhs == cast<decltype(lhs)>(rhs);
             else if constexpr (Id == sym::id("<>")) return !MNL_LIKELY(test<Lhs>(rhs)) || lhs != cast<decltype(lhs)>(rhs);
@@ -1283,16 +1285,15 @@ namespace aux { namespace pub {
                return ((const sym &)*this)(std::forward<Arg>(arg));
          }
       private:
-         template<typename Arg, std::enable_if_t<
-            std::is_same_v<Arg, long long> | std::is_same_v<Arg, double> | std::is_same_v<Arg, float> |
-            std::is_same_v<Arg, unsigned>  | std::is_same_v<Arg, bool>,
+         template<typename Dat, std::enable_if_t<
+            std::is_same_v<Dat, long long> | std::is_same_v<Dat, double> | std::is_same_v<Dat, float> |
+            std::is_same_v<Dat, unsigned>  | std::is_same_v<Dat, bool>,
             decltype(nullptr) > = decltype(nullptr){} >
-         MNL_INLINE static auto _apply(Arg lhs, Arg rhs) noexcept(
-            !(Id == sym::id("+") | Id == sym::id("-") | Id == sym::id("*") && std::is_same_v<Arg, unsigned>)) {
-            if constexpr (Id == sym::id( "+" )) return _add(lhs, rhs);
-            if constexpr (Id == sym::id( "-" )) return _sub(lhs, rhs);
-            if constexpr (Id == sym::id( "*" )) return _mul(lhs, rhs);
-            if constexpr (Id == sym::id( "<" )) return lhs <  rhs;
+         MNL_INLINE static auto _apply(Dat lhs, Dat rhs) MNL_NOTE(!noexcept) {
+            if constexpr (Id == sym::id( "+" )) return (_add)(lhs, rhs); // use internal helper
+            if constexpr (Id == sym::id( "-" )) return (_sub)(lhs, rhs);
+            if constexpr (Id == sym::id( "*" )) return (_mul)(lhs, rhs);
+            if constexpr (Id == sym::id( "<" )) return lhs <  rhs;       // rely on ADL
             if constexpr (Id == sym::id( "<=")) return lhs <= rhs;
             if constexpr (Id == sym::id( ">" )) return lhs >  rhs;
             if constexpr (Id == sym::id( ">=")) return lhs >= rhs;
@@ -1300,14 +1301,14 @@ namespace aux { namespace pub {
             if constexpr (Id == sym::id( "&" )) return lhs &  rhs;
             if constexpr (Id == sym::id( "|" )) return lhs |  rhs;
          }
-         template<typename Arg, std::enable_if_t<
-            std::is_same_v<Arg, long long> | std::is_same_v<Arg, double> | std::is_same_v<Arg, float> |
-            std::is_same_v<Arg, unsigned>  | std::is_same_v<Arg, bool>,
+         template<typename Dat, std::enable_if_t<
+            std::is_same_v<Dat, long long> | std::is_same_v<Dat, double> | std::is_same_v<Dat, float> |
+            std::is_same_v<Dat, unsigned>  | std::is_same_v<Dat, bool>,
             decltype(nullptr) > = decltype(nullptr){} >
-         MNL_INLINE static auto _apply(Arg arg) noexcept {
-            if constexpr (Id == sym::id( "-" )) return _neg(arg);
-            if constexpr (Id == sym::id("Abs")) return _abs(arg);
-            if constexpr (Id == sym::id( "~" )) return _not(arg);
+         MNL_INLINE static auto _apply(Dat arg) MNL_NOTE(!noexcept) {
+            if constexpr (Id == sym::id( "-" )) return (_neg)(arg);
+            if constexpr (Id == sym::id("Abs")) return (_abs)(arg);
+            if constexpr (Id == sym::id( "~" )) return (_not)(arg);
          }
       };
    public:
