@@ -937,7 +937,7 @@ namespace aux {
    MNL_INLINE inline void err_Overflow()  { MNL_ERR(MNL_SYM("Overflow"));  }
    MNL_INLINE inline void err_Undefined() { MNL_ERR(MNL_SYM("Undefined")); }
 
-   using std::isinf, std::abs; // TODO: that is not 100% the same as pure ADL - spurious conversions
+   using std::isinf, std::abs;
 
    // I48 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
