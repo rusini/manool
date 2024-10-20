@@ -320,12 +320,7 @@ namespace aux { namespace pub {
          template<typename Dat> Dat dat() const noexcept;
       private: // TODO: do something, also see _FORTIFY_SOURCE
          MNL_INLINE void copy(const rep &rhs) noexcept { // assume memcpy copies the union representation AND its active member, if any exists
-         # if __clang__ || __GNUC__ >= 5 && !__INTEL_COMPILER
-            memmove
-         # else
-            __builtin_memcpy // technically !!!UB!!! when &rhs == this but shouldn't be an issue for our target environments
-         # endif
-            (this, &rhs, sizeof *this); // updates sym::rep (AND rep::tag at once), in case of _sym (corner case of ISO/IEC 14882:2011)
+            std::memmove(this, &rhs, sizeof *this); // updates sym::rep (AND rep::tag at once), in case of _sym (corner case of ISO/IEC 14882:2011)
          }
       } rep;
       static_assert(sizeof rep == 8, "sizeof rep == 8");                                                             // paranoid check
@@ -1086,15 +1081,18 @@ namespace aux { namespace pub {
          MNL_INLINE static val _apply(Lhs &&lhs, Rhs &&rhs) {
             if (bool{});
             else if constexpr (Id == sym::id("=="))
-               if (MNL_LIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) return std::memcmp(&lhs, &rhs, sizeof lhs) == 0; else
-                  return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs),
-                     *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
+               if (MNL_LIKELY(lhs.rep.tag() != 0xFFF8 + 0b111))
+                  return std::memcmp(&lhs, &rhs, sizeof lhs) == 0;
+               else
+                  return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs), *this,
+                     1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
             else if constexpr (Id == sym::id("<>"))
-               if (MNL_LIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) return std::memcmp(&lhs, &rhs, sizeof lhs) != 0; else
-                  return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs),
-                     *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
-
-            else if constexpr (Id == sym::id("==") | Id == sym::id("<>"))
+               if (MNL_LIKELY(lhs.rep.tag() != 0xFFF8 + 0b111))
+                  return std::memcmp(&lhs, &rhs, sizeof lhs) != 0;
+               else
+                  return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs), *this,
+                     1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
+            /*else if constexpr (Id == sym::id("==") | Id == sym::id("<>"))
                switch (lhs.rep.tag()) MNL_NOTE(jumptable) {
                default             /*F64*/:               return (*this)(cast<double>(lhs),      rhs);
                case 0xFFF8 + 0b111 /*BoxPtr (fallback)*/: return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs),
@@ -1106,7 +1104,7 @@ namespace aux { namespace pub {
                case 0xFFF8 + 0b100 /*Bool/False*/:        return (*this)(false,                  rhs);
                case 0xFFF8 + 0b101 /*Bool/True*/:         return (*this)(true,                   rhs);
                case 0xFFF8 + 0b011 /*U32*/:               return (*this)(cast<unsigned>(lhs),    rhs);
-               }
+               }*/
             else if constexpr (
                Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") |
                Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=" ) )
