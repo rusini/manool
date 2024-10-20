@@ -318,7 +318,7 @@ namespace aux { namespace pub {
          MNL_INLINE rep &operator=(unsigned tag) noexcept { _tag = tag; return *this; }
          MNL_INLINE unsigned tag() const noexcept { return _tag; }
          template<typename Dat> Dat dat() const noexcept;
-      private: // TODO: do something, also see _FORTIFY_SOURCE
+      private:
          MNL_INLINE void copy(const rep &rhs) noexcept { // assume memcpy copies the union representation AND its active member, if any exists
             std::memmove(this, &rhs, sizeof *this); // updates sym::rep (AND rep::tag at once), in case of _sym (corner case of ISO/IEC 14882:2011)
          }
