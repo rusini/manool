@@ -318,7 +318,7 @@ namespace aux { namespace pub {
          MNL_INLINE rep &operator=(unsigned tag) noexcept { _tag = tag; return *this; }
          MNL_INLINE unsigned tag() const noexcept { return _tag; }
          template<typename Dat> Dat dat() const noexcept;
-      private:
+      private: // TODO: do something, also see _FORTIFY_SOURCE
          MNL_INLINE void copy(const rep &rhs) noexcept { // assume memcpy copies the union representation AND its active member, if any exists
          # if __clang__ || __GNUC__ >= 5 && !__INTEL_COMPILER
             memmove
@@ -1054,13 +1054,19 @@ namespace aux { namespace pub {
 
    struct val::ops { // empty (aggregate), for code organization and access control
    private: // TODO: MNL_ERR is MNL_NOINLINE, that goes into a non-comdat section when a fragment/specialization is generated in gcc
-      static MNL_INLINE void err_UnrecognizedOperation() { MNL_ERR(MNL_SYM("UnrecognizedOperation")); } // to avoid machine code duplication
-      static MNL_INLINE void err_TypeMismatch()          { MNL_ERR(MNL_SYM("TypeMismatch")); }          // (including hot section)
+      //static MNL_INLINE void err_InvalidInvocation() { MNL_ERR(MNL_SYM("InvalidInvocation")); } // to avoid machine code duplication
+      //static MNL_INLINE void err_TypeMismatch()      { MNL_ERR(MNL_SYM("TypeMismatch")); }      // (including hot section)
+      static constexpr auto err_UnrecognizedOperation = []() MNL_INLINE{ MNL_ERR(MNL_SYM("UnrecognizedOperation")); };
+      static constexpr auto err_TypeMismatch          = []() MNL_INLINE{ MNL_ERR(MNL_SYM("TypeMismatch"));      };
    private:
-      static MNL_INLINE void err_numeric(const val &lhs) { // ditto
+      //static MNL_INLINE void err_numeric(const val &lhs) { // ditto
+      //   MNL_ERR(test<long long>(lhs) | test<double>(lhs) | test<float>(lhs) | test<unsigned>(lhs) ?
+      //      MNL_SYM("TypeMismatch") : MNL_SYM("UnrecognizedOperation", &lhs);
+      //}
+      static constexpr auto err_numeric = [](const val &lhs) MNL_INLINE{
          MNL_ERR(test<long long>(lhs) | test<double>(lhs) | test<float>(lhs) | test<unsigned>(lhs) ?
             MNL_SYM("TypeMismatch") : MNL_SYM("UnrecognizedOperation", &lhs);
-      }
+      };
    private:
       template<enum sym::id Id> class val::ops::_op { // surrogate used instead of a sym
       private:
