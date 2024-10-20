@@ -1085,6 +1085,15 @@ namespace aux { namespace pub {
             decltype(nullptr) > = decltype(nullptr){} >
          MNL_INLINE static val _apply(Lhs &&lhs, Rhs &&rhs) {
             if (bool{});
+            else if constexpr (Id == sym::id("=="))
+               if (MNL_LIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) return std::memcmp(&lhs, &rhs, sizeof lhs) == 0; else
+                  return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs),
+                     *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
+            else if constexpr (Id == sym::id("<>"))
+               if (MNL_LIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) return std::memcmp(&lhs, &rhs, sizeof lhs) != 0; else
+                  return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs),
+                     *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
+
             else if constexpr (Id == sym::id("==") | Id == sym::id("<>"))
                switch (lhs.rep.tag()) MNL_NOTE(jumptable) {
                default             /*F64*/:               return (*this)(cast<double>(lhs),      rhs);
