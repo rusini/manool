@@ -188,24 +188,6 @@ namespace aux {
       auto res = log2(arg) / log2(base);
       if (MNL_LIKELY(isfinite(res))) return res; // Undefined signaled for 0/1 bases (not DivisionByZero)
       MNL_ERR(!isnan(res) & base != 1 ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res, base);
-
-      using std::log2;
-      auto log_base = log2(base);
-      if (MNL_UNLIKELY(isinf(log_base)) err_Undefined();
-      auto res = log2(arg) / log_base;
-      if (MNL_LIKELY(isfinite(res))) return res; // Undefined signaled for 0/1 bases (not DivisionByZero)
-      MNL_ERR(!isnan(res) && log_base != 0 ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), log_base, res);
-
-
-
-      auto tmp = _log(lhs); return _div(_log(rhs), tmp); // TODO: signaling errors
-
-      auto res = log2(lhs);
-      if (MNL_UNLIKELY(isinf(res)) err_Undefined()
-      if (MNL_LIKELY(isfinite(res = log2(rhs) / res))) return res; // Undefined raised for 0/1 bases (not DivisionByZero)
-      MNL_ERR(!isnan(res) && lhs != 1 ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res, lhs);
-
-
    }
 
 
