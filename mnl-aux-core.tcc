@@ -931,7 +931,7 @@ namespace aux {
    MNL_INLINE inline void err_Overflow()  { MNL_ERR(MNL_SYM("Overflow")); }
    MNL_INLINE inline void err_Undefined() { MNL_ERR(MNL_SYM("Undefined")); }
 
-   using std::isinf, std::abs;
+   using std::isfinite, std::isinf, std::isnan;
 
    // I48 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -947,27 +947,27 @@ namespace aux {
    }
 
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat> _neg(Dat arg) { return -arg; }
-   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat> _abs(Dat arg) { return abs(arg); }
+   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat> _abs(Dat arg) { using std::abs; return abs(arg); }
 
    // F64, F32 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat> _add(Dat lhs, Dat rhs)
-      { Dat res = lhs + rhs; if (MNL_LIKELY(!isinf(res))) return res; err_Overflow();
+      { using std::isinf; auto res = lhs + rhs; if (MNL_LIKELY(!isinf(res))) return res; err_Overflow(); }
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat> _sub(Dat lhs, Dat rhs)
-      { Dat res = lhs - rhs; if (MNL_LIKELY(!isinf(res))) return res; err_Overflow();
+      { using std::isinf; auto res = lhs - rhs; if (MNL_LIKELY(!isinf(res))) return res; err_Overflow(); }
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat> _mul(Dat lhs, Dat rhs)
-      { Dat res = lhs * rhs; if (MNL_LIKELY(!isinf(res))) return res; err_Overflow();
+      { using std::isinf; auto res = lhs * rhs; if (MNL_LIKELY(!isinf(res))) return res; err_Overflow(); }
 
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat> _neg(Dat arg)
       { return -arg; }
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat> _abs(Dat arg)
-      { return abs(arg); }
+      { using std::abs; return abs(arg); }
 
    // U32 and Bool /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _add(Dat lhs, Dat rhs) MNL_NOTE(!noexcept) { return lhs + rhs; }
-   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _sub(Dat lhs, Dat rhs) MNL_NOTE(!noexcept) { return lhs - rhs; }
-   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _mul(Dat lhs, Dat rhs) MNL_NOTE(!noexcept) { return lhs * rhs; }
+   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _add(Dat lhs, Dat rhs) { return lhs + rhs; }
+   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _sub(Dat lhs, Dat rhs) { return lhs - rhs; }
+   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _mul(Dat lhs, Dat rhs) { return lhs * rhs; }
 
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned> | std::is_same_v<Dat, bool>, Dat> _xor(Dat lhs, Dat rhs)
       { return lhs ^ rhs; }
