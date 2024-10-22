@@ -143,8 +143,8 @@ namespace aux {
       { return -arg; }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
-   _fma(Dat arg0, Dat arg1, Dat arg2) {
-      using std::fma; auto res = fma(arg0, arg1, arg2);
+   _fma(Dat x, Dat y, Dat z) {
+      using std::fma; auto res = fma(x, y, z);
       if (MNL_LIKELY(!isinf(res))) return res;
       (err_Overflow)();
    }
@@ -157,8 +157,8 @@ namespace aux {
       { using std::copysign; return arg == 0 ? arg : copysign((Dat)1, arg); } // consistent in some sense with POSIX's copysign
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
-   _sign(Dat arg0, Dat arg1)
-      { using std::copysign; return copysign(arg0, arg1); }
+   _sign(Dat abs, Dat sign)
+      { using std::copysign; return copysign(abs, sign); }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _exp(Dat arg) {
@@ -223,29 +223,32 @@ namespace aux {
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
-   _hypot(Dat arg0, Dat arg1) {
-      using std::hypot; auto res = hypot(lhs, rhs);
+   _hypot(Dat x, Dat y) {
+      using std::hypot; auto res = hypot(x, y);
       if (MNL_LIKELY(!isinf(res))) return res;
       (err_Overflow)();
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
-   _cbrt(Dat rhs)
-      { using cbrt; return cbrt(rhs); }
+   _cbrt(Dat arg)
+      { using cbrt; return cbrt(arg); }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
-   _pow(Dat arg0, Dat arg1) {
-      using pow; auto res = pow(lhs, rhs);
+   _pow(Dat base, Dat arg) {
+      using pow; auto res = pow(base, arg);
       if (MNL_LIKELY(isfinite(res))) return res;
       MNL_ERR(!isnan(res) ? lhs == 0 ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow") : MNL_SYM("Undefined"));
    }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _sin(Dat rhs) {
+   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat>
+   _sin(Dat rhs) {
       return sin(rhs);
    }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _cos(Dat rhs) {
+   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat>
+   _cos(Dat rhs) {
       return cos(rhs);
    }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _tan(Dat rhs) {
+   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat>
+   _tan(Dat rhs) {
       return tan(rhs); // as per IEEE 754 tan never results in overflow (neither in division by zero)
    }
    template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _asin(Dat rhs) {
