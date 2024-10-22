@@ -135,7 +135,7 @@ namespace aux {
    _rem(Dat lhs, Dat rhs) {
       using std::fmod; auto res = fmod(lhs, rhs);
       if (MNL_LIKELY(!isnan(res))) return res;
-      err_Undefined();
+      (err_Undefined)();
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
@@ -146,7 +146,7 @@ namespace aux {
    _fma(Dat arg0, Dat arg1, Dat arg2) {
       using std::fma; auto res = fma(arg0, arg1, arg2);
       if (MNL_LIKELY(!isinf(res))) return res;
-      err_Overflow();
+      (err_Overflow)();
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
@@ -164,27 +164,40 @@ namespace aux {
    _exp(Dat arg) {
       using std::exp; auto res = exp(arg);
       if (MNL_LIKELY(!isinf(res))) return res;
-      err_Overflow();
+      (err_Overflow)();
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
-   _expm1(Dat rhs) {
-      using std::isfinite, std::isinf, std::isnan, std::expm1;
-      auto res = expm1(rhs);
+   _expm1(Dat arg) {
+      using std::expm1; auto res = expm1(arg);
       if (MNL_LIKELY(!isinf(res))) return res;
-      err_Overflow();
+      (err_Overflow)();
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
-   _log(Dat rhs) {
-      using std::log, std::isfinite, std::isnan;
-      auto res = log(rhs);
+   _log(Dat arg) {
+      using std::log; auto res = log(arg);
       if (MNL_LIKELY(isfinite(res))) return res;
       MNL_ERR(!isnan(res) ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res); // as per IEEE 754 log never results in overflow
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
-   _log(Dat lhs, Dat rhs) {
+   _log(Dat base, Dat arg) {
+      using std::log2;
+      if (MNL_UNLIKELY(base == 0)) (err_Undefined)();
+      auto res = log2(arg) / log2(base);
+      if (MNL_LIKELY(isfinite(res))) return res; // Undefined signaled for 0/1 bases (not DivisionByZero)
+      MNL_ERR(!isnan(res) & base != 1 ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res, base);
+
+      using std::log2;
+      auto log_base = log2(base);
+      if (MNL_UNLIKELY(isinf(log_base)) err_Undefined();
+      auto res = log2(arg) / log_base;
+      if (MNL_LIKELY(isfinite(res))) return res; // Undefined signaled for 0/1 bases (not DivisionByZero)
+      MNL_ERR(!isnan(res) && log_base != 0 ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), log_base, res);
+
+
+
       auto tmp = _log(lhs); return _div(_log(rhs), tmp); // TODO: signaling errors
 
       auto res = log2(lhs);
