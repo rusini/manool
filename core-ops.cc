@@ -154,7 +154,7 @@ namespace aux {
       { using std::abs; return abs(arg); }
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _sign(Dat arg)
-      { using std::copysign; return arg == 0 ? arg : copysign((Dat)1, arg); } // consistent in some sense with POSIX's "copysign"
+      { using std::copysign; return arg == 0 ? arg : copysign((Dat)1, arg); } // consistent in some sense with POSIX's copysign
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _sign(Dat arg0, Dat arg1)
@@ -189,30 +189,24 @@ namespace aux {
       if (MNL_LIKELY(isfinite(res))) return res; // Undefined signaled for 0/1 bases (not DivisionByZero)
       MNL_ERR(!isnan(res) & base != 1 ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res, base);
    }
-
-
-
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _log1p(Dat arg) {
-      using std::isfinite, std::isinf, std::isnan, std::log1p;
-      auto res = log1p(arg);
+      using std::log1p; auto res = log1p(arg);
       if (MNL_LIKELY(isfinite(res))) return res;
       MNL_ERR(!isnan(res) ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res);
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _log10(Dat arg) {
-      using std::isfinite, std::isinf, std::isnan, std::log10;
-      auto res = log10(arg);
+      using std::log10; auto res = log10(arg);
       if (MNL_LIKELY(isfinite(res))) return res;
       MNL_ERR(!isnan(res) ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res); // as per IEEE 754 log never results in overflow
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _log2(Dat arg) {
-      using std::isfinite, std::isinf, std::isnan, std::log2;
-      auto res = log2(arg);
+      using std::log2; auto res = log2(arg);
       if (MNL_LIKELY(isfinite(res))) return res;
       MNL_ERR(!isnan(res) ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res); // as per IEEE 754 log never results in overflow
    }
@@ -220,22 +214,28 @@ namespace aux {
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _sqr(Dat arg)
       { return (_mul)(arg, arg); }
-
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _sqrt(Dat rhs) {
-      auto res = sqrt(rhs);
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
+   _sqrt(Dat arg) {
+      using std::sqrt; auto res = sqrt(arg);
       if (MNL_LIKELY(!isnan(res))) return res;
-      MNL_ERR(MNL_SYM("Undefined"));
+      (err_Undefined)();
    }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _hypot(Dat lhs, Dat rhs) {
-      auto res = hypot(lhs, rhs);
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
+   _hypot(Dat arg0, Dat arg1) {
+      using std::hypot; auto res = hypot(lhs, rhs);
       if (MNL_LIKELY(!isinf(res))) return res;
-      MNL_ERR(MNL_SYM("Overflow"));
+      (err_Overflow)();
    }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _cbrt(Dat rhs) {
-      return cbrt(rhs);
-   }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _pow(Dat lhs, Dat rhs) {
-      auto res = pow(lhs, rhs);
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
+   _cbrt(Dat rhs)
+      { using cbrt; return cbrt(rhs); }
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
+   _pow(Dat arg0, Dat arg1) {
+      using pow; auto res = pow(lhs, rhs);
       if (MNL_LIKELY(isfinite(res))) return res;
       MNL_ERR(!isnan(res) ? lhs == 0 ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow") : MNL_SYM("Undefined"));
    }
