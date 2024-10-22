@@ -33,6 +33,10 @@
    static_assert(sizeof(long) == sizeof(void *), "sizeof(long) == sizeof(void *)");
 # endif
 
+# if _FORTIFY_SOURCE
+   # error "_FORTIFY_SOURCE harms static analysis and rather makes no sense"
+# endif
+
 // C++ Namespaces //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 # if __cplusplus
    # if MNL_WITH_UUID_NS || defined MNL_AUX_UUID
@@ -62,14 +66,14 @@
 # endif
 # if MNL_USE_INLINE
    # define MNL_INLINE   __attribute__((__always_inline__))
-   # define MNL_NOINLINE __attribute__((__noinline__))
+   # define MNL_NOINLINE __attribute__((__noinline__, __noclone__))
 # else
    # define MNL_INLINE
    # define MNL_NOINLINE
 # endif
 #
-# define MNL_NORETURN      __attribute__((__noreturn__, __noinline__, __cold__))
-# define MNL_UNREACHABLE() __builtin_unreachable()
+# define MNL_NORETURN    __attribute__((__noreturn__, __noinline__, __noclone__, __cold__))
+# define MNL_UNREACHABLE __builtin_unreachable()
 
 # define MNL_DSO_HIDE         __attribute__(__visibility__("hidden")) // may be used to speed up calling sequence a bit
 # define MNL_DSO_HIDE_BEGIN   _Pragma("GCC visibility push(hidden)")  // used by libdecnumber patch

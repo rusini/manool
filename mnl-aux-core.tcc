@@ -318,8 +318,8 @@ namespace aux { namespace pub {
          MNL_INLINE rep &operator=(unsigned tag) noexcept { _tag = tag; return *this; }
          MNL_INLINE unsigned tag() const noexcept { return _tag; }
          template<typename Dat> Dat dat() const noexcept;
-      private:
-         MNL_INLINE void copy(const rep &rhs) noexcept { // assume memcpy copies the union representation AND its active member, if any exists
+      private: // assume memmove copies the union representation AND transfers its active member, if any exists
+         MNL_INLINE void copy(const rep &rhs) noexcept {
             std::memmove(this, &rhs, sizeof *this); // updates sym::rep (AND rep::tag at once), in case of _sym (corner case of ISO/IEC 14882:2011)
          }
       } rep;
@@ -1092,7 +1092,8 @@ namespace aux { namespace pub {
                else
                   return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs), *this,
                      1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
-            /*else if constexpr (Id == sym::id("==") | Id == sym::id("<>"))
+
+            else if constexpr (Id == sym::id("==") | Id == sym::id("<>"))
                switch (lhs.rep.tag()) MNL_NOTE(jumptable) {
                default             /*F64*/:               return (*this)(cast<double>(lhs),      rhs);
                case 0xFFF8 + 0b111 /*BoxPtr (fallback)*/: return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs),
@@ -1104,7 +1105,8 @@ namespace aux { namespace pub {
                case 0xFFF8 + 0b100 /*Bool/False*/:        return (*this)(false,                  rhs);
                case 0xFFF8 + 0b101 /*Bool/True*/:         return (*this)(true,                   rhs);
                case 0xFFF8 + 0b011 /*U32*/:               return (*this)(cast<unsigned>(lhs),    rhs);
-               }*/
+               }
+
             else if constexpr (
                Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") |
                Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=" ) )
