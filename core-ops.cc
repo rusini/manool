@@ -155,6 +155,7 @@ namespace aux {
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _sign(Dat arg)
       { return arg > 0 ? +1 : arg < 0 ? -1 : arg; }
+      { using std::copysign; return arg == 0 ? arg : copysign((Dat)1, arg); } // consistent in some sense with POSIX's "copysign"
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _sign(Dat arg0, Dat arg1)
