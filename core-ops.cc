@@ -126,7 +126,6 @@ namespace aux {
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _div(Dat lhs, Dat rhs) {
-      using std::isfinite, std::isinf, std::isnan;
       auto res = lhs / rhs;
       if (MNL_LIKELY(isfinite(res))) return res;
       MNL_ERR(!isnan(res) ? rhs == 0 ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow") : MNL_SYM("Undefined"), res, rhs);
@@ -134,8 +133,7 @@ namespace aux {
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _rem(Dat lhs, Dat rhs) {
-      using std::isfinite, std::isinf, std::isnan, std::fmod;
-      auto res = fmod(lhs, rhs);
+      using std::fmod; auto res = fmod(lhs, rhs);
       if (MNL_LIKELY(!isnan(res))) return res;
       err_Undefined();
    }
@@ -146,8 +144,7 @@ namespace aux {
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _fma(Dat arg0, Dat arg1, Dat arg2) {
-      using std::isfinite, std::isinf, std::isnan, std::fma;
-      auto res = fma(arg0, arg1, arg2);
+      using std::fma; auto res = fma(arg0, arg1, arg2);
       if (MNL_LIKELY(!isinf(res))) return res;
       err_Overflow();
    }
@@ -164,9 +161,8 @@ namespace aux {
       { using std::copysign; return copysign(arg0, arg1); }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
-   _exp(Dat rhs) {
-      using std::isfinite, std::isinf, std::isnan, std::exp;
-      auto res = exp(rhs);
+   _exp(Dat arg) {
+      using std::exp; auto res = exp(arg);
       if (MNL_LIKELY(!isinf(res))) return res;
       err_Overflow();
    }
