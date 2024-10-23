@@ -316,38 +316,6 @@ namespace aux {
    template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> 
    _erfc(Dat arg)
       { using std::erfc; return erfc(arg); }
-
-   template<typename Dat>
-   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
-   _gamma(Dat arg) {
-      using std::tgamma, std::trunc;
-      auto res = tgamma(arg); // specified by C99, and more in detail by POSIX (not by IEEE 754)
-      if (MNL_LIKELY(isfinite(res))) return res;
-      MNL_ERR(arg <= 0 && trunc(arg) == arg ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow"), arg);
-   }
-
-# define MNL_M(DAT, SUFFIX) \
-   template<typename Dat> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, DAT>, Dat> _lgamma(Dat arg) { \
-      int _; Dat res = ::lgamma##SUFFIX##_r(arg, &_); \
-      if (MNL_LIKELY(!isinf(res))) return res; \
-      MNL_ERR(arg <= 0 && trunc(arg) == arg ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow"), arg); \
-   } \
-   template<typename Dat> MNL_INLINE static inline enable_same<Dat, DAT> 
-   _jn(long long n, Dat arg) { /* specified by POSIX, and in more detail in glibc (not in C99/11) */ \
-      if (MNL_UNLIKELY(n < lim<int>::min()) || MNL_UNLIKELY(n > lim<int>::max())) MNL_ERR(MNL_SYM("LimitExceeded")); \
-      return (int)n == 0 ? ::j0##SUFFIX(arg) : (int)n == 1 ? ::j1##SUFFIX(arg) : ::jn##SUFFIX(n, arg); /*dynamic specialization*/ \
-   } \
-   template<typename Dat> MNL_INLINE static inline enable_same<Dat, DAT> 
-   _yn(long long n, Dat arg) { /* specified by POSIX, and in more detail in glibc (not in C99/11) */
-      if (MNL_UNLIKELY(n < lim<int>::min()) || MNL_UNLIKELY(n > lim<int>::max())) MNL_ERR(MNL_SYM("LimitExceeded")); \
-      Dat res = (int)n == 0 ? ::y0##SUFFIX(arg) : (int)n == 1 ? ::y1##SUFFIX(arg) : ::yn##SUFFIX(n, arg); /*dynamic specialization*/ \
-      if (MNL_LIKELY(isfinite(res))) return res; \
-      MNL_ERR(!isnan(res) ? arg == 0 ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow") : MNL_SYM("Undefined"), arg); \
-   } \
-// end # define MNL_M(DAT, SUFFIX)
-   MNL_M(double, /*empty*/) MNL_M(float, f)
-# undef MNL_M
-
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _gamma(Dat arg) {
@@ -389,9 +357,6 @@ namespace aux {
       if (MNL_LIKELY(isfinite(res))) return res;
       MNL_ERR(!isnan(res) ? arg == 0 ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow") : MNL_SYM("Undefined"), res, arg);
    }
-
-
-
    template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _trunc(Dat rhs) {
       return trunc(rhs);
    }
