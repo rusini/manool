@@ -357,54 +357,68 @@ namespace aux {
       if (MNL_LIKELY(isfinite(res))) return res;
       MNL_ERR(!isnan(res) ? arg == 0 ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow") : MNL_SYM("Undefined"), res, arg);
    }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _trunc(Dat rhs) {
-      return trunc(rhs);
-   }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _round(Dat rhs) {
-      return round(rhs);
-   }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _floor(Dat rhs) {
-      return floor(rhs);
-   }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _ceil(Dat rhs) {
-      return ceil(rhs);
-   }
-   template<typename Dat> MNL_INLINE static inline enable_same<Dat, double, string> _str(Dat rhs) {
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
+   _trunc(Dat arg)
+      { using std::trunc; return trunc(arg); }
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
+   _round(Dat arg)
+      { using std::round; return round(arg); }
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
+   _floor(Dat arg)
+      { using std::floor; return floor(arg); }
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
+   _ceil(Dat arg)
+      { using std::ceil; return ceil(arg); }
+   template<typename Dat> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double>, std::string>
+   _str(Dat arg) {
       char res[sizeof "+1.7976931348623157e+308"];
-      return sprintf(res, "%.16e", rhs), res;
+      return std::sprintf(res, "%.16e", arg), res;
    }
-   template<typename Dat> MNL_INLINE static inline enable_same<Dat, float, string> _str(Dat rhs) {
+   template<typename Dat> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, float>, std::string>
+   _str(Dat arg) {
       char res[sizeof "+3.40282347e+38"];
-      return sprintf(res, "%.8e", rhs), res;
+      return std::sprintf(res, "%.8e", arg), res;
    }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat, string> _str(Dat rhs, const string &format) {
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, std::string>
+   _str(Dat arg, const string &format) {
+      using std::isdigit;
       auto pc = format.c_str();
       for (;;) { switch (*pc) case ' ': case '#': case '+': case '-': case '0': { ++pc; continue; } break; }
-      if (isdigit(*pc) && isdigit(*++pc)) ++pc;
-      if (*pc == '.' && isdigit(*++pc) && isdigit(*++pc)) ++pc;
+      if ((isdigit)(*pc) && (isdigit)(*++pc)) ++pc;
+      if (*pc == '.' && (isdigit)(*++pc) && (isdigit)(*++pc)) ++pc;
       switch (*pc) { default: MNL_ERR(MNL_SYM("SyntaxError")); case 'f': case 'F': case 'e': case 'E': case 'g': case 'G': case 'a': case 'A': ; }
       if (MNL_UNLIKELY(*++pc)) MNL_ERR(MNL_SYM("SyntaxError"));
       char res[512];
-      return sprintf(res, ("%" + format).c_str(), rhs), res;
+      return std::sprintf(res, ("%" + format).c_str(), arg), res;
    }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat, long long> _int(Dat rhs) {
-      if (MNL_LIKELY((double)rhs >= min_i48) && MNL_LIKELY((double)rhs <= max_i48)) return (double)rhs;
-      MNL_ERR(MNL_SYM("Overflow"));
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, long long>
+   _int(Dat arg) {
+      if (MNL_LIKELY((double)arg >= val::min_i48 & (double)arg <= val::max_i48)) return (double)arg;
+      (err_Overflow)();
    }
 
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    template<typename Dat> MNL_INLINE static inline enable_same<Dat, unsigned> _neg(Dat rhs) { return -rhs; }
    template<typename Dat> MNL_INLINE static inline enable_same<Dat, unsigned> _abs(Dat rhs) { return +rhs; }
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-   template<typename Dat> MNL_INLINE static inline enable_same<Dat, unsigned, string> _str(Dat rhs, const string &format) {
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, unsigned>, std::string>
+   _str(Dat arg, const string &format) {
+      using std::isdigit;
       auto pc = format.c_str();
       for (;;) { switch (*pc) case ' ': case '#': case '+': case '-': case '0': { ++pc; continue; } break; }
-      if (isdigit(*pc) && isdigit(*++pc)) ++pc;
-      if (*pc == '.' && isdigit(*++pc) && isdigit(*++pc)) ++pc;
+      if ((isdigit)(*pc) && (isdigit)(*++pc)) ++pc;
+      if (*pc == '.' && (isdigit)(*++pc) && (isdigit)(*++pc)) ++pc;
       switch (*pc) { default: MNL_ERR(MNL_SYM("SyntaxError")); case 'u': case 'o': case 'x': case 'X': ; }
       if (MNL_UNLIKELY(*++pc)) MNL_ERR(MNL_SYM("SyntaxError"));
       char res[512];
-      return sprintf(res, ("%" + format).c_str(), rhs), res;
+      return std::sprintf(res, ("%" + format).c_str(), arg), res;
    }
 } // namespace aux
 
