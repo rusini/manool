@@ -928,9 +928,6 @@ namespace aux { namespace pub {
 
 namespace aux {
 
-   MNL_INLINE inline void err_Overflow()  { MNL_ERR(MNL_SYM("Overflow")); }
-   MNL_INLINE inline void err_Undefined() { MNL_ERR(MNL_SYM("Undefined")); }
-
    using std::isinf;
 
    constexpr auto err_Overflow = []() MNL_INLINE // to allow optimizer to blend jump targets
