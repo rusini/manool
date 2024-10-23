@@ -187,7 +187,7 @@ namespace aux {
       if (MNL_UNLIKELY(base == 0)) (err_Undefined)();
       auto res = log2(arg) / log2(base);
       if (MNL_LIKELY(isfinite(res))) return res; // Undefined signaled for 0/1 bases (not DivisionByZero)
-      MNL_ERR(!isnan(res) & base != 1 ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res, base);
+      MNL_ERR(!isnan(res) && base != 1 ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res, base);
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
@@ -234,95 +234,168 @@ namespace aux {
       { using cbrt; return cbrt(arg); }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
-   _pow(Dat base, Dat arg) {
+   _pow(Dat base, Dat arg) { // generalized (algebraic/analytic) exponent as defined in IEEE 754
       using pow; auto res = pow(base, arg);
       if (MNL_LIKELY(isfinite(res))) return res;
-      MNL_ERR(!isnan(res) ? lhs == 0 ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow") : MNL_SYM("Undefined"));
+      MNL_ERR(!isnan(res) ? base == 0 ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow") : MNL_SYM("Undefined"), res, base);
    }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat>
-   _sin(Dat rhs) {
-      return sin(rhs);
-   }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat>
-   _cos(Dat rhs) {
-      return cos(rhs);
-   }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat>
-   _tan(Dat rhs) {
-      return tan(rhs); // as per IEEE 754 tan never results in overflow (neither in division by zero)
-   }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _asin(Dat rhs) {
-      auto res = asin(rhs);
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
+   _sin(Dat arg)
+      { using std::sin; return sin(arg); }
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
+   _cos(Dat arg)
+      { using std::cos; return cos(arg); }
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
+   _tan(Dat arg) // as per IEEE 754 tan never results in overflow (neither in division by zero)
+      { using std::tan; return tan(arg); }
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
+   _asin(Dat arg) {
+      using std::asin; auto res = asin(arg);
       if (MNL_LIKELY(!isnan(res))) return res;
-      MNL_ERR(MNL_SYM("Undefined"));
+      (err_Undefined)();
    }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _acos(Dat rhs) {
-      auto res = acos(rhs);
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
+   _acos(Dat arg) {
+      using std::acos; auto res = acos(arg);
       if (MNL_LIKELY(!isnan(res))) return res;
-      MNL_ERR(MNL_SYM("Undefined"));
+      (err_Undefined)();
    }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _atan(Dat rhs) {
-      return atan(rhs);
-   }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _atan(Dat lhs, Dat rhs) {
-      return atan2(lhs, rhs); // as per IEEE 754, IEEE Std 1003.1 (POSIX), and MSDN atan2(0., 0.) == 0.
-   }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _sinh(Dat rhs) {
-      auto res = sinh(rhs);
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
+   _atan(Dat arg)
+      { using std::atan; return atan(rhs); }
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
+   _atan(Dat y, Dat x) // as per IEEE 754, IEEE Std 1003.1 (POSIX), and MSDN atan2(0., 0.) == 0.
+      { using std::atan2; return atan2(y, x); }
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
+   _sinh(Dat arg) {
+      using std::sinh; auto res = sinh(arg);
       if (MNL_LIKELY(!isinf(res))) return res;
-      MNL_ERR(MNL_SYM("Overflow"));
+      (err_Overflow)();
    }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _cosh(Dat rhs) {
-      auto res = cosh(rhs);
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
+   _cosh(Dat arg) {
+      using std::cosh; auto res = cosh(arg);
       if (MNL_LIKELY(!isinf(res))) return res;
-      MNL_ERR(MNL_SYM("Overflow"));
+      (err_Overflow)();
    }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _tanh(Dat rhs) {
-      return tanh(rhs);
-   }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _asinh(Dat rhs) {
-      return asinh(rhs);
-   }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _acosh(Dat rhs) {
-      auto res = acosh(rhs);
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
+   _tanh(Dat arg)
+      { using std::tanh; return tanh(arg); }
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
+   _asinh(Dat arg)
+      { using std::asinh; return asinh(arg); }
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
+   _acosh(Dat arg) {
+      using std::acosh; auto res = acosh(arg);
       if (MNL_LIKELY(!isnan(res))) return res;
-      MNL_ERR(MNL_SYM("Undefined"));
+      (err_Undefined)();
    }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _atanh(Dat rhs) {
-      auto res = atanh(rhs);
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
+   _atanh(Dat arg) {
+      using std::atanh; auto res = atanh(arg);
       if (MNL_LIKELY(isfinite(res))) return res;
-      MNL_ERR(!isnan(res) ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"));
+      MNL_ERR(!isnan(res) ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res);
    }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _erf(Dat rhs) {
-      return erf(rhs);
-   }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _erfc(Dat rhs) {
-      return erfc(rhs);
-   }
-   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _gamma(Dat rhs) {
-      auto res = tgamma(rhs);
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
+   _erf(Dat arg)
+      { using std::erf; return erf(arg); }
+   template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> 
+   _erfc(Dat arg)
+      { using std::erfc; return erfc(arg); }
+
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
+   _gamma(Dat arg) {
+      using std::tgamma, std::trunc;
+      auto res = tgamma(arg); // specified by C99, and more in detail by POSIX (not by IEEE 754)
       if (MNL_LIKELY(isfinite(res))) return res;
-      MNL_ERR(rhs <= 0 && trunc(rhs) == rhs ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow"));
+      MNL_ERR(arg <= 0 && trunc(arg) == arg ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow"), arg);
    }
+
 # define MNL_M(DAT, SUFFIX) \
-   template<typename Dat> MNL_INLINE static inline enable_same<Dat, DAT> _lgamma(Dat rhs) { \
-      int _; auto res = ::lgamma##SUFFIX##_r(rhs, &_); \
+   template<typename Dat> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, DAT>, Dat> _lgamma(Dat arg) { \
+      int _; Dat res = ::lgamma##SUFFIX##_r(arg, &_); \
       if (MNL_LIKELY(!isinf(res))) return res; \
-      MNL_ERR(rhs <= 0 && trunc(rhs) == rhs ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow")); \
+      MNL_ERR(arg <= 0 && trunc(arg) == arg ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow"), arg); \
    } \
-   template<typename Dat> MNL_INLINE static inline enable_same<Dat, DAT> _jn(long long n, Dat rhs) { \
+   template<typename Dat> MNL_INLINE static inline enable_same<Dat, DAT> 
+   _jn(long long n, Dat arg) { /* specified by POSIX, and in more detail in glibc (not in C99/11) */ \
       if (MNL_UNLIKELY(n < lim<int>::min()) || MNL_UNLIKELY(n > lim<int>::max())) MNL_ERR(MNL_SYM("LimitExceeded")); \
-      return (int)n == 0 ? ::j0##SUFFIX(rhs) : (int)n == 1 ? ::j1##SUFFIX(rhs) : ::jn##SUFFIX(n, rhs); /*dynamic specialization*/ \
+      return (int)n == 0 ? ::j0##SUFFIX(arg) : (int)n == 1 ? ::j1##SUFFIX(arg) : ::jn##SUFFIX(n, arg); /*dynamic specialization*/ \
    } \
-   template<typename Dat> MNL_INLINE static inline enable_same<Dat, DAT> _yn(long long n, Dat rhs) { \
+   template<typename Dat> MNL_INLINE static inline enable_same<Dat, DAT> 
+   _yn(long long n, Dat arg) { /* specified by POSIX, and in more detail in glibc (not in C99/11) */
       if (MNL_UNLIKELY(n < lim<int>::min()) || MNL_UNLIKELY(n > lim<int>::max())) MNL_ERR(MNL_SYM("LimitExceeded")); \
-      auto res = (int)n == 0 ? ::y0##SUFFIX(rhs) : (int)n == 1 ? ::y1##SUFFIX(rhs) : ::yn##SUFFIX(n, rhs); /*dynamic specialization*/ \
+      Dat res = (int)n == 0 ? ::y0##SUFFIX(arg) : (int)n == 1 ? ::y1##SUFFIX(arg) : ::yn##SUFFIX(n, arg); /*dynamic specialization*/ \
       if (MNL_LIKELY(isfinite(res))) return res; \
-      MNL_ERR(!isnan(res) ? rhs == 0 ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow") : MNL_SYM("Undefined")); \
+      MNL_ERR(!isnan(res) ? arg == 0 ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow") : MNL_SYM("Undefined"), arg); \
    } \
 // end # define MNL_M(DAT, SUFFIX)
    MNL_M(double, /*empty*/) MNL_M(float, f)
 # undef MNL_M
+
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
+   _gamma(Dat arg) {
+      using std::tgamma, std::trunc;
+      auto res = tgamma(arg); // specified by C99, and more in detail by POSIX (not by IEEE 754)
+      if (MNL_LIKELY(isfinite(res))) return res;
+      MNL_ERR(arg <= 0 && trunc(arg) == arg ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow"), arg); // pole error for negative integers (contrary to POSIX)
+   }
+   namespace _posix { // c++ overloads for some POSIX-specific stuff from <math.h>
+   # define MNL_M(DAT, SUFFIX) \
+      MNL_INLINE static inline DAT lgamma_r(DAT arg, int *sign) { return ::lgamma##SUFFIX##_r(arg, sign); } \
+      MNL_INLINE static inline DAT j0(DAT arg)                  { return ::j0##SUFFIX(arg); } \
+      MNL_INLINE static inline DAT j1(DAT arg)                  { return ::j1##SUFFIX(arg); } \
+      MNL_INLINE static inline DAT jn(int n, DAT arg)           { return ::jn##SUFFIX(n, arg); } \
+      MNL_INLINE static inline DAT y0(DAT arg)                  { return ::y0##SUFFIX(arg); } \
+      MNL_INLINE static inline DAT y1(DAT arg)                  { return ::y1##SUFFIX(arg); } \
+      MNL_INLINE static inline DAT yn(int n, DAT arg)           { return ::yn##SUFFIX(n, arg); } \
+   // end # define MNL_M(DAT, SUFFIX)
+      MNL_M(double, /*empty*/) MNL_M(float, f)
+   # undef MNL_M
+   }
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
+   _lgamma(Dat arg) {
+      using _posix::lgamma_r, std::trunc;
+      int _; auto res = lgamma_r(arg, &_); // introduced by POSIX (std::lgamma is not thread-safe under POSIX)
+      if (MNL_LIKELY(!isinf(res))) return res;
+      MNL_ERR(arg <= 0 && trunc(arg) == arg ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow"), arg); // pole error for nonpositive integers as per POSIX
+   }
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
+   _jn(long long n, Dat arg) {
+      using _posix::j0, _posix::j1, _posix::j2; // specified by POSIX, and in more detail in glibc (not in C99/11)
+      if (MNL_UNLIKELY((int)n != n)) MNL_ERR(MNL_SYM("LimitExceeded"));
+      return (int)n == 0 ? j0(arg) : (int)n == 1 ? j1(arg) : jn(n, arg); // dynamic (run-time) specialization
+   }
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
+   _yn(long long n, Dat arg) {
+      using _posix::y0, _posix::y1, _posix::y2; // specified by POSIX, and in more detail in glibc (not in C99/11)
+      if (MNL_UNLIKELY((int)n != n)) MNL_ERR(MNL_SYM("LimitExceeded"));
+      auto res = (int)n == 0 ? y0(arg) : (int)n == 1 ? y1(arg) : yn(n, arg); // dynamic (run-time) specialization
+      if (MNL_LIKELY(isfinite(res))) return res;
+      MNL_ERR(!isnan(res) ? arg == 0 ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow") : MNL_SYM("Undefined"), res, arg);
+   }
+
+
+
    template<typename Dat> MNL_INLINE static inline enable_core_binfloat<Dat> _trunc(Dat rhs) {
       return trunc(rhs);
    }
