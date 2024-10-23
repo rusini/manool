@@ -59,8 +59,8 @@ namespace aux {
    constexpr auto err_Undefined = []() MNL_INLINE{ MNL_ERR(MNL_SYM("Undefined")); }; // ditto
 
    // I48 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-   template<typename Dat> MNL_INLINE static inline enable_same<Dat, long long> _div(Dat lhs, Dat rhs) {
-      if (MNL_UNLIKELY(!rhs)) MNL_ERR(lhs ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"));
+   template<typename Dat> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat> _div(Dat lhs, Dat rhs) {
+      if (MNL_UNLIKELY(!rhs)) MNL_ERR(lhs ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), lhs);
       return
       # if !__x86_64__ && !__aarch64__ // MAYBE using a 32-bit integer ALU
          MNL_LIKELY(lhs > lim<int>::min()) && MNL_LIKELY(lhs <= lim<int>::max()) && MNL_LIKELY(rhs >= lim<int>::min()) && MNL_LIKELY(rhs <= lim<int>::max()) ?
@@ -72,8 +72,8 @@ namespace aux {
          lhs / rhs;
       # endif
    }
-   template<typename Dat> MNL_INLINE static inline enable_same<Dat, long long> _rem(Dat lhs, Dat rhs) {
-      if (MNL_UNLIKELY(!rhs)) MNL_ERR(MNL_SYM("Undefined"));
+   template<typename Dat> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat> _rem(Dat lhs, Dat rhs) {
+      if (MNL_UNLIKELY(!rhs)) (err_Undefined)();
       return
       # if !__x86_64__ && !__aarch64__ // MAYBE using a 32-bit integer ALU
          MNL_LIKELY(lhs > lim<int>::min()) && MNL_LIKELY(lhs <= lim<int>::max()) && MNL_LIKELY(rhs >= lim<int>::min()) && MNL_LIKELY(rhs <= lim<int>::max()) ?
@@ -81,8 +81,8 @@ namespace aux {
       # endif
          lhs % rhs;
    }
-   template<typename Dat> MNL_INLINE static inline enable_same<Dat, long long> fdiv(Dat lhs, Dat rhs) { // flooring division
-      if (MNL_UNLIKELY(!rhs)) MNL_ERR(lhs ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"));
+   template<typename Dat> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat> fdiv(Dat lhs, Dat rhs) { // flooring division
+      if (MNL_UNLIKELY(!rhs)) MNL_ERR(lhs ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), lhs);
       return
       # if !__x86_64__ && !__aarch64__ // MAYBE using a 32-bit integer ALU
          MNL_LIKELY(lhs > lim<int>::min()) && MNL_LIKELY(lhs <= lim<int>::max()) && MNL_LIKELY(rhs >= lim<int>::min()) && MNL_LIKELY(rhs <= lim<int>::max()) ?
@@ -90,8 +90,8 @@ namespace aux {
       # endif
          (MNL_UNLIKELY(lhs < 0 ^ rhs < 0) && MNL_LIKELY(lhs % rhs) ? lhs / rhs - 1 : lhs / rhs);
    }
-   template<typename Dat> MNL_INLINE static inline enable_same<Dat, long long> _mod(Dat lhs, Dat rhs) {
-      if (MNL_UNLIKELY(!rhs)) MNL_ERR(MNL_SYM("Undefined"));
+   template<typename Dat> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat> _mod(Dat lhs, Dat rhs) {
+      if (MNL_UNLIKELY(!rhs)) (err_Undefined)();
       return
       # if !__x86_64__ && !__aarch64__ // MAYBE using a 32-bit integer ALU
          MNL_LIKELY(lhs > lim<int>::min()) && MNL_LIKELY(lhs <= lim<int>::max()) && MNL_LIKELY(rhs >= lim<int>::min()) && MNL_LIKELY(rhs <= lim<int>::max()) ?
@@ -99,25 +99,24 @@ namespace aux {
       # endif
          (MNL_UNLIKELY(lhs < 0 ^ rhs < 0) ? MNL_LIKELY(lhs % rhs) ? lhs % rhs + rhs : 0 : lhs % rhs);
    }
-   template<typename Dat> MNL_INLINE static inline enable_same<Dat, long long> _neg(Dat rhs) {
-      return -rhs;
-   }
-   template<typename Dat> MNL_INLINE static inline enable_same<Dat, long long> _abs(Dat rhs) {
-      return abs(rhs);
-   }
-   template<typename Dat> MNL_INLINE static inline enable_same<Dat, long long, string> _str(Dat rhs) {
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, long long>, std::string>
+   _str(Dat arg) {
       char res[sizeof "+140737488355327"];
-      return sprintf(res, "%lld", rhs), res;
+      return std::sprintf(res, "%lld", arg), res;
    }
-   template<typename Dat> MNL_INLINE static inline enable_same<Dat, long long, string> _str(Dat rhs, const string &format) {
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, long long>, std::string>
+   _str(Dat arg, const std::string &format) {
+      using std::isdigit;
       auto pc = format.c_str();
       for (;;) { switch (*pc) case ' ': case '#': case '+': case '-': case '0': { ++pc; continue; } break; }
-      if (isdigit(*pc) && isdigit(*++pc)) ++pc;
-      if (*pc == '.' && isdigit(*++pc) && isdigit(*++pc)) ++pc;
+      if ((isdigit)(*pc) && (isdigit)(*++pc)) ++pc;
+      if (*pc == '.' && (isdigit)(*++pc) && (isdigit)(*++pc)) ++pc;
       switch (*pc) { default: MNL_ERR(MNL_SYM("SyntaxError")); case 'd': case 'i': ; }
       if (MNL_UNLIKELY(*++pc)) MNL_ERR(MNL_SYM("SyntaxError"));
       char res[512];
-      return sprintf(res, ("%" + string(format.begin(), format.end() - 1) + "lld").c_str(), rhs), res;
+      return std::sprintf(res, ("%" + std::string(format.begin(), format.end() - 1) + "lld").c_str(), arg), res;
    }
 
    // F64, F32 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -385,7 +384,7 @@ namespace aux {
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, std::string>
-   _str(Dat arg, const string &format) {
+   _str(Dat arg, const std::string &format) {
       using std::isdigit;
       auto pc = format.c_str();
       for (;;) { switch (*pc) case ' ': case '#': case '+': case '-': case '0': { ++pc; continue; } break; }
@@ -404,12 +403,9 @@ namespace aux {
    }
 
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-   template<typename Dat> MNL_INLINE static inline enable_same<Dat, unsigned> _neg(Dat rhs) { return -rhs; }
-   template<typename Dat> MNL_INLINE static inline enable_same<Dat, unsigned> _abs(Dat rhs) { return +rhs; }
-   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, unsigned>, std::string>
-   _str(Dat arg, const string &format) {
+   _str(Dat arg, const std::string &format) {
       using std::isdigit;
       auto pc = format.c_str();
       for (;;) { switch (*pc) case ' ': case '#': case '+': case '-': case '0': { ++pc; continue; } break; }
@@ -470,8 +466,8 @@ namespace aux {
       case 0xFFF8 + 0b001: ///////////////////////////////////////////////////////////////////////////////////////////////////////////// I48
          switch (op) {
          case sym::id("+"):   // addition
-            if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-            if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
+            if (MNL_UNLIKELY(argc != 1)) (err_InvalidInvocation)();
+            if (MNL_UNLIKELY(!is<long long>(argv[0]))) (err_TypeMismatch)();
             return (_add)(as<long long>(self), as<long long>(argv[0]));
          case sym::id("-"):   // subtraction and negation (unary minus)
             if (MNL_UNLIKELY(argc != 1)) {
@@ -495,7 +491,7 @@ namespace aux {
          case sym::id("Div"): // division with flooring (rounding toward -infinity)
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
-            return (div2)(as<long long>(self), as<long long>(argv[0]));
+            return (fdiv)(as<long long>(self), as<long long>(argv[0]));
          case sym::id("Mod"): // remainder after "Div" (modulo)
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
