@@ -144,45 +144,46 @@ namespace aux {
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _neg(Dat arg)
-      { return -arg; } // for hot path
+      { return -arg; }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _fma(Dat x, Dat y, Dat z) { // POSIX/C99/IEEE754
       using std::fma; auto res = fma(x, y, z);
       if (MNL_LIKELY(!isinf(res))) return res;
-      (err_Overflow)();
+      MNL_ERR(MNL_SYM("Overflow")); // for regular paths
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _abs(Dat arg)
       { using std::abs; return abs(arg); }
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
-   _sign(Dat arg)
-      { using std::copysign; return arg == 0 ? arg : copysign((Dat)1, arg); } // consistent in some sense with POSIX's copysign
+   _sign(Dat arg) // traditional "sign" function preserving "negative zero"         consistent in some sense with POSIX's "copysign"
+      { using std::copysign; return arg == 0 ? arg : copysign((Dat)1, arg); }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
-   _sign(Dat abs, Dat sign)
+   _sign(Dat abs, Dat sign) // POSIX/C99/IEEE754 "copysign"
       { using std::copysign; return copysign(abs, sign); }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _exp(Dat arg) { // POSIX/C99/IEEE754
       using std::exp; auto res = exp(arg);
       if (MNL_LIKELY(!isinf(res))) return res;
-      (err_Overflow)();
+      MNL_ERR(MNL_SYM("Overflow")); // for regular paths
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _expm1(Dat arg) { // POSIX/C99/IEEE754
       using std::expm1; auto res = expm1(arg);
       if (MNL_LIKELY(!isinf(res))) return res;
-      (err_Overflow)();
+      MNL_ERR(MNL_SYM("Overflow")); // for regular paths
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _log(Dat arg) { // POSIX/C99/IEEE754
       using std::log; auto res = log(arg);
       if (MNL_LIKELY(isfinite(res))) return res;
-      MNL_ERR(!isnan(res) ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res); // as per IEEE 754 log never results in overflow
+      MNL_ERR(!isnan(res) ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res);
+      // as per IEEE 754 `log` never results in overflow
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
@@ -198,21 +199,23 @@ namespace aux {
    _log1p(Dat arg) { // POSIX/C99/IEEE754
       using std::log1p; auto res = log1p(arg);
       if (MNL_LIKELY(isfinite(res))) return res;
-      MNL_ERR(!isnan(res) ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res);
+      MNL_ERR(!isnan(res) ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res); // for regular paths
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _log10(Dat arg) { // POSIX/C99/IEEE754
       using std::log10; auto res = log10(arg);
       if (MNL_LIKELY(isfinite(res))) return res;
-      MNL_ERR(!isnan(res) ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res); // as per IEEE 754 log never results in overflow
+      MNL_ERR(!isnan(res) ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res); // for regular paths
+      // as per IEEE 754 `log` never results in overflow
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _log2(Dat arg) { // POSIX/C99/IEEE754
       using std::log2; auto res = log2(arg);
       if (MNL_LIKELY(isfinite(res))) return res;
-      MNL_ERR(!isnan(res) ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res); // as per IEEE 754 log never results in overflow
+      MNL_ERR(!isnan(res) ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res); // for regular paths
+      // as per IEEE 754 `log` never results in overflow
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
@@ -223,14 +226,14 @@ namespace aux {
    _sqrt(Dat arg) { // POSIX/C99/IEEE754
       using std::sqrt; auto res = sqrt(arg);
       if (MNL_LIKELY(!isnan(res))) return res;
-      (err_Undefined)();
+      err_Undefined(); // for hot paths
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _hypot(Dat x, Dat y) { // POSIX/C99/IEEE754
       using std::hypot; auto res = hypot(x, y);
       if (MNL_LIKELY(!isinf(res))) return res;
-      (err_Overflow)();
+      MNL_ERR(MNL_SYM("Overflow")); // for regular paths
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
