@@ -356,8 +356,7 @@ namespace aux {
       if (MNL_LIKELY(isfinite(res))) return res;
       MNL_ERR(arg <= 0 && trunc(arg) == arg ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow"), arg); // pole error for negative integers (contrary to POSIX)
    }
-   namespace _posix { // c++ overloads for some POSIX-specific stuff from <math.h>
-   # define MNL_M(DAT, SUFFIX) \
+   # define MNL_M(DAT, SUFFIX) /* c++ overloads for some POSIX-specific stuff from <math.h> */ \
       MNL_INLINE static inline DAT lgamma_r(DAT arg, int *sign) { return ::lgamma##SUFFIX##_r(arg, sign); } \
       MNL_INLINE static inline DAT j0(DAT arg)                  { return ::j0##SUFFIX(arg); } \
       MNL_INLINE static inline DAT j1(DAT arg)                  { return ::j1##SUFFIX(arg); } \
@@ -368,28 +367,25 @@ namespace aux {
    // end # define MNL_M(DAT, SUFFIX)
       MNL_M(double, /*empty*/) MNL_M(float, f)
    # undef MNL_M
-   }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _lgamma(Dat arg) {
-      using _posix::lgamma_r, std::trunc;
-      int _; auto res = lgamma_r(arg, &_); // introduced by POSIX (std::lgamma is not thread-safe under POSIX)
+      using std::trunc;
+      int _; Dat res = (lgamma_r)(arg, &_); // introduced by POSIX (std::lgamma is not thread-safe under POSIX)
       if (MNL_LIKELY(!isinf(res))) return res;
       MNL_ERR(arg <= 0 && trunc(arg) == arg ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow"), arg); // pole error for nonpositive integers as per POSIX
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
-   _jn(long long n, Dat arg) {
-      using _posix::j0, _posix::j1, _posix::j2; // specified by POSIX, and in more detail in glibc (not in C99/11)
+   _jn(long long n, Dat arg) { // specified by POSIX, and in more detail in glibc (not in C99/11)
       if (MNL_UNLIKELY((int)n != n)) MNL_ERR(MNL_SYM("LimitExceeded"));
-      return (int)n == 0 ? j0(arg) : (int)n == 1 ? j1(arg) : jn(n, arg); // dynamic (run-time) specialization
+      return (int)n == 0 ? (j0)(arg) : (int)n == 1 ? (j1)(arg) : (jn)(n, arg); // dynamic (run-time) specialization
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
-   _yn(long long n, Dat arg) {
-      using _posix::y0, _posix::y1, _posix::y2; // specified by POSIX, and in more detail in glibc (not in C99/11)
+   _yn(long long n, Dat arg) { // specified by POSIX, and in more detail in glibc (not in C99/11)
       if (MNL_UNLIKELY((int)n != n)) MNL_ERR(MNL_SYM("LimitExceeded"));
-      auto res = (int)n == 0 ? y0(arg) : (int)n == 1 ? y1(arg) : yn(n, arg); // dynamic (run-time) specialization
+      Dat res = (int)n == 0 ? (y0)(arg) : (int)n == 1 ? (y1)(arg) : (yn)(n, arg); // dynamic (run-time) specialization
       if (MNL_LIKELY(isfinite(res))) return res;
       MNL_ERR(!isnan(res) ? arg == 0 ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow") : MNL_SYM("Undefined"), res, arg);
    }
