@@ -540,9 +540,11 @@ namespace aux {
          case sym::id("=="):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             return std::memcmp(&self, &argv[0], sizeof val) == 0;
+            // better than ` MNL_LIKELY(is<long long>(argv[0])) && as<long long>(self) == as<long long>(argv[0])`
          case sym::id("<>"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             return std::memcmp(&self, &argv[0], sizeof val) != 0;
+            // better than `!MNL_LIKELY(is<long long>(argv[0])) || as<long long>(self) != as<long long>(argv[0])`
          case sym::id("<"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
@@ -561,14 +563,14 @@ namespace aux {
             return as<long long>(self) >= as<long long>(argv[0]);
          case sym::id("Order"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-            if (MNL_UNLIKELY(!is<long long>(argv[0]))) return default_order(argv[0]);
+            if (MNL_UNLIKELY(!is<long long>(argv[0]))) return self.default_order(argv[0]);
             return (_order)(as<long long>(self), as<long long>(argv[0]));
          case sym::id("Abs"):
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
             return (_abs)(as<long long>(self));
          case sym::id("Clone"): case sym::op("DeepClone"):
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-            return self; // prefer over: as<long long>(self)
+            return val{self.rep}; // better than `as<long long>(self)`
          }
          return [&self, &op, argc, argv]() MNL_NOINLINE->val{
             switch (MNL_EARLY(disp{"Str"})[op]) {
@@ -584,7 +586,7 @@ namespace aux {
             MNL_ERR(MNL_SYM("UnrecognizedOperation"));
          }();
       ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// F64/F32
-         {  static constexpr auto dispatch = [](auto self, auto &op, auto &argc, auto &argv, val &_self = self) MNL_INLINE->val{
+         {  static constexpr auto dispatch = [](auto self, auto &op, auto &argc, auto &argv, auto &rep) MNL_INLINE->val{
                switch (op) {
                case sym::id("+"):
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
@@ -608,11 +610,11 @@ namespace aux {
                case sym::id("=="):
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
                   return std::memcmp(&self, &argv[0], sizeof val) == 0;
-                  // better than `return  MNL_LIKELY(is<decltype(self)>(argv[0])) && self == as<decltype(self)>(argv[0]);`
+                  // better than ` MNL_LIKELY(is<decltype(self)>(argv[0])) && self == as<decltype(self)>(argv[0])`
                case sym::id("<>"):
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
                   return std::memcmp(&self, &argv[0], sizeof val) != 0;
-                  // better than `return !MNL_LIKELY(is<decltype(self)>(argv[0])) || self != as<decltype(self)>(argv[0]);`
+                  // better than ` !MNL_LIKELY(is<decltype(self)>(argv[0])) || self != as<decltype(self)>(argv[0])`
                case sym::id("<"):
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
                   if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) err_TypeMismatch();
@@ -661,7 +663,7 @@ namespace aux {
                   return (_ceil)(self);
                case sym::id("Clone"): case sym::id("DeepClone"):
                   if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-                  return _self; // better than `return self;`
+                  return val{self.rep}; // better than `self`
                case sym::id("Int"):
                   if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
                   return (_int)(self);
@@ -781,9 +783,9 @@ namespace aux {
                }();
             };
          default: // F64
-            dispatch(as<double>(self), op, argc, argv);
+            dispatch(as<double>(self), op, argc, argv, self.rep);
          case 0xFFF8 + 0b010: // F32
-            dispatch(as<float> (self), op, argc, argv);
+            dispatch(as<float> (self), op, argc, argv, self.rep);
          }
       case 0xFFF8 + 0b110: ///////////////////////////////////////////////////////////////////////////////////////////////////////////// Sym
          switch (op) {
