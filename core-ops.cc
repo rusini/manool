@@ -156,6 +156,10 @@ namespace aux {
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
+   _order(Dat lhs, Dat rhs) {
+   }
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _abs(Dat arg)
       { using std::abs; return abs(arg); }
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
@@ -581,7 +585,7 @@ namespace aux {
          }();
       ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// F64/F32
          {  static constexpr auto dispatch = [](auto self, auto &op, auto &argc, auto &argv, val &_self = self) MNL_INLINE->val{
-               switch (op) { // TODO: access to self as val may be needed
+               switch (op) {
                case sym::id("+"):
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
                   if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) err_TypeMismatch();
@@ -604,11 +608,11 @@ namespace aux {
                case sym::id("=="):
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
                   return std::memcmp(&self, &argv[0], sizeof val) == 0;
-                  // instead of: return  MNL_LIKELY(is<decltype(self)>(argv[0])) && self == as<decltype(self)>(argv[0]);
+                  // better than `return  MNL_LIKELY(is<decltype(self)>(argv[0])) && self == as<decltype(self)>(argv[0]);`
                case sym::id("<>"):
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
                   return std::memcmp(&self, &argv[0], sizeof val) != 0;
-                  // instead of: return !MNL_LIKELY(is<decltype(self)>(argv[0])) || self != as<decltype(self)>(argv[0]);
+                  // better than `return !MNL_LIKELY(is<decltype(self)>(argv[0])) || self != as<decltype(self)>(argv[0]);`
                case sym::id("<"):
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
                   if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) err_TypeMismatch();
