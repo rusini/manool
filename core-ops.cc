@@ -653,10 +653,10 @@ namespace aux {
                case sym::id("Round"):
                   if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
                   return (_round)(self);
-               case sym::id("Floor"):// floor
+               case sym::id("Floor"):
                   if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
                   return (_floor)(self);
-               case sym::id("Ceil"): // ceiling
+               case sym::id("Ceil"):
                   if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
                   return (_ceil)(self);
                case sym::id("Clone"): case sym::id("DeepClone"):
