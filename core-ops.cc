@@ -580,7 +580,7 @@ namespace aux {
             MNL_ERR(MNL_SYM("UnrecognizedOperation"));
          }();
       ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// F64/F32
-         {  static constexpr auto dispatch = [](auto self, auto &op, auto &argc, auto &argv, auto &_self) MNL_INLINE->val{
+         {  static constexpr auto dispatch = [](auto self, auto &op, auto &argc, auto &argv, val &_self = self) MNL_INLINE->val{
                switch (op) { // TODO: access to self as val may be needed
                case sym::id("+"):
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
@@ -627,7 +627,7 @@ namespace aux {
                   return self >= as<decltype(self)>(argv[0]);
                case sym::id("Order"):
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-                  if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) return default_order(argv[0]);
+                  if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) return self.default_order(argv[0]);
                   return (_order)(self, as<decltype(self)>(argv[0]));
                case sym::id("Abs"):
                   if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
@@ -750,36 +750,36 @@ namespace aux {
                   case 25: // Erfc
                      if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
                      return (_erfc)(self);
-                  case 26: // Gamma    -- POSIX/C99
+                  case 26: // Gamma
                      if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-                     return aux::_gamma(self);
-                  case 27: // LogGamma -- POSIX/C99
+                     return (_gamma)(self);
+                  case 27: // LogGamma
                      if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-                     return aux::_lgamma(self);
+                     return (_lgamma)(self);
                   case 28: // BesJn
                      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
                      if (MNL_UNLIKELY(!is<long long>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-                     return aux::_jn(as<long long>(argv[0]), self);
+                     return (_jn)(as<long long>(argv[0]), self);
                   case 29: // BesYn
                      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
                      if (MNL_UNLIKELY(!is<long long>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-                     return aux::_yn(as<long long>(argv[0]), self);
+                     return (_yn)(as<long long>(argv[0]), self);
                   case 30: // Str
-                     if (MNL_LIKELY(argc == 0)) return aux::_str(self);
+                     if (MNL_LIKELY(argc == 0)) return (_str)(self);
                      if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
                      if (MNL_UNLIKELY(!is<std::string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
                      return (_str)(self, as<const std::string &>(argv[0]));
                   default:
-                     unreachable();
+                     __builtin_unreachable();
                   case int{}:;
                   }
                   MNL_ERR(MNL_SYM("UnrecognizedOperation"));
                }();
             };
          default: // F64
-            dispatch(as<double>(self), op, argc, argv, self);
+            dispatch(as<double>(self), op, argc, argv);
          case 0xFFF8 + 0b010: // F32
-            dispatch(as<float> (self), op, argc, argv, self);
+            dispatch(as<float> (self), op, argc, argv);
          }
       case 0xFFF8 + 0b110: ///////////////////////////////////////////////////////////////////////////////////////////////////////////// Sym
          switch (op) {
