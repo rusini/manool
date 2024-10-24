@@ -407,8 +407,8 @@ namespace aux {
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, long long>
    _int(Dat arg) {
-      if (MNL_LIKELY((double)arg >= val::min_i48 & (double)arg <= val::max_i48)) return (double)arg;
-      (err_Overflow)();
+      if (MNL_LIKELY((double)arg >= val::min_i48) && MNL_LIKELY((double)arg <= val::max_i48)) return (double)arg;
+      (err_Overflow)(); // for hot paths
    }
 
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
