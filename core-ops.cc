@@ -117,7 +117,7 @@ namespace aux {
    _str(Dat arg, const std::string &format) {
       using std::isdigit;
       auto pc = format.c_str();
-      for (;;) { switch (*pc) case ' ': case '#': case '+': case '-': case '0': { ++pc; continue; } break; }
+      for (;;) { switch (*pc) case ' ': case '+': case '-': case '0': { ++pc; continue; } break; }
       if ((isdigit)(*pc) && (isdigit)(*++pc)) ++pc;
       if (*pc == '.' && (isdigit)(*++pc) && (isdigit)(*++pc)) ++pc;
       switch (*pc) { default: MNL_ERR(MNL_SYM("SyntaxError")); case 'd': case 'i': ; }
@@ -402,7 +402,7 @@ namespace aux {
    _str(Dat arg, const std::string &format) {
       using std::isdigit;
       auto pc = format.c_str();
-      for (;;) { switch (*pc) case ' ': case '#': case '+': case '-': case '0': { ++pc; continue; } break; }
+      for (;;) { switch (*pc) case ' ': case '+': case '-': case '0': { ++pc; continue; } break; }
       if ((isdigit)(*pc) && (isdigit)(*++pc)) ++pc;
       if (*pc == '.' && (isdigit)(*++pc) && (isdigit)(*++pc)) ++pc;
       switch (*pc) { default: MNL_ERR(MNL_SYM("SyntaxError")); case 'f': case 'F': case 'e': case 'E': case 'g': case 'G': case 'a': case 'A': ; }
@@ -423,7 +423,7 @@ namespace aux {
    _str(Dat arg, const std::string &format) {
       using std::isdigit;
       auto pc = format.c_str();
-      for (;;) { switch (*pc) case ' ': case '#': case '+': case '-': case '0': { ++pc; continue; } break; }
+      for (;;) { switch (*pc) case ' ': case '+': case '-': case '0': { ++pc; continue; } break; }
       if ((isdigit)(*pc) && (isdigit)(*++pc)) ++pc;
       if (*pc == '.' && (isdigit)(*++pc) && (isdigit)(*++pc)) ++pc;
       switch (*pc) { default: MNL_ERR(MNL_SYM("SyntaxError")); case 'u': case 'o': case 'x': case 'X': ; }
