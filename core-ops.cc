@@ -820,10 +820,10 @@ namespace aux {
          switch (op) {
          case sym::id("=="):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-            return argv[0].rep.tag() == rep::_false; // TODO: we can compare whole words here (which always gives benefit on 64-bit platforms)
+            return argv[0].rep.tag() == 0xFFF8 + 0x100;
          case sym::id("<>"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-            return argv[0].rep.tag() != rep::_false;
+            return argv[0].rep.tag() != 0xFFF8 + 0x100;
          case sym::id("Order"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<bool>(argv[0]))) return self.default_order(argv[0]);
@@ -852,10 +852,10 @@ namespace aux {
          switch (op) {
          case sym::id("=="):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-            return argv[0].rep.tag() == rep::_true;
+            return argv[0].rep.tag() == 0xFFF8 + 0x101;
          case sym::id("<>"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-            return argv[0].rep.tag() != rep::_true;
+            return argv[0].rep.tag() != 0xFFF8 + 0x101;
          case sym::id("Order"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<bool>(argv[0]))) return self.default_order(argv[0]);
