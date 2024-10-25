@@ -803,7 +803,7 @@ namespace aux {
             return as<const sym &>(self)(argc, argv, argv_out);
          case sym::id("Clone"): case sym::id("DeepClone"):
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-            return std::move(self); // TODO: consider moving out sym and (re-)constructing val
+            return std::forward<Self>(self);
          }
          return [&self, &op, argc]() MNL_NOINLINE->val{
             switch (MNL_EARLY(disp{"Str"})[op]) {
