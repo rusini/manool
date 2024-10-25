@@ -614,7 +614,7 @@ namespace aux {
                case sym::id("<>"):
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
                   return std::memcmp(&self, &argv[0], sizeof val) != 0;
-                  // better than ` !MNL_LIKELY(is<decltype(self)>(argv[0])) || self != as<decltype(self)>(argv[0])`
+                  // better than `!MNL_LIKELY(is<decltype(self)>(argv[0])) || self != as<decltype(self)>(argv[0])`
                case sym::id("<"):
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
                   if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) err_TypeMismatch();
@@ -639,6 +639,24 @@ namespace aux {
                   if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
                   return (_abs)(self);
                case sym::id("Sign"):
+                  if (MNL_UNLIKELY(argc == 1)) {
+                     if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) err_TypeMismatch();
+                     return (_sign)(self, as<decltype(self)>(argv[0]));
+                  }
+                  if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
+                  return (_sign)(self);
+
+
+
+                  if (MNL_LIKELY(argc != 1)) {
+                     if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
+                     return (_sign)(self);
+                  }
+                  if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) err_TypeMismatch();
+                  return (_sign)(self, as<decltype(self)>(argv[0]));
+
+
+
                   if (MNL_LIKELY(argc == 0)) return (_sign)(self);
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
                   if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) err_TypeMismatch();
