@@ -645,22 +645,6 @@ namespace aux {
                   }
                   if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
                   return (_sign)(self);
-
-
-
-                  if (MNL_LIKELY(argc != 1)) {
-                     if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-                     return (_sign)(self);
-                  }
-                  if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) err_TypeMismatch();
-                  return (_sign)(self, as<decltype(self)>(argv[0]));
-
-
-
-                  if (MNL_LIKELY(argc == 0)) return (_sign)(self);
-                  if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-                  if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) err_TypeMismatch();
-                  return (_sign)(self, as<decltype(self)>(argv[0]));
                case sym::id("Sqr"):
                   if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
                   return (_sqr)(self);
