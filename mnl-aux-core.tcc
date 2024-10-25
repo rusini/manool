@@ -447,13 +447,11 @@ namespace aux { namespace pub {
       //friend sym;
       friend val sym::operator()(int, val [], val *) const; // essential
 
-      friend val _eq(val &&, val &&), _ne(val &&, val &&), _lt(val &&, val &&), _le(val &&, val &&), _gt(val &&, val &&), _ge(val &&, val &&);
-      friend val _add(val &&, val &&), _sub(val &&, val &&), _mul(val &&, val &&), _neg(val &&), _abs(val &&), _xor(val &&, val &&), _not(val &&);
       friend class proc_Min; friend class proc_Max;
    };
    MNL_INLINE inline void swap(val &lhs, val &rhs) noexcept { lhs.swap(rhs); }
    // defined in friend declarations above:
-   template<typename>     bool test(const val &) noexcept;
+   template<typename>     bool test(const val &) noexcept; // TODO: disallow conv by using templ param
    template<typename Dat> Dat  cast(const val &) noexcept(std::is_nothrow_copy_constructible<Dat>::value);
 
    // Forward-declared as members of class sym

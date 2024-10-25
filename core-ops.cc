@@ -811,7 +811,7 @@ namespace aux {
                if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
                return (std::string)as<const sym &>(self);
             default:
-               MNL_UNREACHABLE();
+               __builtin_unreachable();
             case int{}:;
             }
             MNL_ERR(MNL_SYM("UnrecognizedOperation"));
