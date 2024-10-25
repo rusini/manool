@@ -816,14 +816,14 @@ namespace aux {
             }
             MNL_ERR(MNL_SYM("UnrecognizedOperation"));
          }();
-      case 0xFFF8 + 0x100: ////////////////////////////////////////////////////////////////////////////////////////////////////// Bool/False
+      case 0xFFF8 + 0x100 | false: ////////////////////////////////////////////////////////////////////////////////////////////// Bool/False
          switch (op) {
          case sym::id("=="):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-            return argv[0].rep.tag() == 0xFFF8 + 0x100;
+            return argv[0].rep.tag() == 0xFFF8 + 0x100 | false;
          case sym::id("<>"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-            return argv[0].rep.tag() != 0xFFF8 + 0x100;
+            return argv[0].rep.tag() != 0xFFF8 + 0x100 | false;
          case sym::id("Order"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<bool>(argv[0]))) return self.default_order(argv[0]);
@@ -848,14 +848,14 @@ namespace aux {
             return MNL_EARLY((val)"False");
          }
          MNL_ERR(MNL_SYM("UnrecognizedOperation"));
-      case 0xFFF8 + 0x101: /////////////////////////////////////////////////////////////////////////////////////////////////////// Bool/True
+      case 0xFFF8 + 0x100 | true: //////////////////////////////////////////////////////////////////////////////////////////////// Bool/True
          switch (op) {
          case sym::id("=="):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-            return argv[0].rep.tag() == 0xFFF8 + 0x101;
+            return argv[0].rep.tag() == 0xFFF8 + 0x100 | true;
          case sym::id("<>"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-            return argv[0].rep.tag() != 0xFFF8 + 0x101;
+            return argv[0].rep.tag() != 0xFFF8 + 0x100 | true;
          case sym::id("Order"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<bool>(argv[0]))) return self.default_order(argv[0]);
@@ -871,7 +871,7 @@ namespace aux {
          case sym::id("Xor"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<bool>(argv[0]))) err_TypeMismatch();
-            return val{decltype(rep){argv[0].rep.tag() ^ 1}};
+            return val{decltype(rep){argv[0].rep.tag() ^ true}};
          case sym::id("~"):
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
             return false;
