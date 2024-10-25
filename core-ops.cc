@@ -800,7 +800,7 @@ namespace aux {
             if (MNL_UNLIKELY(!is<sym>(argv[0]))) return self.default_order(argv[0]);
             return (as<const sym &>(self) > as<const sym &>(argv[0])) - (as<const sym &>(self) < as<const sym &>(argv[0]));
          case sym::id("Apply"):
-            return as<const sym &>(self)(*argv, argc - 1, argv + 1, argv_out + !!argv_out); // TODO: also a convenience/unification func exists for that
+            return as<const sym &>(self)(argc, argv, argv_out);
          case sym::id("Clone"): case sym::id("DeepClone"):
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
             return std::move(self); // TODO: consider moving out sym and (re-)constructing val
