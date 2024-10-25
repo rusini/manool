@@ -798,7 +798,7 @@ namespace aux {
          case sym::id("Order"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<sym>(argv[0]))) return self.default_order(argv[0]);
-            return (as<sym>(self) > as<sym>(argv[0])) - (as<sym>(self) < as<sym>(argv[0]));
+            return (as<const sym &>(self) > as<const sym &>(argv[0])) - (as<const sym &>(self) < as<const sym &>(argv[0]));
          case sym::id("Apply"):
             return as<const sym &>(self)(*argv, argc - 1, argv + 1, argv_out + !!argv_out); // TODO: also a convenience/unification func exists for that
          case sym::id("Clone"): case sym::id("DeepClone"):
