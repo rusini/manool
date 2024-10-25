@@ -417,7 +417,7 @@ namespace aux {
       (err_Overflow)(); // for hot paths
    }
 
-   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   // U32 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, unsigned>, std::string>
    _str(Dat arg, const std::string &format) {
@@ -934,7 +934,7 @@ namespace aux {
             if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
             if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) return self.default_order(argv[0]);
             return aux::_order(as<unsigned>(self), as<unsigned>(argv[0]));
-         case sym::id("Abs"):  // identity (absolute value)
+         case sym::id("Abs"):
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
             return +as<unsigned>(self);
          case sym::id("&"):
@@ -952,26 +952,26 @@ namespace aux {
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) err_TypeMismatch();
             return as<unsigned>(self) ^ as<unsigned>(argv[0]);
-         case sym::id("SHL"):  // bitwise (logical) shift left
+         case sym::id("SHL"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) err_TypeMismatch();
-            return _shl(as<unsigned>(self), as<unsigned>(argv[0]));
-         case sym::id("SHR"):  // bitwise (logical) shift right
+            return (_shl)(as<unsigned>(self), as<unsigned>(argv[0]));
+         case sym::id("SHR"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) err_TypeMismatch();
-            return _shr(as<unsigned>(self), as<unsigned>(argv[0]));
-         case sym::id("ASR"):  // bitwise arithmetic shift right
+            return (_shr)(as<unsigned>(self), as<unsigned>(argv[0]));
+         case sym::id("ASR"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) err_TypeMismatch();
-            return _asr(as<unsigned>(self), as<unsigned>(argv[0]));
-         case sym::id("ROL"):  // bitwise rotate left
+            return (_asr)(as<unsigned>(self), as<unsigned>(argv[0]));
+         case sym::id("ROL"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) err_TypeMismatch();
-            return _rol(as<unsigned>(self), as<unsigned>(argv[0]));
-         case sym::id("ROR"):  // bitwise rotate right
+            return (_rol)(as<unsigned>(self), as<unsigned>(argv[0]));
+         case sym::id("ROR"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) err_TypeMismatch();
-            return _ror(as<unsigned>(self), as<unsigned>(argv[0]));
+            return (_ror)(as<unsigned>(self), as<unsigned>(argv[0]));
          case sym::id("CLZ"):  // "count leading zeros"
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
             return _clz(as<unsigned>(self));
@@ -986,7 +986,7 @@ namespace aux {
             return (unsigned)__builtin_popcount(as<unsigned>(self));
          case sym::id("Clone"): case sym::op("DeepClone"):
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-            return self;
+            return val{self.rep}; // better than `self`
          case sym::id("Int"):
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
             return (long long)as<unsigned>(self);
@@ -994,12 +994,12 @@ namespace aux {
          return [&self, &op, argc, argv]() MNL_NOINLINE->val{
             switch (MNL_EARLY(disp{"Str"})[op]) {
             case 1: // Str
-               if (MNL_LIKELY(argc == 0)) return aux::_str(as<unsigned>(self));
+               if (MNL_LIKELY(argc == 0)) return (_str)(as<unsigned>(self));
                if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
                if (MNL_UNLIKELY(!is<std::string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
-               return aux::_str(as<unsigned>(self), as<const std::string &>(argv[0]));
+               return (_str)(as<unsigned>(self), as<const std::string &>(argv[0]));
             default:
-               MNL_UNREACHABLE();
+               __builtin_unreachable();
             case int{}:;
             }
             MNL_ERR(MNL_SYM("UnrecognizedOperation"));
