@@ -580,13 +580,13 @@ namespace aux {
                if (MNL_UNLIKELY(!is<std::string>(argv[0]))) MNL_ERR(MNL_SYM("TypeMismatch"));
                return (_str)(as<long long>(self), as<const std::string &>(argv[0]));
             default:
-               unreachable();
+               __builtin_unreachable();
             case int{}:;
             }
             MNL_ERR(MNL_SYM("UnrecognizedOperation"));
          }();
       ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// F64/F32
-         {  static constexpr auto dispatch = [](auto self, auto &op, auto &argc, auto &argv, auto &rep) MNL_INLINE->val{
+         {  static constexpr auto dispatch = [](auto self, auto &op, auto &argc, auto &argv) MNL_INLINE->val{
                switch (op) {
                case sym::id("+"):
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
@@ -609,12 +609,10 @@ namespace aux {
                   return (_div)(self, as<decltype(self)>(argv[0]));
                case sym::id("=="):
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-                  return std::memcmp(&self, &argv[0], sizeof val) == 0;
-                  // better than ` MNL_LIKELY(is<decltype(self)>(argv[0])) && self == as<decltype(self)>(argv[0])`
+                  return  MNL_LIKELY(is<decltype(self)>(argv[0])) && self == as<decltype(self)>(argv[0]); // maybe suboptimal but simple
                case sym::id("<>"):
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-                  return std::memcmp(&self, &argv[0], sizeof val) != 0;
-                  // better than `!MNL_LIKELY(is<decltype(self)>(argv[0])) || self != as<decltype(self)>(argv[0])`
+                  return !MNL_LIKELY(is<decltype(self)>(argv[0])) || self != as<decltype(self)>(argv[0]); // maybe suboptimal but simple
                case sym::id("<"):
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
                   if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) err_TypeMismatch();
@@ -665,7 +663,7 @@ namespace aux {
                   return (_ceil)(self);
                case sym::id("Clone"): case sym::id("DeepClone"):
                   if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-                  return val{self.rep}; // better than `self`
+                  return self; // maybe suboptimal but simple
                case sym::id("Int"):
                   if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
                   return (_int)(self);
@@ -785,9 +783,9 @@ namespace aux {
                }();
             };
          default: // F64
-            dispatch(as<double>(self), op, argc, argv, self.rep);
+            dispatch(as<double>(self), op, argc, argv);
          case 0xFFF8 + 0b010: // F32
-            dispatch(as<float> (self), op, argc, argv, self.rep);
+            dispatch(as<float> (self), op, argc, argv);
          }
       case 0xFFF8 + 0b110: ///////////////////////////////////////////////////////////////////////////////////////////////////////////// Sym
          switch (op) {
