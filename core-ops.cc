@@ -479,19 +479,19 @@ namespace aux {
             return !is<>(argv[0]);
          case sym::id("Order"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-            if (MNL_UNLIKELY(!test<>(argv[0]))) return self.default_order(argv[0]); // TODO: do we need the condition?
+            return self.default_order(argv[0]);
          case sym::id("Clone"): case sym::op("DeepClone"):
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
             return {};
          case sym::id("Str"):
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-            return MNL_AUX_EARLY((val)"Nil");
+            return MNL_EARLY((val)"Nil");
          case sym::id("Weak"):
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
             return {};
          }
          return [&op, argc]() MNL_NOINLINE->val{
-            switch (MNL_AUX_EARLY(disp{"^", "Set"})[op]) {
+            switch (MNL_EARLY(disp{"^", "Set"})[op]) {
             case 1: // ^
                if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
                MNL_ERR(MNL_SYM("IndirectionThruNil"));
@@ -499,7 +499,7 @@ namespace aux {
                if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
                MNL_ERR(MNL_SYM("IndirectionThruNil"));
             default:
-               MNL_UNREACHABLE();
+               __builtin_unreachable();
             case int{}:;
             }
             MNL_ERR(MNL_SYM("UnrecognizedOperation"));
