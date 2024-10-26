@@ -467,6 +467,7 @@ namespace aux {
       switch (self.rep.tag()) {
          static constexpr auto err_InvalidInvocation = []() MNL_INLINE{ MNL_ERR(MNL_SYM("InvalidInvocation")); };
          static constexpr auto err_TypeMismatch      = []() MNL_INLINE{ MNL_ERR(MNL_SYM("TypeMismatch"));      };
+         // TODO: order? default should be first?
       case 0xFFF8 + 0b111: /////////////////////////////////////////////////////////////////////////////////////////////// BoxPtr (fallback)
          return static_cast<root *>(self.rep.template dat<void *>())->_invoke(std::forward<Self>(self), op, argc, argv, argv_out);
       case 0xFFF8 + 0b000: ///////////////////////////////////////////////////////////////////////////////////////////////////////////// Nil
