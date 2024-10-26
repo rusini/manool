@@ -157,14 +157,7 @@ namespace aux {
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _order(Dat lhs, Dat rhs) {
-
-         return signbit(cast<DAT>(argv[0])) ^ signbit(cast<DAT>(argv[1])) ? signbit(cast<DAT>(argv[1])) - signbit(cast<DAT>(argv[0])) : \
-               cast<DAT>(argv[0]) < cast<DAT>(argv[1]) ? -1 : cast<DAT>(argv[0]) != cast<DAT>(argv[1]); \
-
       return signbit(lhs) ^ signbit(rhs) ? signbit(rhs) - signbit(lhs) : (lhs > rhs) - (lhs < rhs);
-
-
-
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
