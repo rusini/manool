@@ -700,10 +700,10 @@ namespace aux {
             switch (MNL_EARLY(disp{"^", "Set"})[op]) {
             case 1: // ^
                if (MNL_UNLIKELY(argc != 0)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-               MNL_ERR(MNL_SYM("IndirectionThruNil"));
+               MNL_ERR(MNL_SYM("IndirectionByNil"));
             case 2: // Set
                if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-               MNL_ERR(MNL_SYM("IndirectionThruNil"));
+               MNL_ERR(MNL_SYM("IndirectionByNil"));
             default:
                __builtin_unreachable();
             case int{}:;
