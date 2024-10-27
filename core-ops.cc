@@ -461,6 +461,11 @@ namespace aux {
       if (MNL_UNLIKELY(!arg)) MNL_ERR(MNL_SYM("ConstraintViolation"));
       return __builtin_ctz(arg);
    }
+   template<typename Dat> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat>
+   bitsum(Dat arg) {
+      if (MNL_UNLIKELY(!arg)) MNL_ERR(MNL_SYM("ConstraintViolation"));
+      return __builtin_popcount(arg);
+   }
 } // namespace aux
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -468,12 +473,12 @@ namespace aux {
    template val val::_invoke(      val &&, const sym &, int, val [], val *);
 
    template<typename Self> MNL_NOINLINE MNL_HOT val val::_invoke(Self &&self, const sym &op, int argc, val argv[], val *argv_out) {
-      switch (self.rep.tag()) {
+      switch (self.rep.tag()) MNL_NOTE(jumptable) {
          static constexpr auto err_InvalidInvocation = []() MNL_INLINE{ MNL_ERR(MNL_SYM("InvalidInvocation")); };
          static constexpr auto err_TypeMismatch      = []() MNL_INLINE{ MNL_ERR(MNL_SYM("TypeMismatch"));      };
       /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// F64/F32 //
          {  static constexpr auto dispatch = [](auto self, auto &op, auto &argc, auto &argv, auto &_self) MNL_INLINE->val{
-               switch (op) {
+               switch (op) MNL_NOTE(jumptable) {
                case sym::id("+"):
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
                   if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) err_TypeMismatch();
@@ -676,7 +681,7 @@ namespace aux {
       case 0xFFF8 + 0b111: //////////////////////////////////////////////////////////////////////////////////////////// BoxPtr (fallback) //
          return static_cast<root *>(self.rep.template dat<void *>())->_invoke(std::forward<Self>(self), op, argc, argv, argv_out);
       case 0xFFF8 + 0b000: ////////////////////////////////////////////////////////////////////////////////////////////////////////// Nil //
-         switch (op) {
+         switch (op) MNL_NOTE(jumptable) {
          case sym::id("=="):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             return  is<>(argv[0]);
@@ -710,8 +715,8 @@ namespace aux {
             }
             MNL_ERR(MNL_SYM("UnrecognizedOperation"));
          }();
-      case 0xFFF8 + 0b001: ///////////////////////////////////////////////////////////////////////////////////////////////////////////// I48
-         switch (op) {
+      case 0xFFF8 + 0b001: ////////////////////////////////////////////////////////////////////////////////////////////////////////// I48 //
+         switch (op) MNL_NOTE(jumptable) {
          case sym::id("+"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
@@ -791,8 +796,8 @@ namespace aux {
             }
             MNL_ERR(MNL_SYM("UnrecognizedOperation"));
          }();
-      case 0xFFF8 + 0b110: ///////////////////////////////////////////////////////////////////////////////////////////////////////////// Sym
-         switch (op) {
+      case 0xFFF8 + 0b110: ////////////////////////////////////////////////////////////////////////////////////////////////////////// Sym //
+         switch (op) MNL_NOTE(jumptable) {
          case sym::id("=="):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             return  MNL_LIKELY(is<const sym &>(argv[0])) && as<const sym &>(self) == as<const sym &>(argv[0]);
@@ -820,8 +825,8 @@ namespace aux {
             }
             MNL_ERR(MNL_SYM("UnrecognizedOperation"));
          }();
-      case 0xFFF8 + 0x100 | false: ////////////////////////////////////////////////////////////////////////////////////////////// Bool/False
-         switch (op) {
+      case 0xFFF8 + 0x100 | false: /////////////////////////////////////////////////////////////////////////////////////////// Bool/False //
+         switch (op) MNL_NOTE(jumptable) {
          case sym::id("=="):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             return argv[0].rep.tag() == 0xFFF8 + 0x100 | false;
@@ -852,8 +857,8 @@ namespace aux {
             return MNL_EARLY((val)"False");
          }
          MNL_ERR(MNL_SYM("UnrecognizedOperation"));
-      case 0xFFF8 + 0x100 | true: //////////////////////////////////////////////////////////////////////////////////////////////// Bool/True
-         switch (op) {
+      case 0xFFF8 + 0x100 | true: ///////////////////////////////////////////////////////////////////////////////////////////// Bool/True //
+         switch (op) MNL_NOTE(jumptable) {
          case sym::id("=="):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             return argv[0].rep.tag() == 0xFFF8 + 0x100 | true;
@@ -887,8 +892,8 @@ namespace aux {
             return MNL_EARLY((val)"True");
          }
          MNL_ERR(MNL_SYM("UnrecognizedOperation"));
-      case 0xFFF8 + 0x011: ///////////////////////////////////////////////////////////////////////////////////////////////////////////// U32
-         switch (op) {
+      case 0xFFF8 + 0x011: ////////////////////////////////////////////////////////////////////////////////////////////////////////// U32 //
+         switch (op) MNL_NOTE(jumptable) {
          case sym::id("+"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) err_TypeMismatch();
@@ -907,10 +912,12 @@ namespace aux {
          case sym::id("/"): case sym::id("Div"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) err_TypeMismatch();
+            if (MNL_UNLIKELY(!as<unsigned>(argv[0]))) MNL_ERR(MNL_SYM("ConstraintViolation"));
             return as<unsigned>(self) / as<unsigned>(argv[0]);
          case sym::id("Rem"): case sym::id("Mod"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) err_TypeMismatch();
+            if (MNL_UNLIKELY(!as<unsigned>(argv[0]))) MNL_ERR(MNL_SYM("ConstraintViolation"));
             return as<unsigned>(self) % as<unsigned>(argv[0]);
          case sym::id("=="):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
@@ -937,7 +944,7 @@ namespace aux {
          case sym::id("Order"):
             if (MNL_UNLIKELY(argc != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
             if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) return self.default_order(argv[0]);
-            return aux::_order(as<unsigned>(self), as<unsigned>(argv[0]));
+            return (as<unsigned>(self) > as<unsigned>(argv[0])) - (as<unsigned>(self) < as<unsigned>(argv[0]));
          case sym::id("Abs"):
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
             return +as<unsigned>(self);
@@ -976,18 +983,18 @@ namespace aux {
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) err_TypeMismatch();
             return (_ror)(as<unsigned>(self), as<unsigned>(argv[0]));
-         case sym::id("CLZ"):  // "count leading zeros"
+         case sym::id("CLZ"):
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-            return _clz(as<unsigned>(self));
-         case sym::id("CTZ"):  // "count trailing zeros"
+            return (_clz)(as<unsigned>(self));
+         case sym::id("CTZ"):
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-            return _ctz(as<unsigned>(self));
-         case sym::id("Log2"): // Log2[rhs] == ~0 for rhs == 0 (on purpose)
+            return (_ctz)(as<unsigned>(self));
+         case sym::id("Log2"):
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-            return 31 - _clz(as<unsigned>(self)); // definition
-         case sym::id("BitSum"): // so-called popcount ("population count")
+            return 31 - (_clz)(as<unsigned>(self)); // definition
+         case sym::id("BitSum"):
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-            return (unsigned)__builtin_popcount(as<unsigned>(self));
+            return (bitsum)(as<unsigned>(self));
          case sym::id("Clone"): case sym::op("DeepClone"):
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
             return val{self.rep}; // better than `self`
