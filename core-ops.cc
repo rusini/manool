@@ -517,7 +517,7 @@ namespace aux {
                   return self >= as<decltype(self)>(argv[0]);
                case sym::id("Order"):
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-                  if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) return self.default_order(argv[0]);
+                  if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) return self.default_order(argv[0]); // TODO: self is not val
                   return (_order)(self, as<decltype(self)>(argv[0]));
                case sym::id("Abs"):
                   if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
