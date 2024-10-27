@@ -472,7 +472,7 @@ namespace aux {
          static constexpr auto err_InvalidInvocation = []() MNL_INLINE{ MNL_ERR(MNL_SYM("InvalidInvocation")); };
          static constexpr auto err_TypeMismatch      = []() MNL_INLINE{ MNL_ERR(MNL_SYM("TypeMismatch"));      };
       /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// F64/F32 //
-         {  static constexpr auto dispatch = [](auto self, auto &op, auto &argc, auto &argv) MNL_INLINE->val{
+         {  static constexpr auto dispatch = [](auto self, auto &op, auto &argc, auto &argv, auto &_self) MNL_INLINE->val{
                switch (op) {
                case sym::id("+"):
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
@@ -517,7 +517,7 @@ namespace aux {
                   return self >= as<decltype(self)>(argv[0]);
                case sym::id("Order"):
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-                  if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) return self.default_order(argv[0]); // TODO: self is not val
+                  if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) return _self.default_order(argv[0]);
                   return (_order)(self, as<decltype(self)>(argv[0]));
                case sym::id("Abs"):
                   if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
@@ -549,7 +549,7 @@ namespace aux {
                   return (_ceil)(self);
                case sym::id("Clone"): case sym::id("DeepClone"):
                   if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-                  return self; // maybe suboptimal but straightforward
+                  return val{_self.rep};
                case sym::id("Int"):
                   if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
                   return (_int)(self);
@@ -669,9 +669,9 @@ namespace aux {
                }();
             };
          default: // F64
-            dispatch(as<double>(self), op, argc, argv);
+            dispatch(as<double>(self), op, argc, argv, self);
          case 0xFFF8 + 0b010: // F32
-            dispatch(as<float> (self), op, argc, argv);
+            dispatch(as<float> (self), op, argc, argv, self);
          }
       case 0xFFF8 + 0b111: //////////////////////////////////////////////////////////////////////////////////////////// BoxPtr (fallback) //
          return static_cast<root *>(self.rep.template dat<void *>())->_invoke(std::forward<Self>(self), op, argc, argv, argv_out);
