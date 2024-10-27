@@ -106,6 +106,8 @@ namespace aux {
       # endif
          (MNL_UNLIKELY(lhs < 0 ^ rhs < 0) ? MNL_LIKELY(lhs % rhs) ? lhs % rhs + rhs : 0 : lhs % rhs);
    }
+   template<typename Dat> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat> _order(Dat lhs, Dat rhs)
+      { return (lhs > rhs) - (lhs < rhs); }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, long long>, std::string>
    _str(Dat arg) {
