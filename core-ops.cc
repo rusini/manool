@@ -106,8 +106,6 @@ namespace aux {
       # endif
          (MNL_UNLIKELY(lhs < 0 ^ rhs < 0) ? MNL_LIKELY(lhs % rhs) ? lhs % rhs + rhs : 0 : lhs % rhs);
    }
-   template<typename Dat> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat> _order(Dat lhs, Dat rhs)
-      { return (lhs > rhs) - (lhs < rhs); }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, long long>, std::string>
    _str(Dat arg) {
@@ -772,7 +770,7 @@ namespace aux {
          case sym::id("Order"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<long long>(argv[0]))) return self.default_order(argv[0]);
-            return (_order)(as<long long>(self), as<long long>(argv[0]));
+            return (as<long long>(self) > as<long long>(argv[0])) - (as<long long>(self) < as<long long>(argv[0]));
          case sym::id("Abs"):
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
             return (_abs)(as<long long>(self));
