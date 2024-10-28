@@ -457,6 +457,10 @@ namespace aux {
       char res[512];
       return std::sprintf(res, ("%" + format).c_str(), arg), res;
    }
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, unsigned>, long long>
+   _int(Dat arg)
+      { return arg; }
 } // namespace aux
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -989,7 +993,7 @@ namespace aux {
             return val{self.rep}; // better than `self`
          case sym::id("Int"):
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-            return (long long)as<unsigned>(self);
+            return (_int)(as<unsigned>(self));
          }
          return [&self, &op, argc, argv]() MNL_NOINLINE->val{
             switch (MNL_EARLY(disp{"Str"})[op]) {
