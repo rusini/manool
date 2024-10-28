@@ -60,6 +60,9 @@ namespace aux {
 
    constexpr auto err_Undefined = []() MNL_INLINE // to allow optimizer to blend jump targets
       { MNL_ERR(MNL_SYM("Undefined")); };
+   constexpr auto err_PreconditionViolation = []() MNL_INLINE // ditto
+      { MNL_ERR(MNL_SYM("PreconditionViolation")); };
+
    constexpr auto err_DivisionByZero_Undefined = [](long long lhs) MNL_INLINE // ditto
       { MNL_ERR(lhs ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), lhs);  };
 
@@ -437,6 +440,12 @@ namespace aux {
    }
 
    template<typename Dat> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat>
+   _div(Dat lhs, Dat rhs)
+      { if (MNL_UNLIKELY(!rhs)) err_PreconditionViolation(); return lhs / rhs; }
+   template<typename Dat> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat>
+   _rem(Dat lhs, Dat rhs)
+      { if (MNL_UNLIKELY(!rhs)) err_PreconditionViolation(); return lhs % rhs; }
+   template<typename Dat> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat>
    _shl(Dat lhs, Dat rhs)
       { return rhs < 32 ? lhs << rhs : 0; }
    template<typename Dat> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat>
@@ -452,20 +461,14 @@ namespace aux {
    _ror(Dat lhs, Dat rhs)
       { return lhs >> (rhs & 0x1F) | lhs << (-(rhs & 0x1F) & 0x1F); }
    template<typename Dat> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat>
-   _clz(Dat arg) {
-      if (MNL_UNLIKELY(!arg)) MNL_ERR(MNL_SYM("ConstraintViolation"));
-      return __builtin_clz(arg);
-   }
+   _clz(Dat arg)
+      { if (MNL_UNLIKELY(!arg)) err_PreconditionViolation(); return __builtin_clz(arg); }
    template<typename Dat> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat>
-   _ctz(Dat arg) {
-      if (MNL_UNLIKELY(!arg)) MNL_ERR(MNL_SYM("ConstraintViolation"));
-      return __builtin_ctz(arg);
-   }
+   _ctz(Dat arg)
+      { if (MNL_UNLIKELY(!arg)) err_PreconditionViolation(); return __builtin_ctz(arg); }
    template<typename Dat> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat>
-   bitsum(Dat arg) {
-      if (MNL_UNLIKELY(!arg)) MNL_ERR(MNL_SYM("ConstraintViolation"));
-      return __builtin_popcount(arg);
-   }
+   bitsum(Dat arg)
+      { return __builtin_popcount(arg); }
 } // namespace aux
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -897,28 +900,26 @@ namespace aux {
          case sym::id("+"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) err_TypeMismatch();
-            return as<unsigned>(self) + as<unsigned>(argv[0]);
+            return (_add)(as<unsigned>(self), as<unsigned>(argv[0]));
          case sym::id("-"):
             if (MNL_UNLIKELY(argc != 1)) {
                if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-               return -as<unsigned>(self);
+               return (_neg)(as<unsigned>(self));
             }
             if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) err_TypeMismatch();
-            return as<unsigned>(self) - as<unsigned>(argv[0]);
+            return (_sub)(as<unsigned>(self), as<unsigned>(argv[0]));
          case sym::id("*"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) err_TypeMismatch();
-            return as<unsigned>(self) * as<unsigned>(argv[0]);
+            return (_mul)(as<unsigned>(self), as<unsigned>(argv[0]));
          case sym::id("/"): case sym::id("Div"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) err_TypeMismatch();
-            if (MNL_UNLIKELY(!as<unsigned>(argv[0]))) MNL_ERR(MNL_SYM("ConstraintViolation"));
-            return as<unsigned>(self) / as<unsigned>(argv[0]);
+            return (_div)(as<unsigned>(self), as<unsigned>(argv[0]));
          case sym::id("Rem"): case sym::id("Mod"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) err_TypeMismatch();
-            if (MNL_UNLIKELY(!as<unsigned>(argv[0]))) MNL_ERR(MNL_SYM("ConstraintViolation"));
-            return as<unsigned>(self) % as<unsigned>(argv[0]);
+            return (_rem)(as<unsigned>(self), as<unsigned>(argv[0]));
          case sym::id("=="):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             return  MNL_LIKELY(is<unsigned>(argv[0])) && as<unsigned>(self) == as<unsigned>(argv[0]);
@@ -947,22 +948,22 @@ namespace aux {
             return (as<unsigned>(self) > as<unsigned>(argv[0])) - (as<unsigned>(self) < as<unsigned>(argv[0]));
          case sym::id("Abs"):
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-            return +as<unsigned>(self);
+            return (_abs)(as<unsigned>(self));
          case sym::id("&"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) err_TypeMismatch();
-            return as<unsigned>(self) & as<unsigned>(argv[0]);
+            return (_and)(as<unsigned>(self), as<unsigned>(argv[0]));
          case sym::id("|"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) err_TypeMismatch();
-            return as<unsigned>(self) | as<unsigned>(argv[0]);
+            return (_or )(as<unsigned>(self), as<unsigned>(argv[0]));
          case sym::id("~"):
             if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-            return ~as<unsigned>(self);
+            return (_not)(as<unsigned>(self));
          case sym::id("Xor"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) err_TypeMismatch();
-            return as<unsigned>(self) ^ as<unsigned>(argv[0]);
+            return (_xor)(as<unsigned>(self), as<unsigned>(argv[0]));
          case sym::id("SHL"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<unsigned>(argv[0]))) err_TypeMismatch();
@@ -2098,6 +2099,23 @@ namespace aux {
          return self.default_invoke(op, argc, argv);
       }
    }
+
+PreconditionFailed
+ConstraintViolation
+PrevalidationFailed
+
+PreconditionViolation
+MalformedArgument
+UnsupportedArgument
+IndexOutOfRange
+KeyLookupFailed
+DivisionByZero
+Overflow
+Undefined
+IndirectionByNil
+InvalidInvocation
+TypeMismatch
+UnrecognizedOperation
 
 // Record Composite ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    template<int Size> val _record<Size>::invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) {
