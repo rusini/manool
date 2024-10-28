@@ -1079,7 +1079,7 @@ namespace aux { namespace pub {
          MNL_INLINE static val _apply(Lhs &&lhs, Rhs &&rhs) {
             if (bool{});
             else if constexpr (Id == sym::id("==") | Id == sym::id("<>"))
-               switch (lhs.rep.tag()) { // jumptable
+               switch (lhs.rep.tag()) MNL_NOTE(jumptable) {
                default             /*F64*/:               return (*this)(cast<double>(lhs),      rhs);
                case 0xFFF8 + 0b111 /*BoxPtr (fallback)*/: return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs),
                   *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
@@ -1127,15 +1127,8 @@ namespace aux { namespace pub {
             std::is_same_v<Rhs, val>, decltype(nullptr) > = decltype(nullptr){} >
          MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const noexcept(Id == sym::id("==") | Id == sym::id("<>")) { // implicit conversion disabled
             if (bool{});
-            else if constexpr (std::is_same_v<Lhs, long long> && Id == sym::id("==") | Id == sym::id("<>"))
-               if (std::memcmp(&lhs, &rhs, sizeof(val)))
-                  return Id == sym::id("<>");
-               else
-                  { if (is<long long>(rhs) && as<long long>(rhs) == as<long long>(lhs)); else __builtin_unreachable(); return Id == sym::id("=="); }
-            else if constexpr (Id == sym::id("=="))
-               return  MNL_LIKELY(test<Lhs>(rhs)) && lhs == cast<decltype(lhs)>(rhs);
-            else if constexpr (Id == sym::id("<>"))
-               return !MNL_LIKELY(test<Lhs>(rhs)) || lhs != cast<decltype(lhs)>(rhs);
+            else if constexpr (Id == sym::id("==")) return  MNL_LIKELY(test<Lhs>(rhs)) && lhs == cast<decltype(lhs)>(rhs);
+            else if constexpr (Id == sym::id("<>")) return !MNL_LIKELY(test<Lhs>(rhs)) || lhs != cast<decltype(lhs)>(rhs);
             else if constexpr (
                Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") |
                Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") ||
