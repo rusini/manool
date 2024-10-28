@@ -123,8 +123,8 @@ namespace aux {
       for (;;) { switch (*pc) case ' ': case '+': case '-': case '0': { ++pc; continue; } break; }
       if ((isdigit)(*pc) && (isdigit)(*++pc)) ++pc;
       if (*pc == '.' && (isdigit)(*++pc) && (isdigit)(*++pc)) ++pc;
-      switch (*pc) { default: MNL_ERR(MNL_SYM("SyntaxError")); case 'd': case 'i': ; }
-      if (MNL_UNLIKELY(*++pc)) MNL_ERR(MNL_SYM("SyntaxError"));
+      switch (*pc) { default: MNL_ERR(MNL_SYM("MalformedArgument")); case 'd': case 'i': ; }
+      if (MNL_UNLIKELY(*++pc)) MNL_ERR(MNL_SYM("MalformedArgument"));
       char res[512];
       return std::sprintf(res, ("%" + std::string(format.begin(), format.end() - 1) + "lld").c_str(), arg), res;
    }
@@ -412,8 +412,8 @@ namespace aux {
       for (;;) { switch (*pc) case ' ': case '+': case '-': case '0': { ++pc; continue; } break; }
       if ((isdigit)(*pc) && (isdigit)(*++pc)) ++pc;
       if (*pc == '.' && (isdigit)(*++pc) && (isdigit)(*++pc)) ++pc;
-      switch (*pc) { default: MNL_ERR(MNL_SYM("SyntaxError")); case 'f': case 'F': case 'e': case 'E': case 'g': case 'G': case 'a': case 'A': ; }
-      if (MNL_UNLIKELY(*++pc)) MNL_ERR(MNL_SYM("SyntaxError"));
+      switch (*pc) { default: MNL_ERR(MNL_SYM("MalformedArgument")); case 'f': case 'F': case 'e': case 'E': case 'g': case 'G': case 'a': case 'A': ; }
+      if (MNL_UNLIKELY(*++pc)) MNL_ERR(MNL_SYM("MalformedArgument"));
       char res[512];
       return std::sprintf(res, ("%" + format).c_str(), arg), res;
    }
@@ -425,20 +425,6 @@ namespace aux {
    }
 
    // U32 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-   template<typename Dat>
-   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, unsigned>, std::string>
-   _str(Dat arg, const std::string &format) {
-      using std::isdigit;
-      auto pc = format.c_str();
-      for (;;) { switch (*pc) case ' ': case '+': case '-': case '0': { ++pc; continue; } break; }
-      if ((isdigit)(*pc) && (isdigit)(*++pc)) ++pc;
-      if (*pc == '.' && (isdigit)(*++pc) && (isdigit)(*++pc)) ++pc;
-      switch (*pc) { default: MNL_ERR(MNL_SYM("SyntaxError")); case 'u': case 'o': case 'x': case 'X': ; }
-      if (MNL_UNLIKELY(*++pc)) MNL_ERR(MNL_SYM("SyntaxError"));
-      char res[512];
-      return std::sprintf(res, ("%" + format).c_str(), arg), res;
-   }
-
    template<typename Dat> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat>
    _div(Dat lhs, Dat rhs)
       { if (MNL_UNLIKELY(!rhs)) err_PreconditionViolation(); return lhs / rhs; }
@@ -469,6 +455,20 @@ namespace aux {
    template<typename Dat> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat>
    bitsum(Dat arg)
       { return __builtin_popcount(arg); }
+
+   template<typename Dat>
+   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, unsigned>, std::string>
+   _str(Dat arg, const std::string &format) {
+      using std::isdigit;
+      auto pc = format.c_str();
+      for (;;) { switch (*pc) case ' ': case '+': case '-': case '0': { ++pc; continue; } break; }
+      if ((isdigit)(*pc) && (isdigit)(*++pc)) ++pc;
+      if (*pc == '.' && (isdigit)(*++pc) && (isdigit)(*++pc)) ++pc;
+      switch (*pc) { default: MNL_ERR(MNL_SYM("MalformedArgument")); case 'u': case 'o': case 'x': case 'X': ; }
+      if (MNL_UNLIKELY(*++pc)) MNL_ERR(MNL_SYM("MalformedArgument"));
+      char res[512];
+      return std::sprintf(res, ("%" + format).c_str(), arg), res;
+   }
 } // namespace aux
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
