@@ -1126,24 +1126,15 @@ namespace aux { namespace pub {
             std::is_same_v<Rhs, val>, decltype(nullptr) > = decltype(nullptr){} >
          MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const noexcept(Id == sym::id("==") | Id == sym::id("<>")) { // no implicit conversion
             if (bool{});
-
             else if constexpr (std::is_same_v<Lhs, long long> && Id == sym::id("==") | Id == sym::id("<>"))
                if (std::memcmp(&lhs, &rhs, sizeof(val)))
                   return Id == sym::id("<>");
                else
                   { if (is<long long>(rhs) && as<long long>(rhs) == as<long long>(lhs)); else __builtin_unreachable(); return Id == sym::id("=="); }
-
-
-
-            else if constexpr (std::is_same_v<Lhs, long long> && Id == sym::id("<>"))
-               if (std::memcmp(&lhs, &rhs, sizeof(val)))
-                  { if (is<long long>(rhs) && as<long long>(rhs) == as<long long>(lhs)); else __builtin_unreachable(); return true; }
-               else
-                  return false;
-
-
-            else if constexpr (Id == sym::id("==")) return  MNL_LIKELY(test<Lhs>(rhs)) && lhs == cast<decltype(lhs)>(rhs);
-            else if constexpr (Id == sym::id("<>")) return !MNL_LIKELY(test<Lhs>(rhs)) || lhs != cast<decltype(lhs)>(rhs);
+            else if constexpr (Id == sym::id("=="))
+               return  MNL_LIKELY(test<Lhs>(rhs)) && lhs == cast<decltype(lhs)>(rhs);
+            else if constexpr (Id == sym::id("<>"))
+               return !MNL_LIKELY(test<Lhs>(rhs)) || lhs != cast<decltype(lhs)>(rhs);
             else if constexpr (
                Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") |
                Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") ||
