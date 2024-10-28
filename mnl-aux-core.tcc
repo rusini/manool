@@ -1084,7 +1084,8 @@ namespace aux { namespace pub {
                case 0xFFF8 + 0b111 /*BoxPtr (fallback)*/: return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs),
                   *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
                case 0xFFF8 + 0b000 /*Nil*/:               return (*this)(nullptr                 rhs);
-               case 0xFFF8 + 0b001 /*I48*/:               return (*this)(cast<long long>(lhs),   rhs);
+               case 0xFFF8 + 0b001 /*I48*/:               if (std::memcmp(&lhs, &rhs, sizeof(val))) return Id == sym::id("<>"); else
+                  { if (is<long long>(rhs) && as<long long>(rhs) == as<long long>(lhs)); else __builtin_unreachable(); return Id == sym::id("=="); }
                case 0xFFF8 + 0b010 /*F32*/:               return (*this)(cast<float>(lhs),       rhs);
                case 0xFFF8 + 0b110 /*Sym*/:               return (*this)(cast<const sym &>(lhs), rhs);
                case 0xFFF8 + 0b100 /*Bool/False*/:        return (*this)(false,                  rhs);
@@ -1124,7 +1125,7 @@ namespace aux { namespace pub {
          template< typename Lhs, class Rhs, std::enable_if_t<
             std::is_same_v<Lhs, long long> | std::is_same_v<Lhs, double> | std::is_same_v<Lhs, float> | std::is_same_v<Lhs, unsigned> &&
             std::is_same_v<Rhs, val>, decltype(nullptr) > = decltype(nullptr){} >
-         MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const noexcept(Id == sym::id("==") | Id == sym::id("<>")) { // no implicit conversion
+         MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const noexcept(Id == sym::id("==") | Id == sym::id("<>")) { // implicit conversion disabled
             if (bool{});
             else if constexpr (std::is_same_v<Lhs, long long> && Id == sym::id("==") | Id == sym::id("<>"))
                if (std::memcmp(&lhs, &rhs, sizeof(val)))
