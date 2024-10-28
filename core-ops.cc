@@ -355,13 +355,13 @@ namespace aux {
    template<typename Dat> // BesJn ("Bessel function of the first kind of integer order")  -- POSIX
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _jn(long long n, Dat arg) { // specified by POSIX, and in more detail in glibc (not in C99/11)
-      if (MNL_UNLIKELY((int)n != n)) MNL_ERR(MNL_SYM("LimitExceeded"));
+      if (MNL_UNLIKELY((int)n != n)) MNL_ERR(MNL_SYM("UnsupportedArgument"));
       return (int)n == 0 ? (j0)(arg) : (int)n == 1 ? (j1)(arg) : (jn)(n, arg); // dynamic (run-time) specialization
    }
    template<typename Dat> // BesYn ("Bessel function of the second kind of integer order") -- POSIX
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _yn(long long n, Dat arg) { // specified by POSIX, and in more detail in glibc (not in C99/11)
-      if (MNL_UNLIKELY((int)n != n)) MNL_ERR(MNL_SYM("LimitExceeded"));
+      if (MNL_UNLIKELY((int)n != n)) MNL_ERR(MNL_SYM("UnsupportedArgument"));
       Dat res = (int)n == 0 ? (y0)(arg) : (int)n == 1 ? (y1)(arg) : (yn)(n, arg); // dynamic (run-time) specialization
       if (MNL_LIKELY(isfinite(res))) return res;
       MNL_ERR(!isnan(res) ? arg == 0 ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow") : MNL_SYM("Undefined"), res, arg);
@@ -513,7 +513,7 @@ namespace aux {
                   return self >= as<decltype(self)>(argv[0]);
                case sym::id("Order"):
                   if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
-                  if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) return _self.default_order(argv[0]);
+                  if (MNL_UNLIKELY(!is<decltype(self)>(argv[0]))) return _self.default_order(argv[0]); // TODO: left type is actually known
                   return (_order)(self, as<decltype(self)>(argv[0]));
                case sym::id("Abs"):
                   if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
