@@ -20,19 +20,7 @@
 # include <iterator> // begin, end
 
 namespace MNL_AUX_UUID { using namespace aux;
-   namespace aux {
-      using std::isdigit; // <cstdlib>
-      using std::isnan; using std::isfinite; using std::fmod;   using std::fma;   using std::copysign; using std::signbit; // <cmath>
-      using std::exp;   using std::expm1;    using std::log;    using std::log1p; using std::log10;    using std::log2; // <cmath>
-      using std::sqrt;  using std::hypot;    using std::cbrt;   using std::pow; // <cmath>
-      using std::sin;   using std::cos;      using std::tan;    using std::asin;  using std::acos;     using std::atan;  using std::atan2; // <cmath>
-      using std::sinh;  using std::cosh;     using std::tanh;   using std::asinh; using std::acosh;    using std::atanh; // <cmath>
-      using std::erf;   using std::erfc;     using std::tgamma; using std::trunc; using std::round;    using std::floor; using std::ceil; // <cmath>
-      using std::sprintf; // <cstdio>
-      using std::begin; using std::end; // <iterator>
-   }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    MNL_PRIORITY(1001) decltype(sym::dict) sym::dict = []() MNL_INLINE->decltype(dict){
       int count = {};
    # define MNL_S(LAB) {LAB, static_cast<decltype(rep)>(count++)},
