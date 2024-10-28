@@ -1078,21 +1078,8 @@ namespace aux { namespace pub {
             decltype(nullptr) > = decltype(nullptr){} >
          MNL_INLINE static val _apply(Lhs &&lhs, Rhs &&rhs) {
             if (bool{});
-            else if constexpr (Id == sym::id("=="))
-               if (MNL_LIKELY(lhs.rep.tag() != 0xFFF8 + 0b111))
-                  return std::memcmp(&lhs, &rhs, sizeof lhs) == 0;
-               else
-                  return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs), *this,
-                     1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
-            else if constexpr (Id == sym::id("<>"))
-               if (MNL_LIKELY(lhs.rep.tag() != 0xFFF8 + 0b111))
-                  return std::memcmp(&lhs, &rhs, sizeof lhs) != 0;
-               else
-                  return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs), *this,
-                     1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
-
             else if constexpr (Id == sym::id("==") | Id == sym::id("<>"))
-               switch (lhs.rep.tag()) MNL_NOTE(jumptable) {
+               switch (lhs.rep.tag()) { // jumptable
                default             /*F64*/:               return (*this)(cast<double>(lhs),      rhs);
                case 0xFFF8 + 0b111 /*BoxPtr (fallback)*/: return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs),
                   *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
@@ -1104,7 +1091,6 @@ namespace aux { namespace pub {
                case 0xFFF8 + 0b101 /*Bool/True*/:         return (*this)(true,                   rhs);
                case 0xFFF8 + 0b011 /*U32*/:               return (*this)(cast<unsigned>(lhs),    rhs);
                }
-
             else if constexpr (
                Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") |
                Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=" ) )
@@ -1141,11 +1127,14 @@ namespace aux { namespace pub {
          MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const noexcept(Id == sym::id("==") | Id == sym::id("<>")) { // no implicit conversion
             if (bool{});
 
-            else if constexpr (std::is_same_v<Lhs, long long> && Id == sym::id("=="))
+            else if constexpr (std::is_same_v<Lhs, long long> && Id == sym::id("==") | Id == sym::id("<>"))
                if (std::memcmp(&lhs, &rhs, sizeof(val)))
-                  return false;
+                  return Id == sym::id("<>");
                else
-                  { if (is<long long>(rhs) && as<long long>(rhs) == as<long long>(lhs)); else __builtin_unreachable(); return true; }
+                  { if (is<long long>(rhs) && as<long long>(rhs) == as<long long>(lhs)); else __builtin_unreachable(); return Id == sym::id("=="); }
+
+
+
             else if constexpr (std::is_same_v<Lhs, long long> && Id == sym::id("<>"))
                if (std::memcmp(&lhs, &rhs, sizeof(val)))
                   { if (is<long long>(rhs) && as<long long>(rhs) == as<long long>(lhs)); else __builtin_unreachable(); return true; }
