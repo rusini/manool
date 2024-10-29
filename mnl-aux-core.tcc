@@ -1155,7 +1155,7 @@ namespace aux { namespace pub {
             else if constexpr (Id == sym::id("<>")) return !MNL_LIKELY(is<Lhs>(rhs)) || lhs != as<decltype(lhs)>(rhs);
             else return ((const sym &)*this)(lhs, rhs); // for completeness
          }
-         template< typename Lhs, class Rhs, std::enable_if_t< // for completeness (perf doesn't matter)
+         template< typename Lhs, class Rhs, std::enable_if_t< // for completeness
             std::is_same_v<Lhs, char> &&
             std::is_same_v<Rhs, val>, decltype(nullptr) > = decltype(nullptr){} >
          MNL_INLINE auto operator()(const Lhs *lhs, const Rhs &rhs) const noexcept(noexcept((*this)((std::string)lhs, rhs)))
