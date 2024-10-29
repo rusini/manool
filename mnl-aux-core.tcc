@@ -267,6 +267,7 @@ namespace aux { namespace pub {
       MNL_INLINE val(bool dat) noexcept: rep{dat | 0xFFF8 + 0b100} {}
       MNL_INLINE val(unsigned dat) noexcept: rep{0xFFF8 + 0b010, dat} {}
       MNL_INLINE val(char dat) noexcept:     val((unsigned)(unsigned char)dat) {}
+      // MNL_NOINLINE MNL_FLAT
       template<typename Dat> val(Dat dat): rep{0xFFF8 + 0b111, (void *)(root *)new box<Dat>{std::move(dat)}} {}
       val(const char *);
       MNL_INLINE val(char *dat): val((const char *)dat) {}
