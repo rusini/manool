@@ -833,6 +833,9 @@ namespace aux { namespace pub {
    template<> MNL_INLINE inline unsigned val::cast() const noexcept { return rep.dat<unsigned>(); }
    template<> MNL_INLINE inline char     val::cast() const noexcept { return cast<unsigned>(); }
 
+   template<> MNL_INLINE inline bool val::test<const char *>() const noexcept { return test<std::string>; }
+   template<> MNL_INLINE inline const char *val::cast() const noexcept { return cast<const std::string &>().c_str(); }
+
 // Signals, Exceptions, and Invocation Traces //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace aux { namespace pub {
    extern MNL_IF_WITH_MT(thread_local) pair<sym, val>                  sig_state;
@@ -1143,28 +1146,40 @@ namespace aux { namespace pub {
          MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const noexcept(noexcept((*this)((long long)lhs, rhs)))
             { return (*this)((long long)lhs, rhs); }
          // Sym, string
-         template< typename Lhs, class Rhs, std::enable_if_t<
+         template< class Lhs, class Rhs, std::enable_if_t<
             std::is_same_v<Lhs, sym> | std::is_same_v<Lhs, std::string> &&
             std::is_same_v<Rhs, val>, decltype(nullptr) > = decltype(nullptr){} >
          MNL_INLINE auto operator()(const Lhs &lhs, const Rhs &rhs) const noexcept(Id == sym::id("==") | Id == sym::id("<>")) {
             if (bool{});
-            else if constexpr (Id == sym::id("==")) return  MNL_LIKELY(test<Lhs>(rhs)) && lhs == cast<decltype(lhs)>(rhs);
-            else if constexpr (Id == sym::id("<>")) return !MNL_LIKELY(test<Lhs>(rhs)) || lhs != cast<decltype(lhs)>(rhs);
+            else if constexpr (Id == sym::id("==")) return  MNL_LIKELY(is<Lhs>(rhs)) && lhs == as<decltype(lhs)>(rhs);
+            else if constexpr (Id == sym::id("<>")) return !MNL_LIKELY(is<Lhs>(rhs)) || lhs != as<decltype(lhs)>(rhs);
             else return ((const sym &)*this)(lhs, rhs);
          }
-         template< typename Lhs, class Rhs, std::enable_if_t<
-            std::is_same_v<Lhs, const char *> &&
+         template< class Lhs, class Rhs, std::enable_if_t<
+            std::is_same_v<Lhs, char> &&
             std::is_same_v<Rhs, val>, decltype(nullptr) > = decltype(nullptr){} >
-         MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const noexcept(noexcept((*this)((std::string)lhs, rhs)))
+         MNL_INLINE auto operator()(const Lhs *lhs, const Rhs &rhs) const noexcept(Id == sym::id("==") | Id == sym::id("<>")) {
+            if (bool{});
+            else if constexpr (Id == sym::id("==")) return  MNL_LIKELY(is<std::string>(rhs)) && lhs == as<std::string>(rhs);
+            else if constexpr (Id == sym::id("<>")) return !MNL_LIKELY(is<std::string>(rhs)) || lhs != as<std::string>(rhs);
+            else return ((const sym &)*this)(lhs, rhs);
+         }
+
+
+         template< typename Lhs, class Rhs, std::enable_if_t<
+            std::is_same_v<Lhs, char> &&
+            std::is_same_v<Rhs, val>, decltype(nullptr) > = decltype(nullptr){} >
+         MNL_INLINE auto operator()(const Lhs *lhs, const Rhs &rhs) const noexcept(noexcept((*this)((std::string)lhs, rhs)))
             { return (*this)((std::string)lhs, rhs); }
+
          // Nil
          template< typename Lhs, class Rhs, std::enable_if_t<
             std::is_same_v<Lhs, decltype(nullptr)> &&
             std::is_same_v<Rhs, val>, decltype(nullptr) > = decltype(nullptr){} >
          MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const noexcept(Id == sym::id("==") | Id == sym::id("<>")) {
             if (bool{});
-            else if constexpr (Id == sym::id("==")) return  test<>(rhs);
-            else if constexpr (Id == sym::id("<>")) return !test<>(rhs);
+            else if constexpr (Id == sym::id("==")) return  is<>(rhs);
+            else if constexpr (Id == sym::id("<>")) return !is<>(rhs);
             else return ((const sym &)*this)(lhs, rhs);
          }
          // Bool
@@ -1177,7 +1192,7 @@ namespace aux { namespace pub {
             else if constexpr (Id == sym::id("<>" )) return rhs.rep.tag() != (lhs | 0xFFF8 + 0b100);
             else if constexpr (
                Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|") )
-               { if (MNL_LIKELY(test<Lhs>(rhs))) return _apply(lhs, cast<decltype(lhs)>(rhs)); err_TypeMismatch(); }
+               { if (MNL_LIKELY(is<Lhs>(rhs))) return _apply(lhs, as<decltype(lhs)>(rhs)); err_TypeMismatch(); }
             else
                return ((const sym &)*this)(lhs, rhs);
          }
