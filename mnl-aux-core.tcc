@@ -1071,7 +1071,7 @@ namespace aux { namespace pub {
          MNL_INLINE val operator()(const val  &lhs, const val  &rhs) const { return _apply(          lhs ,           rhs ); } // argument
          MNL_INLINE val operator()(const val  &lhs,       val &&rhs) const { return _apply(          lhs , std::move(rhs)); } // implicit
          MNL_INLINE val operator()(      val &&lhs, const val  &rhs) const { return _apply(std::move(lhs),           rhs ); } // conversion
-         MNL_INLINE val operator()(      val &&lhs,       val &&rhs) const { return _apply(std::move(lhs), std::move(rhs)); } // allowed
+         MNL_INLINE val operator()(      val &&lhs,       val &&rhs) const { return _apply(std::move(lhs), std::move(rhs)); } // enabled
       private:
          template<typename Lhs, typename Rhs, std::enable_if_t< // SFINAE requirements in internal function for disambiguation
             std::is_same_v<std::decay_t<Lhs>, val> && std::is_same_v<std::decay_t<Rhs>, val>,
@@ -1125,7 +1125,7 @@ namespace aux { namespace pub {
          template< typename Lhs, class Rhs, std::enable_if_t<
             std::is_same_v<Lhs, long long> | std::is_same_v<Lhs, double> | std::is_same_v<Lhs, float> | std::is_same_v<Lhs, unsigned> &&
             std::is_same_v<Rhs, val>, decltype(nullptr) > = decltype(nullptr){} >
-         MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const noexcept(Id == sym::id("==") | Id == sym::id("<>")) { // implicit conversion disabled
+         MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const noexcept(Id == sym::id("==") | Id == sym::id("<>")) { // conversion disabled
             if (bool{});
             else if constexpr (Id == sym::id("==")) return  MNL_LIKELY(test<Lhs>(rhs)) && lhs == cast<decltype(lhs)>(rhs);
             else if constexpr (Id == sym::id("<>")) return !MNL_LIKELY(test<Lhs>(rhs)) || lhs != cast<decltype(lhs)>(rhs);
