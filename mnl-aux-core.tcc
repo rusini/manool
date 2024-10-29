@@ -260,8 +260,8 @@ namespace aux { namespace pub {
       MNL_INLINE explicit operator bool() const noexcept { return *this != nullptr; }
    public: // Construction -- Implicit conversion (to)
       MNL_INLINE val(long long dat) noexcept: rep{0xFFF8 + 0b001, dat} {} // min_i48 .. max_i48
-      MNL_INLINE val(int dat) noexcept:       val((long long)dat) {}
-      MNL_INLINE val(double dat) noexcept: rep(dat) { if (rep.tag() >= 0xFFF8 + 0b000) MNL_UNREACHABLE; } // excl. inf and nan
+      MNL_INLINE val(int dat) noexcept:       val((long long)dat) {} // covers promoted types
+      MNL_INLINE val(double dat) noexcept: rep(dat) { if (rep.tag() >= 0xFFF8 + 0b000) __builtin_unreachable(); } // excl. inf and nan
       MNL_INLINE val(float dat) noexcept: rep{0xFFF8 + 0b010, dat} {} // ditto
       MNL_INLINE val(const sym &dat) noexcept: rep{0xFFF8 + 0b110, dat} {}
       MNL_INLINE val(bool dat) noexcept: rep{dat | 0xFFF8 + 0b100} {}
@@ -1120,7 +1120,7 @@ namespace aux { namespace pub {
                else
                   err_UnrecognizedOperation();
             else
-               return ((const sym &)*this)(std::forward<Lhs>(lhs), std::forward<Rhs>(rhs));
+               return ((const sym &)*this)(std::forward<Lhs>(lhs), std::forward<Rhs>(rhs)); // for completeness
          }
       public:
       // "specializations" derivable by scalar value propagation in _apply; not absolutely necessary, but used in _apply as part of its architecture
@@ -1138,12 +1138,12 @@ namespace aux { namespace pub {
                std::is_same_v<Lhs, unsigned> && Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|") ) {
                { if (MNL_LIKELY(is<Lhs>(rhs))) return _apply(lhs, as<decltype(lhs)>(rhs)); err_TypeMismatch(); }
             else
-               return ((const sym &)*this)(lhs, rhs);
+               return ((const sym &)*this)(lhs, rhs); // for completeness
          }
          template< typename Lhs, class Rhs, std::enable_if_t<
             std::is_same_v<Lhs, int> &&
             std::is_same_v<Rhs, val>, decltype(nullptr) > = decltype(nullptr){} >
-         MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const noexcept(noexcept((*this)((long long)lhs, rhs)))
+         MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const noexcept(noexcept((*this)((long long)lhs, rhs))) // for completeness
             { return (*this)((long long)lhs, rhs); }
          // Sym, string
          template< class Lhs, class Rhs, std::enable_if_t<
@@ -1153,7 +1153,7 @@ namespace aux { namespace pub {
             if (bool{});
             else if constexpr (Id == sym::id("==")) return  MNL_LIKELY(is<Lhs>(rhs)) && lhs == as<decltype(lhs)>(rhs);
             else if constexpr (Id == sym::id("<>")) return !MNL_LIKELY(is<Lhs>(rhs)) || lhs != as<decltype(lhs)>(rhs);
-            else return ((const sym &)*this)(lhs, rhs);
+            else return ((const sym &)*this)(lhs, rhs); // for completeness
          }
          template< class Lhs, class Rhs, std::enable_if_t<
             std::is_same_v<Lhs, char> &&
