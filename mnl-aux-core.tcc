@@ -1100,17 +1100,17 @@ namespace aux { namespace pub {
                   err_UnrecognizedOperation();
                case 0xFFF8 + 0b111 /*BoxPtr (fallback)*/: return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs),
                   *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
-               case 0xFFF8 + 0b001 /*I48*/:               return (*this)(cast<long long>(lhs),   rhs);
-               default             /*F64*/:               return (*this)(cast<double>(lhs),      rhs);
-               case 0xFFF8 + 0b010 /*F32*/:               return (*this)(cast<float>(lhs),       rhs);
-               case 0xFFF8 + 0b011 /*U32*/:               return (*this)(cast<unsigned>(lhs),    rhs);
+               case 0xFFF8 + 0b001 /*I48*/:               return (*this)(as<long long>(lhs),   rhs);
+               default             /*F64*/:               return (*this)(as<double>(lhs),      rhs);
+               case 0xFFF8 + 0b010 /*F32*/:               return (*this)(as<float>(lhs),       rhs);
+               case 0xFFF8 + 0b011 /*U32*/:               return (*this)(as<unsigned>(lhs),    rhs);
                }
             else if constexpr (Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|"))
                if (bool{});
-               else if (MNL_UNLIKELY(test<unsigned>(lhs()))) // U32
-                  return (*this)(cast<unsigned>(lhs), rhs);
-               else if (MNL_LIKELY(test<bool>(lhs()))) // Bool
-                  return (*this)(cast<bool>(lhs), rhs);
+               else if (MNL_UNLIKELY(is<unsigned>(lhs()))) // U32
+                  return (*this)(as<unsigned>(lhs), rhs);
+               else if (MNL_LIKELY(is<bool>(lhs()))) // Bool
+                  return (*this)(as<bool>(lhs), rhs);
                else if (MNL_LIKELY(lhs.rep.tag() == 0xFFF8 + 0b111)) // BoxPtr (fallback)
                   return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs),
                      *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
