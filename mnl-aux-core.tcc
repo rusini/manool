@@ -1080,17 +1080,17 @@ namespace aux { namespace pub {
             if (bool{});
             else if constexpr (Id == sym::id("==") | Id == sym::id("<>"))
                switch (lhs.rep.tag()) MNL_NOTE(jumptable) {
-               default             /*F64*/:               return (*this)(cast<double>(lhs),      rhs);
+               default             /*F64*/:               return (*this)(as<double>(lhs),      rhs);
                case 0xFFF8 + 0b111 /*BoxPtr (fallback)*/: return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(std::forward<Lhs>(lhs),
                   *this, 1, &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Rhs, val>, val &, val>)rhs));
-               case 0xFFF8 + 0b000 /*Nil*/:               return (*this)(nullptr                 rhs);
+               case 0xFFF8 + 0b000 /*Nil*/:               return (*this)(nullptr               rhs);
                case 0xFFF8 + 0b001 /*I48*/:               if (std::memcmp(&lhs, &rhs, sizeof(val))) return Id == sym::id("<>"); else
                   { if (is<long long>(rhs) && as<long long>(rhs) == as<long long>(lhs)); else __builtin_unreachable(); return Id == sym::id("=="); }
-               case 0xFFF8 + 0b010 /*F32*/:               return (*this)(cast<float>(lhs),       rhs);
-               case 0xFFF8 + 0b110 /*Sym*/:               return (*this)(cast<const sym &>(lhs), rhs);
-               case 0xFFF8 + 0b100 /*Bool/False*/:        return (*this)(false,                  rhs);
-               case 0xFFF8 + 0b101 /*Bool/True*/:         return (*this)(true,                   rhs);
-               case 0xFFF8 + 0b011 /*U32*/:               return (*this)(cast<unsigned>(lhs),    rhs);
+               case 0xFFF8 + 0b010 /*F32*/:               return (*this)(as<float>(lhs),       rhs);
+               case 0xFFF8 + 0b110 /*Sym*/:               return (*this)(as<const sym &>(lhs), rhs);
+               case 0xFFF8 + 0b100 /*Bool/False*/:        return (*this)(false,                rhs);
+               case 0xFFF8 + 0b101 /*Bool/True*/:         return (*this)(true,                 rhs);
+               case 0xFFF8 + 0b011 /*U32*/:               return (*this)(as<unsigned>(lhs),    rhs);
                }
             else if constexpr (
                Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") |
@@ -1127,13 +1127,13 @@ namespace aux { namespace pub {
             std::is_same_v<Rhs, val>, decltype(nullptr) > = decltype(nullptr){} >
          MNL_INLINE auto operator()(Lhs lhs, const Rhs &rhs) const noexcept(Id == sym::id("==") | Id == sym::id("<>")) { // conversion disabled
             if (bool{});
-            else if constexpr (Id == sym::id("==")) return  MNL_LIKELY(test<Lhs>(rhs)) && lhs == cast<decltype(lhs)>(rhs);
-            else if constexpr (Id == sym::id("<>")) return !MNL_LIKELY(test<Lhs>(rhs)) || lhs != cast<decltype(lhs)>(rhs);
+            else if constexpr (Id == sym::id("==")) return  MNL_LIKELY(is<Lhs>(rhs)) && lhs == as<decltype(lhs)>(rhs);
+            else if constexpr (Id == sym::id("<>")) return !MNL_LIKELY(is<Lhs>(rhs)) || lhs != as<decltype(lhs)>(rhs);
             else if constexpr (
                Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") |
                Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") ||
                std::is_same_v<Lhs, unsigned> && Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|") ) {
-               { if (MNL_LIKELY(test<Lhs>(rhs))) return _apply(lhs, cast<decltype(lhs)>(rhs)); err_TypeMismatch(); }
+               { if (MNL_LIKELY(is<Lhs>(rhs))) return _apply(lhs, as<decltype(lhs)>(rhs)); err_TypeMismatch(); }
             else
                return ((const sym &)*this)(lhs, rhs);
          }
