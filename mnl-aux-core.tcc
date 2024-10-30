@@ -936,17 +936,18 @@ namespace aux {
 
    // I48 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+   // 48-bit addition, subtraction
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat> _add(Dat lhs, Dat rhs)
       { long long res = lhs + rhs; if (MNL_LIKELY(res >= val::min_i48 & res <= val::max_i48)) return res; err_Overflow(); } // for hot paths
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat> _sub(Dat lhs, Dat rhs)
       { long long res = lhs - rhs; if (MNL_LIKELY(res >= val::min_i48 & res <= val::max_i48)) return res; err_Overflow(); } // for hot paths
-
+   // 48-bit multiplication
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat> _mul(Dat lhs, Dat rhs) {
       long long res; bool ok = !__builtin_mul_overflow(lhs, rhs, &res);
       if (MNL_LIKELY(ok) && MNL_LIKELY(res >= val::min_i48 & res <= val::max_i48)) return res;
       err_Overflow(); // for hot paths
    }
-
+   // 48-bit (symmetric) negation (unary minus), absolute value (magnitude)
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat> _neg(Dat arg) { return -arg; }
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat> _abs(Dat arg) { using std::abs; return abs(arg); }
 
@@ -967,21 +968,22 @@ namespace aux {
 
    // U32, Bool ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+   // 32-bit modular addition, subtraction, multiplication
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _add(Dat lhs, Dat rhs) { return lhs + rhs; }
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _sub(Dat lhs, Dat rhs) { return lhs - rhs; }
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _mul(Dat lhs, Dat rhs) { return lhs * rhs; }
-
-   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned> | std::is_same_v<Dat, bool>, Dat> _xor(Dat lhs, Dat rhs)
-      { return lhs ^ rhs; }
+   // boolean (logical) and bitwise and, or, xor (exclusive-or)
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned> | std::is_same_v<Dat, bool>, Dat> _and(Dat lhs, Dat rhs)
       { return lhs & rhs; }
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned> | std::is_same_v<Dat, bool>, Dat> _or (Dat lhs, Dat rhs)
       { return lhs | rhs; }
-
+   template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned> | std::is_same_v<Dat, bool>, Dat> _xor(Dat lhs, Dat rhs)
+      { return lhs ^ rhs; }
+   // negation (2's complement), absolute value (identity), bitwise-not (negation, complement)
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _neg(Dat arg) { return -arg; }
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _abs(Dat arg) { return +arg; }
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _not(Dat arg) { return ~arg; }
-
+   // boolean (logical) not (negation)
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, bool>, Dat> _not(Dat arg) { return !arg; }
 
 } // namespace aux
