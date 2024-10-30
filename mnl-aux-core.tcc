@@ -1319,9 +1319,9 @@ namespace aux { namespace pub {
             if constexpr (Id == sym::id( "<=")) return lhs <= rhs;
             if constexpr (Id == sym::id( ">" )) return lhs >  rhs;
             if constexpr (Id == sym::id( ">=")) return lhs >= rhs;
-            if constexpr (Id == sym::id("Xor")) return (_xor)(lhs, rhs);
             if constexpr (Id == sym::id( "&" )) return (_and)(lhs, rhs);
             if constexpr (Id == sym::id( "|" )) return (_or )(lhs, rhs);
+            if constexpr (Id == sym::id("Xor")) return (_xor)(lhs, rhs);
          }
          template<typename Dat, std::enable_if_t<
             std::is_same_v<Dat, long long> | std::is_same_v<Dat, double> | std::is_same_v<Dat, float> |
@@ -1335,11 +1335,11 @@ namespace aux { namespace pub {
       };
    public:
       template<enum sym::id Id, std::enable_if_t<
+         Id == sym::id( "+" ) | Id == sym::id( "-" ) | Id == sym::id( "*" ) |
          Id == sym::id( "==") | Id == sym::id( "<>") |
-         Id == sym::id( "+" ) | Id == sym::id( "-" ) | Id == sym::id("*") |
-         Id == sym::id( "<" ) | Id == sym::id( "<=") | Id == sym::id(">") | Id == sym::id(">=") |
-         Id == sym::id("Xor") | Id == sym::id( "&" ) | Id == sym::id("|") |
-         Id == sym::id( "-" ) | Id == sym::id("Abs") | Id == sym::id("~"),
+         Id == sym::id( "<" ) | Id == sym::id( "<=") | Id == sym::id( ">" ) | Id == sym::id(">=") |
+         Id == sym::id( "&" ) | Id == sym::id( "|" ) | Id == sym::id("Xor") |
+         Id == sym::id( "-" ) | Id == sym::id("Abs") | Id == sym::id( "~" ),
          decltype(nullptr) > = decltype(nullptr){} >
       static constexpr _op<Id> op{};
    };
