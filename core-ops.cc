@@ -348,7 +348,7 @@ namespace aux {
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _lgamma(Dat arg) { // C99/POSIX
       using std::trunc;
-      int _; Dat res = (lgamma_r)(arg, &_); // introduced by POSIX (std::lgamma is not thread-safe under POSIX)
+      int _; Dat res = (lgamma_r)(arg, &_); // introduced by POSIX (std::lgamma is not MT-safe under POSIX)
       if (MNL_LIKELY(!isinf(res))) return res;
       MNL_ERR(arg <= 0 && trunc(arg) == arg ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow"), arg); // pole error for nonpositive integers as per POSIX
    }
