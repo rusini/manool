@@ -329,7 +329,7 @@ namespace aux {
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _gamma(Dat arg) { // C99/POSIX (incl. BSD deviations)
       using std::tgamma, std::trunc;
-      auto res = tgamma(arg); // specified by C99, and more in detail by POSIX (not by IEEE 754)
+      auto res = tgamma(arg);
       if (MNL_LIKELY(isfinite(res))) return res;
       MNL_ERR(arg <= 0 && trunc(arg) == arg ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow"), arg); // pole error for negative integers (contrary to POSIX)
    }
