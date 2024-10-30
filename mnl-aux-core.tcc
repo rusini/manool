@@ -258,7 +258,7 @@ namespace aux { namespace pub {
       MNL_INLINE val &operator=(val &&rhs) noexcept { unhold(), rep = rhs.rep, rhs.rep = {0xFFF8 + 0b000}; return *this; }
       MNL_INLINE void swap(val &rhs) noexcept { using std::swap; swap(rep, rhs.rep); }
       MNL_INLINE explicit operator bool() const noexcept { return *this != nullptr; }
-   public: // Construction -- Implicit conversion (to)
+   public: // Construction -- Implicit conversion (to) -- implicit conversion disabled for `dat`
       MNL_INLINE val(long long dat) noexcept: rep{0xFFF8 + 0b001, dat} {} // min_i48 .. max_i48
       MNL_INLINE val(int dat) noexcept:       val((long long)dat) {}
       MNL_INLINE val(double dat) noexcept: rep(dat) { if (rep.tag() >= 0xFFF8 + 0b000) __builtin_unreachable(); } // excl. inf and nan
