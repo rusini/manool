@@ -952,13 +952,14 @@ namespace aux {
 
    // F64, F32 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+   // IEEE754 addition, subtraction, multiplication
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat> _add(Dat lhs, Dat rhs)
       { auto res = lhs + rhs; if (MNL_LIKELY(!isinf(res))) return res; err_Overflow(); } // for hot paths
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat> _sub(Dat lhs, Dat rhs)
       { auto res = lhs - rhs; if (MNL_LIKELY(!isinf(res))) return res; err_Overflow(); } // for hot paths
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat> _mul(Dat lhs, Dat rhs)
       { auto res = lhs * rhs; if (MNL_LIKELY(!isinf(res))) return res; err_Overflow(); } // for hot paths
-
+   // negation (unary minus), absolute value (magnitude)
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat> _neg(Dat arg)
       { return -arg; }
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat> _abs(Dat arg)
