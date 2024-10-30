@@ -1050,18 +1050,12 @@ namespace aux { namespace pub {
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    struct val::ops { // empty (aggregate), for code organization and access control
-   private: // TODO: MNL_ERR is MNL_NOINLINE, that goes into a non-comdat section when a fragment/specialization is generated in gcc
-      //static MNL_INLINE void err_InvalidInvocation() { MNL_ERR(MNL_SYM("InvalidInvocation")); } // to avoid machine code duplication
-      //static MNL_INLINE void err_TypeMismatch()      { MNL_ERR(MNL_SYM("TypeMismatch")); }      // (including hot section)
-      static constexpr auto err_UnrecognizedOperation = []() MNL_INLINE{ MNL_ERR(MNL_SYM("UnrecognizedOperation")); };
-      static constexpr auto err_TypeMismatch          = []() MNL_INLINE{ MNL_ERR(MNL_SYM("TypeMismatch"));      };
    private:
-      //static MNL_INLINE void err_numeric(const val &lhs) { // ditto
-      //   MNL_ERR(test<long long>(lhs) | test<double>(lhs) | test<float>(lhs) | test<unsigned>(lhs) ?
-      //      MNL_SYM("TypeMismatch") : MNL_SYM("UnrecognizedOperation", &lhs);
-      //}
+      static constexpr auto err_UnrecognizedOperation = []() MNL_INLINE{ MNL_ERR(MNL_SYM("UnrecognizedOperation")); };
+      static constexpr auto err_TypeMismatch          = []() MNL_INLINE{ MNL_ERR(MNL_SYM("TypeMismatch"));          };
+   private:
       static constexpr auto err_numeric = [](const val &lhs) MNL_INLINE{
-         MNL_ERR(test<long long>(lhs) | test<double>(lhs) | test<float>(lhs) | test<unsigned>(lhs) ?
+         MNL_ERR(is<long long>(lhs) || is<double>(lhs) || is<float>(lhs) || is<unsigned>(lhs) ?
             MNL_SYM("TypeMismatch") : MNL_SYM("UnrecognizedOperation", &lhs);
       };
       static constexpr auto err_bitwise = [](const val &lhs) MNL_INLINE{
