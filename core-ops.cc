@@ -188,7 +188,7 @@ namespace aux {
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
-   _log(Dat base, Dat arg) {
+   _log(Dat base, Dat arg) { // naive log base
       using std::log2;
       if (MNL_UNLIKELY(base == 0)) (err_Undefined)();
       auto res = log2(arg) / log2(base);
