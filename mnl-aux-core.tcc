@@ -1063,6 +1063,10 @@ namespace aux { namespace pub {
          MNL_ERR(test<long long>(lhs) | test<double>(lhs) | test<float>(lhs) | test<unsigned>(lhs) ?
             MNL_SYM("TypeMismatch") : MNL_SYM("UnrecognizedOperation", &lhs);
       };
+      static constexpr auto err_bitwise = [](const val &lhs) MNL_INLINE{
+         MNL_ERR(test<unsigned>(lhs) ?
+            MNL_SYM("TypeMismatch") : MNL_SYM("UnrecognizedOperation", &lhs);
+      };
    private:
       template<enum sym::id Id> class val::ops::_op { // surrogate used instead of a sym
       private:
@@ -1207,10 +1211,14 @@ namespace aux { namespace pub {
             }
             else if constexpr (
                Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") |
-               Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") ||
-               std::is_same_v<Rhs, unsigned> && Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|") ) {
+               Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") ) {
                if (MNL_LIKELY(is<Rhs>(lhs))) return _apply(as<decltype(rhs)>(lhs), rhs);
                if (MNL_UNLIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) err_numeric(lhs);
+            }
+            else if constexpr (
+               std::is_same_v<Rhs, unsigned> && Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|") ) {
+               if (MNL_LIKELY(is<Rhs>(lhs))) return _apply(as<decltype(rhs)>(lhs), rhs);
+               if (MNL_UNLIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) err_bitwise(lhs);
             }
             else
                return ((const sym &)*this)(std::forward<Lhs>(lhs), rhs); // for completeness
