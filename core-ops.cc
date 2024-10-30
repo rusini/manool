@@ -188,7 +188,7 @@ namespace aux {
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
-   _log(Dat base, Dat arg) { // naive log base
+   _log(Dat base, Dat arg) { // arbitrary-base `log` with "proper" error reporting (useful outside of numerical modelling)
       using std::log2;
       if (MNL_UNLIKELY(base == 0)) (err_Undefined)();
       auto res = log2(arg) / log2(base);
@@ -220,8 +220,8 @@ namespace aux {
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
-   _sqr(Dat arg)
-      { return (_mul)(arg, arg); }
+   _sqr(Dat arg) // Wirth's `sqr`; also complementary to sqrt and hypot
+      { return (_mul)(arg, arg); } // TODO: maybe put into the use point - makes no sense ho hide error signaling here, it's just an "alias"
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _sqrt(Dat arg) { // C99/POSIX/IEEE754
@@ -327,7 +327,7 @@ namespace aux {
       { using std::erfc; return erfc(arg); }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
-   _gamma(Dat arg) { // C99/POSIX
+   _gamma(Dat arg) { // C99/POSIX (incl. BSD deviations)
       using std::tgamma, std::trunc;
       auto res = tgamma(arg); // specified by C99, and more in detail by POSIX (not by IEEE 754)
       if (MNL_LIKELY(isfinite(res))) return res;
@@ -352,13 +352,13 @@ namespace aux {
       if (MNL_LIKELY(!isinf(res))) return res;
       MNL_ERR(arg <= 0 && trunc(arg) == arg ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow"), arg); // pole error for nonpositive integers as per POSIX
    }
-   template<typename Dat> // BesJn ("Bessel function of the first kind of integer order")  -- POSIX
+   template<typename Dat> // POSIX - Bessel function of the first kind of integer order
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _jn(long long n, Dat arg) { // specified by POSIX, and in more detail in glibc (not in C99/11)
       if (MNL_UNLIKELY((int)n != n)) MNL_ERR(MNL_SYM("UnsupportedArgument"));
       return (int)n == 0 ? (j0)(arg) : (int)n == 1 ? (j1)(arg) : (jn)(n, arg); // dynamic (run-time) specialization
    }
-   template<typename Dat> // BesYn ("Bessel function of the second kind of integer order") -- POSIX
+   template<typename Dat> // POSIX - Bessel function of the second kind of integer order
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _yn(long long n, Dat arg) { // specified by POSIX, and in more detail in glibc (not in C99/11)
       if (MNL_UNLIKELY((int)n != n)) MNL_ERR(MNL_SYM("UnsupportedArgument"));
