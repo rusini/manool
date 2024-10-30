@@ -1198,18 +1198,18 @@ namespace aux { namespace pub {
          MNL_INLINE val operator()(Lhs &&lhs, Rhs rhs) const {
             if (bool{});
             else if constexpr (Id == sym::id("==")) {
-               if (MNL_LIKELY(test<Rhs>(lhs))) return cast<decltype(rhs)>(lhs) == rhs;
+               if (MNL_LIKELY(is<Rhs>(lhs))) return as<decltype(rhs)>(lhs) == rhs;
                if (MNL_LIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) return false;
             }
             else if constexpr (Id == sym::id("<>")) {
-               if (MNL_LIKELY(test<Rhs>(lhs))) return cast<decltype(rhs)>(lhs) != rhs;
+               if (MNL_LIKELY(is<Rhs>(lhs))) return as<decltype(rhs)>(lhs) != rhs;
                if (MNL_LIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) return true;
             }
             else if constexpr (
                Id == sym::id("+") | Id == sym::id("-" ) | Id == sym::id("*") |
                Id == sym::id("<") | Id == sym::id("<=") | Id == sym::id(">") | Id == sym::id(">=") ||
                std::is_same_v<Rhs, unsigned> && Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|") ) {
-               if (MNL_LIKELY(test<Rhs>(lhs))) return _apply(cast<decltype(rhs)>(lhs), rhs);
+               if (MNL_LIKELY(is<Rhs>(lhs))) return _apply(as<decltype(rhs)>(lhs), rhs);
                if (MNL_UNLIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) err_numeric(lhs);
             }
             else
@@ -1231,11 +1231,11 @@ namespace aux { namespace pub {
          MNL_INLINE val operator()(Lhs &&lhs, const Rhs &rhs) const {
             if (bool{});
             else if constexpr (Id == sym::id("==")) {
-               if (MNL_LIKELY(test<Rhs>(lhs))) return cast<decltype(rhs)>(lhs) == rhs;
+               if (MNL_LIKELY(is<Rhs>(lhs))) return as<decltype(rhs)>(lhs) == rhs;
                if (MNL_LIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) return false;
             }
             else if constexpr (Id == sym::id("<>")) {
-               if (MNL_LIKELY(test<Rhs>(lhs))) return cast<decltype(rhs)>(lhs) != rhs;
+               if (MNL_LIKELY(is<Rhs>(lhs))) return as<decltype(rhs)>(lhs) != rhs;
                if (MNL_LIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) return true;
             }
             else
@@ -1251,11 +1251,11 @@ namespace aux { namespace pub {
          MNL_INLINE val operator()(Lhs &&lhs, Rhs rhs) const {
             if (bool{});
             else if constexpr (Id == sym::id("==")) {
-               if (MNL_LIKELY(test<>(lhs))) return true;
+               if (MNL_LIKELY(is<>(lhs))) return true;
                if (MNL_LIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) return false;
             }
             else if constexpr (Id == sym::id("<>")) {
-               if (MNL_LIKELY(test<>(lhs))) return false;
+               if (MNL_LIKELY(is<>(lhs))) return false;
                if (MNL_LIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) return true;
             }
             else
