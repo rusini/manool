@@ -930,9 +930,7 @@ namespace aux { namespace pub {
 namespace aux {
 
    using std::isinf;
-
-   constexpr auto err_Overflow = []() MNL_INLINE // to allow optimizer to blend jump targets
-      { MNL_ERR(MNL_SYM("Overflow")); };
+   constexpr auto err_Overflow = []() MNL_INLINE { MNL_ERR(MNL_SYM("Overflow")); }; // to enable basic block merging
 
    // I48 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
