@@ -327,7 +327,7 @@ namespace aux {
       { using std::erfc; return erfc(arg); }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
-   _gamma(Dat arg) { // C99/POSIX (incl. BSD deviations)
+   _gamma(Dat arg) { // C99/POSIX (incl. error reporting deviations)
       using std::tgamma, std::trunc;
       auto res = tgamma(arg);
       if (MNL_LIKELY(isfinite(res))) return res;
@@ -352,19 +352,19 @@ namespace aux {
       if (MNL_LIKELY(!isinf(res))) return res;
       MNL_ERR(arg <= 0 && trunc(arg) == arg ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow"), arg); // pole error for nonpositive integers as per POSIX
    }
-   template<typename Dat> // POSIX - Bessel function of the first kind of integer order
+   template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
-   _jn(long long n, Dat arg) { // specified by POSIX, and in more detail in glibc (not in C99/11)
+   _jn(long long n, Dat arg) { // POSIX (incl. error reporting deviations) - Bessel function of the first kind of integer order
       if (MNL_UNLIKELY((int)n != n)) MNL_ERR(MNL_SYM("UnsupportedArgument"));
       return (int)n == 0 ? (j0)(arg) : (int)n == 1 ? (j1)(arg) : (jn)(n, arg); // dynamic (run-time) specialization
    }
-   template<typename Dat> // POSIX - Bessel function of the second kind of integer order
+   template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
-   _yn(long long n, Dat arg) { // specified by POSIX, and in more detail in glibc (not in C99/11)
+   _yn(long long n, Dat arg) { // POSIX (incl. error reporting deviations) - Bessel function of the second kind of integer order
       if (MNL_UNLIKELY((int)n != n)) MNL_ERR(MNL_SYM("UnsupportedArgument"));
       Dat res = (int)n == 0 ? (y0)(arg) : (int)n == 1 ? (y1)(arg) : (yn)(n, arg); // dynamic (run-time) specialization
       if (MNL_LIKELY(isfinite(res))) return res;
-      MNL_ERR(!isnan(res) ? arg == 0 ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow") : MNL_SYM("Undefined"), res, arg);
+      MNL_ERR(arg >= 0 ? arg == 0 ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow") : MNL_SYM("Undefined"), arg);
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
