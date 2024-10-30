@@ -964,7 +964,7 @@ namespace aux {
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat> _abs(Dat arg)
       { using std::abs; return abs(arg); }
 
-   // U32 and Bool /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   // U32, Bool ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _add(Dat lhs, Dat rhs) { return lhs + rhs; }
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _sub(Dat lhs, Dat rhs) { return lhs - rhs; }
