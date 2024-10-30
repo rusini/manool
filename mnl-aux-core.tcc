@@ -968,22 +968,22 @@ namespace aux {
 
    // U32, Bool ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   // 32-bit modular addition, subtraction, multiplication
+   // 32-bit (modular/wraparound) addition, subtraction, multiplication
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _add(Dat lhs, Dat rhs) { return lhs + rhs; }
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _sub(Dat lhs, Dat rhs) { return lhs - rhs; }
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _mul(Dat lhs, Dat rhs) { return lhs * rhs; }
-   // boolean (logical) and bitwise and, or, xor (exclusive-or)
+   // boolean/logical and bitwise and, or, xor (exclusive-or)
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned> | std::is_same_v<Dat, bool>, Dat> _and(Dat lhs, Dat rhs)
       { return lhs & rhs; }
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned> | std::is_same_v<Dat, bool>, Dat> _or (Dat lhs, Dat rhs)
       { return lhs | rhs; }
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned> | std::is_same_v<Dat, bool>, Dat> _xor(Dat lhs, Dat rhs)
       { return lhs ^ rhs; }
-   // negation (2's complement), absolute value (identity), bitwise-not (negation, complement)
+   // negation (2's complement), absolute value (identity), bitwise-not (negation/complement)
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _neg(Dat arg) { return -arg; }
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _abs(Dat arg) { return +arg; }
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, unsigned>, Dat> _not(Dat arg) { return ~arg; }
-   // boolean (logical) not (negation)
+   // boolean/logical not (negation)
    template<typename Dat> MNL_INLINE inline std::enable_if_t<std::is_same_v<Dat, bool>, Dat> _not(Dat arg) { return !arg; }
 
 } // namespace aux
