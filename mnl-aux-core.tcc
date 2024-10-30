@@ -1155,10 +1155,10 @@ namespace aux { namespace pub {
             else if constexpr (Id == sym::id("<>")) return !MNL_LIKELY(is<Lhs>(rhs)) || lhs != as<decltype(lhs)>(rhs);
             else return ((const sym &)*this)(lhs, rhs); // for completeness
          }
-         template< typename Lhs, class Rhs, std::enable_if_t< // for completeness
+         template< typename Lhs, class Rhs, std::enable_if_t< // for completeness (straightforward rather than fast)
             std::is_same_v<Lhs, char> &&
             std::is_same_v<Rhs, val>, decltype(nullptr) > = decltype(nullptr){} >
-         MNL_INLINE auto operator()(const Lhs *lhs, const Rhs &rhs) const noexcept(noexcept((*this)((std::string)lhs, rhs)))
+         MNL_INLINE auto operator()(const Lhs *lhs, const Rhs &rhs) const noexcept(noexcept((*this)((std::string)lhs, rhs))) // TODO: actually noexcept(false)
             { return (*this)((std::string)lhs, rhs); }
          // Nil
          template< typename Lhs, class Rhs, std::enable_if_t<
@@ -1209,18 +1209,18 @@ namespace aux { namespace pub {
                if (MNL_UNLIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) err_numeric(lhs);
             }
             else
-               return ((const sym &)*this)(std::forward<Lhs>(lhs), rhs);
+               return ((const sym &)*this)(std::forward<Lhs>(lhs), rhs); // for completeness
             return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(
                std::forward<Lhs>(lhs), *this, 1, &const_cast<val &>((const val &)rhs));
          }
-         template< class Lhs, typename Rhs, std::enable_if_t<
+         template< typename Lhs, typename Rhs, std::enable_if_t< // for completeness
             std::is_same_v<std::remove_const_t<std::remove_reference_t<Lhs>>, val> &&
             std::is_same_v<Rhs, int>,
             decltype(nullptr) > = decltype(nullptr){} >
          MNL_INLINE val operator()(Lhs &&lhs, Rhs rhs) const
             { return (*this)(std::forward<Lhs>(lhs), (long long)rhs); }
          // Sym
-         template< class Lhs, typename Rhs, std::enable_if_t<
+         template< typename Lhs, typename Rhs, std::enable_if_t<
             std::is_same_v<std::remove_const_t<std::remove_reference_t<Lhs>>, val> &&
             std::is_same_v<Rhs, sym>,
             decltype(nullptr) > = decltype(nullptr){} >
@@ -1235,12 +1235,12 @@ namespace aux { namespace pub {
                if (MNL_LIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) return true;
             }
             else
-               return ((const sym &)*this)(std::forward<Lhs>(lhs), rhs);
+               return ((const sym &)*this)(std::forward<Lhs>(lhs), rhs); // for completeness
             return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(
                std::forward<Lhs>(lhs), *this, 1, &const_cast<val &>((const val &)rhs));
          }
          // Nil
-         template< class Lhs, typename Rhs, std::enable_if_t<
+         template< typename Lhs, typename Rhs, std::enable_if_t<
             std::is_same_v<std::remove_const_t<std::remove_reference_t<Lhs>>, val> &&
             std::is_same_v<Rhs, decltype(nullptr)>,
             decltype(nullptr) > = decltype(nullptr){} >
@@ -1255,7 +1255,7 @@ namespace aux { namespace pub {
                if (MNL_LIKELY(lhs.rep.tag() != 0xFFF8 + 0b111)) return true;
             }
             else
-               return ((const sym &)*this)(std::forward<Lhs>(lhs), rhs);
+               return ((const sym &)*this)(std::forward<Lhs>(lhs), rhs); // for completeness
             return static_cast<root *>(lhs.rep.template dat<void *>())->_invoke(
                std::forward<Lhs>(lhs), *this, 1, &const_cast<val &>((const val &)nullptr));
       public:
