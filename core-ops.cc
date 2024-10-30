@@ -183,7 +183,7 @@ namespace aux {
    _log(Dat arg) { // C99/POSIX/IEEE754
       using std::log; auto res = log(arg);
       if (MNL_LIKELY(isfinite(res))) return res;
-      MNL_ERR(!isnan(res) ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res);
+      MNL_ERR(!isnan(res) ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res); // for regular paths
       // as per IEEE 754 `log` never results in overflow
    }
    template<typename Dat>
@@ -331,7 +331,8 @@ namespace aux {
       using std::tgamma, std::trunc;
       auto res = tgamma(arg);
       if (MNL_LIKELY(isfinite(res))) return res;
-      MNL_ERR(arg <= 0 && trunc(arg) == arg ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow"), arg); // pole error for negative integers (contrary to POSIX)
+      MNL_ERR(arg <= 0 && trunc(arg) == arg ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow"), arg); // for regular paths
+      // pole error for negative integers (contrary to POSIX)
    }
    # define MNL_M(DAT, SUFFIX) /* c++ overloads for some POSIX-specific stuff from <math.h> */ \
       MNL_INLINE static inline DAT lgamma_r(DAT arg, int *sign) { return ::lgamma##SUFFIX##_r(arg, sign); } \
@@ -350,7 +351,8 @@ namespace aux {
       using std::trunc;
       int _; Dat res = (lgamma_r)(arg, &_); // introduced by POSIX (std::lgamma is not MT-safe under POSIX)
       if (MNL_LIKELY(!isinf(res))) return res;
-      MNL_ERR(arg <= 0 && trunc(arg) == arg ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow"), arg); // pole error for nonpositive integers as per POSIX
+      MNL_ERR(arg <= 0 && trunc(arg) == arg ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow"), arg); // for regular paths
+      // pole error for nonpositive integers as per POSIX
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
@@ -364,7 +366,7 @@ namespace aux {
       if (MNL_UNLIKELY((int)n != n)) MNL_ERR(MNL_SYM("UnsupportedArgument"));
       Dat res = (int)n == 0 ? (y0)(arg) : (int)n == 1 ? (y1)(arg) : (yn)(n, arg); // dynamic (run-time) specialization
       if (MNL_LIKELY(isfinite(res))) return res;
-      MNL_ERR(arg >= 0 ? arg == 0 ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow") : MNL_SYM("Undefined"), arg);
+      MNL_ERR(arg >= 0 ? arg == 0 ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow") : MNL_SYM("Undefined"), arg); // for regular paths
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
