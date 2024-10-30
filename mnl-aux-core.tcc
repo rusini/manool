@@ -1274,7 +1274,7 @@ namespace aux { namespace pub {
          MNL_INLINE val operator()(const val  &arg) const { return _apply(          arg ); }
          MNL_INLINE val operator()(      val &&arg) const { return _apply(std::move(arg)); }
       private:
-         template<class Arg, std::enable_if_t<
+         template<typename Arg, std::enable_if_t<
             std::is_same_v<std::decay_t<Arg>, val>,
             decltype(nullptr) > = decltype(nullptr){} >
          MNL_INLINE static val _apply(Arg &&arg) {
@@ -1285,23 +1285,23 @@ namespace aux { namespace pub {
                   err_UnrecognizedOperation();
                case 0xFFF8 + 0b111 /*BoxPtr (fallback)*/:
                   return static_cast<root *>(arg.rep.template dat<void *>())->_invoke(std::forward<Arg>(arg), *this, 0, {});
-               case 0xFFF8 + 0b001 /*I48*/: return _apply(cast<long long>(arg));
-               default             /*F64*/: return _apply(cast<double>(arg));
-               case 0xFFF8 + 0b010 /*F32*/: return _apply(cast<float>(arg));
-               case 0xFFF8 + 0b011 /*U32*/: return _apply(cast<unsigned>(arg));
+               case 0xFFF8 + 0b001 /*I48*/: return _apply(as<long long>(arg));
+               default             /*F64*/: return _apply(as<double>(arg));
+               case 0xFFF8 + 0b010 /*F32*/: return _apply(as<float>(arg));
+               case 0xFFF8 + 0b011 /*U32*/: return _apply(as<unsigned>(arg));
                }
             else if constexpr (Id == sym::id("~"))
                if (bool{});
-               else if (MNL_UNLIKELY(test<unsigned>(arg))) // U32
-                  return _apply(cast<unsigned>(arg));
-               else if (MNL_LIKELY(test<bool>(arg))) // Bool
-                  return _apply(cast<bool>(arg));
+               else if (MNL_UNLIKELY(is<unsigned>(arg))) // U32
+                  return _apply(as<unsigned>(arg));
+               else if (MNL_LIKELY(is<bool>(arg))) // Bool
+                  return _apply(as<bool>(arg));
                else if (MNL_LIKELY(arg.rep.tag() == 0xFFF8 + 0b111)) // BoxPtr (fallback)
                   return static_cast<root *>(arg.rep.template dat<void *>())->_invoke(std::forward<Arg>(arg), *this, 0, {});
                else
                   err_UnrecognizedOperation();
             else
-               return ((const sym &)*this)(std::forward<Arg>(arg));
+               return ((const sym &)*this)(std::forward<Arg>(arg)); // for completeness
          }
       private:
          template<typename Dat, std::enable_if_t<
