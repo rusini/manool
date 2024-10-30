@@ -122,7 +122,7 @@ namespace aux {
    // However, tests for inf go before tests for nan since this is how complex numbers are dealt with
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
-   _div(Dat lhs, Dat rhs) {
+   _div(Dat lhs, Dat rhs) { // division
       auto res = lhs / rhs;
       if (MNL_LIKELY(isfinite(res))) return res;
       MNL_ERR(!isnan(res) ? rhs == 0 ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow") : MNL_SYM("Undefined"), res, rhs); // for hot paths
@@ -136,7 +136,7 @@ namespace aux {
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
-   _neg(Dat arg)
+   _neg(Dat arg) // negation (unary minus)
       { return -arg; }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
@@ -155,14 +155,14 @@ namespace aux {
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
-   _abs(Dat arg)
+   _abs(Dat arg) // magnitude (absolute value)
       { using std::abs; return abs(arg); }
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
-   _sign(Dat arg) // traditional "sign" function preserving "negative zero"
+   _sign(Dat arg) // traditional `sign` function preserving "negative zero"
       { using std::copysign; return arg == 0 ? arg : copysign((Dat)1, arg); }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
-   _sign(Dat abs, Dat sign) // C99/POSIX/IEEE754 "copysign"
+   _sign(Dat abs, Dat sign) // C99/POSIX/IEEE754 `copysign`
       { using std::copysign; return copysign(abs, sign); }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
@@ -188,7 +188,7 @@ namespace aux {
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
-   _log(Dat base, Dat arg) { // arbitrary-base `log` with "proper" error reporting (useful outside of numerical modelling)
+   _log(Dat base, Dat arg) { // arbitrary-base `log` with "proper" error reporting (useful outside of numerical modeling)
       using std::log2;
       if (MNL_UNLIKELY(base == 0)) (err_Undefined)();
       auto res = log2(arg) / log2(base);
@@ -279,7 +279,7 @@ namespace aux {
       { using std::atan; return atan(rhs); }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
-   _atan(Dat y, Dat x) // C99/POSIX/IEEE754 (atan2(0., 0.) == 0.)
+   _atan(Dat y, Dat x) // C99/POSIX/IEEE754 `atan2`
       { using std::atan2; return atan2(y, x); }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
