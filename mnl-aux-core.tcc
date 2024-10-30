@@ -1232,7 +1232,7 @@ namespace aux { namespace pub {
          MNL_INLINE val operator()(Lhs &&lhs, Rhs rhs) const
             { return (*this)(std::forward<Lhs>(lhs), (long long)rhs); }
          // Sym
-         template< typename Lhs, typename Rhs, std::enable_if_t<
+         template< typename Lhs, class Rhs, std::enable_if_t<
             std::is_same_v<std::remove_const_t<std::remove_reference_t<Lhs>>, val> &&
             std::is_same_v<Rhs, sym>,
             decltype(nullptr) > = decltype(nullptr){} >
