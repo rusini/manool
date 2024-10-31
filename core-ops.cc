@@ -79,7 +79,8 @@ namespace aux {
       # endif
          lhs % rhs;
    }
-   template<typename Dat> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat> fdiv(Dat lhs, Dat rhs) { // flooring division
+   template<typename Dat> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat>
+   div2(Dat lhs, Dat rhs) { // flooring division (rounding toward -infinity)
       if (MNL_UNLIKELY(!rhs)) MNL_ERR(lhs ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), lhs);
       return
       # if !__x86_64__ && !__aarch64__ // MAYBE using a 32-bit integer ALU
@@ -88,7 +89,8 @@ namespace aux {
       # endif
          (MNL_UNLIKELY(lhs < 0 ^ rhs < 0) && MNL_LIKELY(lhs % rhs) ? lhs / rhs - 1 : lhs / rhs);
    }
-   template<typename Dat> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat> _mod(Dat lhs, Dat rhs) {
+   template<typename Dat> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat>
+   _mod(Dat lhs, Dat rhs) { // modulo (remainder after `Div`)
       if (MNL_UNLIKELY(!rhs)) err_Undefined();
       return
       # if !__x86_64__ && !__aarch64__ // MAYBE using a 32-bit integer ALU
