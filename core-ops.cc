@@ -44,12 +44,10 @@ namespace MNL_AUX_UUID { using namespace aux;
 
 namespace aux {
 
-   using std::isfinite, std::isnan;
+   using std::isnan, std::isfinite;
 
-   constexpr auto err_Undefined = []() MNL_INLINE // to allow optimizer to blend jump targets
-      { MNL_ERR(MNL_SYM("Undefined")); };
-   constexpr auto err_PreconditionViolation = []() MNL_INLINE // ditto
-      { MNL_ERR(MNL_SYM("PreconditionViolation")); };
+   constexpr auto err_Undefined             = []() MNL_INLINE { MNL_ERR(MNL_SYM("Undefined")); }; // to enable basic block merging (esp. in hot section)
+   constexpr auto err_PreconditionViolation = []() MNL_INLINE { MNL_ERR(MNL_SYM("PreconditionViolation")); }; // ditto
 
    constexpr auto err_DivisionByZero_Undefined = [](long long lhs) MNL_INLINE // ditto
       { MNL_ERR(lhs ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), lhs);  };
