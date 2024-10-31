@@ -986,8 +986,6 @@ namespace aux {
 
 } // namespace aux
 
-namespace aux { namespace pub {
-
    // val::Apply/Repl //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    // Apply
@@ -996,28 +994,28 @@ namespace aux { namespace pub {
    MNL_INLINE inline val val::_apply(Target &&target, int argc, val argv[], val *argv_out) {
       if (MNL_LIKELY(target.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
          return static_cast<root *>(target.rep.template dat<void *>())->
-            invoke(std::forward<Target>(target), MNL_SYM("Apply"), argc, argv, argv_out);
+            _invoke(std::forward<Target>(target), sym::id("Apply"), argc, argv, argv_out);
       if (MNL_LIKELY(target.rep.tag() == 0x7FF8 + 0b110)) // Sym
          return cast<const sym &>(target)(argc, argv, argv_out);
-      MNL_ERR(MNL_SYM("UnrecognizedOperation"));
+      err_UnrecognizedOperation();
    }
    template<typename Target, typename Arg0>
    MNL_INLINE inline val val::_apply(Target &&target, Arg0 &&arg0) {
       if (MNL_LIKELY(target.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
          return static_cast<root *>(target.rep.template dat<void *>())->
-            apply(std::forward<Target>(target), std::forward<Arg0>(arg0));
+            _apply(std::forward<Target>(target), std::forward<Arg0>(arg0));
       if (MNL_LIKELY(target.rep.tag() == 0x7FF8 + 0b110)) // Sym
          return cast<const sym &>(target)(std::forward<Arg0>(arg0));
-      MNL_ERR(MNL_SYM("UnrecognizedOperation"));
+      err_UnrecognizedOperation();
    }
    template<typename Target, typename Arg0, typename Arg1>
    MNL_INLINE inline val val::_apply(Target &&target, Arg0 &&arg0, Arg1 &&arg1) {
       if (MNL_LIKELY(target.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
          return static_cast<root *>(target.rep.template dat<void *>())->
-            apply(std::forward<Target>(target), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1));
+            _apply(std::forward<Target>(target), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1));
       if (MNL_LIKELY(target.rep.tag() == 0x7FF8 + 0b110)) // Sym
          return cast<const sym &>(target)(std::forward<Arg0>(arg0), std::forward<Arg1>(arg1));
-      MNL_ERR(MNL_SYM("UnrecognizedOperation"));
+      err_UnrecognizedOperation();
    }
 
    // Repl
@@ -1338,8 +1336,6 @@ namespace aux { namespace pub {
    namespace aux::pub {
       template<enum sym::id Id> constexpr auto op<Id> = val::ops::op<Id>;
    }
-
-}} // namespace aux::pub
 
 namespace aux { namespace pub {
    class proc_Min { MNL_INLINE static inline val invoke(val &&, const sym &, int, val [], val *); friend box<proc_Min>; };
