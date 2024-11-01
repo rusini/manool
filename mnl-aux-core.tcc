@@ -338,6 +338,8 @@ namespace aux { namespace pub {
    // Essential for performance (argv_out[-1] corresponds to target; !argc < !argv)
       MNL_INLINE val operator()(int argc, val argv[], val *argv_out = {}) const & { return _apply(*this, argc, argv, argv_out); }
       MNL_INLINE val operator()(int argc, val argv[], val *argv_out = {}) && { return _apply(_mv(*this), argc, argv, argv_out); }
+      MNL_INLINE val fetch(int argc, val argv[]) const & { return _fetch(*this, argc, argv); }
+      MNL_INLINE val fetch(int argc, val argv[]) && { return _fetch(_mv(*this), argc, argv); }
       // For one argument
       MNL_INLINE val operator()(const val &arg0) const & { return _apply(*this, arg0); }
       MNL_INLINE val operator()(val &&arg0) const & { return _apply(*this, _mv(arg0)); }
@@ -411,6 +413,9 @@ namespace aux { namespace pub {
       template<typename Target>                               static val _apply(Target &&, int argc, val [], val *argv_out);
       template<typename Target, typename Arg0>                static val _apply(Target &&, Arg0 &&);
       template<typename Target, typename Arg0, typename Arg1> static val _apply(Target &&, Arg0 &&, Arg1 &&);
+      // _fetch
+      template<typename Target>                               static val _fetch(Target &&, int argc, val []);
+      template<typename Target, typename Arg0>                static val _fetch(Target &&, Arg0 &&);
       // _repl
       template<typename Target, typename Arg0, typename Arg1>                static val _repl(Target &&, Arg0 &&, Arg1 &&);
       template<typename Target, typename Arg0, typename Arg1, typename Arg2> static val _repl(Target &&, Arg0 &&, Arg1 &&, Arg2 &&);
@@ -545,9 +550,11 @@ namespace aux { namespace pub {
    private:
       const unsigned _tag; // assume 64-bit small/medium code model or x32 ABI or 32-bit ISA
       MNL_NOTE(atomic) long _rc = 1;
-   private: // 44 VMT entries
+   private: // 46 VMT entries
       MNL_NOINLINE MNL_HOT virtual val _invoke(const val &self, const sym &op, int argc, val [], val *argv_out = {}) = 0; // argv_out[-1] corresponds to self
       MNL_NOINLINE MNL_HOT virtual val _invoke(val &&self,      const sym &op, int argc, val [], val *argv_out = {}) = 0; // ditto
+      MNL_HOT virtual val _fetch(const val &self, int argc, val []) = 0;
+      MNL_HOT virtual val _fetch(val &&self,      int argc, val []) = 0;
    private:
       // For one argument (6 VMT entries)
       MNL_HOT virtual val _apply(const val &self, const val &) = 0;
@@ -607,11 +614,15 @@ namespace aux { namespace pub {
    private:
       static constexpr std::byte _tag{};
       friend val;
-   private: // 44 VMT entries
+   private: // 46 VMT entries
       MNL_NOINLINE MNL_HOT val _invoke(const val &self, const sym &op, int argc, val argv[], val *argv_out = {}) override
          { return invoke(self, op, argv, argv_out); }
       MNL_NOINLINE MNL_HOT val _invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out = {}) override
          { return invoke(_mv(self), op, argv, argv_out); }
+      MNL_HOT val _fetch(const val &self, int argc, val argv[]) override
+         { return fetch(self, argv); }
+      MNL_HOT val _fetch(val &&self, int argc, val argv[]) override
+         { return fetch(_mv(self), argv); }
    private:
       // For one argument (6 VMT entries)
       MNL_HOT val _apply(const val &self, const val &arg0) override { return apply(self, arg0); }
@@ -666,6 +677,8 @@ namespace aux { namespace pub {
    private: // User-specializable
       template<typename Self> MNL_INLINE val invoke(Self &&self, const sym &op, int argc, val argv[], val *argv_out)
          { return dat.invoke(std::forward<Self>(self), op, argc, argv, argv_out); static_assert(std::is_base_v<boxable, Dat>); }
+      template<typename Self> MNL_INLINE val fetch(Self &&self, int argc, val argv[])
+         { return default_fetch(std::forward<Self>(self), argc, argv); }
       template<typename Self, typename Arg0> MNL_INLINE val apply(Self &&self, Arg0 &&arg0)
          { return default_apply(std::forward<Self>(self), std::forward<Arg0>(arg0)); }
       template<typename Self, typename Arg0, typename Arg1> MNL_INLINE val apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1)
@@ -677,6 +690,12 @@ namespace aux { namespace pub {
       template<typename Self, typename Arg0, typename Arg1> MNL_INLINE val repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1, val &&arg2)
          { return default_repl(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::move(arg2)); }
    private: // Utilities for forwarding to "invoke"
+      template< typename Self, typename Arg0, std::enable_if_t<
+         std::is_same_v<Self, const val &> | std::is_same_v<Self, val>,
+         decltype(nullptr) > = decltype(nullptr){} >
+      MNL_INLINE val default_fetch(Self &&self, int argc, val argv[]) {
+         return _invoke(std::forward<Self>(self), MNL_SYM("Fetch"), argc, argv);
+      }
       template< typename Self, typename Arg0, std::enable_if_t<
          std::is_same_v<Self, const val &> | std::is_same_v<Self, val> &&
          std::is_same_v<Arg0, const val &> | std::is_same_v<Arg0, val> | std::is_same_v<Arg0, const sym &>,
@@ -1018,6 +1037,21 @@ namespace aux {
       err_UnrecognizedOperation();
    }
 
+   template<typename Target>
+   MNL_INLINE inline val val::_fetch(Target &&target, int argc, val argv[]) {
+      if (MNL_LIKELY(target.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
+         return static_cast<root *>(target.rep.template dat<void *>())->
+            _fetch(std::forward<Target>(target), argc, argv);
+      err_UnrecognizedOperation();
+   }
+   template<typename Target, typename Arg0>
+   MNL_INLINE inline val val::_fetch(Target &&target, Arg0 &&arg0) {
+      if (MNL_LIKELY(target.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
+         return static_cast<root *>(target.rep.template dat<void *>())->
+            _fetch(std::forward<Target>(target), std::forward<Arg0>(arg0));
+      err_UnrecognizedOperation();
+   }
+
    // Repl
 
    //template<typename Target>
@@ -1321,6 +1355,26 @@ namespace aux {
             if constexpr (Id == sym::id( "-" )) return (_neg)(arg);
             if constexpr (Id == sym::id("Abs")) return (_abs)(arg);
             if constexpr (Id == sym::id( "~" )) return (_not)(arg);
+         }
+      public:
+         MNL_INLINE val operator()(const val  &target, int argc, val argv[], val *argv_out = 0) { return _apply(          target , argc, argv, argv_out); }
+         MNL_INLINE val operator()(      val &&target, int argc, val argv[], val *argv_out = 0) { return _apply(std::move(target), argc, argv, argv_out); }
+      public:
+         template<typename Target, std::enable_if_t<
+            std::is_same_v<std::decay_t<Target>, val>,
+            decltype(nullptr) > = decltype(nullptr){} >
+         MNL_INLINE static val _apply(Target &&target, int argc, val argv[], val *argv_out) {
+            if (bool{});
+            else if constexpr (Id == sym::id("Apply") | Id == sym::id("Fetch")) {
+               if (MNL_LIKELY(target.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
+                  return static_cast<root *>(target.rep.template dat<void *>())->
+                     _invoke(std::forward<Target>(target), *this, argc, argv, argv_out);
+               if (MNL_LIKELY(target.rep.tag() == 0x7FF8 + 0b110)) // Sym
+                  return cast<const sym &>(target)(argc, argv, argv_out);
+               err_UnrecognizedOperation();
+            }
+            else
+               return ((const sym &)*this)(std::forward<Target>(target), argc, argv, argv_out); // for completeness
          }
       };
    public:
