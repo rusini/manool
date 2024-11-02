@@ -368,6 +368,8 @@ namespace aux { namespace pub {
       MNL_INLINE val fetch(const val &arg0) && { return _fetch(_mv(*this), arg0); }
       MNL_INLINE val fetch(val &&arg0) && { return _fetch(_mv(*this), _mv(arg0)); }
       MNL_INLINE val fetch(const sym &arg0) && { return _fetch(_mv(*this), arg0); }
+      //
+      MNL_NODISCARD MNL_INLINE val repl(int argc, val argv[], val *argv_out = {}) && { return _repl(_mv(*this), argc, argv, argv_out); }
       // For two arguments
       MNL_NODISCARD MNL_INLINE val repl(const val &arg0, const val &arg1) && { return _repl(_mv(*this), arg0, arg1); }
       MNL_NODISCARD MNL_INLINE val repl(const val &arg0, val &&arg1) && { return _repl(_mv(*this), arg0, _mv(arg1)); }
@@ -1065,11 +1067,11 @@ namespace aux {
    //template<typename Target, std::size_t Argc> // TODO: need this convenience? If yes, move to the val class def
    //MNL_INLINE inline val val::_repl(Target &&target, std::array<val, Argc> &&args)
    //   { return std::forward<Target>(target).repl(Argc, args.data()); }
-   template< typename Target, typename Arg0, typename Arg1>
-   MNL_INLINE inline val val::_repl(Target &&target, Arg0 &&arg0, Arg1 &&arg1) {
+   template<typename Arg0, typename Arg1>
+   MNL_INLINE inline val val::_repl(val &&target, Arg0 &&arg0, Arg1 &&arg1) {
       if (MNL_LIKELY(target.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
          return static_cast<root *>(target.rep.template dat<void *>())->
-            repl(std::forward<Target>(target), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1));
+            repl(std::move(target), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1));
       err_UnrecognizedOperation();
    }
    template<typename Target, typename Arg0, typename Arg1, typename Arg2>
