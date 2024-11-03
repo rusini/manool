@@ -337,17 +337,17 @@ namespace aux { namespace pub {
       static constexpr auto max_i48 = (1ll << 48 - 1) - 1, min_i48 = -max_i48;
    // Essential for performance
       // argv_out[-1] corresponds to target; !argc < !argv
-      template<typename Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
+      template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
       MNL_INLINE val operator()(int argc, Val argv[], val *argv_out) const & { return _apply(*this, argc, argv, argv_out); }
-      template<typename Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
+      template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
       MNL_INLINE val operator()(int argc, Val argv[], val *argv_out) && { return _apply(_mv(*this), argc, argv, argv_out); }
-      template<typename Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
+      template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
       MNL_INLINE val operator()(int argc, Val argv[]) const & { return _apply(*this, argc, argv); }
-      template<typename Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
+      template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
       MNL_INLINE val operator()(int argc, Val argv[]) && { return _apply(_mv(*this), argc, argv); }
-      template<typename Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
+      template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
       MNL_INLINE val fetch(int argc, Val argv[]) const & { return _fetch(*this, argc, argv); }
-      template<typename Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
+      template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
       MNL_INLINE val fetch(int argc, Val argv[]) && { return _fetch(_mv(*this), argc, argv); }
       // For one argument
       MNL_INLINE val operator()(const val &arg0) const & { return _apply(*this, arg0); }
