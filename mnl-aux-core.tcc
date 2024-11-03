@@ -110,16 +110,19 @@ namespace aux { namespace pub {
    public: // Functional application (and Repl)
       static constexpr int max_argc = 999;
    // Essential for performance
-      val operator()(const val &self, int argc, val [], val *argv_out = {}) const; // argv_out[-1] corresponds to self; !argc < !argv
-      val operator()(val &&self, int argc, val [], val *argv_out = {}) const;      // ditto
+      template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
+         val operator()(const val &self, int argc, Val [], val *argv_out = {}) const; // argv_out[-1] corresponds to self; !argc < !argv
+      template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
+         val operator()(val &&self, int argc, Val [], val *argv_out = {}) const;      // ditto
    // Essential for metaprogramming
-      // For one argument // do not use {} for the arg to avoid surprises or overload conflicts
+      // For one argument
       val operator()(const val &) const, operator()(val &&) const;
-      // For two arguments // do not use {} for the args!
+      // For two arguments
       val operator()(const val &, const val &) const, operator()(const val &, val &&) const;
       val operator()(val &&, const val &) const, operator()(val &&, val &&) const;
       // For multiple arguments
-      val operator()(int argc, val [], val *argv_out = {}) const;
+      template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
+         val operator()(int argc, Val [], val *argv_out = {}) const;
    // Convenience
       template<std::size_t Argc> val operator()(const val &self, std::array<val, Argc>, val *args_out = {}) const;
       template<std::size_t Argc> val operator()(val &&self, std::array<val, Argc>, val *args_out = {}) const;
@@ -430,9 +433,9 @@ namespace aux { namespace pub {
          { return _mv(*this).repl(Argc, args.data(), args_out); }
       // For no arguments
       MNL_INLINE val operator()() const &
-         { return (*this)(0, {}); }
+         { return (*this)(0, (val *)nullptr); }
       MNL_INLINE val operator()() &&
-         { return _mv(*this)(0, {}); }
+         { return _mv(*this)(0, (val *)nullptr); }
       // Alternative notation
       MNL_INLINE val invoke(const sym *op, int argc, val argv[], val *argv_out = {}) const &
          { return op(*this, argc, argv, argv_out); }
@@ -507,21 +510,24 @@ namespace aux { namespace pub {
 
 // Forward-declared as members of class sym ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   MNL_INLINE inline val sym::operator()(const val &self, int argc, val argv[], val *argv_out) const
+   template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
+   MNL_INLINE inline val sym::operator()(const val &self, int argc, Val argv[], val *argv_out) const
       { return val::_invoke(self, *this, argc, argv, argv_out); }
-   MNL_INLINE inline val sym::operator()(val &&self, int argc, val argv[], val *argv_out) const
+   template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
+   MNL_INLINE inline val sym::operator()(val &&self, int argc, Val argv[], val *argv_out) const
       { return val::_invoke(std::move(self), *this, argc, argv, argv_out); }
 
    // For one argument
-   MNL_INLINE inline val sym::operator()(const val &arg0) const { return (*this)(arg0, 0, {}); }
-   MNL_INLINE inline val sym::operator()(val &&arg0) const { return (*this)(std::move(arg0), 0, {}); }
+   MNL_INLINE inline val sym::operator()(const val &arg0) const { return (*this)(arg0, 0, (val *)nullptr); }
+   MNL_INLINE inline val sym::operator()(val &&arg0) const { return (*this)(std::move(arg0), 0, (val *)nullptr); }
    // For two arguments
    MNL_INLINE inline val sym::operator()(const val &arg0, const val &arg1) const { return (*this)(arg0, (val)arg1); }
    MNL_INLINE inline val sym::operator()(const val &arg0, val &&arg1) const { return (*this)(arg0, 1, &arg1); }
    MNL_INLINE inline val sym::operator()(val &&arg0, const val &arg1) const { return (*this)(std::move(arg0), (val)arg1); }
    MNL_INLINE inline val sym::operator()(val &&arg0, val &&arg1) const { return (*this)(std::move(arg0), 1, &arg1); }
    // For multiple arguments
-   MNL_INLINE inline val sym::operator()(int argc, val argv[], val *argv_out = {}) const { // TODO: possible conflict: s(0, {}) -- not converted
+   template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
+   MNL_INLINE inline val sym::operator()(int argc, Val argv[], val *argv_out = {}) const {
       if (MNL_UNLIKELY(!argc)) err_InvalidInvocation();
       return (*this)(std::move(*argv), argc - 1, argc ? argv + 1 : nullptr, argv_out + !!argv_out);
    }
