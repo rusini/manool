@@ -1114,9 +1114,6 @@ namespace aux {
             repl(std::forward<Target>(target), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::forward<Arg2>(arg2));
       err_UnrecognizedOperation();
    }
-   //template<typename Target, std::size_t Argc> // TODO: need this convenience? If yes, move to the val class def
-   //MNL_INLINE inline val val::_repl(Target &&target, std::array<val, Argc> &&args)
-   //   { return std::forward<Target>(target).repl(Argc, args.data()); }
 
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
