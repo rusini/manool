@@ -109,17 +109,17 @@ namespace aux { namespace pub {
       MNL_INLINE explicit operator const char *() const noexcept { return ((const string &)*this).c_str(); }
    public: // Functional application (and Repl)
       static constexpr int max_argc = 999;
-   // Essential for performance (argv_out[-1] corresponds to self; !argc < !argv)
-      val operator()(const val &self, int argc, val argv[], val *argv_out = {}) const;
-      val operator()(val &&self, int argc, val argv[], val *argv_out = {}) const;
+   // Essential for performance
+      inline val operator()(const val &self, int argc, val [], val *argv_out = {}) const; // argv_out[-1] corresponds to self; !argc < !argv
+      inline val operator()(val &&self, int argc, val [], val *argv_out = {}) const;      // ditto
    // Essential for metaprogramming
       // For one argument
-      val operator()(const val &) const, operator()(val &&) const;
+      inline val operator()(const val &) const, operator()(val &&) const;
       // For two arguments
-      val operator()(const val &, const val &) const, operator()(const val &, val &&) const;
-      val operator()(val &&, const val &) const, operator()(val &&, val &&) const;
+      inline val operator()(const val &, const val &) const, operator()(const val &, val &&) const;
+      inline val operator()(val &&, const val &) const, operator()(val &&, val &&) const;
       // For multiple arguments
-      val operator()(int argc, val argv[], val *argv_out = {}) const;
+      inline val operator()(int argc, val [], val *argv_out = {}) const;
    // Convenience
       template<std::size_t Argc> val operator()(const val &self, std::array<val, Argc>, val *args_out = {}) const;
       template<std::size_t Argc> val operator()(val &&self, std::array<val, Argc>, val *args_out = {}) const;
@@ -336,9 +336,8 @@ namespace aux { namespace pub {
       static constexpr int max_argc = sym::max_argc;
       static constexpr auto max_i48 = (1ll << 48 - 1) - 1, min_i48 = -max_i48;
    // Essential for performance
-      // argv_out[-1] corresponds to target; !argc < !argv
-      MNL_INLINE val operator()(int argc, val argv[], val *argv_out) const & { return _apply(*this, argc, argv, argv_out); }
-      MNL_INLINE val operator()(int argc, val argv[], val *argv_out) && { return _apply(_mv(*this), argc, argv, argv_out); }
+      MNL_INLINE val operator()(int argc, val argv[], val *argv_out) const & { return _apply(*this, argc, argv, argv_out); } // argv_out[-1] corresponds to
+      MNL_INLINE val operator()(int argc, val argv[], val *argv_out) && { return _apply(_mv(*this), argc, argv, argv_out); } // target; !argc < !argv
       MNL_INLINE val operator()(int argc, val argv[]) const & { return _apply(*this, argc, argv); }
       MNL_INLINE val operator()(int argc, val argv[]) && { return _apply(_mv(*this), argc, argv); }
       MNL_INLINE val fetch(int argc, val argv[]) const & { return _fetch(*this, argc, argv); }
@@ -475,34 +474,6 @@ namespace aux { namespace pub {
    template<typename>     bool test(const val &) noexcept; // TODO: disallow conv by using templ param
    template<typename Dat> Dat  cast(const val &) noexcept(std::is_nothrow_copy_constructible<Dat>::value);
 
-   // Forward-declared as members of class sym
-   MNL_INLINE inline val sym::operator()(const val &self, int argc, val argv[], val *argv_out = {}) const
-      { return val::_invoke(self, *this, argc, argv, argv_out); }
-   MNL_INLINE inline val sym::operator()(val &&self, int argc, val argv[], val *argv_out = {}) const
-      { return val::_invoke(std::move(self), *this, argc, argv, argv_out); }
-   // For one argument
-   MNL_INLINE inline val sym::operator()(const val &arg0) const { return (*this)(arg0, 0, {}); }
-   MNL_INLINE inline val sym::operator()(val &&arg0) const { return (*this)(std::move(arg0), 0, {}); }
-   // For two arguments
-   MNL_INLINE inline val sym::operator()(const val &arg0, const val &arg1) const { return (*this)(arg0, (val)arg1); }
-   MNL_INLINE inline val sym::operator()(const val &arg0, val &&arg1) const { return (*this)(arg0, 1, &arg1); }
-   MNL_INLINE inline val sym::operator()(val &&arg0, const val &arg1) const { return (*this)(std::move(arg0), (val)arg1); }
-   MNL_INLINE inline val sym::operator()(val &&arg0, val &&arg1) const { return (*this)(std::move(arg0), 1, &arg1); }
-   // For multiple arguments
-   MNL_INLINE inline val sym::operator()(int argc, val argv[], val *argv_out = {}) const {
-      if (MNL_UNLIKELY(!argc)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      return (*this)(std::move(*argv), argc - 1, argc ? argv + 1 : nullptr, argv_out + !!argv_out);
-   }
-   // Convenience
-   template<std::size_t Argc> MNL_INLINE inline val sym::operator()(const val &self, std::array<val, Argc> args, val *args_out) const
-      { return (*this)(self, Argc, args.data(), args_out); }
-   template<std::size_t Argc> MNL_INLINE inline val sym::operator()(val &&self, std::array<val, Argc> args, val *args_out) const
-      { return (*this)(std::move(self), Argc, args.data(), args_out); }
-   template<std::size_t Argc> MNL_INLINE inline val sym::operator()(std::array<val, Argc> args, val *args_out) const
-      { return (*this)(Argc, args.data(), args_out); }
-   // For completeness
-   MNL_INLINE inline val sym::operator()() const { MNL_ERR(MNL_SYM("InvalidInvocation")); }
-
    // Fake test/case for non-val inputs
    template<typename Dat> MNL_INLINE inline bool test(const typename std::remove_cv<typename std::remove_reference<
       typename std::enable_if<!std::is_same<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type, val>::value, Dat>::type
@@ -511,6 +482,37 @@ namespace aux { namespace pub {
       typename std::enable_if<!std::is_same<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type, val>::value, Dat>::type
       >::type>::type &dat) noexcept(std::is_nothrow_copy_constructible<Dat>::value) { return dat; }
 }} // namespace aux::pub
+
+// Forward-declared as members of class sym ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+   MNL_INLINE val sym::operator()(const val &self, int argc, val argv[], val *argv_out) const
+      { return val::_invoke(self, *this, argc, argv, argv_out); }
+   MNL_INLINE val sym::operator()(val &&self, int argc, val argv[], val *argv_out) const
+      { return val::_invoke(std::move(self), *this, argc, argv, argv_out); }
+
+   // For one argument
+   MNL_INLINE val sym::operator()(const val &arg0) const { return (*this)(arg0, 0, {}); }
+   MNL_INLINE val sym::operator()(val &&arg0) const { return (*this)(std::move(arg0), 0, {}); }
+   // For two arguments
+   MNL_INLINE val sym::operator()(const val &arg0, const val &arg1) const { return (*this)(arg0, (val)arg1); }
+   MNL_INLINE val sym::operator()(const val &arg0, val &&arg1) const { return (*this)(arg0, 1, &arg1); }
+   MNL_INLINE val sym::operator()(val &&arg0, const val &arg1) const { return (*this)(std::move(arg0), (val)arg1); }
+   MNL_INLINE val sym::operator()(val &&arg0, val &&arg1) const { return (*this)(std::move(arg0), 1, &arg1); }
+   // For multiple arguments
+   MNL_INLINE val sym::operator()(int argc, val argv[], val *argv_out = {}) const {
+      if (MNL_UNLIKELY(!argc)) err_InvalidInvocation();
+      return (*this)(std::move(*argv), argc - 1, argc ? argv + 1 : nullptr, argv_out + !!argv_out);
+   }
+
+   template<std::size_t Argc> MNL_INLINE inline val sym::operator()(const val &self, std::array<val, Argc> args, val *args_out) const
+      { return (*this)(self, Argc, args.data(), args_out); }
+   template<std::size_t Argc> MNL_INLINE inline val sym::operator()(val &&self, std::array<val, Argc> args, val *args_out) const
+      { return (*this)(std::move(self), Argc, args.data(), args_out); }
+   template<std::size_t Argc> MNL_INLINE inline val sym::operator()(std::array<val, Argc> args, val *args_out) const
+      { return (*this)(Argc, args.data(), args_out); }
+
+   MNL_INLINE inline val sym::operator()() const { err_InvalidInvocation(); }
+
 
 // Bit-Layout Management -- Data Write /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    template<typename Dat> MNL_INLINE inline val::rep::rep(unsigned tag, Dat dat) noexcept: _tag(tag) {
