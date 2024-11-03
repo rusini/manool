@@ -113,9 +113,9 @@ namespace aux { namespace pub {
       val operator()(const val &self, int argc, val [], val *argv_out = {}) const; // argv_out[-1] corresponds to self; !argc < !argv
       val operator()(val &&self, int argc, val [], val *argv_out = {}) const;      // ditto
    // Essential for metaprogramming
-      // For one argument
+      // For one argument // do not use {} for the arg to avoid surprises or overload conflicts
       val operator()(const val &) const, operator()(val &&) const;
-      // For two arguments
+      // For two arguments // do not use {} for the args!
       val operator()(const val &, const val &) const, operator()(const val &, val &&) const;
       val operator()(val &&, const val &) const, operator()(val &&, val &&) const;
       // For multiple arguments
@@ -331,37 +331,50 @@ namespace aux { namespace pub {
       template<typename     = decltype(nullptr)> bool test() const noexcept;
       template<typename Dat = decltype(nullptr)> Dat  cast() const noexcept(std::is_nothrow_copy_constructible<Dat>::value);
       //MNL_IF_CLANG(public:)
-      class root; template<typename> friend class mnl::box;
+      class root; template<typename> friend class mnl::box; // TODO: should we friend box, which could be partially user-customizable?
    public: // Functional application (and Repl)
       static constexpr int max_argc = sym::max_argc;
       static constexpr auto max_i48 = (1ll << 48 - 1) - 1, min_i48 = -max_i48;
    // Essential for performance
-      MNL_INLINE val operator()(int argc, val argv[], val *argv_out) const & { return _apply(*this, argc, argv, argv_out); } // argv_out[-1] corresponds to
-      MNL_INLINE val operator()(int argc, val argv[], val *argv_out) && { return _apply(_mv(*this), argc, argv, argv_out); } // target; !argc < !argv
-      MNL_INLINE val operator()(int argc, val argv[]) const & { return _apply(*this, argc, argv); }
-      MNL_INLINE val operator()(int argc, val argv[]) && { return _apply(_mv(*this), argc, argv); }
-      MNL_INLINE val fetch(int argc, val argv[]) const & { return _fetch(*this, argc, argv); }
-      MNL_INLINE val fetch(int argc, val argv[]) && { return _fetch(_mv(*this), argc, argv); }
+      // argv_out[-1] corresponds to target; !argc < !argv
+      template<typename Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
+      MNL_INLINE val operator()(int argc, Val argv[], val *argv_out) const & { return _apply(*this, argc, argv, argv_out); }
+      template<typename Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
+      MNL_INLINE val operator()(int argc, Val argv[], val *argv_out) && { return _apply(_mv(*this), argc, argv, argv_out); }
+      template<typename Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
+      MNL_INLINE val operator()(int argc, Val argv[]) const & { return _apply(*this, argc, argv); }
+      template<typename Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
+      MNL_INLINE val operator()(int argc, Val argv[]) && { return _apply(_mv(*this), argc, argv); }
+      template<typename Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
+      MNL_INLINE val fetch(int argc, Val argv[]) const & { return _fetch(*this, argc, argv); }
+      template<typename Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
+      MNL_INLINE val fetch(int argc, Val argv[]) && { return _fetch(_mv(*this), argc, argv); }
       // For one argument
       MNL_INLINE val operator()(const val &arg0) const & { return _apply(*this, arg0); }
       MNL_INLINE val operator()(val &&arg0) const & { return _apply(*this, _mv(arg0)); }
-      MNL_INLINE val operator()(const sym &arg0) const & { return _apply(*this, arg0); }
+      template<class Sym, std::enable_if_t<std::is_same_v<Sym, sym>, decltype(nullptr)> = decltype(nullptr){}>
+      MNL_INLINE val operator()(const Sym &arg0) const & { return _apply(*this, arg0); }
       MNL_INLINE val operator()(const val &arg0) && { return _apply(_mv(*this), arg0); }
       MNL_INLINE val operator()(val &&arg0) && { return _apply(_mv(*this), _mv(arg0)); }
-      MNL_INLINE val operator()(const sym &arg0) && { return _apply(_mv(*this), arg0); }
+      template<class Sym, std::enable_if_t<std::is_same_v<Sym, sym>, decltype(nullptr)> = decltype(nullptr){}>
+      MNL_INLINE val operator()(const Sym &arg0) && { return _apply(_mv(*this), arg0); }
       // For two arguments
-      MNL_INLINE val operator()(const val &arg0, const val &arg1) const & { return _apply(*this, arg0, arg1); }
-      MNL_INLINE val operator()(const val &arg0, val &&arg1) const & { return _apply(*this, arg0, _mv(arg1)); }
-      MNL_INLINE val operator()(const val &arg0, const sym &arg1) const & { return _apply(*this, arg0, arg1); }
-      MNL_INLINE val operator()(val &&arg0, const val &arg1) const & { return _apply(*this, _mv(arg0), arg1); }
-      MNL_INLINE val operator()(val &&arg0, val &&arg1) const & { return _apply(*this, _mv(arg0), _mv(arg1)); }
-      MNL_INLINE val operator()(val &&arg0, const sym &arg1) const & { return _apply(*this, _mv(arg0), arg1); }
+      MNL_INLINE val operator()(const val &arg0, const val &arg1) const & { return _apply(*this, arg0, arg1); } // Caveat: v(0, {}) resolves to
+      MNL_INLINE val operator()(const val &arg0, val &&arg1) const & { return _apply(*this, arg0, _mv(arg1)); } // another overload,
+      template<class Sym, std::enable_if_t<std::is_same_v<Sym, sym>, decltype(nullptr)> = decltype(nullptr){}>
+      MNL_INLINE val operator()(const val &arg0, const Sym &arg1) const & { return _apply(*this, arg0, arg1); } // but we should never use {} for
+      MNL_INLINE val operator()(val &&arg0, const val &arg1) const & { return _apply(*this, _mv(arg0), arg1); } // args anyway due to other
+      MNL_INLINE val operator()(val &&arg0, val &&arg1) const & { return _apply(*this, _mv(arg0), _mv(arg1)); } // conflicts.
+      template<class Sym, std::enable_if_t<std::is_same_v<Sym, sym>, decltype(nullptr)> = decltype(nullptr){}>
+      MNL_INLINE val operator()(val &&arg0, const Sym &arg1) const & { return _apply(*this, _mv(arg0), arg1); }
       MNL_INLINE val operator()(const val &arg0, const val &arg1) && { return _apply(_mv(*this), arg0, arg1); }
       MNL_INLINE val operator()(const val &arg0, val &&arg1) && { return _apply(_mv(*this), arg0, _mv(arg1)); }
-      MNL_INLINE val operator()(const val &arg0, const sym &arg1) && { return _apply(_mv(*this), arg0, arg1); }
+      template<class Sym, std::enable_if_t<std::is_same_v<Sym, sym>, decltype(nullptr)> = decltype(nullptr){}>
+      MNL_INLINE val operator()(const val &arg0, const Sym &arg1) && { return _apply(_mv(*this), arg0, arg1); }
       MNL_INLINE val operator()(val &&arg0, const val &arg1) && { return _apply(_mv(*this), _mv(arg0), arg1); }
       MNL_INLINE val operator()(val &&arg0, val &&arg1) && { return _apply(_mv(*this), _mv(arg0), _mv(arg1)); }
-      MNL_INLINE val operator()(val &&arg0, const sym &arg1) && { return _apply(_mv(*this), _mv(arg0), arg1); }
+      template<class Sym, std::enable_if_t<std::is_same_v<Sym, sym>, decltype(nullptr)> = decltype(nullptr){}>
+      MNL_INLINE val operator()(val &&arg0, const Sym &arg1) && { return _apply(_mv(*this), _mv(arg0), arg1); }
       // For one argument
       MNL_INLINE val fetch(const val &arg0) const & { return _fetch(*this, arg0); }
       MNL_INLINE val fetch(val &&arg0) const & { return _fetch(*this, _mv(arg0)); }
@@ -499,7 +512,7 @@ namespace aux { namespace pub {
    MNL_INLINE inline val sym::operator()(val &&arg0, const val &arg1) const { return (*this)(std::move(arg0), (val)arg1); }
    MNL_INLINE inline val sym::operator()(val &&arg0, val &&arg1) const { return (*this)(std::move(arg0), 1, &arg1); }
    // For multiple arguments
-   MNL_INLINE inline val sym::operator()(int argc, val argv[], val *argv_out = {}) const {
+   MNL_INLINE inline val sym::operator()(int argc, val argv[], val *argv_out = {}) const { // TODO: possible conflict: s(0, {}) -- not converted
       if (MNL_UNLIKELY(!argc)) err_InvalidInvocation();
       return (*this)(std::move(*argv), argc - 1, argc ? argv + 1 : nullptr, argv_out + !!argv_out);
    }
