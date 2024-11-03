@@ -110,16 +110,16 @@ namespace aux { namespace pub {
    public: // Functional application (and Repl)
       static constexpr int max_argc = 999;
    // Essential for performance
-      inline val operator()(const val &self, int argc, val [], val *argv_out = {}) const; // argv_out[-1] corresponds to self; !argc < !argv
-      inline val operator()(val &&self, int argc, val [], val *argv_out = {}) const;      // ditto
+      val operator()(const val &self, int argc, val [], val *argv_out = {}) const; // argv_out[-1] corresponds to self; !argc < !argv
+      val operator()(val &&self, int argc, val [], val *argv_out = {}) const;      // ditto
    // Essential for metaprogramming
       // For one argument
-      inline val operator()(const val &) const, operator()(val &&) const;
+      val operator()(const val &) const, operator()(val &&) const;
       // For two arguments
-      inline val operator()(const val &, const val &) const, operator()(const val &, val &&) const;
-      inline val operator()(val &&, const val &) const, operator()(val &&, val &&) const;
+      val operator()(const val &, const val &) const, operator()(const val &, val &&) const;
+      val operator()(val &&, const val &) const, operator()(val &&, val &&) const;
       // For multiple arguments
-      inline val operator()(int argc, val [], val *argv_out = {}) const;
+      val operator()(int argc, val [], val *argv_out = {}) const;
    // Convenience
       template<std::size_t Argc> val operator()(const val &self, std::array<val, Argc>, val *args_out = {}) const;
       template<std::size_t Argc> val operator()(val &&self, std::array<val, Argc>, val *args_out = {}) const;
@@ -485,21 +485,21 @@ namespace aux { namespace pub {
 
 // Forward-declared as members of class sym ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   MNL_INLINE val sym::operator()(const val &self, int argc, val argv[], val *argv_out) const
+   MNL_INLINE inline val sym::operator()(const val &self, int argc, val argv[], val *argv_out) const
       { return val::_invoke(self, *this, argc, argv, argv_out); }
-   MNL_INLINE val sym::operator()(val &&self, int argc, val argv[], val *argv_out) const
+   MNL_INLINE inline val sym::operator()(val &&self, int argc, val argv[], val *argv_out) const
       { return val::_invoke(std::move(self), *this, argc, argv, argv_out); }
 
    // For one argument
-   MNL_INLINE val sym::operator()(const val &arg0) const { return (*this)(arg0, 0, {}); }
-   MNL_INLINE val sym::operator()(val &&arg0) const { return (*this)(std::move(arg0), 0, {}); }
+   MNL_INLINE inline val sym::operator()(const val &arg0) const { return (*this)(arg0, 0, {}); }
+   MNL_INLINE inline val sym::operator()(val &&arg0) const { return (*this)(std::move(arg0), 0, {}); }
    // For two arguments
-   MNL_INLINE val sym::operator()(const val &arg0, const val &arg1) const { return (*this)(arg0, (val)arg1); }
-   MNL_INLINE val sym::operator()(const val &arg0, val &&arg1) const { return (*this)(arg0, 1, &arg1); }
-   MNL_INLINE val sym::operator()(val &&arg0, const val &arg1) const { return (*this)(std::move(arg0), (val)arg1); }
-   MNL_INLINE val sym::operator()(val &&arg0, val &&arg1) const { return (*this)(std::move(arg0), 1, &arg1); }
+   MNL_INLINE inline val sym::operator()(const val &arg0, const val &arg1) const { return (*this)(arg0, (val)arg1); }
+   MNL_INLINE inline val sym::operator()(const val &arg0, val &&arg1) const { return (*this)(arg0, 1, &arg1); }
+   MNL_INLINE inline val sym::operator()(val &&arg0, const val &arg1) const { return (*this)(std::move(arg0), (val)arg1); }
+   MNL_INLINE inline val sym::operator()(val &&arg0, val &&arg1) const { return (*this)(std::move(arg0), 1, &arg1); }
    // For multiple arguments
-   MNL_INLINE val sym::operator()(int argc, val argv[], val *argv_out = {}) const {
+   MNL_INLINE inline val sym::operator()(int argc, val argv[], val *argv_out = {}) const {
       if (MNL_UNLIKELY(!argc)) err_InvalidInvocation();
       return (*this)(std::move(*argv), argc - 1, argc ? argv + 1 : nullptr, argv_out + !!argv_out);
    }
