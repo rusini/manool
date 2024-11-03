@@ -406,7 +406,7 @@ namespace aux { namespace pub {
       template<std::size_t Argc> MNL_INLINE val fetch(std::array<val, Argc> args) &&
          { return _mv(*this).fetch(Argc, args.data()); }
       template<std::size_t Argc> MNL_NODISCARD MNL_INLINE val repl(std::array<val, Argc> args, val *args_out = {}) &&
-         { return _repl(_mv(*this), Argc, args.data(), args_out); }
+         { return _mv(*this).repl(Argc, args.data(), args_out); }
       // For no arguments
       MNL_INLINE val operator()() const &
          { return (*this)(0, {}); }
