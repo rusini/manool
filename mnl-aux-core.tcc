@@ -526,6 +526,14 @@ namespace aux { namespace pub {
    MNL_INLINE inline val sym::operator()(val &&arg0, const val &arg1) const { return (*this)(std::move(arg0), (val)arg1); }
    MNL_INLINE inline val sym::operator()(val &&arg0, val &&arg1) const { return (*this)(std::move(arg0), 1, &arg1); }
    // For multiple arguments
+   MNL_INLINE inline val sym::operator()(const val &arg0, val arg1, val arg2) const
+      { val argv[] = {std::move(arg1), std::move(arg2)}; return (*this)(arg0, std::size(argv), argv); }
+   MNL_INLINE inline val sym::operator()(val &&arg0, val arg1, val arg2) const
+      { val argv[] = {std::move(arg1), std::move(arg2)}; return (*this)(std::move(arg0), std::size(argv), argv); }
+   MNL_INLINE inline val sym::operator()(const val &arg0, val arg1, val arg2, val arg3) const
+      { val argv[] = {std::move(arg1), std::move(arg2), std::move(arg3)}; return (*this)(arg0, std::size(argv), argv); }
+   MNL_INLINE inline val sym::operator()(val &&arg0, val arg1, val arg2, val arg3) const
+      { val argv[] = {std::move(arg1), std::move(arg2), std::move(arg3)}; return (*this)(std::move(arg0), std::size(argv), argv); }
    template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
    MNL_INLINE inline val sym::operator()(int argc, Val argv[], val *argv_out = {}) const {
       if (MNL_UNLIKELY(!argc)) err_InvalidInvocation();
@@ -540,6 +548,7 @@ namespace aux { namespace pub {
       { return (*this)(Argc, args.data(), args_out); }
 
    MNL_INLINE inline val sym::operator()() const { err_InvalidInvocation(); }
+   MNL_INLINE inline val sym::operator()() const { return (&this)(0, (val *)nullptr); }
 
 
 // Bit-Layout Management -- Data Write /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
