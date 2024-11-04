@@ -596,7 +596,7 @@ namespace aux { namespace pub {
    private:
       const unsigned _tag; // assume 64-bit small/medium code model or x32 ABI or 32-bit ISA
       MNL_NOTE(atomic) long _rc = 1;
-   private: // 48 VMT entries
+   private: // 49 VMT entries (+destructor)
       MNL_NOINLINE MNL_HOT virtual val _invoke(const val &self, const sym &op, int argc, val [], val *argv_out = {}) = 0; // argv_out[-1] corresponds to self
       MNL_NOINLINE MNL_HOT virtual val _invoke(val &&self,      const sym &op, int argc, val [], val *argv_out = {}) = 0; // ditto
       MNL_HOT virtual val _apply(const val &self, int argc, val []) = 0;
@@ -632,6 +632,7 @@ namespace aux { namespace pub {
       MNL_HOT virtual val _fetch(val &&self, val &&) = 0;
       MNL_HOT virtual val _fetch(val &&self, const sym &) = 0;
    private:
+      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, int argc, val [], val *argv_out = {}) = 0;
       // For two arguments (6 VMT entries)
       MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, const val &, const val &) = 0;
       MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, const val &, val &&) = 0;

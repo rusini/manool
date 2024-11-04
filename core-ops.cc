@@ -1222,6 +1222,69 @@ namespace aux {
       return self.default_invoke(op, argc, argv);
    }
 
+   // one instance of List is Array
+   template<> template<typename Self, typename Arg0>
+   MNL_INLINE val box<vector<val>>::apply(Self &&self, Arg0 &&arg0) { // check: is<long long>(arg0) works for sym
+      if (!MNL_LIKELY(is<long long>(arg0)) || !MNL_LIKELY((unsigned long long)as<long long>(arg0) < dat.size()))
+         return default_apply(std::forward<Self>(self), std::forward<Arg0>(arg0));
+      return dat[as<long long>(arg0)];
+   }
+   template<> template<typename Self, typename Arg0, typename Arg1>
+   MNL_INLINE val box<vector<val>>::apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
+      if (!MNL_LIKELY(is<long long>(arg0)) || !MNL_LIKELY((unsigned long long)as<long long>(arg0) < dat.size()))
+         return default_apply(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1));
+      return dat[as<long long>(argv0)](std::forward<Arg1>(arg1));
+   }
+   template<> template<typename Self, typename Arg0>
+   MNL_INLINE val box<vector<val>>::repl(Self &&self, Arg0 &&arg0, val &&arg1) {
+      if (!MNL_LIKELY(test<long long>(arg0)) || !MNL_LIKELY((unsigned long long)cast<long long>(arg0) < dat.size()))
+         return default_repl(std::forward<Self>(self), std::forward<Arg0>(arg0), std::move(arg1));
+      if (std::is_same_v<Self, val> && MNL_LIKELY(rc() == 1)) {
+         dat[cast<long long>(arg0)].assign(std::move(arg1));
+         return std::move(self);
+      }
+   # if true // TODO: measure and/or inspect assembly to see which is better
+      return [&]() MNL_INLINE{ val res = dat;
+         cast<vector<val> &>(res)[cast<long long>(arg0)].assign(std::move(arg1));
+         return res;
+      }();
+   # else
+      auto res = dat; res[cast<long long>(arg0)].assign(std::move(arg1)); return res;
+   # endif
+   }
+
+   template<> template<typename Self, typename Arg0>
+   MNL_INLINE val box<vector<val>>::repl(Self &&self, Arg0 &&arg0, val &&arg1) {
+      if (!MNL_LIKELY(test<long long>(arg0)) || !MNL_LIKELY((unsigned long long)cast<long long>(arg0) < dat.size()))
+         return default_repl(std::forward<Self>(self), std::forward<Arg0>(arg0), std::move(arg1));
+      if (std::is_same_v<Self, val> && MNL_LIKELY(rc() == 1)) {
+         dat[cast<long long>(arg0)].assign(std::move(arg1));
+         return std::move(self);
+      }
+      return [&]() MNL_NOINLINE->val
+         { return [&]() MNL_INLINE{ auto res = dat; res[cast<long long>(arg0)].assign(std::move(arg1)); return res; }(); }();
+   }
+
+
+   template<> template<typename Self, typename Arg0, typename Arg1>
+   MNL_INLINE val box<vector<val>>::repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1, val &&arg2) {
+      if (!MNL_LIKELY(test<long long>(arg0)) || !MNL_LIKELY((unsigned long long)cast<long long>(arg0) < dat.size()))
+         return default_repl(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::move(arg2));
+      if (std::is_same_v<Self, val> && MNL_LIKELY(rc() == 1)) {
+         dat[cast<long long>(arg0)].assign(
+            repl(std::move(dat[cast<long long>(arg0)]), std::forward<Arg1>(arg1), std::move(arg2)));
+         return std::move(self);
+      }
+   # if true // TODO: measure and/or inspect assembly to see which is better
+      return [&]() MNL_INLINE{ val res = dat;
+         cast<vector<val> &>(res)[cast<long long>(arg0)].assign(
+            repl(std::move(cast<vector<val> &>(res)[cast<long long>(arg0)]), std::forward<Arg1>(arg1), std::move(arg2)));
+         return res;
+      }();
+   # else
+      auto res = dat; res[cast<long long>(arg0)].assign(repl(std::move(res[cast<long long>(arg0)]), std::forward<Arg1>(arg1), std::move(arg2))); return res;
+   # endif
+   }
    template<> val box<vector<val>>::invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) { // one instance of List is Array
       static const auto compact = [](vector<val> &dat)
          { if (MNL_UNLIKELY(dat.capacity() > dat.size() * 2)) dat.shrink_to_fit(); };
