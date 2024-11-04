@@ -156,11 +156,11 @@ namespace aux {
       static_assert(std::is_base_of_v<code, Arg1>   || std::is_base_of_v<rvalue, Arg1>);
    # endif
    public:
-      template<bool = bool{}, bool = bool{}> MNL_INLINE decltype(auto) execute() const {
+      template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute() const {
          auto &&arg0 = this->arg0.execute(); auto &&arg1 = this->arg1.execute(); auto &&target = this->target.execute();
          try { return std::forward<decltype(target)>(target)(std::forward<decltype(arg0)>(arg0), std::forward<decltype(arg1)>(arg1)); }
          catch (...) { trace_execute(_loc); }
-         static_assert(std::is_base_of_v<aux::appliable, std::remove_reference_t<decltype(target)>>);
+         static_assert(std::is_base_of_v<appliable, std::remove_reference_t<decltype(target)>>);
       }
    public:
       MNL_INLINE void exec_in(const val &value) const { _exec_in(value); }
