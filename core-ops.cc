@@ -1229,29 +1229,29 @@ namespace aux {
       { return fetch(std::forward<Self>(self), std::forward<Arg0>(arg0)); }
    template<> template<typename Self, typename Arg0, typename Arg1>
    MNL_INLINE val box<vector<val>>::fetch(Self &&self, Arg0 &&arg0) {
-      if (!MNL_LIKELY(is<long long>(arg0)) || !MNL_LIKELY((unsigned long long)as<long long>(arg0) < dat.size()))
-         return default_fetch(std::forward<Self>(self), std::forward<Arg0>(arg0));
-      return dat[as<long long>(arg0)];
+      if (MNL_LIKELY(is<long long>(arg0)) && MNL_LIKELY((unsigned long long)as<long long>(arg0) < dat.size()))
+         return dat[as<long long>(arg0)];
+      return default_fetch(std::forward<Self>(self), std::forward<Arg0>(arg0));
    }
    MNL_INLINE val box<vector<val>>::apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1)
       { return fetch(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1)); }
    template<> template<typename Self, typename Arg0, typename Arg1>
    MNL_INLINE val box<vector<val>>::fetch(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
-      if (!MNL_LIKELY(is<long long>(arg0)) || !MNL_LIKELY((unsigned long long)as<long long>(arg0) < dat.size()))
-         return default_fetch(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1));
-      return dat[as<long long>(argv0)].fetch(std::forward<Arg1>(arg1));
+      if (MNL_LIKELY(is<long long>(arg0)) && MNL_LIKELY((unsigned long long)as<long long>(arg0) < dat.size()))
+         return dat[as<long long>(argv0)].fetch(std::forward<Arg1>(arg1));
+      return default_fetch(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1));
    }
    MNL_INLINE val box<vector<val>>::apply(Self &&self, int argc, val argv[])
       { return fetch(std::forward<Self>(self), argv, argv); }
    template<> template<typename Self>
    MNL_INLINE val box<vector<val>>::fetch(Self &&self, int argc, val argv[]) {
-      if (MNL_LIKELY(argc == 1)) {
-         if (MNL_LIKELY(is<long long>(argv[0])) || MNL_LIKELY((unsigned long long)as<long long>(argv[0]) < dat.size()))
-            return dat[as<long long>(argv[0])];
-      } else
       if (MNL_LIKELY(argc > 1)) {
-         if (MNL_LIKELY(is<long long>(argv[0])) || MNL_LIKELY((unsigned long long)as<long long>(argv[0]) < dat.size()))
+         if (MNL_LIKELY(is<long long>(argv[0])) && MNL_LIKELY((unsigned long long)as<long long>(argv[0]) < dat.size()))
             return dat[as<long long>(argv[0])].fetch(argc - 1, argv + 1);
+      } else
+      if (MNL_LIKELY(argc == 1)) {
+         if (MNL_LIKELY(is<long long>(argv[0])) && MNL_LIKELY((unsigned long long)as<long long>(argv[0]) < dat.size()))
+            return dat[as<long long>(argv[0])];
       }
       return default_fetch(std::forward<Self>(self), argc, argv);
    }
