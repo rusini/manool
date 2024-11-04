@@ -1241,7 +1241,22 @@ namespace aux {
          return default_fetch(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1));
       return dat[as<long long>(argv0)].fetch(std::forward<Arg1>(arg1));
    }
+   MNL_INLINE val box<vector<val>>::apply(Self &&self, int argc, val argv[])
+      { return fetch(std::forward<Self>(self), argv, argv); }
+   template<> template<typename Self>
+   MNL_INLINE val box<vector<val>>::fetch(Self &&self, int argc, val argv[]) {
+      if (MNL_LIKELY(argc == 1)) {
+         if (MNL_LIKELY(is<long long>(argv[0])) || MNL_LIKELY((unsigned long long)as<long long>(argv[0]) < dat.size()))
+            return dat[as<long long>(argv[0])];
+      } else
+      if (MNL_LIKELY(argc > 1)) {
+         if (MNL_LIKELY(is<long long>(argv[0])) || MNL_LIKELY((unsigned long long)as<long long>(argv[0]) < dat.size()))
+            return dat[as<long long>(argv[0])].fetch(argc - 1, argv + 1);
+      }
+      return default_fetch(std::forward<Self>(self), argc, argv);
+   }
    // TODO: make sure is<long long>(arg0) works for sym
+
 
    template<> template<typename Self, typename Arg0>
    MNL_INLINE val box<vector<val>>::repl(Self &&self, Arg0 &&arg0, val &&arg1) {
