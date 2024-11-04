@@ -1206,7 +1206,7 @@ namespace aux {
                case 0xFFF8 + 0b011 /*U32*/:               return (*this)(as<unsigned>(lhs),    rhs);
                }
             else if constexpr (Id == sym::id("Xor") | Id == sym::id("&") | Id == sym::id("|"))
-               if (bool{});
+               if (bool{}); // TODO: we can also use if-return w/o else
                else if (MNL_UNLIKELY(is<unsigned>(lhs()))) // U32
                   return (*this)(as<unsigned>(lhs), rhs);
                else if (MNL_LIKELY(is<bool>(lhs()))) // Bool
@@ -1389,6 +1389,12 @@ namespace aux {
                   return _apply(as<unsigned>(arg));
                else if (MNL_LIKELY(is<bool>(arg))) // Bool
                   return _apply(as<bool>(arg));
+               else if (MNL_LIKELY(arg.rep.tag() == 0xFFF8 + 0b111)) // BoxPtr (fallback)
+                  return static_cast<root *>(arg.rep.template dat<void *>())->_invoke(std::forward<Arg>(arg), *this, 0, {});
+               else
+                  err_UnrecognizedOperation();
+            else if constexpr (Id == sym::id("Size") | Id == sym::id("Elems") | Id == sym::id("Keys"))
+               if (bool{});
                else if (MNL_LIKELY(arg.rep.tag() == 0xFFF8 + 0b111)) // BoxPtr (fallback)
                   return static_cast<root *>(arg.rep.template dat<void *>())->_invoke(std::forward<Arg>(arg), *this, 0, {});
                else
