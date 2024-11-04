@@ -105,6 +105,7 @@ namespace aux {
          auto &&arg0 = this->arg0.execute(); auto &&target = this->target.execute();
          try { return std::forward<decltype(target)>(target)(std::forward<decltype(arg0)>(arg0)); }
          catch (...) { trace_execute(_loc); }
+         static_assert(std::is_base_of_v<appliable, std::remove_reference_t<decltype(target)>>);
       }
    public:
       MNL_INLINE void exec_in(const val &value) const { _exec_in(value); }
@@ -206,11 +207,15 @@ namespace aux {
       Target target; code a0, a1, a2; loc _loc; // arg types intentionally not parameterized
       static_assert(std::is_base_of_v<code, Target> || std::is_base_of_v<rvalue, Target>);
    public:
-      template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute(bool = {}) const {
+      template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute() const {
          val argv[] = {a0.execute(), a1.execute(), a2.execute()}; auto &&target = this->target.execute();
-         typedef std::conditional_t<has_apply<>{}, decltype(std::forward<decltype(target)>(target)), val> _target;
-         try { return std::forward<decltype(target)>(target)(std::size(argv), argv); } // NB we benefit from the fact that argc is checked using inlining (potentially eliminated)
+         try { return std::forward<decltype(target)>(target)(std::size(argv), argv); } // argc != 0 check eliminated due to inlining
+         // TODO: for sym target, we could avoid copying a0 -- very beneficial for r/o ops
+         // how? provide operator() w/ more args and repack accordingly (no interface entry is needed)
+         // BUT: here for argc > 2 repacking implies costs by itself (or actually does not?? thanks to esc analysis)
+
          catch (...) { trace_execute(_loc); }
+         static_assert(std::is_base_of_v<appliable, std::remove_reference_t<decltype(target)>>);
       }
    public:
       MNL_INLINE void exec_in(const val &value) const { _exec_in(value); }
@@ -254,7 +259,7 @@ namespace aux {
       Target target; code a0, a1, a2, a3; loc _loc; // arg types intentionally not parameterized
       static_assert(std::is_base_of_v<code, Target> || std::is_base_of_v<rvalue, Target>);
    public:
-      template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute(bool = {}) const {
+      template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute() const {
          val argv[] = {a0.execute(), a1.execute(), a2.execute(), a3.execute()}; auto &&target = this->target.execute();
          try { return std::forward<decltype(target)>(target)(std::size(argv), argv); } // NB we benefit from the fact that argc is checked using inlining (potentially eliminated)
          catch (...) { trace_execute(_loc); }
