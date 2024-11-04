@@ -1223,18 +1223,26 @@ namespace aux {
    }
 
    // one instance of List is Array
+
    template<> template<typename Self, typename Arg0>
-   MNL_INLINE val box<vector<val>>::apply(Self &&self, Arg0 &&arg0) { // check: is<long long>(arg0) works for sym
+   MNL_INLINE val box<vector<val>>::apply(Self &&self, Arg0 &&arg0)
+      { return fetch(std::forward<Self>(self), std::forward<Arg0>(arg0)); }
+   template<> template<typename Self, typename Arg0, typename Arg1>
+   MNL_INLINE val box<vector<val>>::fetch(Self &&self, Arg0 &&arg0) {
       if (!MNL_LIKELY(is<long long>(arg0)) || !MNL_LIKELY((unsigned long long)as<long long>(arg0) < dat.size()))
-         return default_apply(std::forward<Self>(self), std::forward<Arg0>(arg0));
+         return default_fetch(std::forward<Self>(self), std::forward<Arg0>(arg0));
       return dat[as<long long>(arg0)];
    }
+   MNL_INLINE val box<vector<val>>::apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1)
+      { return fetch(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1)); }
    template<> template<typename Self, typename Arg0, typename Arg1>
-   MNL_INLINE val box<vector<val>>::apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
+   MNL_INLINE val box<vector<val>>::fetch(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
       if (!MNL_LIKELY(is<long long>(arg0)) || !MNL_LIKELY((unsigned long long)as<long long>(arg0) < dat.size()))
-         return default_apply(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1));
-      return dat[as<long long>(argv0)](std::forward<Arg1>(arg1));
+         return default_fetch(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1));
+      return dat[as<long long>(argv0)].fetch(std::forward<Arg1>(arg1));
    }
+   // TODO: make sure is<long long>(arg0) works for sym
+
    template<> template<typename Self, typename Arg0>
    MNL_INLINE val box<vector<val>>::repl(Self &&self, Arg0 &&arg0, val &&arg1) {
       if (!MNL_LIKELY(test<long long>(arg0)) || !MNL_LIKELY((unsigned long long)cast<long long>(arg0) < dat.size()))
