@@ -416,6 +416,15 @@ namespace aux { namespace pub {
          MNL_NODISCARD MNL_INLINE val repl(val &&arg0, const Sym &arg1, const val &arg2) && { return _repl(_mv(*this), _mv(arg0), arg1, arg2); }
       template<class Sym, std::enable_if_t<std::is_same_v<Sym, sym>, decltype(nullptr)> = decltype(nullptr){}>
          MNL_NODISCARD MNL_INLINE val repl(val &&arg0, const Sym &arg1, val &&arg2) && { return _repl(_mv(*this), _mv(arg0), arg1, _mv(arg2)); }
+   // Metaprogramming
+         MNL_INLINE val operator()(val arg0, val arg1, val arg2) const &
+            { val argv[] = {_mv(arg0), _mv(arg1), _mv(arg2)}; return (*this)(argv, std::size(argv)); }
+         MNL_INLINE val operator()(val arg0, val arg1, val arg2) &&
+            { val argv[] = {_mv(arg0), _mv(arg1), _mv(arg2)}; return _mv(*this)(argv, std::size(argv)); }
+         MNL_INLINE val operator()(val arg0, val arg1, val arg2, val arg3) const &
+            { val argv[] = {_mv(arg0), _mv(arg1), _mv(arg2), _mv(arg3)}; return (*this)(argv, std::size(argv)); }
+         MNL_INLINE val operator()(val arg0, val arg1, val arg2, val arg3) &&
+            { val argv[] = {_mv(arg0), _mv(arg1), _mv(arg2), _mv(arg3)}; return _mv(*this)(argv, std::size(argv)); }
    // Convenience
       template<std::size_t Argc> MNL_INLINE val operator()(std::array<val, Argc> args, val *args_out) const &
          { return (*this)(Argc, args.data(), args_out); }
