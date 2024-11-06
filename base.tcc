@@ -96,10 +96,6 @@ namespace aux {
    struct expr_apply<1, Target, Arg0>:
       std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue> {
       [[no_unique_address]] Target target; [[no_unique_address]] Arg0 arg0; loc _loc;
-   # if !MNL_LEAN
-      static_assert(std::is_base_of_v<code, Target> || std::is_base_of_v<rvalue, Target>);
-      static_assert(std::is_base_of_v<code, Arg0>   || std::is_base_of_v<rvalue, Arg0>);
-   # endif
    public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute() const {
          auto &&arg0 = this->arg0.execute(); auto &&target = this->target.execute();
@@ -147,11 +143,6 @@ namespace aux {
    struct expr_apply<2, Target, Arg0, Arg1>:
       std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue> {
       [[no_unique_address]] Target target; [[no_unique_address]] Arg0 arg0; [[no_unique_address]] Arg1 arg1; loc _loc;
-   # if !MNL_LEAN
-      static_assert(std::is_base_of_v<code, Target> || std::is_base_of_v<rvalue, Target>);
-      static_assert(std::is_base_of_v<code, Arg0>   || std::is_base_of_v<rvalue, Arg0>);
-      static_assert(std::is_base_of_v<code, Arg1>   || std::is_base_of_v<rvalue, Arg1>);
-   # endif
    public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute() const {
          auto &&arg0 = this->arg0.execute(); auto &&arg1 = this->arg1.execute(); auto &&target = this->target.execute();
