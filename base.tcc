@@ -188,15 +188,10 @@ namespace aux {
    struct expr_apply<3, Target, Arg0>:
       std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue> {
       Target target; Arg0 a0; code a1, a2; loc _loc;
-      static_assert(std::is_base_of_v<code, Target> || std::is_base_of_v<rvalue, Target>);
    public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute() const {
-         val argv[] = {a0.execute(), a1.execute(), a2.execute()}; auto &&target = this->target.execute();
-         try { return std::forward<decltype(target)>(target)(std::size(argv), argv); } // argc != 0 check eliminated due to inlining
-         // TODO: for sym target, we could avoid copying a0 -- very beneficial for r/o ops
-         // how? provide operator() w/ more args and repack accordingly (no interface entry is needed)
-         // BUT: here for argc > 2 repacking implies costs by itself (or actually does not?? thanks to esc analysis)
-
+         auto &&a0 = this->a0.execute(); val a1 = this->a1.execute(), a2 = this->a2.execute(); auto &&target = this->target.execute();
+         try { return std::forward<decltype(target)>(target)(std::forward<a0>(a0), std::move(a1), std::move(a2)); }
          catch (...) { trace_execute(_loc); }
          static_assert(std::is_base_of_v<appliable, std::remove_reference_t<decltype(target)>>);
       }
@@ -205,7 +200,7 @@ namespace aux {
       MNL_INLINE void exec_in(val &&value) const { _exec_in(std::move(value)); }
    private:
       template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
-         if (!std::is_base_of_v<lvalue, expr_apply>) return rvalue::exec_in(std::forward<Val>(value)); // unreachable (for DCE)
+         if (!std::is_base_of_v<lvalue, expr_apply>) return rvalue::exec_in(std::forward<Val>(value));
          target.exec_in([&]() MNL_INLINE{
             val argv[] = {a0.execute(), a1.execute(), a2.execute(), std::forward<Val>(value)}, target = this->target.exec_out();
             try { return repl(std::move(target), std::size(argv), argv); }
@@ -214,7 +209,7 @@ namespace aux {
       }
    public:
       MNL_INLINE val exec_out() const {
-         if (!std::is_base_of_v<lvalue, expr_apply>) return rvalue::exec_out(); // unreachable (for DCE)
+         if (!std::is_base_of_v<lvalue, expr_apply>) return rvalue::exec_out();
          val argv_out[4];
          target.exec_in([&]() MNL_INLINE{
             val argv[std::size(argv_out)] = {a0.execute(), a1.execute(), a2.execute()}, target = this->target.exec_out();
@@ -240,7 +235,6 @@ namespace aux {
    struct expr_apply<4, Target>:
       std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue> {
       Target target; code a0, a1, a2, a3; loc _loc; // arg types intentionally not parameterized
-      static_assert(std::is_base_of_v<code, Target> || std::is_base_of_v<rvalue, Target>);
    public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute() const {
          val argv[] = {a0.execute(), a1.execute(), a2.execute(), a3.execute()}; auto &&target = this->target.execute();
