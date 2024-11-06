@@ -178,12 +178,13 @@ namespace aux {
    };
 
    // Application specialized for 3 arguments
-   template<typename Target>
+   template<class Target, class Arg0>
    expr_apply(
       std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue>,
-      Target, code, code, code, loc )->
+      Target, Arg0, code, code, loc )->
    expr_apply< 3,
-      std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>, Target, expr_lit<Target>::optimal> >;
+      std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>, Target, expr_lit<Target>::optimal>,
+      std::conditional_t<std::is_base_of_v<code, Arg0>   || std::is_base_of_v<code::rvalue, Arg0>,   Arg0,   expr_lit<Arg0>  ::optimal> >;
    template<class Target, class Arg0>
    struct expr_apply<3, Target, Arg0>:
       std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue> {
