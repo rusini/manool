@@ -57,9 +57,11 @@ namespace aux {
       typename Arg0 = std::conditional_t<Argc >= 1 && Argc <= 3, code, void>,
       typename Arg1 = std::conditional_t<Argc >= 2 && Argc <= 2, code, void>
    # if !MNL_LEAN
-      ,
+      , // TODO: the difference here is that Target and Arg* are required to be complete types at the point of mere mentioning of expr_apply,
+        // not at the point of its instantiation! Also, mentioning expr_apply implies instantiation of the args (if needed)
       std::enable_if_t<Argc >= 0 && Argc <= 4,                                                                decltype(nullptr)> = decltype(nullptr){},
       std::enable_if_t<std::is_base_of_v<code::rvalue, Target>,                                               decltype(nullptr)> = decltype(nullptr){},
+      std::is_base_of_v<appliable, std::remove_reference_t<decltype(std::declval<Target>().execute())>>,      decltype(nullptr)> = decltype(nullptr){},
       std::enable_if_t<Argc >= 1 && Argc <= 3 ? std::is_base_of_v<code::rvalue, Arg0> : std::is_void_v<Arg0>, decltype(nullptr)> = decltype(nullptr){},
       std::enable_if_t<Argc >= 2 && Argc <= 2 ? std::is_base_of_v<code::rvalue, Arg1> : std::is_void_v<Arg1>, decltype(nullptr)> = decltype(nullptr){}
    # endif
@@ -149,6 +151,7 @@ namespace aux {
          try { return std::forward<decltype(target)>(target)(std::forward<decltype(arg0)>(arg0), std::forward<decltype(arg1)>(arg1)); }
          catch (...) { trace_execute(_loc); }
          static_assert(std::is_base_of_v<appliable, std::remove_reference_t<decltype(target)>>);
+         std::is_base_of_v<appliable, std::remove_reference_t<decltype(std::declval<Target>().execute())>>;
       }
    public:
       MNL_INLINE void exec_in(const val &value) const { _exec_in(value); }
