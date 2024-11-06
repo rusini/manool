@@ -203,7 +203,7 @@ namespace aux {
          if (!std::is_base_of_v<lvalue, expr_apply>) return rvalue::exec_in(std::forward<Val>(value));
          target.exec_in([&]() MNL_INLINE{
             val argv[] = {a0.execute(), a1.execute(), a2.execute(), std::forward<Val>(value)}, target = this->target.exec_out();
-            try { return repl(std::move(target), std::size(argv), argv); }
+            try { return std::move(target).repl(std::size(argv), argv); }
             catch (...) { trace_exec_in(_loc); }
          }() );
       }
@@ -213,13 +213,11 @@ namespace aux {
          val argv_out[4];
          target.exec_in([&]() MNL_INLINE{
             val argv[std::size(argv_out)] = {a0.execute(), a1.execute(), a2.execute()}, target = this->target.exec_out();
-            try { return repl(std::move(target), std::size(argv), argv, argv_out); }
+            try { return std::move(target).repl(std::size(argv), argv, argv_out); }
             catch (...) { trace_exec_out(_loc); }
          }() );
          return std::move(argv_out[std::size(argv_out) - 1]);
       }
-   private:
-      static constexpr auto repl = op<sym::id("Repl")>;
    public:
       MNL_INLINE bool is_lvalue() const noexcept { return target.is_lvalue(); }
    };
@@ -249,7 +247,7 @@ namespace aux {
          if (!std::is_base_of_v<lvalue, expr_apply>) return rvalue::exec_in(std::forward<Val>(value));
          target.exec_in([&]() MNL_INLINE{
             val argv[] = {a0.execute(), a1.execute(), a2.execute(), a3.execute(), std::forward<Val>(value)}, target = this->target.exec_out();
-            try { return repl(std::move(target), std::size(argv), argv); }
+            try { return std::move(target).repl(std::size(argv), argv); }
             catch (...) { trace_exec_in(_loc); }
          }() );
       }
@@ -259,13 +257,11 @@ namespace aux {
          val argv_out[5];
          target.exec_in([&]() MNL_INLINE{
             val argv[std::size(argv_out)] = {a0.execute(), a1.execute(), a2.execute(), a3.execute()}, target = this->target.exec_out();
-            try { return repl(std::move(target), std::size(argv), argv, argv_out); }
+            try { return std::move(target).repl(std::size(argv), argv, argv_out); }
             catch (...) { trace_exec_out(_loc); }
          }() );
          return std::move(argv_out[std::size(argv_out) - 1]);
       }
-   private:
-      static constexpr auto repl = op<sym::id("Repl")>;
    public:
       MNL_INLINE bool is_lvalue() const noexcept { return target.is_lvalue(); }
    };
