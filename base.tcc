@@ -112,27 +112,23 @@ namespace aux {
       MNL_INLINE void exec_in(val &&value) const { _exec_in(std::move(value)); }
    private:
       template<typename Val> MNL_INLINE void _exec_in(Val &&value) const {
-         if constexpr (!std::is_base_of_v<lvalue, expr_apply>) {
-            target.exec_in( [&]() MNL_INLINE{
-               auto &&arg0 = this->arg0.execute(); val target = this->target.exec_out();
-               try { return std::move(target).repl(std::forward<decltype(arg0)>(arg0), std::forward<Val>(value)); }
-               catch (...) { trace_exec_in(_loc); }
-            }() );
-         }
-         return rvalue::exec_in(std::forward<Val>(value)); // unreachable (for DCE)
+         if (!std::is_base_of_v<lvalue, expr_apply>) return rvalue::exec_in(std::forward<Val>(value));
+         target.exec_in( [&]() MNL_INLINE{
+            auto &&arg0 = this->arg0.execute(); val target = this->target.exec_out();
+            try { return std::move(target).repl(std::forward<decltype(arg0)>(arg0), std::forward<Val>(value)); }
+            catch (...) { trace_exec_in(_loc); }
+         }() );
       }
    public:
       MNL_INLINE val exec_out() const {
-         if constexpr (!std::is_base_of_v<lvalue, expr_apply>) {
-            val argv_out[2 + 1];
-            target.exec_in( [&]() MNL_INLINE{
-               val argv[std::size(argv_out) - 1] = {arg0.execute()}, target = this->target.exec_out();
-               try { return std::move(target).repl(std::size(argv), argv, argv_out + 1); }
-               catch (...) { trace_exec_out(_loc); }
-            }() );
-            return std::move(argv_out[std::size(argv_out) - 1]);
-         }
-         return rvalue::exec_out(); // unreachable (for DCE)
+         if (!std::is_base_of_v<lvalue, expr_apply>) return rvalue::exec_out();
+         val argv_out[2 + 1];
+         target.exec_in( [&]() MNL_INLINE{
+            val argv[std::size(argv_out) - 1] = {arg0.execute()}, target = this->target.exec_out();
+            try { return std::move(target).repl(std::size(argv), argv, argv_out + 1); }
+            catch (...) { trace_exec_out(_loc); }
+         }() );
+         return std::move(argv_out[std::size(argv_out) - 1]);
       }
    public:
       MNL_INLINE bool is_lvalue() const noexcept { return target.is_lvalue(); }
