@@ -198,6 +198,7 @@ namespace aux {
    public:
       MNL_INLINE void exec_in(const val &value) const { _exec_in(value); }
       MNL_INLINE void exec_in(val &&value) const { _exec_in(std::move(value)); }
+      // NB: rval refs are normally not alised and not escaped ??? hmm, use __restrict__ ?
    private:
       template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
          if (!std::is_base_of_v<lvalue, expr_apply>) return rvalue::exec_in(std::forward<Val>(value));
