@@ -1298,6 +1298,7 @@ namespace aux {
             repl(std::move(dat[cast<long long>(arg0)]), std::forward<Arg1>(arg1), std::move(arg2)));
          return std::move(self);
       }
+      // TODO: consider __restrict__
    # if true // TODO: measure and/or inspect assembly to see which is better
       return [&]() MNL_INLINE{ val res = dat;
          cast<vector<val> &>(res)[cast<long long>(arg0)].assign(
