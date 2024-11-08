@@ -123,6 +123,8 @@ namespace aux { namespace pub {
       // For multiple arguments
       template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
          val operator()(int argc, Val [], val *argv_out = {}) const;
+      val sym::operator()(const val &a0, val a1, val a2) const;
+      val sym::operator()(val &&a0, val a1, val a2) const;
    // Convenience
       template<std::size_t Argc> val operator()(const val &self, std::array<val, Argc>, val *args_out = {}) const;
       template<std::size_t Argc> val operator()(val &&self, std::array<val, Argc>, val *args_out = {}) const;
@@ -352,6 +354,9 @@ namespace aux { namespace pub {
          MNL_INLINE val fetch(int argc, Val argv[]) const & { return _fetch(*this, argc, argv); }
       template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
          MNL_INLINE val fetch(int argc, Val argv[]) && { return _fetch(_mv(*this), argc, argv); }
+      //
+         MNL_INLINE val operator()(val a0, val a1, val a2) const & { val argv[] = {_mv(a0), _mv(a1), _mv(a2)}; return (*this)(std::size(argv), argv); }
+         MNL_INLINE val operator()(val a0, val a1, val a2) &&   { val argv[] = {_mv(a0), _mv(a1), _mv(a2)}; return _mv(*this)(std::size(argv), argv); }
       // For one argument
          MNL_INLINE val operator()(const val &arg0) const & { return _apply(*this, arg0); }
          MNL_INLINE val operator()(val &&arg0) const & { return _apply(*this, _mv(arg0)); }
@@ -472,6 +477,9 @@ namespace aux { namespace pub {
       template<typename Self> static val _invoke(Self &&, const sym &op, int argc, val argv[], val *argv_out); // Self == const val & || Self == val
       friend val sym::operator()(const val &, int, val [], val *) const, sym::operator()(val &&, int, val [], val *) const;
 
+   private:
+      template<typename Arg> static MNL_INLINE decltype(auto) _mv(Arg &&arg) noexcept { return std::move(arg); }
+
    public: // Convenience -- Direct comparison with other types
       bool operator==(decltype(nullptr)) const noexcept, operator==(const sym &) const noexcept;
       MNL_INLINE bool operator!=(decltype(nullptr)) const noexcept { return !(*this == nullptr); }
@@ -535,19 +543,15 @@ namespace aux { namespace pub {
    MNL_INLINE inline val sym::operator()(val &&arg0, const val &arg1) const { return (*this)(std::move(arg0), (val)arg1); }
    MNL_INLINE inline val sym::operator()(val &&arg0, val &&arg1) const { return (*this)(std::move(arg0), 1, &arg1); }
    // For multiple arguments
-   MNL_INLINE inline val sym::operator()(const val &arg0, val arg1, val arg2) const
-      { val argv[] = {std::move(arg1), std::move(arg2)}; return (*this)(arg0, std::size(argv), argv); }
-   MNL_INLINE inline val sym::operator()(val &&arg0, val arg1, val arg2) const
-      { val argv[] = {std::move(arg1), std::move(arg2)}; return (*this)(std::move(arg0), std::size(argv), argv); }
-   MNL_INLINE inline val sym::operator()(const val &arg0, val arg1, val arg2, val arg3) const
-      { val argv[] = {std::move(arg1), std::move(arg2), std::move(arg3)}; return (*this)(arg0, std::size(argv), argv); }
-   MNL_INLINE inline val sym::operator()(val &&arg0, val arg1, val arg2, val arg3) const
-      { val argv[] = {std::move(arg1), std::move(arg2), std::move(arg3)}; return (*this)(std::move(arg0), std::size(argv), argv); }
    template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
    MNL_INLINE inline val sym::operator()(int argc, Val argv[], val *argv_out = {}) const {
       if (MNL_UNLIKELY(!argc)) err_InvalidInvocation();
       return (*this)(std::move(*argv), argc - 1, argc ? argv + 1 : nullptr, argv_out + !!argv_out);
    }
+   MNL_INLINE inline val sym::operator()(const val &a0, val a1, val a2) const
+      { val argv[] = {std::move(a1), std::move(a2)}; return (*this)(a0, std::size(argv), argv); }
+   MNL_INLINE inline val sym::operator()(val &&a0, val a1, val a2) const
+      { val argv[] = {std::move(a1), std::move(a2)}; return (*this)(std::move(a0), std::size(argv), argv); }
 
    template<std::size_t Argc> MNL_INLINE inline val sym::operator()(const val &self, std::array<val, Argc> args, val *args_out) const
       { return (*this)(self, Argc, args.data(), args_out); }
