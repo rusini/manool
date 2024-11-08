@@ -354,9 +354,6 @@ namespace aux { namespace pub {
          MNL_INLINE val fetch(int argc, Val argv[]) const & { return _fetch(*this, argc, argv); }
       template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
          MNL_INLINE val fetch(int argc, Val argv[]) && { return _fetch(_mv(*this), argc, argv); }
-      //
-         MNL_INLINE val operator()(val a0, val a1, val a2) const & { val argv[] = {_mv(a0), _mv(a1), _mv(a2)}; return (*this)(std::size(argv), argv); }
-         MNL_INLINE val operator()(val a0, val a1, val a2) &&   { val argv[] = {_mv(a0), _mv(a1), _mv(a2)}; return _mv(*this)(std::size(argv), argv); }
       // For one argument
          MNL_INLINE val operator()(const val &arg0) const & { return _apply(*this, arg0); }
          MNL_INLINE val operator()(val &&arg0) const & { return _apply(*this, _mv(arg0)); }
@@ -422,14 +419,8 @@ namespace aux { namespace pub {
       template<class Sym, std::enable_if_t<std::is_same_v<Sym, sym>, decltype(nullptr)> = decltype(nullptr){}>
          MNL_NODISCARD MNL_INLINE val repl(val &&arg0, const Sym &arg1, val &&arg2) && { return _repl(_mv(*this), _mv(arg0), arg1, _mv(arg2)); }
    // Metaprogramming
-         MNL_INLINE val operator()(val arg0, val arg1, val arg2) const &
-            { val argv[] = {_mv(arg0), _mv(arg1), _mv(arg2)}; return (*this)(argv, std::size(argv)); }
-         MNL_INLINE val operator()(val arg0, val arg1, val arg2) &&
-            { val argv[] = {_mv(arg0), _mv(arg1), _mv(arg2)}; return _mv(*this)(argv, std::size(argv)); }
-         MNL_INLINE val operator()(val arg0, val arg1, val arg2, val arg3) const &
-            { val argv[] = {_mv(arg0), _mv(arg1), _mv(arg2), _mv(arg3)}; return (*this)(argv, std::size(argv)); }
-         MNL_INLINE val operator()(val arg0, val arg1, val arg2, val arg3) &&
-            { val argv[] = {_mv(arg0), _mv(arg1), _mv(arg2), _mv(arg3)}; return _mv(*this)(argv, std::size(argv)); }
+         MNL_INLINE val operator()(val a0, val a1, val a2) const & { val argv[] = {_mv(a0), _mv(a1), _mv(a2)}; return (*this)(std::size(argv), argv); }
+         MNL_INLINE val operator()(val a0, val a1, val a2) &&   { val argv[] = {_mv(a0), _mv(a1), _mv(a2)}; return _mv(*this)(std::size(argv), argv); }
    // Convenience
       template<std::size_t Argc> MNL_INLINE val operator()(std::array<val, Argc> args, val *args_out) const &
          { return (*this)(Argc, args.data(), args_out); }
