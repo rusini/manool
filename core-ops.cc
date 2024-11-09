@@ -1281,11 +1281,15 @@ namespace aux {
       if (!MNL_LIKELY(test<long long>(arg0)) || !MNL_LIKELY((unsigned long long)cast<long long>(arg0) < dat.size()))
          return default_repl(std::forward<Self>(self), std::forward<Arg0>(arg0), std::move(arg1));
       if (std::is_same_v<Self, val> && MNL_LIKELY(rc() == 1)) {
-         dat[cast<long long>(arg0)].assign(std::move(arg1));
+      # if true // We deem a check followed by a not-taken, correctly predicted branch better for performance than an extra store-after-load;
+         dat[cast<long long>(arg0)] = std::move(arg1); // besides, the later might result in wrong destruction order.
+      # else
+         dat[cast<long long>(arg0)].swap(arg1);
+      # endif
          return std::move(self);
       }
       return [&]() MNL_NOINLINE->val
-         { return [&]() MNL_INLINE{ auto res = dat; res[cast<long long>(arg0)].assign(std::move(arg1)); return res; }(); }();
+         { return [&]() MNL_INLINE{ auto res = dat; res[cast<long long>(arg0)] = std::move(arg1); return res; }(); }();
    }
 
 
