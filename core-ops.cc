@@ -1298,16 +1298,16 @@ namespace aux {
       if (!MNL_LIKELY(test<long long>(arg0)) || !MNL_LIKELY((unsigned long long)cast<long long>(arg0) < dat.size()))
          return default_repl(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::move(arg2));
       if (std::is_same_v<Self, val> && MNL_LIKELY(rc() == 1)) {
-         dat[cast<long long>(arg0)] = std::move(dat[cast<long long>(arg0)]).repl(std::forward<Arg1>(arg1), std::move(arg2)));
+         auto index = cast<long long>(arg0);
+         dat[index] = std::move(dat[index]).repl(std::forward<Arg1>(arg1), std::move(arg2));
          return std::move(self);
       }
-      return [&]() MNL_NOINLINE->val{
-         return [&]() MNL_INLINE{
-            auto res = dat;
-            res[cast<long long>(arg0)] = res[cast<long long>(arg0)].repl(std::forward<Arg1>(arg1), std::move(arg2));
-            return res;
-         }();
-      }();
+      return [&]() MNL_NOINLINE->val{ return [&]() MNL_INLINE{
+         auto res = dat;
+         auto index = cast<long long>(arg0);
+         res[index] = std::move(res[index]).repl(std::forward<Arg1>(arg1), std::move(arg2));
+         return res;
+      }(); }();
 
 
       // TODO: consider __restrict__
