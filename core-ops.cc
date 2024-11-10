@@ -1277,15 +1277,13 @@ namespace aux {
    MNL_INLINE val box<vector<val>>::repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1, val &&arg2) {
       if (!MNL_LIKELY(test<long long>(arg0)) || !MNL_LIKELY((unsigned long long)cast<long long>(arg0) < dat.size()))
          return default_repl(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::move(arg2));
+      auto index = cast<long long>(arg0);
       if (std::is_same_v<Self, val> && MNL_LIKELY(rc() == 1)) {
-         auto index = cast<long long>(arg0);
-         dat[index] = std::move(dat[index]).repl(std::forward<Arg1>(arg1), std::move(arg2));
+         [&](auto &MNL_RESTRICT dat = dat) MNL_INLINE{ dat[index] = std::move(dat[index]).repl(std::forward<Arg1>(arg1), std::move(arg2)); }();
          return std::move(self);
       }
-      return [&]() MNL_NOINLINE->val{ return [&]() MNL_INLINE{
-         auto res = dat;
-         auto index = cast<long long>(arg0);
-         res[index] = std::move(res[index]).repl(std::forward<Arg1>(arg1), std::move(arg2));
+      return [this, index]() MNL_NOINLINE->val{ return [&]() MNL_INLINE{
+         auto res = dat; res[index] = std::move(res[index]).repl(std::forward<Arg1>(arg1), std::move(arg2));
          return res;
       }(); }();
    }
