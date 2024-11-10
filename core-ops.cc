@@ -1263,24 +1263,6 @@ namespace aux {
       if (!MNL_LIKELY(test<long long>(arg0)) || !MNL_LIKELY((unsigned long long)cast<long long>(arg0) < dat.size()))
          return default_repl(std::forward<Self>(self), std::forward<Arg0>(arg0), std::move(arg1));
       if (std::is_same_v<Self, val> && MNL_LIKELY(rc() == 1)) {
-         dat[cast<long long>(arg0)].assign(std::move(arg1));
-         return std::move(self);
-      }
-   # if true // TODO: measure and/or inspect assembly to see which is better
-      return [&]() MNL_INLINE{ val res = dat;
-         cast<vector<val> &>(res)[cast<long long>(arg0)].assign(std::move(arg1));
-         return res;
-      }();
-   # else
-      auto res = dat; res[cast<long long>(arg0)].assign(std::move(arg1)); return res;
-   # endif
-   }
-
-   template<> template<typename Self, typename Arg0>
-   MNL_INLINE val box<vector<val>>::repl(Self &&self, Arg0 &&arg0, val &&arg1) {
-      if (!MNL_LIKELY(test<long long>(arg0)) || !MNL_LIKELY((unsigned long long)cast<long long>(arg0) < dat.size()))
-         return default_repl(std::forward<Self>(self), std::forward<Arg0>(arg0), std::move(arg1));
-      if (std::is_same_v<Self, val> && MNL_LIKELY(rc() == 1)) {
       # if true // We deem a check followed by a not-taken, correctly predicted branch better for performance than an extra store-after-load;
          dat[cast<long long>(arg0)] = std::move(arg1); // besides, the later might result in wrong destruction order.
       # else
@@ -1291,8 +1273,6 @@ namespace aux {
       return [&]() MNL_NOINLINE->val
          { return [&]() MNL_INLINE{ auto res = dat; res[cast<long long>(arg0)] = std::move(arg1); return res; }(); }();
    }
-
-
    template<> template<typename Self, typename Arg0, typename Arg1>
    MNL_INLINE val box<vector<val>>::repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1, val &&arg2) {
       if (!MNL_LIKELY(test<long long>(arg0)) || !MNL_LIKELY((unsigned long long)cast<long long>(arg0) < dat.size()))
@@ -1308,18 +1288,6 @@ namespace aux {
          res[index] = std::move(res[index]).repl(std::forward<Arg1>(arg1), std::move(arg2));
          return res;
       }(); }();
-
-
-      // TODO: consider __restrict__
-   # if true // TODO: measure and/or inspect assembly to see which is better
-      return [&]() MNL_INLINE{ val res = dat;
-         cast<vector<val> &>(res)[cast<long long>(arg0)].assign(
-            repl(std::move(cast<vector<val> &>(res)[cast<long long>(arg0)]), std::forward<Arg1>(arg1), std::move(arg2)));
-         return res;
-      }();
-   # else
-      auto res = dat; res[cast<long long>(arg0)].assign(repl(std::move(res[cast<long long>(arg0)]), std::forward<Arg1>(arg1), std::move(arg2))); return res;
-   # endif
    }
    template<> val box<vector<val>>::invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) { // one instance of List is Array
       static const auto compact = [](vector<val> &dat)
