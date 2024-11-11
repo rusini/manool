@@ -465,7 +465,7 @@ namespace aux { namespace pub {
       template<typename Target, typename Arg0, typename Arg1>                static val _repl(Target &&, Arg0 &&, Arg1 &&);
       template<typename Target, typename Arg0, typename Arg1, typename Arg2> static val _repl(Target &&, Arg0 &&, Arg1 &&, Arg2 &&);
    private: // Implementation of sym::operator()
-      template<typename Self> static val _invoke(Self &&, const sym &op, int argc, val argv[], val *argv_out); // Self == const val & || Self == val
+      template<typename Self> static MNL_HOT val _invoke(Self &&, const sym &op, int argc, val argv[], val *argv_out); // Self == const val & || Self == val
       friend val sym::operator()(const val &, int, val [], val *) const, sym::operator()(val &&, int, val [], val *) const;
 
    private:
@@ -610,8 +610,8 @@ namespace aux { namespace pub {
       const unsigned _tag; // assume 64-bit small/medium code model or x32 ABI or 32-bit ISA
       MNL_NOTE(atomic) long _rc = 1;
    private: // 49 VMT entries (+destructor)
-      MNL_NOINLINE MNL_HOT virtual val _invoke(const val &self, const sym &op, int argc, val [], val *argv_out = {}) = 0; // argv_out[-1] corresponds to self
-      MNL_NOINLINE MNL_HOT virtual val _invoke(val &&self,      const sym &op, int argc, val [], val *argv_out = {}) = 0; // ditto
+      MNL_NOINLINE virtual val _invoke(const val &self, const sym &op, int argc, val [], val *argv_out = {}) = 0; // argv_out[-1] corresponds to self
+      MNL_NOINLINE virtual val _invoke(val &&self,      const sym &op, int argc, val [], val *argv_out = {}) = 0; // ditto
       MNL_HOT virtual val _apply(const val &self, int argc, val []) = 0;
       MNL_HOT virtual val _apply(val &&self,      int argc, val []) = 0;
       MNL_HOT virtual val _fetch(const val &self, int argc, val []) = 0;
@@ -678,9 +678,9 @@ namespace aux { namespace pub {
       static constexpr std::byte _tag{};
       friend val;
    private: // 46 VMT entries
-      MNL_NOINLINE MNL_HOT val _invoke(const val &self, const sym &op, int argc, val argv[], val *argv_out = {}) override
+      MNL_NOINLINE val _invoke(const val &self, const sym &op, int argc, val argv[], val *argv_out = {}) override
          { return invoke(self, op, argv, argv_out); }
-      MNL_NOINLINE MNL_HOT val _invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out = {}) override
+      MNL_NOINLINE val _invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out = {}) override
          { return invoke(_mv(self), op, argv, argv_out); }
       MNL_HOT val _apply(const val &self, int argc, val argv[]) override
          { return apply(self, argv); }
