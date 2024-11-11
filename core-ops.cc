@@ -1270,8 +1270,11 @@ namespace aux {
       # endif
          return std::move(self);
       }
-      return [&]() MNL_NOINLINE->val
-         { return [&]() MNL_INLINE{ auto res = dat; res[cast<long long>(arg0)] = std::move(arg1); return res; }(); }();
+      return [this, index = as<long long>(arg0), &arg1]() MNL_NOINLINE->val{ return [&]() MNL_INLINE{
+         auto res = dat;
+         res[index] = std::move(arg1);
+         return res;
+      }(); }();
    }
    template<> template<typename Self, typename Arg0, typename Arg1>
    MNL_INLINE val box<vector<val>>::repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1, val &&arg2) {
