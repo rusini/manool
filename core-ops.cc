@@ -1285,7 +1285,7 @@ namespace aux {
       }
       return [this, index, &arg1, &arg2]() MNL_NOINLINE->val{ return [&]() MNL_INLINE{
          auto res = dat;
-         auto &item = dat[index];
+         auto &item = res[index];
          item = std::move(item).repl(std::forward<Arg1>(arg1), std::move(arg2));
          return res;
       }(); }();
@@ -1317,7 +1317,7 @@ namespace aux {
          }
          return [this, index, argv, argc]() MNL_NOINLINE->val{ return [&]() MNL_INLINE{
             auto res = dat;
-            auto &item = dat[index];
+            auto &item = res[index];
             item = std::move(item).repl(--argc, argc ? ++argv : nullptr, argv_out + !!argv_out); // relies on C++17 eval order
             return res;
          }(); }();
