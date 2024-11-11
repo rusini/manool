@@ -1322,7 +1322,7 @@ namespace aux {
             return res;
          }(); }();
       }
-      MNL_ERR(MNL_SYM("InvalidInvocation"));
+      return default_repl(std::forward<Self>(self), int argc, argv, argv_out);
    }
    template<> template<typename Self> val box<vector<val>>::invoke(Self &&self, const sym &op, int argc, val argv[], val *argv_out) {
       static const auto compact = [](vector<val> &dat)
