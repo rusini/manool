@@ -391,33 +391,33 @@ namespace aux { namespace pub {
          MNL_INLINE val fetch(const Sym &arg0) && { return _fetch(_mv(*this), arg0); }
       //
       template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
-         MNL_NODISCARD MNL_INLINE val repl(int argc, Val argv[], val *argv_out = {}) && { return _repl(_mv(*this), argc, argv, argv_out); }
+         [[nodiscard]] MNL_INLINE val repl(int argc, Val argv[], val *argv_out = {}) && { return _repl(_mv(*this), argc, argv, argv_out); }
       // For two arguments
-         MNL_NODISCARD MNL_INLINE val repl(const val &arg0, const val &arg1) && { return _repl(_mv(*this), arg0, arg1); }
-         MNL_NODISCARD MNL_INLINE val repl(const val &arg0, val &&arg1) && { return _repl(_mv(*this), arg0, _mv(arg1)); }
-         MNL_NODISCARD MNL_INLINE val repl(val &&arg0, const val &arg1) && { return _repl(_mv(*this), _mv(arg0), arg1); }
-         MNL_NODISCARD MNL_INLINE val repl(val &&arg0, val &&arg1) && { return _repl(_mv(*this), _mv(arg0), _mv(arg1)); }
+         [[nodiscard]] MNL_INLINE val repl(const val &arg0, const val &arg1) && { return _repl(_mv(*this), arg0, arg1); }
+         [[nodiscard]] MNL_INLINE val repl(const val &arg0, val &&arg1) && { return _repl(_mv(*this), arg0, _mv(arg1)); }
+         [[nodiscard]] MNL_INLINE val repl(val &&arg0, const val &arg1) && { return _repl(_mv(*this), _mv(arg0), arg1); }
+         [[nodiscard]] MNL_INLINE val repl(val &&arg0, val &&arg1) && { return _repl(_mv(*this), _mv(arg0), _mv(arg1)); }
       template<class Sym, std::enable_if_t<std::is_same_v<Sym, sym>, decltype(nullptr)> = decltype(nullptr){}>
-         MNL_NODISCARD MNL_INLINE val repl(const Sym &arg0, const val &arg1) && { return _repl(_mv(*this), arg0, arg1); }
+         [[nodiscard]] MNL_INLINE val repl(const Sym &arg0, const val &arg1) && { return _repl(_mv(*this), arg0, arg1); }
       template<class Sym, std::enable_if_t<std::is_same_v<Sym, sym>, decltype(nullptr)> = decltype(nullptr){}>
-         MNL_NODISCARD MNL_INLINE val repl(const Sym &arg0, val &&arg1) && { return _repl(_mv(*this), arg0, _mv(arg1)); }
+         [[nodiscard]] MNL_INLINE val repl(const Sym &arg0, val &&arg1) && { return _repl(_mv(*this), arg0, _mv(arg1)); }
       // For three arguments
-         MNL_NODISCARD MNL_INLINE val repl(const val &arg0, const val &arg1, const val &arg2) && { return _repl(_mv(*this), arg0, arg1, arg2); }
-         MNL_NODISCARD MNL_INLINE val repl(const val &arg0, const val &arg1, val &&arg2) && { return _repl(_mv(*this), arg0, arg1, _mv(arg2)); }
-         MNL_NODISCARD MNL_INLINE val repl(const val &arg0, val &&arg1, const val &arg2) && { return _repl(_mv(*this), arg0, _mv(arg1), arg2); }
-         MNL_NODISCARD MNL_INLINE val repl(const val &arg0, val &&arg1, val &&arg2) && { return _repl(_mv(*this), arg0, _mv(arg1), _mv(arg2)); }
+         [[nodiscard]] MNL_INLINE val repl(const val &arg0, const val &arg1, const val &arg2) && { return _repl(_mv(*this), arg0, arg1, arg2); }
+         [[nodiscard]] MNL_INLINE val repl(const val &arg0, const val &arg1, val &&arg2) && { return _repl(_mv(*this), arg0, arg1, _mv(arg2)); }
+         [[nodiscard]] MNL_INLINE val repl(const val &arg0, val &&arg1, const val &arg2) && { return _repl(_mv(*this), arg0, _mv(arg1), arg2); }
+         [[nodiscard]] MNL_INLINE val repl(const val &arg0, val &&arg1, val &&arg2) && { return _repl(_mv(*this), arg0, _mv(arg1), _mv(arg2)); }
       template<class Sym, std::enable_if_t<std::is_same_v<Sym, sym>, decltype(nullptr)> = decltype(nullptr){}>
-         MNL_NODISCARD MNL_INLINE val repl(const val &arg0, const Sym &arg1, const val &arg2) && { return _repl(_mv(*this), arg0, arg1, arg2); }
+         [[nodiscard]] MNL_INLINE val repl(const val &arg0, const Sym &arg1, const val &arg2) && { return _repl(_mv(*this), arg0, arg1, arg2); }
       template<class Sym, std::enable_if_t<std::is_same_v<Sym, sym>, decltype(nullptr)> = decltype(nullptr){}>
-         MNL_NODISCARD MNL_INLINE val repl(const val &arg0, const Sym &arg1, val &&arg2) && { return _repl(_mv(*this), arg0, arg1, _mv(arg2)); }
-         MNL_NODISCARD MNL_INLINE val repl(val &&arg0, const val &arg1, const val &arg2) && { return _repl(_mv(*this), _mv(arg0), arg1, arg2); }
-         MNL_NODISCARD MNL_INLINE val repl(val &&arg0, const val &arg1, val &&arg2) && { return _repl(_mv(*this), _mv(arg0), arg1, _mv(arg2)); }
-         MNL_NODISCARD MNL_INLINE val repl(val &&arg0, val &&arg1, const val &arg2) && { return _repl(_mv(*this), _mv(arg0), _mv(arg1), arg2); }
-         MNL_NODISCARD MNL_INLINE val repl(val &&arg0, val &&arg1, val &&arg2) && { return _repl(_mv(*this), _mv(arg0), _mv(arg1), _mv(arg2)); }
+         [[nodiscard]] MNL_INLINE val repl(const val &arg0, const Sym &arg1, val &&arg2) && { return _repl(_mv(*this), arg0, arg1, _mv(arg2)); }
+         [[nodiscard]] MNL_INLINE val repl(val &&arg0, const val &arg1, const val &arg2) && { return _repl(_mv(*this), _mv(arg0), arg1, arg2); }
+         [[nodiscard]] MNL_INLINE val repl(val &&arg0, const val &arg1, val &&arg2) && { return _repl(_mv(*this), _mv(arg0), arg1, _mv(arg2)); }
+         [[nodiscard]] MNL_INLINE val repl(val &&arg0, val &&arg1, const val &arg2) && { return _repl(_mv(*this), _mv(arg0), _mv(arg1), arg2); }
+         [[nodiscard]] MNL_INLINE val repl(val &&arg0, val &&arg1, val &&arg2) && { return _repl(_mv(*this), _mv(arg0), _mv(arg1), _mv(arg2)); }
       template<class Sym, std::enable_if_t<std::is_same_v<Sym, sym>, decltype(nullptr)> = decltype(nullptr){}>
-         MNL_NODISCARD MNL_INLINE val repl(val &&arg0, const Sym &arg1, const val &arg2) && { return _repl(_mv(*this), _mv(arg0), arg1, arg2); }
+         [[nodiscard]] MNL_INLINE val repl(val &&arg0, const Sym &arg1, const val &arg2) && { return _repl(_mv(*this), _mv(arg0), arg1, arg2); }
       template<class Sym, std::enable_if_t<std::is_same_v<Sym, sym>, decltype(nullptr)> = decltype(nullptr){}>
-         MNL_NODISCARD MNL_INLINE val repl(val &&arg0, const Sym &arg1, val &&arg2) && { return _repl(_mv(*this), _mv(arg0), arg1, _mv(arg2)); }
+         [[nodiscard]] MNL_INLINE val repl(val &&arg0, const Sym &arg1, val &&arg2) && { return _repl(_mv(*this), _mv(arg0), arg1, _mv(arg2)); }
    // Metaprogramming
          MNL_INLINE val operator()(val a0, val a1, val a2) const & { val argv[] = {_mv(a0), _mv(a1), _mv(a2)}; return (*this)(std::size(argv), argv); }
          MNL_INLINE val operator()(val a0, val a1, val a2) &&   { val argv[] = {_mv(a0), _mv(a1), _mv(a2)}; return _mv(*this)(std::size(argv), argv); }
@@ -434,7 +434,7 @@ namespace aux { namespace pub {
          { return (*this).fetch(Argc, args.data()); }
       template<std::size_t Argc> MNL_INLINE val fetch(std::array<val, Argc> args) &&
          { return _mv(*this).fetch(Argc, args.data()); }
-      template<std::size_t Argc> MNL_NODISCARD MNL_INLINE val repl(std::array<val, Argc> args, val *args_out = {}) &&
+      template<std::size_t Argc> [[nodiscard]] MNL_INLINE val repl(std::array<val, Argc> args, val *args_out = {}) &&
          { return _mv(*this).repl(Argc, args.data(), args_out); }
       // For no arguments
       MNL_INLINE val operator()() const &
@@ -646,27 +646,27 @@ namespace aux { namespace pub {
       MNL_HOT virtual val _fetch(val &&self, const sym &) = 0;
    private:
       // TODO: we can name args according to its (expected) role here, since this is how we use repl in expr_apply!
-      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, int argc, val [], val *argv_out = {}) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, int argc, val [], val *argv_out = {}) = 0;
       // For two arguments (6 VMT entries)
-      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, const val &, const val &) = 0;
-      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, const val &, val &&) = 0;
-      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, val &&, const val &) = 0;
-      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, val &&, val &&) = 0;
-      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, const sym &, const val &) = 0;
-      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, const sym &, val &&) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, const val &, const val &) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, const val &, val &&) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, val &&, const val &) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, val &&, val &&) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, const sym &, const val &) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, const sym &, val &&) = 0;
       // For three arguments (12 VMT entries)
-      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, const val &, const val &, const val &) = 0;
-      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, const val &, const val &, val &&) = 0;
-      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, const val &, val &&, const val &) = 0;
-      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, const val &, val &&, val &&) = 0;
-      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, const val &, const sym &, const val &) = 0;
-      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, const val &, const sym &, val &&) = 0;
-      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, val &&, const val &, const val &) = 0;
-      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, val &&, const val &, val &&) = 0;
-      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, val &&, val &&, const val &) = 0;
-      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, val &&, val &&, val &&) = 0;
-      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, val &&, const sym &, const val &) = 0;
-      MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, val &&, const sym &, val &&) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, const val &, const val &, const val &) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, const val &, const val &, val &&) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, const val &, val &&, const val &) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, const val &, val &&, val &&) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, const val &, const sym &, const val &) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, const val &, const sym &, val &&) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, val &&, const val &, const val &) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, val &&, const val &, val &&) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, val &&, val &&, const val &) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, val &&, val &&, val &&) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, val &&, const sym &, const val &) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, val &&, const sym &, val &&) = 0;
    public: // Friendship
       friend val;
    };
