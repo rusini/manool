@@ -324,7 +324,7 @@ namespace aux { namespace pub {
          MNL_INLINE unsigned tag() const noexcept { return _tag; }
          template<typename Dat> Dat dat() const noexcept;
       private: // assume memmove copies the union representation AND transfers its active member, if any exists
-         MNL_INLINE void copy(const rep &rhs) noexcept { // TODO: memmove introduces aliasing issues!!!
+         MNL_INLINE void copy(const rep &rhs) noexcept { // TODO: memmove introduces aliasing issues (with escaped ptrs)!!!
             std::memmove(this, &rhs, sizeof *this); // updates sym::rep (AND rep::tag at once), in case of _sym (corner case of ISO/IEC 14882:2011)
          }
       } rep;
