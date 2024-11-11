@@ -1322,9 +1322,9 @@ namespace aux {
             return res;
          }(); }();
       }
-      err_InvalidInvocation();
+      MNL_ERR(MNL_SYM("InvalidInvocation"));
    }
-   template<> val box<vector<val>>::invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) { // one instance of List is Array
+   template<> template<typename Self> val box<vector<val>>::invoke(Self &&self, const sym &op, int argc, val argv[], val *argv_out) {
       static const auto compact = [](vector<val> &dat)
          { if (MNL_UNLIKELY(dat.capacity() > dat.size() * 2)) dat.shrink_to_fit(); };
       switch (op) {
