@@ -1298,7 +1298,7 @@ namespace aux {
          if (!MNL_LIKELY(is<long long>(argv[0])) || !MNL_LIKELY((unsigned long long)as<long long>(argv[0]) < dat.size()))
             return default_repl(std::forward<Self>(self), argc, argv, argv_out);
          if (std::is_same_v<Self, val> && MNL_LIKELY(!shared())) {
-            auto &elem = res[as<long long>(argv[0])];
+            auto &elem = dat[as<long long>(argv[0])];
             if (MNL_LIKELY(!argv_out)) elem = std::move(argv[1]); else argv_out[1] = std::move(elem), elem = std::move(argv[1]);
             return std::move(self);
          }
