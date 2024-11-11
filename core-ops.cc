@@ -1311,14 +1311,14 @@ namespace aux {
          if (!MNL_LIKELY(is<long long>(argv[0])) || !MNL_LIKELY((unsigned long long)as<long long>(argv[0]) < dat.size()))
             return default_repl(std::forward<Self>(self), int argc, argv, argv_out);
          if (std::is_same_v<Self, val> && MNL_LIKELY(!shared())) {
-            auto &item = dat[as<long long>(argv[0])];
-            item = std::move(item).repl(--argc, argc ? ++argv : nullptr, argv_out + !!argv_out); // relies on C++17 eval order
+            auto &elem = dat[as<long long>(argv[0])];
+            elem = std::move(elem).repl(--argc, argc ? ++argv : nullptr, argv_out + !!argv_out); // relies on C++17 eval order
             return std::move(self);
          }
          return [this, index = as<long long>(argv[0]), argv, argc]() MNL_NOINLINE->val{ return [&]() MNL_INLINE{
             auto res = dat;
-            auto &item = res[index];
-            item = std::move(item).repl(--argc, argc ? ++argv : nullptr, argv_out + !!argv_out); // relies on C++17 eval order
+            auto &elem = res[index];
+            elem = std::move(elem).repl(--argc, argc ? ++argv : nullptr, argv_out + !!argv_out); // relies on C++17 eval order
             return res;
          }(); }();
       }
