@@ -1295,27 +1295,27 @@ namespace aux {
       if (MNL_LIKELY(argc == 2)) {
          if (!MNL_LIKELY(is<long long>(argv[0])) || !MNL_LIKELY((unsigned long long)as<long long>(argv[0]) < dat.size()))
             return default_repl(std::forward<Self>(self), int argc, argv, argv_out);
-         auto index = as<long long>(argv[0]);
          if (std::is_same_v<Self, val> && MNL_LIKELY(!shared())) {
-            if (MNL_LIKELY(!argv_out)) dat[index] = std::move(argv[1]); else argv_out[1] = std::move(dat[index]), dat[index] = std::move(argv[1]);
+            auto &elem = res[as<long long>(argv[0])];
+            if (MNL_LIKELY(!argv_out)) elem = std::move(argv[1]); else argv_out[1] = std::move(elem), elem = std::move(argv[1]);
             return std::move(self);
          }
-         return [this, index, argv]() MNL_NOINLINE->val{ return [&]() MNL_INLINE{
+         return [this, index = as<long long>(argv[0]), argv]() MNL_NOINLINE->val{ return [&]() MNL_INLINE{
             auto res = dat;
-            if (MNL_LIKELY(!argv_out)) res[index] = std::move(argv[1]); else argv_out[1] = std::move(dat[index]), res[index] = std::move(argv[1]);
+            auto &elem = res[index];
+            if (MNL_LIKELY(!argv_out)) elem = std::move(argv[1]); else argv_out[1] = std::move(elem), elem = std::move(argv[1]);
             return res;
          }(); }();
       }
       if (MNL_LIKELY(argc > 2)) {
          if (!MNL_LIKELY(is<long long>(argv[0])) || !MNL_LIKELY((unsigned long long)as<long long>(argv[0]) < dat.size()))
             return default_repl(std::forward<Self>(self), int argc, argv, argv_out);
-         auto index = as<long long>(argv[0]);
          if (std::is_same_v<Self, val> && MNL_LIKELY(!shared())) {
-            auto &item = dat[index];
+            auto &item = dat[as<long long>(argv[0])];
             item = std::move(item).repl(--argc, argc ? ++argv : nullptr, argv_out + !!argv_out); // relies on C++17 eval order
             return std::move(self);
          }
-         return [this, index, argv, argc]() MNL_NOINLINE->val{ return [&]() MNL_INLINE{
+         return [this, index = as<long long>(argv[0]), argv, argc]() MNL_NOINLINE->val{ return [&]() MNL_INLINE{
             auto res = dat;
             auto &item = res[index];
             item = std::move(item).repl(--argc, argc ? ++argv : nullptr, argv_out + !!argv_out); // relies on C++17 eval order
