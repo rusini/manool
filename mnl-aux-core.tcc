@@ -645,6 +645,7 @@ namespace aux { namespace pub {
       MNL_HOT virtual val _fetch(val &&self, val &&) = 0;
       MNL_HOT virtual val _fetch(val &&self, const sym &) = 0;
    private:
+      // TODO: we can name args according to its (expected) role here, since this is how we use repl in expr_apply!
       MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, int argc, val [], val *argv_out = {}) = 0;
       // For two arguments (6 VMT entries)
       MNL_NODISCARD MNL_HOT virtual val _repl(val &&self, const val &, const val &) = 0;
