@@ -1292,10 +1292,10 @@ namespace aux {
    }
    template<> template<typename Self>
    MNL_INLINE val box<vector<val>>::repl(Self &&self, int argc, val argv[], val *argv_out) {
-      if (!MNL_LIKELY(is<long long>(argv[0])) || !MNL_LIKELY((unsigned long long)as<long long>(argv[0]) < dat.size()))
-         return default_repl(std::forward<Self>(self), int argc, argv, argv_out);
-      auto index = as<long long>(argv[0]);
       if (MNL_LIKELY(argc == 2)) {
+         if (!MNL_LIKELY(is<long long>(argv[0])) || !MNL_LIKELY((unsigned long long)as<long long>(argv[0]) < dat.size()))
+            return default_repl(std::forward<Self>(self), int argc, argv, argv_out);
+         auto index = as<long long>(argv[0]);
          if (std::is_same_v<Self, val> && MNL_LIKELY(!shared())) {
             if (MNL_LIKELY(!argv_out)) dat[index] = std::move(argv[1]); else argv_out[1] = std::move(dat[index]), dat[index] = std::move(argv[1]);
             return std::move(self);
@@ -1306,17 +1306,23 @@ namespace aux {
             return res;
          }(); }();
       }
-      if (std::is_same_v<Self, val> && MNL_LIKELY(!shared())) {
-         auto &item = dat[index];
-         item = std::move(item).repl(argc - 1, argc - 1 ? argv + 1 : nullptr, argv_out + !!argv_out);
-         return std::move(self);
+      if (MNL_LIKELY(argc > 2)) {
+         if (!MNL_LIKELY(is<long long>(argv[0])) || !MNL_LIKELY((unsigned long long)as<long long>(argv[0]) < dat.size()))
+            return default_repl(std::forward<Self>(self), int argc, argv, argv_out);
+         auto index = as<long long>(argv[0]);
+         if (std::is_same_v<Self, val> && MNL_LIKELY(!shared())) {
+            auto &item = dat[index];
+            item = std::move(item).repl(--argc, argc ? ++argv : nullptr, argv_out + !!argv_out); // relies on C++17 eval order
+            return std::move(self);
+         }
+         return [this, index, argv, argc]() MNL_NOINLINE->val{ return [&]() MNL_INLINE{
+            auto res = dat;
+            auto &item = dat[index];
+            item = std::move(item).repl(--argc, argc ? ++argv : nullptr, argv_out + !!argv_out); // relies on C++17 eval order
+            return res;
+         }(); }();
       }
-      return [this, index, argv, argc]() MNL_NOINLINE->val{ return [&]() MNL_INLINE{
-         auto res = dat;
-         auto &item = dat[index];
-         item = std::move(item).repl(argc - 1, argc - 1 ? argv + 1 : nullptr, argv_out + !!argv_out);
-         return res;
-      }(); }();
+      err_InvalidInvocation();
    }
    template<> val box<vector<val>>::invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) { // one instance of List is Array
       static const auto compact = [](vector<val> &dat)
