@@ -1260,13 +1260,13 @@ namespace aux {
 
    template<> template<typename Self, typename Arg0>
    MNL_INLINE val box<vector<val>>::repl(Self &&self, Arg0 &&arg0, val &&arg1) {
-      if (!MNL_LIKELY(test<long long>(arg0)) || !MNL_LIKELY((unsigned long long)cast<long long>(arg0) < dat.size()))
+      if (!MNL_LIKELY(is<long long>(arg0)) || !MNL_LIKELY((unsigned long long)as<long long>(arg0) < dat.size()))
          return default_repl(std::forward<Self>(self), std::forward<Arg0>(arg0), std::move(arg1));
       if (std::is_same_v<Self, val> && MNL_LIKELY(!shared())) {
       # if true // We deem a check followed by a not-taken, correctly predicted branch better for performance than an extra store-after-load;
-         dat[cast<long long>(arg0)] = std::move(arg1); // besides, the later might result in wrong destruction order.
+         dat[as<long long>(arg0)] = std::move(arg1); // besides, the latter might result in wrong destruction order.
       # else
-         dat[cast<long long>(arg0)].swap(arg1);
+         dat[as<long long>(arg0)].swap(arg1);
       # endif
          return std::move(self);
       }
