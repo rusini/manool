@@ -1257,8 +1257,7 @@ namespace aux {
    }
    template<> template<typename Self, typename Arg0>
    MNL_INLINE val box<vector<val>>::repl(Self &&self, Arg0 &&arg0, val &&arg1) {
-      if (!MNL_LIKELY(is<long long>(arg0)) || !MNL_LIKELY((unsigned long long)as<long long>(arg0) < dat.size()))
-         return default_repl(std::forward<Self>(self), std::forward<Arg0>(arg0), std::move(arg1));
+      if (MNL_LIKELY(is<long long>(arg0)) && MNL_LIKELY((unsigned long long)as<long long>(arg0) < dat.size()))
       if (std::is_same_v<Self, val> && MNL_LIKELY(!shared())) {
       # if true // We deem a check followed by a not-taken, correctly predicted branch better for performance than an extra store-after-load;
          dat[as<long long>(arg0)] = std::move(arg1); // besides, the latter might result in wrong destruction order.
@@ -1266,55 +1265,50 @@ namespace aux {
          dat[as<long long>(arg0)].swap(arg1);
       # endif
          return std::move(self);
-      }
-      return [this, index = as<long long>(arg0), &arg1]() MNL_NOINLINE->val{ return [&]() MNL_INLINE{
+      } else return [this, index = as<long long>(arg0), &arg1]() MNL_NOINLINE->val{ return [&]() MNL_INLINE{
          auto res = dat;
          res[index] = std::move(arg1);
          return res;
       }(); }();
+      return default_repl(std::forward<Self>(self), std::forward<Arg0>(arg0), std::move(arg1));
    }
    template<> template<typename Self, typename Arg0, typename Arg1>
    MNL_INLINE val box<vector<val>>::repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1, val &&arg2) {
-      if (!MNL_LIKELY(is<long long>(arg0)) || !MNL_LIKELY((unsigned long long)as<long long>(arg0) < dat.size()))
-         return default_repl(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::move(arg2));
+      if (MNL_LIKELY(is<long long>(arg0)) && MNL_LIKELY((unsigned long long)as<long long>(arg0) < dat.size()))
       if (std::is_same_v<Self, val> && MNL_LIKELY(!shared())) {
          auto &elem = dat[as<long long>(arg0)];
          elem = std::move(elem).repl(std::forward<Arg1>(arg1), std::move(arg2));
          return std::move(self);
-      }
-      return [this, index = as<long long>(arg0), &arg1, &arg2]() MNL_NOINLINE->val{ return [&]() MNL_INLINE{
+      } else return [this, index = as<long long>(arg0), &arg1, &arg2]() MNL_NOINLINE->val{ return [&]() MNL_INLINE{
          auto res = dat;
          auto &elem = res[index];
          elem = std::move(elem).repl(std::forward<Arg1>(arg1), std::move(arg2));
          return res;
       }(); }();
+      return default_repl(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::move(arg2));
    }
    template<> template<typename Self>
    MNL_INLINE val box<vector<val>>::repl(Self &&self, int argc, val argv[], val *argv_out) {
       if (MNL_LIKELY(argc > 2)) {
-         if (!MNL_LIKELY(is<long long>(argv[0])) || !MNL_LIKELY((unsigned long long)as<long long>(argv[0]) < dat.size()))
-            return default_repl(std::forward<Self>(self), argc, argv, argv_out);
+         if (MNL_LIKELY(is<long long>(argv[0])) && MNL_LIKELY((unsigned long long)as<long long>(argv[0]) < dat.size()))
          if (std::is_same_v<Self, val> && MNL_LIKELY(!shared())) {
             auto &elem = dat[as<long long>(argv[0])];
             elem = std::move(elem).repl(--argc, argc ? ++argv : nullptr, argv_out + !!argv_out); // relies on C++17 eval order
             return std::move(self);
-         }
-         return [this, index = as<long long>(argv[0]), argv, argc]() MNL_NOINLINE->val{ return [&]() MNL_INLINE{
+         } else return [this, index = as<long long>(argv[0]), argv, argc]() MNL_NOINLINE->val{ return [&]() MNL_INLINE{
             auto res = dat;
             auto &elem = res[index];
             elem = std::move(elem).repl(--argc, argc ? ++argv : nullptr, argv_out + !!argv_out); // relies on C++17 eval order
             return res;
          }(); }();
-      }
+      } else
       if (MNL_LIKELY(argc == 2)) {
-         if (!MNL_LIKELY(is<long long>(argv[0])) || !MNL_LIKELY((unsigned long long)as<long long>(argv[0]) < dat.size()))
-            return default_repl(std::forward<Self>(self), argc, argv, argv_out);
+         if (MNL_LIKELY(is<long long>(argv[0])) && MNL_LIKELY((unsigned long long)as<long long>(argv[0]) < dat.size()))
          if (std::is_same_v<Self, val> && MNL_LIKELY(!shared())) {
             auto &elem = dat[as<long long>(argv[0])];
             if (MNL_LIKELY(!argv_out)) elem = std::move(argv[1]); else argv_out[1] = std::move(elem), elem = std::move(argv[1]);
             return std::move(self);
-         }
-         return [this, index = as<long long>(argv[0]), argv]() MNL_NOINLINE->val{ return [&]() MNL_INLINE{
+         } else return [this, index = as<long long>(argv[0]), argv]() MNL_NOINLINE->val{ return [&]() MNL_INLINE{
             auto res = dat;
             auto &elem = res[index];
             if (MNL_LIKELY(!argv_out)) elem = std::move(argv[1]); else argv_out[1] = std::move(elem), elem = std::move(argv[1]);
