@@ -1277,8 +1277,8 @@ namespace aux {
    MNL_INLINE val box<std::vector<val>>::repl(val &&self, Key0 &&key0, Key1 &&key1, Val &&value) {
       if (MNL_LIKELY(is<long long>(key0)) && MNL_LIKELY((unsigned long long)as<long long>(key0) < dat.size()))
       if (std::is_same_v<Self, val> && MNL_LIKELY(!shared())) {
-         auto &elem = dat[as<long long>(value)];
-         elem = std::move(elem).repl(std::forward<Key1>(key1), std::move(key2));
+         auto &elem = dat[as<long long>(key0)];
+         elem = std::move(elem).repl(std::forward<Key1>(key1), std::move(value));
          return std::move(self);
       } else return [this, index = as<long long>(key0), &key1, &value]() MNL_NOINLINE->val{ return [&]() MNL_INLINE{
          auto res = dat;
