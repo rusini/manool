@@ -1257,36 +1257,36 @@ namespace aux {
    }
 
    template<> template<typename Key0, typename Val>
-   MNL_INLINE val box<std::vector<val>>::repl(val &&self, Key0 &&key0, Val &&key1) {
+   MNL_INLINE val box<std::vector<val>>::repl(val &&self, Key0 &&key0, Val &&value) {
       if (MNL_LIKELY(is<long long>(key0)) && MNL_LIKELY((unsigned long long)as<long long>(key0) < dat.size()))
       if (std::is_same_v<Self, val> && MNL_LIKELY(!shared())) {
       # if true // We deem a check followed by a not-taken, correctly predicted branch better for performance than an extra store-after-load;
-         dat[as<long long>(key0)] = std::move(key1); // besides, the latter might result in wrong destruction order.
+         dat[as<long long>(key0)] = std::move(value); // besides, the latter might result in wrong destruction order.
       # else
-         dat[as<long long>(key0)].swap(key1);
+         dat[as<long long>(key0)].swap(value);
       # endif
          return std::move(self);
-      } else return [this, index = as<long long>(key0), &key1]() MNL_NOINLINE->val{ return [&]() MNL_INLINE{
+      } else return [this, index = as<long long>(key0), &value]() MNL_NOINLINE->val{ return [&]() MNL_INLINE{
          auto res = dat;
-         res[index] = std::move(key1);
+         res[index] = std::move(value);
          return res;
       }(); }();
-      return default_repl(std::forward<Self>(self), std::forward<Key0>(key0), std::move(key1));
+      return default_repl(std::forward<Self>(self), std::forward<Key0>(key0), std::move(value));
    }
    template<> template<typename Key0, typename Key1, typename Val>
-   MNL_INLINE val box<std::vector<val>>::repl(val &&self, Key0 &&key0, Key1 &&key1, Val &&key2) {
+   MNL_INLINE val box<std::vector<val>>::repl(val &&self, Key0 &&key0, Key1 &&key1, Val &&value) {
       if (MNL_LIKELY(is<long long>(key0)) && MNL_LIKELY((unsigned long long)as<long long>(key0) < dat.size()))
       if (std::is_same_v<Self, val> && MNL_LIKELY(!shared())) {
-         auto &elem = dat[as<long long>(key0)];
+         auto &elem = dat[as<long long>(value)];
          elem = std::move(elem).repl(std::forward<Key1>(key1), std::move(key2));
          return std::move(self);
-      } else return [this, index = as<long long>(key0), &key1, &key2]() MNL_NOINLINE->val{ return [&]() MNL_INLINE{
+      } else return [this, index = as<long long>(key0), &key1, &value]() MNL_NOINLINE->val{ return [&]() MNL_INLINE{
          auto res = dat;
          auto &elem = res[index];
-         elem = std::move(elem).repl(std::forward<Key1>(key1), std::move(key2));
+         elem = std::move(elem).repl(std::forward<Key1>(key1), std::move(value));
          return res;
       }(); }();
-      return default_repl(std::forward<Self>(self), std::forward<Key0>(key0), std::forward<Key1>(key1), std::move(key2));
+      return default_repl(std::forward<Self>(self), std::forward<Key0>(key0), std::forward<Key1>(key1), std::move(value));
    }
    template<>
    MNL_INLINE val box<std::vector<val>>::repl(val &&self, int argc, val argv[], val *argv_out) {
