@@ -1294,21 +1294,6 @@ namespace aux {
    }
    template<> template<typename Self>
    MNL_INLINE val box<vector<val>>::repl(Self &&self, int argc, val argv[], val *argv_out) {
-      if (MNL_LIKELY(argc == 2)) {
-         if (!MNL_LIKELY(is<long long>(argv[0])) || !MNL_LIKELY((unsigned long long)as<long long>(argv[0]) < dat.size()))
-            return default_repl(std::forward<Self>(self), argc, argv, argv_out);
-         if (std::is_same_v<Self, val> && MNL_LIKELY(!shared())) {
-            auto &elem = dat[as<long long>(argv[0])];
-            if (MNL_LIKELY(!argv_out)) elem = std::move(argv[1]); else argv_out[1] = std::move(elem), elem = std::move(argv[1]);
-            return std::move(self);
-         }
-         return [this, index = as<long long>(argv[0]), argv]() MNL_NOINLINE->val{ return [&]() MNL_INLINE{
-            auto res = dat;
-            auto &elem = res[index];
-            if (MNL_LIKELY(!argv_out)) elem = std::move(argv[1]); else argv_out[1] = std::move(elem), elem = std::move(argv[1]);
-            return res;
-         }(); }();
-      }
       if (MNL_LIKELY(argc > 2)) {
          if (!MNL_LIKELY(is<long long>(argv[0])) || !MNL_LIKELY((unsigned long long)as<long long>(argv[0]) < dat.size()))
             return default_repl(std::forward<Self>(self), argc, argv, argv_out);
@@ -1321,6 +1306,21 @@ namespace aux {
             auto res = dat;
             auto &elem = res[index];
             elem = std::move(elem).repl(--argc, argc ? ++argv : nullptr, argv_out + !!argv_out); // relies on C++17 eval order
+            return res;
+         }(); }();
+      }
+      if (MNL_LIKELY(argc == 2)) {
+         if (!MNL_LIKELY(is<long long>(argv[0])) || !MNL_LIKELY((unsigned long long)as<long long>(argv[0]) < dat.size()))
+            return default_repl(std::forward<Self>(self), argc, argv, argv_out);
+         if (std::is_same_v<Self, val> && MNL_LIKELY(!shared())) {
+            auto &elem = dat[as<long long>(argv[0])];
+            if (MNL_LIKELY(!argv_out)) elem = std::move(argv[1]); else argv_out[1] = std::move(elem), elem = std::move(argv[1]);
+            return std::move(self);
+         }
+         return [this, index = as<long long>(argv[0]), argv]() MNL_NOINLINE->val{ return [&]() MNL_INLINE{
+            auto res = dat;
+            auto &elem = res[index];
+            if (MNL_LIKELY(!argv_out)) elem = std::move(argv[1]); else argv_out[1] = std::move(elem), elem = std::move(argv[1]);
             return res;
          }(); }();
       }
