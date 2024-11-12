@@ -1227,24 +1227,26 @@ namespace aux {
    template<> template<typename Self, typename Arg0>
    MNL_INLINE val box<std::vector<val>>::apply(Self &&self, Arg0 &&arg0)
       { return fetch(std::forward<Self>(self), std::forward<Arg0>(arg0)); }
-   template<> template<typename Self, typename Key0, typename Key1>
-   MNL_INLINE val box<vector<val>>::fetch(Self &&self, Key0 &&key0) {
+   template<> template<typename Self, typename Key0>
+   MNL_INLINE val box<std::vector<val>>::fetch(Self &&self, Key0 &&key0) {
       if (MNL_LIKELY(is<long long>(key0)) && MNL_LIKELY((unsigned long long)as<long long>(key0) < dat.size()))
          return dat[as<long long>(key0)];
       return default_fetch(std::forward<Self>(self), std::forward<Key0>(key0));
    }
+   template<> template<typename Self, typename Arg0, typename Arg1>
    MNL_INLINE val box<std::vector<val>>::apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1)
       { return fetch(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1)); }
    template<> template<typename Self, typename Key0, typename Key1>
-   MNL_INLINE val box<vector<val>>::fetch(Self &&self, Key0 &&key0, Key1 &&key1) {
+   MNL_INLINE val box<std::vector<val>>::fetch(Self &&self, Key0 &&key0, Key1 &&key1) {
       if (MNL_LIKELY(is<long long>(key0)) && MNL_LIKELY((unsigned long long)as<long long>(key0) < dat.size()))
          return dat[as<long long>(key0)].fetch(std::forward<Key1>(key1));
       return default_fetch(std::forward<Self>(self), std::forward<Key0>(key0), std::forward<Key1>(key1));
    }
+   template<> template<typename Self>
    MNL_INLINE val box<std::vector<val>>::apply(Self &&self, int argc, val argv[])
       { return fetch(std::forward<Self>(self), argc, argv); }
    template<> template<typename Self>
-   MNL_INLINE val box<vector<val>>::fetch(Self &&self, int argc, val argv[]) {
+   MNL_INLINE val box<std::vector<val>>::fetch(Self &&self, int argc, val argv[]) {
       if (MNL_LIKELY(argc > 1)) {
          if (MNL_LIKELY(is<long long>(argv[0])) && MNL_LIKELY((unsigned long long)as<long long>(argv[0]) < dat.size()))
             return dat[as<long long>(argv[0])].fetch(argc - 1, argv + 1);
