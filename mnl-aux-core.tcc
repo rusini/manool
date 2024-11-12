@@ -719,6 +719,7 @@ namespace aux { namespace pub {
       MNL_HOT val _fetch(val &&self, val &&arg0) override { return fetch(_mv(self), _mv(arg0)); }
       MNL_HOT val _fetch(val &&self, const sym &arg0) override { return fetch(_mv(self), arg0); }
    private:
+      MNL_HOT val _repl(val &&self, int argc, val [], val *argv_out) override { return repl(_mv(self), argv, argv, argv_out); }
       // For two arguments (6 VMT entries)
       MNL_HOT val _repl(val &&self, const val &arg0, const val &arg1) override { return repl(_mv(self), arg0, arg1); }
       MNL_HOT val _repl(val &&self, const val &arg0, val &&arg1) override { return repl(_mv(self), arg0, _mv(arg1)); }
@@ -818,7 +819,7 @@ namespace aux { namespace pub {
       template<typename Self, typename Arg0, typename Arg1, typename Arg2, std::enable_if_t<
          std::is_same_v<Self, val> && std::is_same_v<Argc, int> && std::is_same_v<Arg, val>,
       MNL_INLINE val default_repl(Self &&self, Argc argc, Arg argv[], Arg *argv_out) {
-         return _invoke(std::move(self), MNL_SYM("Repl"), argc, argv);
+         return _invoke(std::move(self), MNL_SYM("Repl"), argc, argv, argv_out);
       }
    };
 
