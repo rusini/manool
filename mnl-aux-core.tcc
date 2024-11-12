@@ -751,33 +751,25 @@ namespace aux { namespace pub {
          { return dat.invoke(std::forward<Self>(self), op, argc, argv, argv_out); static_assert(std::is_base_v<boxable, decltype(dat)>); }
 
       template<typename Self, typename Arg0> MNL_INLINE val apply(Self &&self, Arg0 &&arg0)
-         { return apply_or_fetch<false>(std::forward<Self>(self), std::forward<Arg0>(arg0)); }
+         { return apply_or_fetch<0>(std::forward<Self>(self), std::forward<Arg0>(arg0)); }
       template<typename Self, typename Arg0> MNL_INLINE val fetch(Self &&self, Arg0 &&arg0)
-         { return apply_or_fetch<true> (std::forward<Self>(self), std::forward<Arg0>(arg0)); }
+         { return apply_or_fetch<1>(std::forward<Self>(self), std::forward<Arg0>(arg0)); }
       template<typename Self, typename Arg0, typename Arg1> MNL_INLINE val apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1)
          { return default_apply(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1)); }
-
-      template<typename Self> MNL_INLINE val apply(Self &&self, int argc, val argv[], val *argv_out)
-         { return apply_or_fetch<false>(std::forward<Self>(self), argc, argv, argv_out); }
-      template<typename Self> MNL_INLINE val fetch(Self &&self, int argc, val argv[], val *argv_out)
-         { return apply_or_fetch<true> (std::forward<Self>(self), argc, argv, argv_out); }
-
-      template<bool Fetch, typename Self, typename Arg0> MNL_INLINE val apply_or_fetch(Self &&self, Arg0 &&arg0)
-         { return default_apply_or_fetch<Fetch>(std::forward<Self>(self), std::forward<Arg0>(arg0)); }
-
-      template<bool Fetch, typename Self> MNL_INLINE val apply_or_fetch(Self &&self, int argc, val argv[])
-         { return apply_or_fetch<Fetch>(std::forward<Self>(self), argc, argv, {}); }
-      template<bool Fetch, typename Self> MNL_INLINE val apply_or_fetch(Self &&self, int argc, val argv[], val *argv_out)
-         { return default_apply_or_fetch<Fetch>(std::forward<Self>(self), argc, argv, argv_out); }
-
-
-
+      template<typename Self> MNL_INLINE val apply(Self &&self, int argc, val argv[])
+         { return apply_or_fetch<0>(std::forward<Self>(self), argc, argv, argv_out); }
+      template<typename Self> MNL_INLINE val fetch(Self &&self, int argc, val argv[])
+         { return apply_or_fetch<1>(std::forward<Self>(self), argc, argv, argv_out); }
       template<typename Key0, typename Val> MNL_INLINE val repl(val &&self, Key0 &&key0, Val &&value)
          { return default_repl(std::move(self), std::forward<Key0>(key0), std::forward<Val>(value)); }
       template<typename Key0, typename Key1, typename Val> MNL_INLINE val repl(val &&self, Key0 &&key0, Key1 &&key1, Val &&value)
          { return default_repl(std::move(self), std::forward<Key0>(key0), std::forward<Key1>(key1), std::forward<Val>(value)); }
       MNL_INLINE val repl(val &&self, int argc, val argv[], val *argv_out = {})
          { return default_repl(std::move(self), argc, argv, argv_out); }
+      template<bool Op, typename Self, typename Arg0> MNL_INLINE val apply_or_fetch(Self &&self, Arg0 &&arg0)
+         { return default_apply_or_fetch<Op>(std::forward<Self>(self), std::forward<Arg0>(arg0)); }
+      template<bool Op, typename Self> MNL_INLINE val apply_or_fetch(Self &&self, int argc, val argv[])
+         { return default_apply_or_fetch<Op>(std::forward<Self>(self), argc, argv); }
 
    private: // Utilities for forwarding to "invoke"
       template< bool Fetch, typename Self, typename Argc, class Val, std::enable_if_t<
