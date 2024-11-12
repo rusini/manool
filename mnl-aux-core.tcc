@@ -789,7 +789,6 @@ namespace aux { namespace pub {
          return _invoke(std::forward<Self>(self), MNL_SYM("Fetch"), 1,
             &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Arg0, val>, val &, val>)arg0));
       }
-
       template< bool Op, typename Self, typename Arg0, std::enable_if_t<
          std::is_same_v<Self, const val &> | std::is_same_v<Self, val> &&
          std::is_same_v<Arg0, const val &> | std::is_same_v<Arg0, val> | std::is_same_v<Arg0, const sym &>,
