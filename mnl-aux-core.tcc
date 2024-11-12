@@ -799,21 +799,26 @@ namespace aux { namespace pub {
             &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Arg0, val>, val &, val>)arg0));
       }
       template<typename Self, typename Arg0, typename Arg1, std::enable_if_t<
-         std::is_same_v<Self, const val &> | std::is_same_v<Self, val> &&
+         std::is_same_v<Self, val> &&
          std::is_same_v<Arg0, const val &> | std::is_same_v<Arg0, val> | std::is_same_v<Arg0, const sym &> &&
          std::is_same_v<Arg1, const val &> | std::is_same_v<Arg1, val>,
       MNL_INLINE val default_repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
          val argv[] = {std::forward<Arg0>(arg0), std::forward<Arg1>(arg1)};
-         return _invoke(std::forward<Self>(self), MNL_SYM("Repl"), std::size(argv), argv);
+         return _invoke(std::move(self), MNL_SYM("Repl"), std::size(argv), argv);
       }
       template<typename Self, typename Arg0, typename Arg1, typename Arg2, std::enable_if_t<
-         std::is_same_v<Self, const val &> | std::is_same_v<Self, val> &&
+         std::is_same_v<Self, val> &&
          std::is_same_v<Arg0, const val &> | std::is_same_v<Arg0, val> &&
          std::is_same_v<Arg1, const val &> | std::is_same_v<Arg1, val> | std::is_same_v<Arg1, const sym &> &&
          std::is_same_v<Arg2, const val &> | std::is_same_v<Arg2, val>,
       MNL_INLINE val default_repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1, Arg2 &&arg2) {
          val argv[] = {std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::forward<Arg2>(arg2)};
-         return _invoke(std::forward<Self>(self), MNL_SYM("Repl"), std::size(argv), argv);
+         return _invoke(std::move(self), MNL_SYM("Repl"), std::size(argv), argv);
+      }
+      template<typename Self, typename Arg0, typename Arg1, typename Arg2, std::enable_if_t<
+         std::is_same_v<Self, val> && std::is_same_v<Argc, int> && std::is_same_v<Arg, val>,
+      MNL_INLINE val default_repl(Self &&self, Argc argc, Arg argv[], Arg *argv_out) {
+         return _invoke(std::move(self), MNL_SYM("Repl"), argc, argv);
       }
    };
 
