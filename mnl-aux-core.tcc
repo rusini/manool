@@ -826,25 +826,28 @@ namespace aux { namespace pub {
             default_apply(std::forward<Self>(self), argc, argv) :
             default_fetch(std::forward<Self>(self), argc, argv);
       }
-      template<typename Self, typename Arg0, typename Arg1, std::enable_if_t<
+      template<typename Self, typename Key0, typename Val, std::enable_if_t<
          std::is_same_v<Self, val> &&
-         std::is_same_v<Arg0, const val &> | std::is_same_v<Arg0, val> | std::is_same_v<Arg0, const sym &> &&
-         std::is_same_v<Arg1, const val &> | std::is_same_v<Arg1, val>,
-      MNL_INLINE val default_repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
-         val argv[] = {std::forward<Arg0>(arg0), std::forward<Arg1>(arg1)};
+         std::is_same_v<Key0, const val &> | std::is_same_v<Key0, val> | std::is_same_v<Key0, const sym &> &&
+         std::is_same_v<Val,  const val &> | std::is_same_v<Val,  val>,
+         decltype(nullptr) > = decltype(nullptr){} >
+      MNL_INLINE val default_repl(Self &&self, Key0 &&arg0, Val &&value) {
+         val argv[] = {std::forward<Key0>(arg0), std::forward<Val>(value)};
          return _invoke(std::move(self), op<sym::id("Repl")>, std::size(argv), argv);
       }
-      template<typename Self, typename Arg0, typename Arg1, typename Arg2, std::enable_if_t<
+      template<typename Self, typename Key0, typename Key1, typename Val, std::enable_if_t<
          std::is_same_v<Self, val> &&
-         std::is_same_v<Arg0, const val &> | std::is_same_v<Arg0, val> &&
-         std::is_same_v<Arg1, const val &> | std::is_same_v<Arg1, val> | std::is_same_v<Arg1, const sym &> &&
-         std::is_same_v<Arg2, const val &> | std::is_same_v<Arg2, val>,
-      MNL_INLINE val default_repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1, Arg2 &&arg2) {
-         val argv[] = {std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::forward<Arg2>(arg2)};
+         std::is_same_v<Key0, const val &> | std::is_same_v<Key0, val> &&
+         std::is_same_v<Key1, const val &> | std::is_same_v<Key1, val> | std::is_same_v<Key1, const sym &> &&
+         std::is_same_v<Val,  const val &> | std::is_same_v<Val,  val>,
+         decltype(nullptr) > = decltype(nullptr){} >
+      MNL_INLINE val default_repl(Self &&self, Key0 &&key0, Key1 &&key1, Val &&value) {
+         val argv[] = {std::forward<Key0>(key0), std::forward<Key1>(key1), std::forward<Val>(value)};
          return _invoke(std::move(self), op<sym::id("Repl")>, std::size(argv), argv);
       }
       template<typename Self, std::enable_if_t<
-         std::is_same_v<Self, val> && std::is_same_v<Argc, int> && std::is_same_v<Arg, val>,
+         std::is_same_v<Self, val>,
+         decltype(nullptr) > = decltype(nullptr){} >
       MNL_INLINE val default_repl(Self &&self, int argc, val argv[], val *argv_out) {
          return _invoke(std::move(self), op<sym::id("Repl")>, argc, argv, argv_out);
       }
