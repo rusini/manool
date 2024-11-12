@@ -1224,19 +1224,19 @@ namespace aux {
 
    // one instance of List is Array
 
-   template<> template<bool Fetch, typename Self, typename Arg0>
+   template<> template<bool Op, typename Self, typename Arg0>
    MNL_INLINE val box<std::vector<val>>::apply_or_fetch(Self &&self, Arg0 &&arg0) {
       if (MNL_LIKELY(is<long long>(arg0)) && MNL_LIKELY((unsigned long long)as<long long>(arg0) < dat.size()))
          return dat[as<long long>(arg0)];
-      return default_apply_or_fetch<Fetch>(std::forward<Self>(self), std::forward<Key0>(arg0));
+      return default_apply_or_fetch<Op>(std::forward<Self>(self), std::forward<Key0>(arg0));
    }
-   template<> template<bool Fetch, typename Self, typename Arg0, typename Arg1>
-   MNL_INLINE val box<std::vector<val>>::apply_or_fetch(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
+   template<> template<typename Self, typename Arg0, typename Arg1>
+   MNL_INLINE val box<std::vector<val>>::apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
       if (MNL_LIKELY(is<long long>(arg0)) && MNL_LIKELY((unsigned long long)as<long long>(arg0) < dat.size()))
          return dat[as<long long>(arg0)].fetch(std::forward<Arg1>(arg1));
-      return default_apply_or_fetch<Fetch>(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1));
+      return default_apply(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1));
    }
-   template<> template<bool Fetch, typename Self>
+   template<> template<bool Op, typename Self>
    MNL_INLINE val box<std::vector<val>>::apply_or_fetch(Self &&self, int argc, val argv[]) {
       if (MNL_LIKELY(argc > 1)) {
          if (MNL_LIKELY(is<long long>(argv[0])) && MNL_LIKELY((unsigned long long)as<long long>(argv[0]) < dat.size()))
@@ -1246,7 +1246,7 @@ namespace aux {
          if (MNL_LIKELY(is<long long>(argv[0])) && MNL_LIKELY((unsigned long long)as<long long>(argv[0]) < dat.size()))
             return dat[as<long long>(argv[0])];
       }
-      return default_apply_or_fetch<Fetch>(std::forward<Self>(self), argc, argv);
+      return default_apply_or_fetch<Op>(std::forward<Self>(self), argc, argv);
    }
 
    template<> template<typename Key0, typename Val>
