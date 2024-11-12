@@ -796,9 +796,6 @@ namespace aux { namespace pub {
          decltype(nullptr) > = decltype(nullptr){} >
       MNL_INLINE val default_apply_or_fetch(Self &&self, Arg0 &&arg0) {
          return (this->*(Op ? &box::default_apply : &box::default_fetch))(std::forward<Self>(self), std::forward<Arg0>(arg0));
-
-         return _invoke(std::forward<Self>(self), MNL_SYM("Apply"), 1,
-            &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Arg0, val>, val &, val>)arg0));
       }
 
 
