@@ -1228,10 +1228,10 @@ namespace aux {
    MNL_INLINE val box<std::vector<val>>::apply(Self &&self, Arg0 &&arg0)
       { return fetch(std::forward<Self>(self), std::forward<Arg0>(arg0)); }
    template<> template<typename Self, typename Key0>
-   MNL_INLINE val box<std::vector<val>>::fetch(Self &&self, Key0 &&key0) {
-      if (MNL_LIKELY(is<long long>(key0)) && MNL_LIKELY((unsigned long long)as<long long>(key0) < dat.size()))
-         return dat[as<long long>(key0)];
-      return default_fetch(std::forward<Self>(self), std::forward<Key0>(key0));
+   MNL_INLINE val box<std::vector<val>>::apply_or_fetch(bool fetch, Self &&self, Arg0 &&arg0) {
+      if (MNL_LIKELY(is<long long>(arg0)) && MNL_LIKELY((unsigned long long)as<long long>(arg0) < dat.size()))
+         return dat[as<long long>(arg0)];
+      return default_apply_or_fetch(fetch, std::forward<Self>(self), std::forward<Key0>(key0));
    }
    template<> template<typename Self, typename Arg0, typename Arg1>
    MNL_INLINE val box<std::vector<val>>::apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1)
