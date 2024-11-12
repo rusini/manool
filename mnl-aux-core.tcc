@@ -719,6 +719,7 @@ namespace aux { namespace pub {
       MNL_HOT val _fetch(val &&self, const sym &arg0) override { return fetch(_mv(self), arg0); }
    private:
       MNL_HOT val _repl(val &&self, int argc, val [], val *argv_out) override { return repl(_mv(self), argv, argv, argv_out); }
+      // TODO: introduce version w/o argv_out and also assume that argv_out is nonnull when present here!
       // For two arguments (6 VMT entries)
       MNL_HOT val _repl(val &&self, const val &arg0, const val &arg1) override { return repl(_mv(self), arg0, arg1); }
       MNL_HOT val _repl(val &&self, const val &arg0, val &&arg1) override { return repl(_mv(self), arg0, _mv(arg1)); }
