@@ -1255,9 +1255,6 @@ namespace aux {
       }
       return default_fetch(std::forward<Self>(self), argc, argv);
    }
-   // TODO: make sure is<long long>(arg0) works for sym
-
-
    template<> template<typename Self, typename Arg0>
    MNL_INLINE val box<vector<val>>::repl(Self &&self, Arg0 &&arg0, val &&arg1) {
       if (!MNL_LIKELY(is<long long>(arg0)) || !MNL_LIKELY((unsigned long long)as<long long>(arg0) < dat.size()))
@@ -1326,6 +1323,7 @@ namespace aux {
       }
       return default_repl(std::forward<Self>(self), argc, argv, argv_out);
    }
+   // TODO: make sure is<long long>(arg0) works for sym
    template<> template<typename Self> val box<vector<val>>::invoke(Self &&self, const sym &op, int argc, val argv[], val *argv_out) {
       static const auto compact = [](vector<val> &dat)
          { if (MNL_UNLIKELY(dat.capacity() > dat.size() * 2)) dat.shrink_to_fit(); };
