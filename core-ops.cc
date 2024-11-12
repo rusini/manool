@@ -1249,7 +1249,7 @@ namespace aux {
    MNL_INLINE val box<std::vector<val>>::fetch(Self &&self, int argc, val argv[]) {
       if (MNL_LIKELY(argc > 1)) {
          if (MNL_LIKELY(is<long long>(argv[0])) && MNL_LIKELY((unsigned long long)as<long long>(argv[0]) < dat.size()))
-            return dat[as<long long>(argv[0])].fetch(argc - 1, argv + 1);
+            return dat[as<long long>(argv[0])].fetch(--argc, argc ? ++argv : nullptr);
       } else
       if (MNL_LIKELY(argc == 1)) {
          if (MNL_LIKELY(is<long long>(argv[0])) && MNL_LIKELY((unsigned long long)as<long long>(argv[0]) < dat.size()))
