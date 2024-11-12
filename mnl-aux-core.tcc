@@ -711,7 +711,6 @@ namespace aux { namespace pub {
       MNL_HOT val _apply(val &&self, val &&arg0, val &&arg1) override { return apply(_mv(self), _mv(arg0), _mv(arg1)); }
       MNL_HOT val _apply(val &&self, val &&arg0, const sym &arg1) override { return apply(_mv(self), _mv(arg0), arg1); }
       // For one argument (6 VMT entries)
-      // TODO: we can name args according to its (expected) role here, since this is how we use repl in expr_apply!
       MNL_HOT val _fetch(const val &self, const val &arg0) override { return fetch(self, arg0); }
       MNL_HOT val _fetch(const val &self, val &&arg0) override { return fetch(self, _mv(arg0)); }
       MNL_HOT val _fetch(const val &self, const sym &arg0) override { return fetch(self, arg0); }
