@@ -754,10 +754,12 @@ namespace aux { namespace pub {
          { return default_apply(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1)); }
       template<typename Self, typename Arg0> MNL_INLINE val fetch(Self &&self, Arg0 &&arg0)
          { return default_fetch(std::forward<Self>(self), std::forward<Arg0>(arg0)); }
-      template<typename Self, typename Arg0> MNL_INLINE val repl(Self &&self, Arg0 &&arg0, val &&arg1)
-         { return default_repl(std::forward<Self>(self), std::forward<Arg0>(arg0), std::move(arg1)); }
-      template<typename Self, typename Arg0, typename Arg1> MNL_INLINE val repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1, val &&arg2)
-         { return default_repl(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::move(arg2)); }
+      template<typename Key0, typename Val> MNL_INLINE val repl(val &&self, Key0 &&key0, Val &&value)
+         { return default_repl(std::move(self), std::forward<Key0>(key0), std::forward<Val>(value)); }
+      template<typename Key0, typename Key1, typename Val> MNL_INLINE val repl(val &&self, Key0 &&key0, Key1 &&key1, Val &&value)
+         { return default_repl(std::move(self), std::forward<Key0>(key0), std::forward<Key1>(key1), std::forward<Val>(value)); }
+      MNL_INLINE val repl(val &&self, int argc, val argv[], val *argv_out)
+         { return default_repl(std::move(self), argc, argv, argv_out); }
    private: // Utilities for forwarding to "invoke"
       template< typename Self, typename Arg0, std::enable_if_t<
          std::is_same_v<Self, const val &> | std::is_same_v<Self, val>,

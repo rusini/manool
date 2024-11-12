@@ -1225,23 +1225,23 @@ namespace aux {
    // one instance of List is Array
 
    template<> template<typename Self, typename Arg0>
-   MNL_INLINE val box<vector<val>>::apply(Self &&self, Arg0 &&arg0)
+   MNL_INLINE val box<std::vector<val>>::apply(Self &&self, Arg0 &&arg0)
       { return fetch(std::forward<Self>(self), std::forward<Arg0>(arg0)); }
-   template<> template<typename Self, typename Arg0, typename Arg1>
-   MNL_INLINE val box<vector<val>>::fetch(Self &&self, Arg0 &&arg0) {
-      if (MNL_LIKELY(is<long long>(arg0)) && MNL_LIKELY((unsigned long long)as<long long>(arg0) < dat.size()))
-         return dat[as<long long>(arg0)];
-      return default_fetch(std::forward<Self>(self), std::forward<Arg0>(arg0));
+   template<> template<typename Self, typename Key0, typename Key1>
+   MNL_INLINE val box<vector<val>>::fetch(Self &&self, Key0 &&key0) {
+      if (MNL_LIKELY(is<long long>(key0)) && MNL_LIKELY((unsigned long long)as<long long>(key0) < dat.size()))
+         return dat[as<long long>(key0)];
+      return default_fetch(std::forward<Self>(self), std::forward<Key0>(key0));
    }
-   MNL_INLINE val box<vector<val>>::apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1)
+   MNL_INLINE val box<std::vector<val>>::apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1)
       { return fetch(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1)); }
-   template<> template<typename Self, typename Arg0, typename Arg1>
-   MNL_INLINE val box<vector<val>>::fetch(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
-      if (MNL_LIKELY(is<long long>(arg0)) && MNL_LIKELY((unsigned long long)as<long long>(arg0) < dat.size()))
-         return dat[as<long long>(argv0)].fetch(std::forward<Arg1>(arg1));
-      return default_fetch(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1));
+   template<> template<typename Self, typename Key0, typename Key1>
+   MNL_INLINE val box<vector<val>>::fetch(Self &&self, Key0 &&key0, Key1 &&key1) {
+      if (MNL_LIKELY(is<long long>(key0)) && MNL_LIKELY((unsigned long long)as<long long>(key0) < dat.size()))
+         return dat[as<long long>(key0)].fetch(std::forward<Key1>(key1));
+      return default_fetch(std::forward<Self>(self), std::forward<Key0>(key0), std::forward<Key1>(key1));
    }
-   MNL_INLINE val box<vector<val>>::apply(Self &&self, int argc, val argv[])
+   MNL_INLINE val box<std::vector<val>>::apply(Self &&self, int argc, val argv[])
       { return fetch(std::forward<Self>(self), argc, argv); }
    template<> template<typename Self>
    MNL_INLINE val box<vector<val>>::fetch(Self &&self, int argc, val argv[]) {
@@ -1255,40 +1255,41 @@ namespace aux {
       }
       return default_fetch(std::forward<Self>(self), argc, argv);
    }
-   template<> template<typename Self, typename Arg0>
-   MNL_INLINE val box<vector<val>>::repl(Self &&self, Arg0 &&arg0, val &&arg1) {
-      if (MNL_LIKELY(is<long long>(arg0)) && MNL_LIKELY((unsigned long long)as<long long>(arg0) < dat.size()))
+
+   template<> template<typename Key0, typename Val>
+   MNL_INLINE val box<std::vector<val>>::repl(val &&self, Key0 &&key0, Val &&key1) {
+      if (MNL_LIKELY(is<long long>(key0)) && MNL_LIKELY((unsigned long long)as<long long>(key0) < dat.size()))
       if (std::is_same_v<Self, val> && MNL_LIKELY(!shared())) {
       # if true // We deem a check followed by a not-taken, correctly predicted branch better for performance than an extra store-after-load;
-         dat[as<long long>(arg0)] = std::move(arg1); // besides, the latter might result in wrong destruction order.
+         dat[as<long long>(key0)] = std::move(key1); // besides, the latter might result in wrong destruction order.
       # else
-         dat[as<long long>(arg0)].swap(arg1);
+         dat[as<long long>(key0)].swap(key1);
       # endif
          return std::move(self);
-      } else return [this, index = as<long long>(arg0), &arg1]() MNL_NOINLINE->val{ return [&]() MNL_INLINE{
+      } else return [this, index = as<long long>(key0), &key1]() MNL_NOINLINE->val{ return [&]() MNL_INLINE{
          auto res = dat;
-         res[index] = std::move(arg1);
+         res[index] = std::move(key1);
          return res;
       }(); }();
-      return default_repl(std::forward<Self>(self), std::forward<Arg0>(arg0), std::move(arg1));
+      return default_repl(std::forward<Self>(self), std::forward<Key0>(key0), std::move(key1));
    }
-   template<> template<typename Self, typename Arg0, typename Arg1>
-   MNL_INLINE val box<vector<val>>::repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1, val &&arg2) {
-      if (MNL_LIKELY(is<long long>(arg0)) && MNL_LIKELY((unsigned long long)as<long long>(arg0) < dat.size()))
+   template<> template<typename Key0, typename Key1, typename Val>
+   MNL_INLINE val box<std::vector<val>>::repl(val &&self, Key0 &&key0, Key1 &&key1, Val &&key2) {
+      if (MNL_LIKELY(is<long long>(key0)) && MNL_LIKELY((unsigned long long)as<long long>(key0) < dat.size()))
       if (std::is_same_v<Self, val> && MNL_LIKELY(!shared())) {
-         auto &elem = dat[as<long long>(arg0)];
-         elem = std::move(elem).repl(std::forward<Arg1>(arg1), std::move(arg2));
+         auto &elem = dat[as<long long>(key0)];
+         elem = std::move(elem).repl(std::forward<Key1>(key1), std::move(key2));
          return std::move(self);
-      } else return [this, index = as<long long>(arg0), &arg1, &arg2]() MNL_NOINLINE->val{ return [&]() MNL_INLINE{
+      } else return [this, index = as<long long>(key0), &key1, &key2]() MNL_NOINLINE->val{ return [&]() MNL_INLINE{
          auto res = dat;
          auto &elem = res[index];
-         elem = std::move(elem).repl(std::forward<Arg1>(arg1), std::move(arg2));
+         elem = std::move(elem).repl(std::forward<Key1>(key1), std::move(key2));
          return res;
       }(); }();
-      return default_repl(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::move(arg2));
+      return default_repl(std::forward<Self>(self), std::forward<Key0>(key0), std::forward<Key1>(key1), std::move(key2));
    }
-   template<> template<typename Self>
-   MNL_INLINE val box<vector<val>>::repl(Self &&self, int argc, val argv[], val *argv_out) {
+   template<>
+   MNL_INLINE val box<std::vector<val>>::repl(val &&self, int argc, val argv[], val *argv_out) {
       if (MNL_LIKELY(argc > 2)) {
          if (MNL_LIKELY(is<long long>(argv[0])) && MNL_LIKELY((unsigned long long)as<long long>(argv[0]) < dat.size()))
          if (std::is_same_v<Self, val> && MNL_LIKELY(!shared())) {
