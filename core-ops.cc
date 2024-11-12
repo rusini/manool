@@ -1242,7 +1242,7 @@ namespace aux {
       return default_fetch(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1));
    }
    MNL_INLINE val box<vector<val>>::apply(Self &&self, int argc, val argv[])
-      { return fetch(std::forward<Self>(self), argv, argv); }
+      { return fetch(std::forward<Self>(self), argc, argv); }
    template<> template<typename Self>
    MNL_INLINE val box<vector<val>>::fetch(Self &&self, int argc, val argv[]) {
       if (MNL_LIKELY(argc > 1)) {
