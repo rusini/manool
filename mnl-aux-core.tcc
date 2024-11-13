@@ -1182,18 +1182,18 @@ namespace aux {
 
    // Repl
 
-   template<typename Target, typename Arg0, typename Arg1>
-   MNL_INLINE inline val val::_repl(Target &&target, Arg0 &&arg0, Arg1 &&arg1) {
+   template<typename Target, typename Key0, typename Val>
+   MNL_INLINE inline val val::_repl(Target &&target, Key0 &&key0, Val &&value) {
       if (MNL_LIKELY(target.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
          return static_cast<root *>(target.rep.template dat<void *>())->
-            _repl(std::forward<Target>(target), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1));
+            _repl(std::forward<Target>(target), std::forward<Key0>(key0), std::forward<Val>(value));
       err_UnrecognizedOperation();
    }
-   template<typename Target, typename Arg0, typename Arg1, typename Arg2>
-   MNL_INLINE inline val val::_repl(Target &&target, Arg0 &&arg0, Arg1 &&arg1, Arg2 &&arg2) {
+   template<typename Target, typename Key0, typename Key1, typename Val>
+   MNL_INLINE inline val val::_repl(Target &&target, Key0 &&key0, Key1 &&key1, Val &&value) {
       if (MNL_LIKELY(target.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
          return static_cast<root *>(target.rep.template dat<void *>())->
-            _repl(std::forward<Target>(target), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::forward<Arg2>(arg2));
+            _repl(std::forward<Target>(target), std::forward<Key0>(key0), std::forward<Key1>(key1), std::forward<Val>(value));
       err_UnrecognizedOperation();
    }
    template<typename Target>
