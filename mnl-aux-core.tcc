@@ -466,10 +466,10 @@ namespace aux { namespace pub {
       template<typename Target, typename Arg0>                static val _fetch(Target &&, Arg0 &&);
       template<typename Target>                               static val _fetch(Target &&, int argc, val []);
       // _repl
-      template<typename Target, typename Arg0, typename Arg1>                static val _repl(Target &&, Arg0 &&, Arg1 &&);
-      template<typename Target, typename Arg0, typename Arg1, typename Arg2> static val _repl(Target &&, Arg0 &&, Arg1 &&, Arg2 &&);
-      template<typename Target>                                              static val _repl(Target &&, int argc, val []);
-      template<typename Target>                                              static val _repl(Target &&, int argc, val [], val *argv_out);
+      template<typename Target, typename Key0, typename Val>                static val _repl(Target &&, Key0 &&, Val &&);
+      template<typename Target, typename Key0, typename Key1, typename Val> static val _repl(Target &&, Key0 &&, Key1 &&, Val &&);
+      template<typename Target>                                             static val _repl(Target &&, int argc, val []);
+      template<typename Target>                                             static val _repl(Target &&, int argc, val [], val *argv_out);
    private: // Implementation of sym::operator()
       template<typename Self> static MNL_HOT val _invoke(Self &&, const sym &op, int argc, val argv[], val *argv_out); // Self == const val & || Self == val
       friend val sym::operator()(const val &, int, val [], val *) const, sym::operator()(val &&, int, val [], val *) const;
