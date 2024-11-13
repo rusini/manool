@@ -720,10 +720,9 @@ namespace aux { namespace pub {
       MNL_HOT val _fetch(val &&self, const sym &arg0) override { return fetch(_mv(self), arg0); }
    private:
       MNL_HOT val _repl(val &&self, int argc, val argv[]) override
-         { return repl(_mv(self), argc, argv, {}); }
+         { return repl(_mv(self), argc, argv); }
       MNL_HOT val _repl(val &&self, int argc, val argv[], val *argv_out) override
          { if (!argv_out) __builtin_unreachable(); return repl(_mv(self), argc, argv, argv_out); }
-      // TODO: introduce version w/o argv_out and also assume that argv_out is nonnull when present here!
       // For two arguments (6 VMT entries)
       MNL_HOT val _repl(val &&self, const val &arg0, const val &arg1) override { return repl(_mv(self), arg0, arg1); }
       MNL_HOT val _repl(val &&self, const val &arg0, val &&arg1) override { return repl(_mv(self), arg0, _mv(arg1)); }
@@ -849,67 +848,6 @@ namespace aux { namespace pub {
          decltype(nullptr) > = decltype(nullptr){} >
       MNL_INLINE val default_repl(Self &&self, int argc, val argv[], val *argv_out) {
          return _invoke(std::move(self), op<sym::id("Repl")>, argc, argv, argv_out);
-      }
-
-
-
-
-
-      template< bool Fetch, typename Self, typename Argc, class Val, std::enable_if_t<
-         std::is_same_v<Self, const val &> | std::is_same_v<Self, val> &&
-         std::is_same_v<Argc, int> && std::is_same_v<Val, val>,
-         decltype(nullptr) > = decltype(nullptr){} >
-      MNL_INLINE val default_apply_or_fetch(Self &&self, Argc argc, Val argv[]) {
-         return _invoke(std::forward<Self>(self), op<sym::id(Fetch ? "Fetch" : "Apply")>, argc, argv);
-      }
-
-
-      template< typename Self, typename Arg0, std::enable_if_t<
-         std::is_same_v<Self, const val &> | std::is_same_v<Self, val>,
-         decltype(nullptr) > = decltype(nullptr){} >
-      MNL_INLINE val default_fetch(Self &&self, int argc, val argv[]) {
-         return _invoke(std::forward<Self>(self), MNL_SYM("Fetch"), argc, argv);
-      }
-
-
-      template<typename Self, typename Arg0, typename Arg1, std::enable_if_t<
-         std::is_same_v<Self, const val &> | std::is_same_v<Self, val> &&
-         std::is_same_v<Arg0, const val &> | std::is_same_v<Arg0, val> &&
-         std::is_same_v<Arg1, const val &> | std::is_same_v<Arg1, val> | std::is_same_v<Arg1, const sym &>,
-         decltype(nullptr) > = decltype(nullptr){} >
-      MNL_INLINE val default_apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
-         val argv[] = {std::forward<Arg0>(arg0), std::forward<Arg1>(arg1)};
-         return _invoke(std::forward<Self>(self), MNL_SYM("Apply"), std::size(argv), argv);
-      }
-      template< typename Self, typename Arg0, std::enable_if_t<
-         std::is_same_v<Self, const val &> | std::is_same_v<Self, val> &&
-         std::is_same_v<Arg0, const val &> | std::is_same_v<Arg0, val> | std::is_same_v<Arg0, const sym &>,
-         decltype(nullptr) > = decltype(nullptr){} >
-      MNL_INLINE val default_fetch(Self &&self, Arg0 &&arg0) {
-         return _invoke(std::forward<Self>(self), MNL_SYM("Fetch"), 1,
-            &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Arg0, val>, val &, val>)arg0));
-      }
-      template<typename Self, typename Arg0, typename Arg1, std::enable_if_t<
-         std::is_same_v<Self, val> &&
-         std::is_same_v<Arg0, const val &> | std::is_same_v<Arg0, val> | std::is_same_v<Arg0, const sym &> &&
-         std::is_same_v<Arg1, const val &> | std::is_same_v<Arg1, val>,
-      MNL_INLINE val default_repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
-         val argv[] = {std::forward<Arg0>(arg0), std::forward<Arg1>(arg1)};
-         return _invoke(std::move(self), MNL_SYM("Repl"), std::size(argv), argv);
-      }
-      template<typename Self, typename Arg0, typename Arg1, typename Arg2, std::enable_if_t<
-         std::is_same_v<Self, val> &&
-         std::is_same_v<Arg0, const val &> | std::is_same_v<Arg0, val> &&
-         std::is_same_v<Arg1, const val &> | std::is_same_v<Arg1, val> | std::is_same_v<Arg1, const sym &> &&
-         std::is_same_v<Arg2, const val &> | std::is_same_v<Arg2, val>,
-      MNL_INLINE val default_repl(Self &&self, Arg0 &&arg0, Arg1 &&arg1, Arg2 &&arg2) {
-         val argv[] = {std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::forward<Arg2>(arg2)};
-         return _invoke(std::move(self), MNL_SYM("Repl"), std::size(argv), argv);
-      }
-      template<typename Self, typename Arg0, typename Arg1, typename Arg2, std::enable_if_t<
-         std::is_same_v<Self, val> && std::is_same_v<Argc, int> && std::is_same_v<Arg, val>,
-      MNL_INLINE val default_repl(Self &&self, Argc argc, Arg argv[], Arg *argv_out) {
-         return _invoke(std::move(self), MNL_SYM("Repl"), argc, argv, argv_out);
       }
    };
 
