@@ -1138,11 +1138,11 @@ namespace aux {
          return as<const sym &>(target)(std::forward<Arg0>(arg0));
       err_UnrecognizedOperation();
    }
-   template<typename Target, typename Arg0>
-   MNL_INLINE inline val val::_fetch(Target &&target, Arg0 &&arg0) {
+   template<typename Target, typename Key0>
+   MNL_INLINE inline val val::_fetch(Target &&target, Key0 &&key0) {
       if (MNL_LIKELY(target.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
          return static_cast<root *>(target.rep.template dat<void *>())->
-            _fetch(std::forward<Target>(target), std::forward<Arg0>(arg0));
+            _fetch(std::forward<Target>(target), std::forward<Key0>(key0));
       err_UnrecognizedOperation();
    }
    template<typename Target, typename Arg0, typename Arg1>
