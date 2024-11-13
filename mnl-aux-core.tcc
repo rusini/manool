@@ -389,9 +389,6 @@ namespace aux { namespace pub {
          MNL_INLINE val fetch(val &&arg0) && { return _fetch(_mv(*this), _mv(arg0)); }
       template<class Sym, std::enable_if_t<std::is_same_v<Sym, sym>, decltype(nullptr)> = decltype(nullptr){}>
          MNL_INLINE val fetch(const Sym &arg0) && { return _fetch(_mv(*this), arg0); }
-      //
-      template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
-         [[nodiscard]] MNL_INLINE val repl(int argc, Val argv[], val *argv_out = {}) && { return _repl(_mv(*this), argc, argv, argv_out); }
       // For two arguments
          [[nodiscard]] MNL_INLINE val repl(const val &arg0, const val &arg1) && { return _repl(_mv(*this), arg0, arg1); }
          [[nodiscard]] MNL_INLINE val repl(const val &arg0, val &&arg1) && { return _repl(_mv(*this), arg0, _mv(arg1)); }
@@ -418,6 +415,13 @@ namespace aux { namespace pub {
          [[nodiscard]] MNL_INLINE val repl(val &&arg0, const Sym &arg1, const val &arg2) && { return _repl(_mv(*this), _mv(arg0), arg1, arg2); }
       template<class Sym, std::enable_if_t<std::is_same_v<Sym, sym>, decltype(nullptr)> = decltype(nullptr){}>
          [[nodiscard]] MNL_INLINE val repl(val &&arg0, const Sym &arg1, val &&arg2) && { return _repl(_mv(*this), _mv(arg0), arg1, _mv(arg2)); }
+      // For multiple arguments
+      template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
+      [[nodiscard]] MNL_INLINE val repl(int argc, Val argv[]) &&
+         { return _repl(_mv(*this), argc, argv); }
+      template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
+      [[nodiscard]] MNL_INLINE val repl(int argc, Val argv[], val *argv_out) &&
+         { return _repl(_mv(*this), argc, argv, argv_out); }
    // Metaprogramming
          MNL_INLINE val operator()(val a0, val a1, val a2) const & { val argv[] = {_mv(a0), _mv(a1), _mv(a2)}; return (*this)(std::size(argv), argv); }
          MNL_INLINE val operator()(val a0, val a1, val a2) &&   { val argv[] = {_mv(a0), _mv(a1), _mv(a2)}; return _mv(*this)(std::size(argv), argv); }
@@ -454,16 +458,18 @@ namespace aux { namespace pub {
       ...
    private: // Implementation of the above
       // _apply
-      template<typename Target>                               static val _apply(Target &&, int argc, val [], val *argv_out);
-      template<typename Target>                               static val _apply(Target &&, int argc, val []);
       template<typename Target, typename Arg0>                static val _apply(Target &&, Arg0 &&);
       template<typename Target, typename Arg0, typename Arg1> static val _apply(Target &&, Arg0 &&, Arg1 &&);
+      template<typename Target>                               static val _apply(Target &&, int argc, val []);
+      template<typename Target>                               static val _apply(Target &&, int argc, val [], val *argv_out);
       // _fetch
-      template<typename Target>                               static val _fetch(Target &&, int argc, val []);
       template<typename Target, typename Arg0>                static val _fetch(Target &&, Arg0 &&);
+      template<typename Target>                               static val _fetch(Target &&, int argc, val []);
       // _repl
       template<typename Target, typename Arg0, typename Arg1>                static val _repl(Target &&, Arg0 &&, Arg1 &&);
       template<typename Target, typename Arg0, typename Arg1, typename Arg2> static val _repl(Target &&, Arg0 &&, Arg1 &&, Arg2 &&);
+      template<typename Target>                                              static val _repl(Target &&, int argc, val []);
+      template<typename Target>                                              static val _repl(Target &&, int argc, val [], val *argv_out);
    private: // Implementation of sym::operator()
       template<typename Self> static MNL_HOT val _invoke(Self &&, const sym &op, int argc, val argv[], val *argv_out); // Self == const val & || Self == val
       friend val sym::operator()(const val &, int, val [], val *) const, sym::operator()(val &&, int, val [], val *) const;
