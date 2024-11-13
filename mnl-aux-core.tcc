@@ -457,15 +457,14 @@ namespace aux { namespace pub {
    // Even more convenience -- tracing counterparts
       ...
    private: // Implementation of the above
-      // _apply
+      // Apply/Fetch
       template<typename Target, typename Arg0>                static val _apply(Target &&, Arg0 &&);
+      template<typename Target, typename Arg0>                static val _fetch(Target &&, Arg0 &&);
       template<typename Target, typename Arg0, typename Arg1> static val _apply(Target &&, Arg0 &&, Arg1 &&);
       template<typename Target>                               static val _apply(Target &&, int argc, val []);
-      template<typename Target>                               static val _apply(Target &&, int argc, val [], val *argv_out);
-      // _fetch
-      template<typename Target, typename Arg0>                static val _fetch(Target &&, Arg0 &&);
       template<typename Target>                               static val _fetch(Target &&, int argc, val []);
-      // _repl
+      template<typename Target>                               static val _apply(Target &&, int argc, val [], val *argv_out);
+      // Repl
       template<typename Target, typename Key0, typename Val>                static val _repl(Target &&, Key0 &&, Val &&);
       template<typename Target, typename Key0, typename Key1, typename Val> static val _repl(Target &&, Key0 &&, Key1 &&, Val &&);
       template<typename Target>                                             static val _repl(Target &&, int argc, val []);
