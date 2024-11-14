@@ -341,19 +341,6 @@ namespace aux { namespace pub {
       static constexpr int max_argc = sym::max_argc;
       static constexpr auto max_i48 = (1ll << 48 - 1) - 1, min_i48 = -max_i48;
    // Essential for performance
-      // argv_out[-1] corresponds to target; !argc < !argv
-      template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
-         MNL_INLINE val operator()(int argc, Val argv[], val *argv_out) const & { return _apply(*this, argc, argv, argv_out); }
-      template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
-         MNL_INLINE val operator()(int argc, Val argv[], val *argv_out) && { return _apply(_mv(*this), argc, argv, argv_out); }
-      template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
-         MNL_INLINE val operator()(int argc, Val argv[]) const & { return _apply(*this, argc, argv); }
-      template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
-         MNL_INLINE val operator()(int argc, Val argv[]) && { return _apply(_mv(*this), argc, argv); }
-      template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
-         MNL_INLINE val fetch(int argc, Val argv[]) const & { return _fetch(*this, argc, argv); }
-      template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
-         MNL_INLINE val fetch(int argc, Val argv[]) && { return _fetch(_mv(*this), argc, argv); }
       // For one argument
          MNL_INLINE val operator()(const val &arg0) const & { return _apply(*this, arg0); }
          MNL_INLINE val operator()(val &&arg0) const & { return _apply(*this, _mv(arg0)); }
@@ -363,6 +350,15 @@ namespace aux { namespace pub {
          MNL_INLINE val operator()(val &&arg0) && { return _apply(_mv(*this), _mv(arg0)); }
       template<class Sym, std::enable_if_t<std::is_same_v<Sym, sym>, decltype(nullptr)> = decltype(nullptr){}>
          MNL_INLINE val operator()(const Sym &arg0) && { return _apply(_mv(*this), arg0); }
+      // For one argument
+         MNL_INLINE val fetch(const val &arg0) const & { return _fetch(*this, arg0); }
+         MNL_INLINE val fetch(val &&arg0) const & { return _fetch(*this, _mv(arg0)); }
+      template<class Sym, std::enable_if_t<std::is_same_v<Sym, sym>, decltype(nullptr)> = decltype(nullptr){}>
+         MNL_INLINE val fetch(const Sym &arg0) const & { return _fetch(*this, arg0); }
+         MNL_INLINE val fetch(const val &arg0) && { return _fetch(_mv(*this), arg0); }
+         MNL_INLINE val fetch(val &&arg0) && { return _fetch(_mv(*this), _mv(arg0)); }
+      template<class Sym, std::enable_if_t<std::is_same_v<Sym, sym>, decltype(nullptr)> = decltype(nullptr){}>
+         MNL_INLINE val fetch(const Sym &arg0) && { return _fetch(_mv(*this), arg0); }
       // For two arguments
          MNL_INLINE val operator()(const val &arg0, const val &arg1) const & { return _apply(*this, arg0, arg1); }
          MNL_INLINE val operator()(const val &arg0, val &&arg1) const & { return _apply(*this, arg0, _mv(arg1)); }
@@ -380,41 +376,46 @@ namespace aux { namespace pub {
          MNL_INLINE val operator()(val &&arg0, val &&arg1) && { return _apply(_mv(*this), _mv(arg0), _mv(arg1)); }
       template<class Sym, std::enable_if_t<std::is_same_v<Sym, sym>, decltype(nullptr)> = decltype(nullptr){}>
          MNL_INLINE val operator()(val &&arg0, const Sym &arg1) && { return _apply(_mv(*this), _mv(arg0), arg1); }
-      // For one argument
-         MNL_INLINE val fetch(const val &arg0) const & { return _fetch(*this, arg0); }
-         MNL_INLINE val fetch(val &&arg0) const & { return _fetch(*this, _mv(arg0)); }
-      template<class Sym, std::enable_if_t<std::is_same_v<Sym, sym>, decltype(nullptr)> = decltype(nullptr){}>
-         MNL_INLINE val fetch(const Sym &arg0) const & { return _fetch(*this, arg0); }
-         MNL_INLINE val fetch(const val &arg0) && { return _fetch(_mv(*this), arg0); }
-         MNL_INLINE val fetch(val &&arg0) && { return _fetch(_mv(*this), _mv(arg0)); }
-      template<class Sym, std::enable_if_t<std::is_same_v<Sym, sym>, decltype(nullptr)> = decltype(nullptr){}>
-         MNL_INLINE val fetch(const Sym &arg0) && { return _fetch(_mv(*this), arg0); }
+      // For multiple arguments
+      template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
+         MNL_INLINE val operator()(int argc, Val argv[]) const & { return _apply(*this, argc, argv); }
+      template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
+         MNL_INLINE val operator()(int argc, Val argv[]) && { return _apply(_mv(*this), argc, argv); }
+      template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
+         MNL_INLINE val fetch(int argc, Val argv[]) const & { return _fetch(*this, argc, argv); }
+      template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
+         MNL_INLINE val fetch(int argc, Val argv[]) && { return _fetch(_mv(*this), argc, argv); }
+      template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
+         MNL_INLINE val operator()(int argc, Val argv[], val *argv_out) const & { return _apply(*this, argc, argv, argv_out); }
+      template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
+         MNL_INLINE val operator()(int argc, Val argv[], val *argv_out) && { return _apply(_mv(*this), argc, argv, argv_out); }
+         // argv_out[-1] corresponds to target; !argc < !argv
       // For two arguments
-         [[nodiscard]] MNL_INLINE val repl(const val &arg0, const val &arg1) && { return _repl(_mv(*this), arg0, arg1); }
-         [[nodiscard]] MNL_INLINE val repl(const val &arg0, val &&arg1) && { return _repl(_mv(*this), arg0, _mv(arg1)); }
-         [[nodiscard]] MNL_INLINE val repl(val &&arg0, const val &arg1) && { return _repl(_mv(*this), _mv(arg0), arg1); }
-         [[nodiscard]] MNL_INLINE val repl(val &&arg0, val &&arg1) && { return _repl(_mv(*this), _mv(arg0), _mv(arg1)); }
+         [[nodiscard]] MNL_INLINE val repl(const val &key0, const val &value) && { return _repl(_mv(*this), key0, value); }
+         [[nodiscard]] MNL_INLINE val repl(const val &key0, val &&value) && { return _repl(_mv(*this), key0, _mv(value)); }
+         [[nodiscard]] MNL_INLINE val repl(val &&key0, const val &value) && { return _repl(_mv(*this), _mv(key0), value); }
+         [[nodiscard]] MNL_INLINE val repl(val &&key0, val &&value) && { return _repl(_mv(*this), _mv(key0), _mv(value)); }
       template<class Sym, std::enable_if_t<std::is_same_v<Sym, sym>, decltype(nullptr)> = decltype(nullptr){}>
-         [[nodiscard]] MNL_INLINE val repl(const Sym &arg0, const val &arg1) && { return _repl(_mv(*this), arg0, arg1); }
+         [[nodiscard]] MNL_INLINE val repl(const Sym &key0, const val &value) && { return _repl(_mv(*this), key0, value); }
       template<class Sym, std::enable_if_t<std::is_same_v<Sym, sym>, decltype(nullptr)> = decltype(nullptr){}>
-         [[nodiscard]] MNL_INLINE val repl(const Sym &arg0, val &&arg1) && { return _repl(_mv(*this), arg0, _mv(arg1)); }
+         [[nodiscard]] MNL_INLINE val repl(const Sym &key0, val &&value) && { return _repl(_mv(*this), key0, _mv(value)); }
       // For three arguments
-         [[nodiscard]] MNL_INLINE val repl(const val &arg0, const val &arg1, const val &arg2) && { return _repl(_mv(*this), arg0, arg1, arg2); }
-         [[nodiscard]] MNL_INLINE val repl(const val &arg0, const val &arg1, val &&arg2) && { return _repl(_mv(*this), arg0, arg1, _mv(arg2)); }
-         [[nodiscard]] MNL_INLINE val repl(const val &arg0, val &&arg1, const val &arg2) && { return _repl(_mv(*this), arg0, _mv(arg1), arg2); }
-         [[nodiscard]] MNL_INLINE val repl(const val &arg0, val &&arg1, val &&arg2) && { return _repl(_mv(*this), arg0, _mv(arg1), _mv(arg2)); }
+         [[nodiscard]] MNL_INLINE val repl(const val &key0, const val &key1, const val &value) && { return _repl(_mv(*this), key0, key1, value); }
+         [[nodiscard]] MNL_INLINE val repl(const val &key0, const val &key1, val &&value) && { return _repl(_mv(*this), key0, key1, _mv(value)); }
+         [[nodiscard]] MNL_INLINE val repl(const val &key0, val &&key1, const val &value) && { return _repl(_mv(*this), key0, _mv(key1), value); }
+         [[nodiscard]] MNL_INLINE val repl(const val &key0, val &&key1, val &&value) && { return _repl(_mv(*this), key0, _mv(key1), _mv(value)); }
       template<class Sym, std::enable_if_t<std::is_same_v<Sym, sym>, decltype(nullptr)> = decltype(nullptr){}>
-         [[nodiscard]] MNL_INLINE val repl(const val &arg0, const Sym &arg1, const val &arg2) && { return _repl(_mv(*this), arg0, arg1, arg2); }
+         [[nodiscard]] MNL_INLINE val repl(const val &key0, const Sym &key1, const val &value) && { return _repl(_mv(*this), key0, key1, value); }
       template<class Sym, std::enable_if_t<std::is_same_v<Sym, sym>, decltype(nullptr)> = decltype(nullptr){}>
-         [[nodiscard]] MNL_INLINE val repl(const val &arg0, const Sym &arg1, val &&arg2) && { return _repl(_mv(*this), arg0, arg1, _mv(arg2)); }
-         [[nodiscard]] MNL_INLINE val repl(val &&arg0, const val &arg1, const val &arg2) && { return _repl(_mv(*this), _mv(arg0), arg1, arg2); }
-         [[nodiscard]] MNL_INLINE val repl(val &&arg0, const val &arg1, val &&arg2) && { return _repl(_mv(*this), _mv(arg0), arg1, _mv(arg2)); }
-         [[nodiscard]] MNL_INLINE val repl(val &&arg0, val &&arg1, const val &arg2) && { return _repl(_mv(*this), _mv(arg0), _mv(arg1), arg2); }
-         [[nodiscard]] MNL_INLINE val repl(val &&arg0, val &&arg1, val &&arg2) && { return _repl(_mv(*this), _mv(arg0), _mv(arg1), _mv(arg2)); }
+         [[nodiscard]] MNL_INLINE val repl(const val &key0, const Sym &key1, val &&value) && { return _repl(_mv(*this), key0, key1, _mv(value)); }
+         [[nodiscard]] MNL_INLINE val repl(val &&key0, const val &key1, const val &value) && { return _repl(_mv(*this), _mv(key0), key1, value); }
+         [[nodiscard]] MNL_INLINE val repl(val &&key0, const val &key1, val &&value) && { return _repl(_mv(*this), _mv(key0), key1, _mv(value)); }
+         [[nodiscard]] MNL_INLINE val repl(val &&key0, val &&key1, const val &value) && { return _repl(_mv(*this), _mv(key0), _mv(key1), value); }
+         [[nodiscard]] MNL_INLINE val repl(val &&key0, val &&key1, val &&value) && { return _repl(_mv(*this), _mv(key0), _mv(key1), _mv(value)); }
       template<class Sym, std::enable_if_t<std::is_same_v<Sym, sym>, decltype(nullptr)> = decltype(nullptr){}>
-         [[nodiscard]] MNL_INLINE val repl(val &&arg0, const Sym &arg1, const val &arg2) && { return _repl(_mv(*this), _mv(arg0), arg1, arg2); }
+         [[nodiscard]] MNL_INLINE val repl(val &&key0, const Sym &key1, const val &value) && { return _repl(_mv(*this), _mv(key0), key1, value); }
       template<class Sym, std::enable_if_t<std::is_same_v<Sym, sym>, decltype(nullptr)> = decltype(nullptr){}>
-         [[nodiscard]] MNL_INLINE val repl(val &&arg0, const Sym &arg1, val &&arg2) && { return _repl(_mv(*this), _mv(arg0), arg1, _mv(arg2)); }
+         [[nodiscard]] MNL_INLINE val repl(val &&key0, const Sym &key1, val &&value) && { return _repl(_mv(*this), _mv(key0), key1, _mv(value)); }
       // For multiple arguments
       template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
       [[nodiscard]] MNL_INLINE val repl(int argc, Val argv[]) &&
