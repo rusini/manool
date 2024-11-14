@@ -605,7 +605,7 @@ namespace aux { namespace pub {
 // class Template box //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    class val::root {
    protected:
-      MNL_INLINE explicit root(const std::byte &tag) noexcept: _tag(reinterpret_cast<std::uintptr_t>(&tag)) {}
+      MNL_INLINE explicit root(const std::byte *tag) noexcept: _tag(reinterpret_cast<std::uintptr_t>(tag)) {}
       virtual ~root() = default;
    private:
       root(const root &) = delete;
@@ -680,7 +680,7 @@ namespace aux { namespace pub {
    };
    template<typename Dat> class box final: val::root {
       Dat dat;
-      explicit box(Dat &&dat): root(_tag), dat(std::move(dat)) {}
+      explicit box(Dat &&dat): root(&_tag), dat(std::move(dat)) {}
       ~box() = default;
    private:
       static constexpr std::byte _tag{};
