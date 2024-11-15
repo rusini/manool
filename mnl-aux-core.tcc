@@ -609,7 +609,7 @@ namespace aux { namespace pub {
       virtual ~root() = default;
    private:
       root(const root &) = delete;
-      root &operator=(const root &) = delete;
+      root &operator=(const root &) = delete; // would be implicitly deleted anyway
    protected:
       long rc() const noexcept { return MNL_IF_WITHOUT_MT(_rc) MNL_IF_WITH_MT(__atomic_load_n(&_rc, __ATOMIC_RELAXED)); }
    private:
