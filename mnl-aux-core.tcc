@@ -783,7 +783,7 @@ namespace aux { namespace pub {
          std::is_same_v<Arg0, const val &> | std::is_same_v<Arg0, val> | std::is_same_v<Arg0, const sym &>,
          decltype(nullptr) > = decltype(nullptr){} >
       MNL_INLINE val default_apply(Self &&self, Arg0 &&arg0) {
-         return _invoke(std::forward<Self>(self), op<sym::id("Apply")>, 1,
+         return _invoke(std::forward<Self>(self), sym::from_id<sym::id("Apply")>, 1,
             &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Arg0, val>, val &, val>)arg0));
       }
       template< typename Self, typename Arg0, std::enable_if_t<
@@ -791,7 +791,7 @@ namespace aux { namespace pub {
          std::is_same_v<Arg0, const val &> | std::is_same_v<Arg0, val> | std::is_same_v<Arg0, const sym &>,
          decltype(nullptr) > = decltype(nullptr){} >
       MNL_INLINE val default_fetch(Self &&self, Arg0 &&arg0) {
-         return _invoke(std::forward<Self>(self), op<sym::id("Fetch")>, 1,
+         return _invoke(std::forward<Self>(self), sym::from_id<sym::id("Fetch")>, 1,
             &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Arg0, val>, val &, val>)arg0));
       }
       template< bool Op, typename Self, typename Arg0, std::enable_if_t<
@@ -810,19 +810,19 @@ namespace aux { namespace pub {
          decltype(nullptr) > = decltype(nullptr){} >
       MNL_INLINE val default_apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
          val argv[] = {std::forward<Arg0>(arg0), std::forward<Arg1>(arg1)};
-         return _invoke(std::forward<Self>(self), op<sym::id("Apply")>, std::size(argv), argv);
+         return _invoke(std::forward<Self>(self), sym::from_id<sym::id("Apply")>, std::size(argv), argv);
       }
       template< typename Self, typename Arg0, std::enable_if_t<
          std::is_same_v<Self, const val &> | std::is_same_v<Self, val>,
          decltype(nullptr) > = decltype(nullptr){} >
       MNL_INLINE val default_apply(Self &&self, int argc, val argv[]) {
-         return _invoke(std::forward<Self>(self), op<sym::id("Apply")>, argc, argv);
+         return _invoke(std::forward<Self>(self), sym::from_id<sym::id("Apply")>, argc, argv);
       }
       template< typename Self, typename Arg0, std::enable_if_t<
          std::is_same_v<Self, const val &> | std::is_same_v<Self, val>,
          decltype(nullptr) > = decltype(nullptr){} >
       MNL_INLINE val default_fetch(Self &&self, int argc, val argv[]) {
-         return _invoke(std::forward<Self>(self), op<sym::id("Fetch")>, argc, argv);
+         return _invoke(std::forward<Self>(self), sym::from_id<sym::id("Fetch")>, argc, argv);
       }
       template< bool Op, typename Self, typename Arg0, std::enable_if_t<
          std::is_same_v<Self, const val &> | std::is_same_v<Self, val>,
@@ -839,7 +839,7 @@ namespace aux { namespace pub {
          decltype(nullptr) > = decltype(nullptr){} >
       MNL_INLINE val default_repl(Self &&self, Key0 &&arg0, Val &&value) {
          val argv[] = {std::forward<Key0>(arg0), std::forward<Val>(value)};
-         return _invoke(std::move(self), op<sym::id("Repl")>, std::size(argv), argv);
+         return _invoke(std::move(self), sym::from_id<sym::id("Repl")>, std::size(argv), argv);
       }
       template<typename Self, typename Key0, typename Key1, typename Val, std::enable_if_t<
          std::is_same_v<Self, val> &&
@@ -849,13 +849,13 @@ namespace aux { namespace pub {
          decltype(nullptr) > = decltype(nullptr){} >
       MNL_INLINE val default_repl(Self &&self, Key0 &&key0, Key1 &&key1, Val &&value) {
          val argv[] = {std::forward<Key0>(key0), std::forward<Key1>(key1), std::forward<Val>(value)};
-         return _invoke(std::move(self), op<sym::id("Repl")>, std::size(argv), argv);
+         return _invoke(std::move(self), sym::from_id<sym::id("Repl")>, std::size(argv), argv);
       }
       template<typename Self, std::enable_if_t<
          std::is_same_v<Self, val>,
          decltype(nullptr) > = decltype(nullptr){} >
       MNL_INLINE val default_repl(Self &&self, int argc, val argv[], val *argv_out) {
-         return _invoke(std::move(self), op<sym::id("Repl")>, argc, argv, argv_out);
+         return _invoke(std::move(self), sym::from_id<sym::id("Repl")>, argc, argv, argv_out);
       }
    };
 
