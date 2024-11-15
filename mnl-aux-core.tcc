@@ -679,7 +679,7 @@ namespace aux { namespace pub {
    };
    template<typename Dat> class box final: val::root {
       Dat dat;
-      explicit box(Dat &&dat): root(&_tag), dat(std::move(dat)) {}
+      MNL_INLINE explicit box(Dat &&dat): root(&_tag), dat(std::move(dat)) {}
       ~box() = default;
    private:
       static constexpr std::byte _tag{};
