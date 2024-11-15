@@ -722,7 +722,6 @@ namespace aux { namespace pub {
       MNL_HOT val _apply(val &&self, int argc, val argv[]) override { return apply(_mv(self), argv); }
       MNL_HOT val _fetch(const val &self, int argc, val argv[]) override { return fetch(self, argv); }
       MNL_HOT val _fetch(val &&self, int argc, val argv[]) override { return fetch(_mv(self), argv); }
-   private:
       // For two arguments (6 VMT entries)
       MNL_HOT val _repl(val &&self, const val &arg0, const val &arg1) override { return repl(_mv(self), arg0, arg1); }
       MNL_HOT val _repl(val &&self, const val &arg0, val &&arg1) override { return repl(_mv(self), arg0, _mv(arg1)); }
@@ -744,13 +743,10 @@ namespace aux { namespace pub {
       MNL_HOT val _repl(val &&self, val &&arg0, const sym &arg1, const val &arg2) override { return repl(_mv(self), _mv(arg0), arg1, arg2); }
       MNL_HOT val _repl(val &&self, val &&arg0, const sym &arg1, val &&arg2) override { return repl(_mv(self), _mv(arg0), arg1, _mv(arg2)); }
       // For multiple arguments (2 VMT entries)
-      MNL_HOT val _repl(val &&self, int argc, val argv[]) override {
-         return repl(_mv(self), argc, argv);
-      }
-      MNL_HOT val _repl(val &&self, int argc, val argv[], val *argv_out) override {
-         if (!argv_out) __builtin_unreachable();
-         return repl(_mv(self), argc, argv, argv_out);
-      }
+      MNL_HOT val _repl(val &&self, int argc, val argv[]) override
+         { return repl(_mv(self), argc, argv); }
+      MNL_HOT val _repl(val &&self, int argc, val argv[], val *argv_out) override
+         { if (!argv_out) __builtin_unreachable(); return repl(_mv(self), argc, argv, argv_out); }
    private:
       template<typename Arg> static MNL_INLINE decltype(auto) _mv(Arg &&arg) noexcept { return std::move(arg); }
    private: // User-specializable
