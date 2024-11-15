@@ -611,7 +611,7 @@ namespace aux { namespace pub {
       root(const root &) = delete;
       root &operator=(const root &) = delete; // would be implicitly deleted anyway
    protected:
-      long rc() const noexcept { return MNL_IF_WITHOUT_MT(_rc) MNL_IF_WITH_MT(__atomic_load_n(&_rc, __ATOMIC_RELAXED)); }
+      bool shared() const noexcept { return MNL_IF_WITHOUT_MT(_rc) MNL_IF_WITH_MT(__atomic_load_n(&_rc, __ATOMIC_RELAXED)) != 1; }
    private:
       const unsigned _tag; // assume 64-bit small/medium code model or x32 ABI or 32-bit ISA
       MNL_NOTE(atomic) long _rc = 1;
@@ -651,7 +651,6 @@ namespace aux { namespace pub {
       MNL_HOT virtual val _apply(val &&self,      int argc, val []) = 0;
       MNL_HOT virtual val _fetch(const val &self, int argc, val []) = 0;
       MNL_HOT virtual val _fetch(val &&self,      int argc, val []) = 0;
-   private:
       // For two arguments (6 VMT entries)
       [[nodiscard]] MNL_HOT virtual val _repl(val &&self, const val &, const val &) = 0;
       [[nodiscard]] MNL_HOT virtual val _repl(val &&self, const val &, val &&) = 0;
@@ -674,8 +673,8 @@ namespace aux { namespace pub {
       [[nodiscard]] MNL_HOT virtual val _repl(val &&self, val &&, const sym &, val &&) = 0;
       // For multiple arguments (2 VMT entries)
       [[nodiscard]] MNL_HOT virtual val _repl(val &&self, int argc, val []) = 0;
-      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, int argc, val [], val *argv_out) = 0;
-   public: // Friendship
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, int argc, val [], val *argv_out) = 0; // see above
+   public: // Who can call those virtual functions?
       friend val;
    };
    template<typename Dat> class box final: val::root {
