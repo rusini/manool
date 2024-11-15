@@ -683,11 +683,11 @@ namespace aux { namespace pub {
       ~box() = default;
    private:
       static constexpr std::byte _tag{};
-      friend val; // to directly access Dat, ctor, dtor, and &_tag
+      friend val; // to directly use Dat, ctor, dtor, and &_tag
    private: // 50 VMT entries (+dtor)
       MNL_NOINLINE val _invoke(const val &self, const sym &op, int argc, val argv[], val *argv_out = {}) override
          { return invoke(self, op, argv, argv_out); }
-      MNL_NOINLINE val _invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out = {}) override
+      MNL_NOINLINE val _invoke(val &&self,      const sym &op, int argc, val argv[], val *argv_out = {}) override
          { return invoke(_mv(self), op, argv, argv_out); }
    private:
       // For one argument (6 VMT entries)
