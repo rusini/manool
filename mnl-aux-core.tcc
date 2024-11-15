@@ -674,7 +674,7 @@ namespace aux { namespace pub {
       // For multiple arguments (2 VMT entries)
       [[nodiscard]] MNL_HOT virtual val _repl(val &&self, int argc, val []) = 0;
       [[nodiscard]] MNL_HOT virtual val _repl(val &&self, int argc, val [], val *argv_out) = 0; // see above
-   public: // Who can call those virtual functions?
+   public: // Who can use the private/protected members directly?
       friend val;
    };
    template<typename Dat> class box final: val::root {
@@ -683,7 +683,7 @@ namespace aux { namespace pub {
       ~box() = default;
    private:
       static constexpr std::byte _tag{};
-      friend val;
+      friend val; // to access &_tag
    private: // 50 VMT entries (+dtor)
       MNL_NOINLINE val _invoke(const val &self, const sym &op, int argc, val argv[], val *argv_out = {}) override
          { return invoke(self, op, argv, argv_out); }
