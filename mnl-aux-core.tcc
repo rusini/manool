@@ -824,8 +824,8 @@ namespace aux { namespace pub {
          std::is_same_v<Key0, const val &> | std::is_same_v<Key0, val> | std::is_same_v<Key0, const sym &> &&
          std::is_same_v<Val,  const val &> | std::is_same_v<Val,  val>,
          decltype(nullptr) > = decltype(nullptr){} >
-      MNL_INLINE val default_repl(Self &&self, Key0 &&arg0, Val &&value) {
-         val argv[] = {std::forward<Key0>(arg0), std::forward<Val>(value)};
+      MNL_INLINE val default_repl(Self &&self, Key0 &&key0, Val &&value) {
+         val argv[] = {std::forward<Key0>(key0), std::forward<Val>(value)};
          return _invoke(std::move(self), sym::from_id<sym::id("Repl")>, std::size(argv), argv);
       }
       template<typename Self, typename Key0, typename Key1, typename Val, std::enable_if_t<
