@@ -778,26 +778,21 @@ namespace aux { namespace pub {
          std::is_same_v<Self, const val &> | std::is_same_v<Self, val> &&
          std::is_same_v<Arg0, const val &> | std::is_same_v<Arg0, val> | std::is_same_v<Arg0, const sym &>,
          decltype(nullptr) > = decltype(nullptr){} >
-      MNL_INLINE val default_apply(Self &&self, Arg0 &&arg0) {
-         return _invoke(std::forward<Self>(self), sym::from_id<sym::id("Apply")>, 1,
-            &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Arg0, val>, val &, val>)arg0));
-      }
+      MNL_INLINE val default_apply(Self &&self, Arg0 &&arg0)
+         { return default_apply_or_fetch<0>(std::forward<Self>(self), std::forward<Arg0>(arg0)); }
       template< typename Self, typename Arg0, std::enable_if_t<
          std::is_same_v<Self, const val &> | std::is_same_v<Self, val> &&
          std::is_same_v<Arg0, const val &> | std::is_same_v<Arg0, val> | std::is_same_v<Arg0, const sym &>,
          decltype(nullptr) > = decltype(nullptr){} >
-      MNL_INLINE val default_fetch(Self &&self, Arg0 &&arg0) {
-         return _invoke(std::forward<Self>(self), sym::from_id<sym::id("Fetch")>, 1,
-            &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Arg0, val>, val &, val>)arg0));
-      }
+      MNL_INLINE val default_fetch(Self &&self, Arg0 &&arg0)
+         { return default_apply_or_fetch<1>(std::forward<Self>(self), std::forward<Arg0>(arg0)); }
       template< bool Op, typename Self, typename Arg0, std::enable_if_t<
          std::is_same_v<Self, const val &> | std::is_same_v<Self, val> &&
          std::is_same_v<Arg0, const val &> | std::is_same_v<Arg0, val> | std::is_same_v<Arg0, const sym &>,
          decltype(nullptr) > = decltype(nullptr){} >
       MNL_INLINE val default_apply_or_fetch(Self &&self, Arg0 &&arg0) {
-         return Op ?
-            default_apply(std::forward<Self>(self), std::forward<Arg0>(arg0)) :
-            default_fetch(std::forward<Self>(self), std::forward<Arg0>(arg0));
+         return _invoke(std::forward<Self>(self), sym::from_id<sym::id(Op ? "Apply" : "Fetch")>, 1,
+            &const_cast<val &>((const val &)(std::conditional_t<std::is_same_v<Arg0, val>, val &, val>)arg0));
       }
       template<typename Self, typename Arg0, typename Arg1, std::enable_if_t<
          std::is_same_v<Self, const val &> | std::is_same_v<Self, val> &&
@@ -811,22 +806,18 @@ namespace aux { namespace pub {
       template< typename Self, typename Arg0, std::enable_if_t<
          std::is_same_v<Self, const val &> | std::is_same_v<Self, val>,
          decltype(nullptr) > = decltype(nullptr){} >
-      MNL_INLINE val default_apply(Self &&self, int argc, val argv[]) {
-         return _invoke(std::forward<Self>(self), sym::from_id<sym::id("Apply")>, argc, argv);
-      }
+      MNL_INLINE val default_apply(Self &&self, int argc, val argv[])
+         { default_apply_or_fetch<0>(std::forward<Self>(self), argc, argv); }
       template< typename Self, typename Arg0, std::enable_if_t<
          std::is_same_v<Self, const val &> | std::is_same_v<Self, val>,
          decltype(nullptr) > = decltype(nullptr){} >
-      MNL_INLINE val default_fetch(Self &&self, int argc, val argv[]) {
-         return _invoke(std::forward<Self>(self), sym::from_id<sym::id("Fetch")>, argc, argv);
-      }
+      MNL_INLINE val default_fetch(Self &&self, int argc, val argv[])
+         { default_apply_or_fetch<1>(std::forward<Self>(self), argc, argv); }
       template< bool Op, typename Self, typename Arg0, std::enable_if_t<
          std::is_same_v<Self, const val &> | std::is_same_v<Self, val>,
          decltype(nullptr) > = decltype(nullptr){} >
       MNL_INLINE val default_apply_or_fetch(Self &&self, int argc, val argv[]) {
-         return Op ?
-            default_apply(std::forward<Self>(self), argc, argv) :
-            default_fetch(std::forward<Self>(self), argc, argv);
+         return _invoke(std::forward<Self>(self), sym::from_id<sym::id(Op ? "Apply" : "Fetch")>, argc, argv);
       }
       template<typename Self, typename Key0, typename Val, std::enable_if_t<
          std::is_same_v<Self, val> &&
