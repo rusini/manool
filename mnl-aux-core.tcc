@@ -1116,84 +1116,84 @@ namespace aux {
    // Apply/Fetch
 
    template<typename Self, typename Arg0>
-   MNL_INLINE inline val val::_apply(Self &&target, Arg0 &&arg0) {
-      if (MNL_LIKELY(target.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
-         return static_cast<root *>(target.rep.template dat<void *>())->
-            _apply(std::forward<Self>(target), std::forward<Arg0>(arg0));
-      if (MNL_LIKELY(is<sym>(target))) // Sym
-         return as<const sym &>(target)(std::forward<Arg0>(arg0));
+   MNL_INLINE inline val val::_apply(Self &&self, Arg0 &&arg0) {
+      if (MNL_LIKELY(self.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
+         return static_cast<root *>(self.rep.template dat<void *>())->
+            _apply(std::forward<Self>(self), std::forward<Arg0>(arg0));
+      if (MNL_LIKELY(is<sym>(self))) // Sym
+         return as<const sym &>(self)(std::forward<Arg0>(arg0));
       err_UnrecognizedOperation();
    }
    template<typename Self, typename Key0>
-   MNL_INLINE inline val val::_fetch(Self &&target, Key0 &&key0) {
-      if (MNL_LIKELY(target.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
-         return static_cast<root *>(target.rep.template dat<void *>())->
-            _fetch(std::forward<Self>(target), std::forward<Key0>(key0));
+   MNL_INLINE inline val val::_fetch(Self &&self, Key0 &&key0) {
+      if (MNL_LIKELY(self.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
+         return static_cast<root *>(self.rep.template dat<void *>())->
+            _fetch(std::forward<Self>(self), std::forward<Key0>(key0));
       err_UnrecognizedOperation();
    }
    template<typename Self, typename Arg0, typename Arg1>
-   MNL_INLINE inline val val::_apply(Self &&target, Arg0 &&arg0, Arg1 &&arg1) {
-      if (MNL_LIKELY(target.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
-         return static_cast<root *>(target.rep.template dat<void *>())->
-            _apply(std::forward<Self>(target), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1));
-      if (MNL_LIKELY(is<sym>(target))) // Sym
-         return as<const sym &>(target)(std::forward<Arg0>(arg0), std::forward<Arg1>(arg1));
+   MNL_INLINE inline val val::_apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
+      if (MNL_LIKELY(self.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
+         return static_cast<root *>(self.rep.template dat<void *>())->
+            _apply(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1));
+      if (MNL_LIKELY(is<sym>(self))) // Sym
+         return as<const sym &>(self)(std::forward<Arg0>(arg0), std::forward<Arg1>(arg1));
       err_UnrecognizedOperation();
    }
    template<typename Self>
-   MNL_INLINE inline val val::_apply(Self &&target, int argc, val argv[]) {
-      if (MNL_LIKELY(target.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
-         return static_cast<root *>(target.rep.template dat<void *>())->
-            _apply(std::forward<Self>(target), argc, argv);
-      if (MNL_LIKELY(is<sym>(target))) // Sym
-         return as<const sym &>(target)(argc, argv);
+   MNL_INLINE inline val val::_apply(Self &&self, int argc, val argv[]) {
+      if (MNL_LIKELY(self.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
+         return static_cast<root *>(self.rep.template dat<void *>())->
+            _apply(std::forward<Self>(self), argc, argv);
+      if (MNL_LIKELY(is<sym>(self))) // Sym
+         return as<const sym &>(self)(argc, argv);
       err_UnrecognizedOperation();
    }
    template<typename Self>
-   MNL_INLINE inline val val::_fetch(Self &&target, int argc, val argv[]) {
-      if (MNL_LIKELY(target.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
-         return static_cast<root *>(target.rep.template dat<void *>())->
-            _fetch(std::forward<Self>(target), argc, argv);
+   MNL_INLINE inline val val::_fetch(Self &&self, int argc, val argv[]) {
+      if (MNL_LIKELY(self.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
+         return static_cast<root *>(self.rep.template dat<void *>())->
+            _fetch(std::forward<Self>(self), argc, argv);
       err_UnrecognizedOperation();
    }
    template<typename Self>
-   MNL_INLINE inline val val::_apply(Self &&target, int argc, val argv[], val *argv_out) {
-      if (MNL_LIKELY(target.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
-         return static_cast<root *>(target.rep.template dat<void *>())->
-            _invoke(std::forward<Self>(target), sym::from_id<sym::id("Apply")>, argc, argv, argv_out);
-      if (MNL_LIKELY(is<sym>(target))) // Sym
-         return as<const sym &>(target)(argc, argv, argv_out);
+   MNL_INLINE inline val val::_apply(Self &&self, int argc, val argv[], val *argv_out) {
+      if (MNL_LIKELY(self.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
+         return static_cast<root *>(self.rep.template dat<void *>())->
+            _invoke(std::forward<Self>(self), sym::from_id<sym::id("Apply")>, argc, argv, argv_out);
+      if (MNL_LIKELY(is<sym>(self))) // Sym
+         return as<const sym &>(self)(argc, argv, argv_out);
       err_UnrecognizedOperation();
    }
 
    // Repl
 
    template<typename Self, typename Key0, typename Val>
-   MNL_INLINE inline val val::_repl(Self &&target, Key0 &&key0, Val &&value) {
-      if (MNL_LIKELY(target.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
-         return static_cast<root *>(target.rep.template dat<void *>())->
-            _repl(std::forward<Self>(target), std::forward<Key0>(key0), std::forward<Val>(value));
+   MNL_INLINE inline val val::_repl(Self &&self, Key0 &&key0, Val &&value) {
+      if (MNL_LIKELY(self.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
+         return static_cast<root *>(self.rep.template dat<void *>())->
+            _repl(std::forward<Self>(self), std::forward<Key0>(key0), std::forward<Val>(value));
       err_UnrecognizedOperation();
    }
    template<typename Self, typename Key0, typename Key1, typename Val>
-   MNL_INLINE inline val val::_repl(Self &&target, Key0 &&key0, Key1 &&key1, Val &&value) {
-      if (MNL_LIKELY(target.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
-         return static_cast<root *>(target.rep.template dat<void *>())->
-            _repl(std::forward<Self>(target), std::forward<Key0>(key0), std::forward<Key1>(key1), std::forward<Val>(value));
+   MNL_INLINE inline val val::_repl(Self &&self, Key0 &&key0, Key1 &&key1, Val &&value) {
+      if (MNL_LIKELY(self.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
+         return static_cast<root *>(self.rep.template dat<void *>())->
+            _repl(std::forward<Self>(self), std::forward<Key0>(key0), std::forward<Key1>(key1), std::forward<Val>(value));
       err_UnrecognizedOperation();
    }
    template<typename Self>
-   MNL_INLINE inline val val::_repl(Self &&target, int argc, val argv[]) {
-      if (MNL_LIKELY(target.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
-         return static_cast<root *>(target.rep.template dat<void *>())->
-            _repl(std::forward<Self>(target), argc, argv);
+   MNL_INLINE inline val val::_repl(Self &&self, int argc, val argv[]) {
+      if (MNL_LIKELY(self.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
+         return static_cast<root *>(self.rep.template dat<void *>())->
+            _repl(std::forward<Self>(self), argc, argv);
       err_UnrecognizedOperation();
    }
    template<typename Self>
-   MNL_INLINE inline val val::_repl(Self &&target, int argc, val argv[], val *argv_out) {
-      if (MNL_LIKELY(target.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
-         return static_cast<root *>(target.rep.template dat<void *>())->
-            _repl(std::forward<Self>(target), argc, argv, argv_out);
+   MNL_INLINE inline val val::_repl(Self &&self, int argc, val argv[], val *argv_out) {
+      if (MNL_LIKELY(self.rep.tag() == 0x7FF8 + 0b111)) // BoxPtr (fallback)
+         return static_cast<root *>(self.rep.template dat<void *>())->
+            _repl(std::forward<Self>(self), argc, argv, argv_out);
       err_UnrecognizedOperation();
    }
 
