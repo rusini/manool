@@ -1238,6 +1238,7 @@ namespace aux {
    }
    template<> template<bool Op, typename Self>
    MNL_INLINE val box<std::vector<val>>::apply_or_fetch(Self &&self, int argc, val argv[]) {
+      // TODO: do we need to check for argc != 0 in case of fetch ?
       if (MNL_LIKELY(argc > 1)) {
          if (MNL_LIKELY(is<long long>(argv[0])) && MNL_LIKELY((unsigned long long)as<long long>(argv[0]) < dat.size()))
             return dat[as<long long>(argv[0])].fetch(--argc, argc ? ++argv : nullptr);

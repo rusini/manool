@@ -427,10 +427,6 @@ namespace aux { namespace pub {
          MNL_INLINE val operator()(val a0, val a1, val a2) const & { val argv[] = {_mv(a0), _mv(a1), _mv(a2)}; return (*this)(std::size(argv), argv); }
          MNL_INLINE val operator()(val a0, val a1, val a2) &&   { val argv[] = {_mv(a0), _mv(a1), _mv(a2)}; return _mv(*this)(std::size(argv), argv); }
    // Convenience
-      template<std::size_t Argc> MNL_INLINE val operator()(std::array<val, Argc> args, val *args_out) const &
-         { return (*this)(Argc, args.data(), args_out); }
-      template<std::size_t Argc> MNL_INLINE val operator()(std::array<val, Argc> args, val *args_out) &&
-         { return _mv(*this)(Argc, args.data(), args_out); }
       template<std::size_t Argc> MNL_INLINE val operator()(std::array<val, Argc> args) const &
          { return (*this)(Argc, args.data()); }
       template<std::size_t Argc> MNL_INLINE val operator()(std::array<val, Argc> args) &&
@@ -439,7 +435,13 @@ namespace aux { namespace pub {
          { return (*this).fetch(Argc, args.data()); }
       template<std::size_t Argc> MNL_INLINE val fetch(std::array<val, Argc> args) &&
          { return _mv(*this).fetch(Argc, args.data()); }
-      template<std::size_t Argc> [[nodiscard]] MNL_INLINE val repl(std::array<val, Argc> args, val *args_out = {}) &&
+      template<std::size_t Argc> MNL_INLINE val operator()(std::array<val, Argc> args, val *args_out) const &
+         { return (*this)(Argc, args.data(), args_out); }
+      template<std::size_t Argc> MNL_INLINE val operator()(std::array<val, Argc> args, val *args_out) &&
+         { return _mv(*this)(Argc, args.data(), args_out); }
+      template<std::size_t Argc> [[nodiscard]] MNL_INLINE val repl(std::array<val, Argc> args) &&
+         { return _mv(*this).repl(Argc, args.data()); }
+      template<std::size_t Argc> [[nodiscard]] MNL_INLINE val repl(std::array<val, Argc> args, val *args_out) &&
          { return _mv(*this).repl(Argc, args.data(), args_out); }
       // For no arguments
       MNL_INLINE val operator()() const &
