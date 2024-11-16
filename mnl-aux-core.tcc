@@ -755,8 +755,8 @@ namespace aux { namespace pub {
    private:
       template<typename Self, typename Arg0> MNL_INLINE val apply(Self &&self, Arg0 &&arg0)
          { return apply_or_fetch<0>(std::forward<Self>(self), std::forward<Arg0>(arg0)); }
-      template<typename Self, typename Arg0> MNL_INLINE val fetch(Self &&self, Arg0 &&arg0)
-         { return apply_or_fetch<1>(std::forward<Self>(self), std::forward<Arg0>(arg0)); }
+      template<typename Self, typename Arg0> MNL_INLINE val fetch(Self &&self, Key0 &&key0)
+         { return apply_or_fetch<1>(std::forward<Self>(self), std::forward<Key0>(key0)); }
       template<bool Op, typename Self, typename Arg0> MNL_INLINE val apply_or_fetch(Self &&self, Arg0 &&arg0)
          { return default_apply_or_fetch<Op>(std::forward<Self>(self), std::forward<Arg0>(arg0)); }
       template<typename Self, typename Arg0, typename Arg1> MNL_INLINE val apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1)
