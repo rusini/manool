@@ -389,7 +389,7 @@ namespace aux { namespace pub {
          MNL_INLINE val operator()(int argc, Val argv[], val *argv_out) const & { return _apply(*this, argc, argv, argv_out); }
       template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
          MNL_INLINE val operator()(int argc, Val argv[], val *argv_out) && { return _apply(_mv(*this), argc, argv, argv_out); }
-         // argv_out[-1] corresponds to target; !argc < !argv
+         // argv_out[-1] corresponds to self; !argc < !argv
       // For two arguments
          [[nodiscard]] MNL_INLINE val repl(const val &key0, const val &value) && { return _repl(_mv(*this), key0, value); }
          [[nodiscard]] MNL_INLINE val repl(const val &key0, val &&value) && { return _repl(_mv(*this), key0, _mv(value)); }
