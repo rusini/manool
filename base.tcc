@@ -19,15 +19,20 @@ namespace MNL_AUX_UUID {
 
 namespace aux {
 
-   template<typename Expr> MNL_INLINE inline bool match(code &expr)
-      { Expr res; return match(expr, res) && (expr = res, true); }
+   template<typename Value = val> struct expr_lit: code::rvalue {
+      [[no_unique_address]] std::decay_t<Value> value;
+      template<bool = bool{}, bool = bool{}> MNL_INLINE Value execute() const noexcept { return value; }
+   };
+   template<typename Value = decltype(nullptr)>
+   expr_lit(code::rvalue, Value)->expr_lit<const Value &>;
 
-   template<typename Expr> MNL_NOINLINE inline bool match(const code &expr, Expr &res)
-      { return test<Expr>(expr) ? (res = cast<const Expr &>(expr), true) : res.match(expr); }
-   MNL_NOINLINE inline bool match(const code &expr, code &res)
-      { return res = expr, true; }
+   template<> struct expr_lit<decltype(nullptr)>: code::rvalue {
+      template<bool = bool{}, bool = bool{}> MNL_INLINE decltype(nullptr) execute() const noexcept { return nullptr; }
+   };
+   template<>
+   expr_lit(code::rvalue, decltype(nullptr))->expr_lit<decltype(nullptr)>;
 
-   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
    template<typename Value = val> struct expr_lit { MNL_RVALUE()
       typename std::remove_cv<typename std::remove_reference<Value>::type>::type value;
