@@ -113,7 +113,7 @@ namespace aux { namespace pub {
       template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
          val operator()(const val &self, int argc, Val [], val *argv_out = {}) const; // argv_out[-1] corresponds to self; !argc < !argv
       template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
-         val operator()(val &&self, int argc, Val [], val *argv_out = {}) const;      // ditto
+         val operator()(val &&self,      int argc, Val [], val *argv_out = {}) const; // ditto
    // Essential for metaprogramming
       // For one argument
       val operator()(const val &) const, operator()(val &&) const;
@@ -123,8 +123,7 @@ namespace aux { namespace pub {
       // For multiple arguments
       template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
          val operator()(int argc, Val [], val *argv_out = {}) const;
-      val sym::operator()(const val &a0, val a1, val a2) const;
-      val sym::operator()(val &&a0, val a1, val a2) const;
+      val sym::operator()(const val &a0, val a1, val a2) const, sym::operator()(val &&a0, val a1, val a2) const;
    // Convenience
       template<std::size_t Argc> val operator()(const val &self, std::array<val, Argc>, val *args_out = {}) const;
       template<std::size_t Argc> val operator()(val &&self, std::array<val, Argc>, val *args_out = {}) const;
@@ -543,7 +542,7 @@ namespace aux { namespace pub {
    MNL_INLINE inline val sym::operator()(val &&arg0, val &&arg1) const { return (*this)(std::move(arg0), 1, &arg1); }
    // For multiple arguments
    template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
-   MNL_INLINE inline val sym::operator()(int argc, Val argv[], val *argv_out = {}) const {
+   MNL_INLINE inline val sym::operator()(int argc, Val argv[], val *argv_out) const {
       if (MNL_UNLIKELY(!argc)) err_InvalidInvocation();
       return (*this)(std::move(*argv), --argc, argc ? ++argv : nullptr, argv_out + !!argv_out); // relies on C++17 eval order
    }
@@ -551,7 +550,7 @@ namespace aux { namespace pub {
       { val argv[] = {std::move(a1), std::move(a2)}; return (*this)(a0, std::size(argv), argv); }
    MNL_INLINE inline val sym::operator()(val &&a0, val a1, val a2) const
       { val argv[] = {std::move(a1), std::move(a2)}; return (*this)(std::move(a0), std::size(argv), argv); }
-
+   // Convenience
    template<std::size_t Argc> MNL_INLINE inline val sym::operator()(const val &self, std::array<val, Argc> args, val *args_out) const
       { return (*this)(self, Argc, args.data(), args_out); }
    template<std::size_t Argc> MNL_INLINE inline val sym::operator()(val &&self, std::array<val, Argc> args, val *args_out) const
