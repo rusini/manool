@@ -79,11 +79,10 @@ namespace aux {
    expr_apply(
       code::rvalue, Target, loc )->
    expr_apply< 0,
-      std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>, Target, expr_lit<Target>::optimal> >;
+      std::conditional_t<std::is_base_of_v<code, Target> | std::is_base_of_v<code::rvalue, Target>, Target, expr_lit<Target>> >;
    template<class Target>
    struct expr_apply<0, Target>: code::rvalue {
-      Target target; loc _loc;
-      static_assert(std::is_base_of_v<code, Target> || std::is_base_of_v<rvalue, Target>);
+      [[no_unique_address]] Target target; loc _loc;
    public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute() const {
          try { return op<sym::id("Apply")>(std::forward<decltype(target)>(target), 0, {}); }
@@ -94,14 +93,14 @@ namespace aux {
    // Application specialized for 1 argument
    template<typename Target, typename Arg0>
    expr_apply(
-      std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue>,
+      std::conditional_t<std::is_base_of_v<code, Target> | std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue>,
       Target, Arg0, loc )->
    expr_apply< 1,
-      std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>, Target, expr_lit<Target>::optimal>,
-      std::conditional_t<std::is_base_of_v<code, Arg0>   || std::is_base_of_v<code::rvalue, Arg0>,   Arg0,   expr_lit<Arg0>  ::optimal> >;
+      std::conditional_t<std::is_base_of_v<code, Target> | std::is_base_of_v<code::rvalue, Target>, Target, expr_lit<Target>>,
+      std::conditional_t<std::is_base_of_v<code, Arg0>   | std::is_base_of_v<code::rvalue, Arg0>,   Arg0,   expr_lit<Arg0>> >;
    template<class Target, class Arg0>
    struct expr_apply<1, Target, Arg0>:
-      std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue> {
+      std::conditional_t<std::is_base_of_v<code, Target> | std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue> {
       [[no_unique_address]] Target target; [[no_unique_address]] Arg0 arg0; loc _loc;
    public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute() const {
