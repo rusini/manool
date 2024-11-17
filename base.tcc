@@ -34,17 +34,6 @@ namespace aux {
 
 
 
-   template<typename Value = val> struct expr_lit { MNL_RVALUE()
-      typename std::remove_cv<typename std::remove_reference<Value>::type>::type value;
-      MNL_INLINE Value execute(bool = {}) const { return value; }
-   private:
-      MNL_INLINE bool match(const code &rhs) {
-         return test<expr_lit<>>(rhs) && test<Value>(cast<const expr_lit<> &>(rhs).value) &&
-            (value = cast<Value>(cast<const expr_lit<> &>(rhs).value), true);
-      }
-      friend bool aux::match<>(const code &, expr_lit &);
-   };
-
    struct expr_tmp { MNL_LVALUE(true)
       int off;
       MNL_INLINE val execute(bool = {}) const { return tmp_stk[tmp_frm + off]; }
