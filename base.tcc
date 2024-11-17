@@ -19,18 +19,18 @@ namespace MNL_AUX_UUID {
 
 namespace aux {
 
-   template<typename Value = val> struct expr_lit: code::rvalue {
-      [[no_unique_address]] std::remove_cv_t<std::remove_reference_t<Value>> value;
-      template<bool = bool{}, bool = bool{}> MNL_INLINE Value execute() const noexcept { return value; }
+   template<typename Val = val> struct expr_lit: code::rvalue {
+      [[no_unique_address]] Val value;
+      template<bool = bool{}, bool = bool{}> MNL_INLINE const Val &execute() const noexcept { return value; } // sometimes stored as T &&
    };
-   template<typename Value = decltype(nullptr)>
-   expr_lit(code::rvalue, Value)->expr_lit<const Value &>;
+   template<typename Val = decltype(nullptr)>
+   expr_lit(code::rvalue, Val)->expr_lit<Val>;
 
    template<> struct expr_lit<decltype(nullptr)>: code::rvalue {
-      template<bool = bool{}, bool = bool{}> MNL_INLINE decltype(nullptr) execute() const noexcept { return nullptr; }
+      expr_lit() = default;
+      MNL_INLINE expr_lit(rvalue base, decltype(nullptr)) noexcept: rvalue(base) {}
+      template<bool = bool{}, bool = bool{}> MNL_INLINE decltype(nullptr) execute() const noexcept { return {}; }
    };
-   template<>
-   expr_lit(code::rvalue, decltype(nullptr))->expr_lit<decltype(nullptr)>;
 
 
 
