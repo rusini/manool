@@ -128,8 +128,6 @@ namespace aux { namespace pub {
       template<std::size_t Argc> val operator()(const val &self, std::array<val, Argc>, val *args_out = {}) const;
       template<std::size_t Argc> val operator()(val &&self, std::array<val, Argc>, val *args_out = {}) const;
       template<std::size_t Argc> val operator()(std::array<val, Argc>, val *args_out = {}) const;
-   // For completeness
-      val operator()() const;
    public: // Scalar IDs
       enum class id: int;
       static constexpr enum id id(const char *) noexcept;
@@ -472,7 +470,7 @@ namespace aux { namespace pub {
       template<typename Self>                                             static val _repl(Self &&, int argc, val []);
       template<typename Self>                                             static val _repl(Self &&, int argc, val [], val *argv_out);
    private: // Implementation of sym::operator()
-      template<typename Self> static MNL_HOT val _invoke(Self &&, const sym &op, int argc, val argv[], val *argv_out); // Self == const val & || Self == val
+      template<typename Self> static MNL_HOT val _invoke(Self &&, const sym &, int, val [], val *); // Self == const val & | Self == val
       friend val sym::operator()(const val &, int, val [], val *) const, sym::operator()(val &&, int, val [], val *) const;
 
    private:
@@ -557,10 +555,6 @@ namespace aux { namespace pub {
       { return (*this)(std::move(self), Argc, args.data(), args_out); }
    template<std::size_t Argc> MNL_INLINE inline val sym::operator()(std::array<val, Argc> args, val *args_out) const
       { return (*this)(Argc, args.data(), args_out); }
-
-   MNL_INLINE inline val sym::operator()() const { err_InvalidInvocation(); }
-   MNL_INLINE inline val sym::operator()() const { return (&this)(0, (val *)nullptr); }
-
 
 // Bit-Layout Management -- Data Write /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    template<typename Dat> MNL_INLINE inline val::rep::rep(unsigned tag, Dat dat) noexcept: _tag(tag) {
