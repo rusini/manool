@@ -550,7 +550,7 @@ namespace aux { namespace pub {
       { val argv[] = {std::move(a1), std::move(a2)}; return (*this)(a0, std::size(argv), argv); }
    MNL_INLINE inline val sym::operator()(val &&a0, val a1, val a2) const
       { val argv[] = {std::move(a1), std::move(a2)}; return (*this)(std::move(a0), std::size(argv), argv); }
-   // Convenience
+
    template<std::size_t Argc> MNL_INLINE inline val sym::operator()(const val &self, std::array<val, Argc> args, val *args_out) const
       { return (*this)(self, Argc, args.data(), args_out); }
    template<std::size_t Argc> MNL_INLINE inline val sym::operator()(val &&self, std::array<val, Argc> args, val *args_out) const
