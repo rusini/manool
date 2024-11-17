@@ -20,7 +20,7 @@ namespace MNL_AUX_UUID {
 namespace aux {
 
    template<typename Value = val> struct expr_lit: code::rvalue {
-      [[no_unique_address]] std::decay_t<Value> value;
+      [[no_unique_address]] std::remove_cv_t<std::remove_reference_t<Value>> value;
       template<bool = bool{}, bool = bool{}> MNL_INLINE Value execute() const noexcept { return value; }
    };
    template<typename Value = decltype(nullptr)>
