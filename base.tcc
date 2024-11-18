@@ -130,9 +130,9 @@ namespace aux {
       std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue>,
       Target, Arg0, Arg1, loc )->
    expr_apply< 2,
-      std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>, Target, expr_lit<Target>::optimal>,
-      std::conditional_t<std::is_base_of_v<code, Arg0>   || std::is_base_of_v<code::rvalue, Arg0>,   Arg0,   expr_lit<Arg0>  ::optimal>,
-      std::conditional_t<std::is_base_of_v<code, Arg1>   || std::is_base_of_v<code::rvalue, Arg1>,   Arg1,   expr_lit<Arg1>  ::optimal> >;
+      std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>, Target, expr_lit<Target>>,
+      std::conditional_t<std::is_base_of_v<code, Arg0>   || std::is_base_of_v<code::rvalue, Arg0>,   Arg0,   expr_lit<Arg0>>,
+      std::conditional_t<std::is_base_of_v<code, Arg1>   || std::is_base_of_v<code::rvalue, Arg1>,   Arg1,   expr_lit<Arg1>> >;
    template<class Target, class Arg0, class Arg1>
    struct expr_apply<2, Target, Arg0, Arg1>:
       std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue> {
@@ -176,8 +176,8 @@ namespace aux {
       std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue>,
       Target, Arg0, code, code, loc )->
    expr_apply< 3,
-      std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>, Target, expr_lit<Target>::optimal>,
-      std::conditional_t<std::is_base_of_v<code, Arg0>   || std::is_base_of_v<code::rvalue, Arg0>,   Arg0,   expr_lit<Arg0>  ::optimal> >;
+      std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>, Target, expr_lit<Target>>,
+      std::conditional_t<std::is_base_of_v<code, Arg0>   || std::is_base_of_v<code::rvalue, Arg0>,   Arg0,   expr_lit<Arg0>> >;
    template<class Target, class Arg0>
    struct expr_apply<3, Target, Arg0>:
       std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue> {
@@ -221,7 +221,7 @@ namespace aux {
       std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue>,
       Target, code, code, code, code, loc )->
    expr_apply< 4,
-      std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>, Target, expr_lit<Target>::optimal> >;
+      std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>, Target, expr_lit<Target>> >;
    template<class Target>
    struct expr_apply<4, Target>:
       std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue> {
