@@ -44,6 +44,19 @@ namespace aux {
       friend bool aux::match<>(const code &, expr_tmp &);
    };
 
+
+   struct expr_tvar: code::lvalue { // "*t*emporary *var*iable"
+      int offset;
+      template<bool = bool{}, bool = bool{}> MNL_INLINE const val &execute() const noexcept { return tstack[offset]; }
+      //MNL_INLINE void exec_in(const val &value) const noexcept { exec_in((val)value); }
+      MNL_INLINE void exec_in(const val &value) const noexcept { tstack[offset] = value; } // is it better? -- measure!
+      MNL_INLINE void exec_in(val &&value) const noexcept { tstack[offset].swap(value); }
+      MNL_INLINE void exec_in(long long value) const noexcept { tstack[offset] = value; } // TODO: is it beneficial in practice? -- measure!
+      ...
+      MNL_INLINE val exec_out() const noexcept { return std::move(tstack[offset]); }
+   };
+
+
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    template<
