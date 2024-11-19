@@ -299,20 +299,6 @@ namespace aux {
 
 
 
-
-
-   template<typename Dest = code, typename Src = code> struct expr_set { MNL_RVALUE()
-      Dest dest; Src src;
-      MNL_INLINE decltype(nullptr) execute(bool = {}) const { dest.exec_in(src.execute()); return {}; }
-   private:
-      MNL_INLINE bool match(const code &rhs) {
-         return test<expr_set<>>(rhs) &&
-            aux::match(cast<const expr_set<> &>(rhs).dest, dest) &&
-            aux::match(cast<const expr_set<> &>(rhs).src,  src);
-      }
-      friend bool aux::match<>(const code &, expr_set &);
-   };
-
    template<typename Dest = code> struct expr_move { MNL_RVALUE()
       Dest dest;
       MNL_INLINE val execute(bool = {}) const { return dest.exec_out(); }
