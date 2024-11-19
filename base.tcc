@@ -261,6 +261,57 @@ namespace aux {
 
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+   template<class Dest = code, class Src = code, std::enable_if_t<
+      std::is_base_of_v<code::lvalue, Dest> && std::is_base_of_v<code::rvalue, Src>, decltype(nullptr)> = decltype(nullptr){} >
+   struct expr_set: code::rvalue {
+      [[no_unique_address]] Dest dest; [[no_unique_address]] Src src;
+   public:
+      template<bool = bool{}, bool = bool{}> MNL_INLINE decltype(nullptr) execute() const { dest.exec_in(src.execute()); return {}; }
+
+
+   public:
+      template<class Op, std::enable_if_t<std::is_base_f_v<appliable, Op> decltype(nullptr)> = decltype(nullptr){}> struct update_lhs;
+      template<class Op, std::enable_if_t<std::is_base_f_v<appliable, Op> decltype(nullptr)> = decltype(nullptr){}> struct update_rhs;
+   };
+   template<class Dest, class Src> template<class Op, std::enable_if_t<std::is_base_f_v<appliable, Op> decltype(nullptr)> = decltype(nullptr){}>
+   struct expr_set<Dest, Src>::update_lhs: code::rvalue {
+      [[no_unique_address]] Dest dest; [[no_unique_address]] Op op; [[no_unique_address]] Src src; loc _loc;
+   public:
+      template<bool = bool{}, bool = bool{}> MNL_INLINE decltype(nullptr) execute() const {
+         dest.exec_in([&]() MNL_INLINE{
+            auto &&lhs = dest.execute(); auto &&rhs = src.execute();
+            try { return op(std::forward<decltype(lhs)>(lhs), std::forward<decltype(rhs)>(rhs)); } catch (...) { trace_execute(_loc); }
+         }() );
+
+
+
+         dest.exec_in(target(src.execute()));
+         return {};
+      }
+
+
+
+      MNL_INLINE decltype(nullptr) execute(bool = {}) const
+         { auto &&src = this->src.execute(); dest.exec_in(Op(trace_execute, _loc, dest.execute(), std::forward<decltype(src)>(src))); return {}; }
+      MNL_INLINE void exec_nores(bool = {}) const
+         { execute(); }
+   };
+   template<class Src>
+   template<typename Res, Res Op(void (const loc &), const loc &, decltype(std::declval<Src>().execute())), decltype(std::declval<Dest>().execute())>
+   struct expr_set<Src, expr_tv>::_update_rhs: code::rvalue {
+      expr_tv dest; Src src;
+   public:
+      MNL_INLINE decltype(nullptr) execute(bool = {}) const
+         { auto &&src = this->src.execute(); dest.exec_in(Op(trace_execute, _loc, std::forward<decltype(src)>(src)), dest.execute()); return {}; }
+      MNL_INLINE void exec_nores(bool = {}) const
+         { execute(); }
+   };
+
+
+
+
+
+
    template<typename Dest = code, typename Src = code> struct expr_set { MNL_RVALUE()
       Dest dest; Src src;
       MNL_INLINE decltype(nullptr) execute(bool = {}) const { dest.exec_in(src.execute()); return {}; }
