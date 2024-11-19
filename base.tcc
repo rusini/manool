@@ -267,8 +267,6 @@ namespace aux {
       [[no_unique_address]] Dest dest; [[no_unique_address]] Src src;
    public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE decltype(nullptr) execute() const { dest.exec_in(src.execute()); return {}; }
-
-
    public:
       template<class Op, std::enable_if_t<std::is_base_f_v<appliable, Op> decltype(nullptr)> = decltype(nullptr){}> struct update_lhs;
       template<class Op, std::enable_if_t<std::is_base_f_v<appliable, Op> decltype(nullptr)> = decltype(nullptr){}> struct update_rhs;
@@ -282,6 +280,7 @@ namespace aux {
             auto &&lhs = dest.execute(); auto &&rhs = src.execute();
             try { return op(std::forward<decltype(lhs)>(lhs), std::forward<decltype(rhs)>(rhs)); } catch (...) { trace_execute(_loc); }
          }() );
+         return {};
       }
    };
    template<class Dest, class Src> template<class Op, std::enable_if_t<std::is_base_f_v<appliable, Op> decltype(nullptr)> = decltype(nullptr){}>
@@ -293,6 +292,7 @@ namespace aux {
             auto &&lhs = src.execute(); auto &&rhs = dest.execute();
             try { return op(std::forward<decltype(lhs)>(lhs), std::forward<decltype(rhs)>(rhs)); } catch (...) { trace_execute(_loc); }
          }() );
+         return {};
       }
    };
 
