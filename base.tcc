@@ -287,7 +287,9 @@ namespace aux {
       template<class Op, std::enable_if_t<std::is_base_f_v<appliable, Op> decltype(nullptr)> = decltype(nullptr){}> struct update_rhs;
    };
    template<class Op, class Src, std::enable_if_t<
-      std::is_base_f_v<appliable, Op> decltype(nullptr) > = decltype(nullptr){}>
+      std::is_base_f_v<appliable, Op> &&
+      std::is_base_of_v<code, Src> | std::is_base_of_v<code::rvalue, Src>,
+      decltype(nullptr) > = decltype(nullptr){}>
    struct expr_update: code::rvalue {
       expr_tvar dest; [[no_unique_address]] Op op; [[no_unique_address]] Src src; loc _loc;
    public:
@@ -300,7 +302,9 @@ namespace aux {
       }
    };
    template<class Op, class Src, std::enable_if_t<
-      std::is_base_f_v<appliable, Op> decltype(nullptr) > = decltype(nullptr){}>
+      std::is_base_f_v<appliable, Op> &&
+      std::is_base_of_v<code, Src> | std::is_base_of_v<code::rvalue, Src>,
+      decltype(nullptr) > = decltype(nullptr){}>
    struct expr_update_rhs: code::rvalue {
       expr_tvar dest; [[no_unique_address]] Op op; [[no_unique_address]] Src src; loc _loc;
    public:
