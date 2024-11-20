@@ -330,13 +330,6 @@ namespace aux {
       expr_update(code::rvalue, expr_tvar, Op, Src)->expr_update<Op, Src>;
    template<class Op, class Src, std::enable_f_t<std::is_base_f_v<appliable, Op>, decltype(nullptr)> = decltype(nullptr){}>
       expr_update(code::rvalue, expr_tvar, Src, Op)->expr_update<Op, Src, true>;
-
-
-
-   // OR use SFINAE for deduction guides
-   template<class Arg0, class Arg1> expr_update(code::rvalue, expr_tvar, Arg0, Arg1)->
-      expr_update<Arg0, Arg1, std::is_base_f_v<appliable, Arg1>>;
-
    template<class Op, class Src>
    struct expr_update<Op, Src>: code::rvalue {
       expr_tvar dest; [[no_unique_address]] Op op; [[no_unique_address]] Src src; loc _loc;
@@ -349,7 +342,6 @@ namespace aux {
          return {};
       }
    };
-
    template<class Op, class Src>
    struct expr_update<Op, Src, true>: code::rvalue {
       expr_tvar dest; [[no_unique_address]] Src src; [[no_unique_address]] Op op; loc _loc;
