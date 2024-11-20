@@ -320,24 +320,6 @@ namespace aux {
    };
 
 
-
-
-   template<class Dest, class Src> template<class Op, std::enable_if_t<std::is_base_f_v<appliable, Op> decltype(nullptr)> = decltype(nullptr){}>
-   struct expr_set<Dest, Src>::update_rhs: code::rvalue {
-      [[no_unique_address]] Dest dest; [[no_unique_address]] Op op; [[no_unique_address]] Src src; loc _loc;
-   public:
-      template<bool = bool{}, bool = bool{}> MNL_INLINE decltype(nullptr) execute() const {
-         dest.exec_in([&]() MNL_INLINE{
-            auto &&lhs = src.execute(); auto &&rhs = dest.execute();
-            try { return op(std::forward<decltype(lhs)>(lhs), std::forward<decltype(rhs)>(rhs)); } catch (...) { trace_execute(_loc); }
-         }() );
-         return {};
-      }
-   };
-
-
-
-
    template<typename Dest = code> struct expr_move { MNL_RVALUE()
       Dest dest;
       MNL_INLINE val execute(bool = {}) const { return dest.exec_out(); }
