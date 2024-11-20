@@ -316,9 +316,47 @@ namespace aux {
          return {};
       }
    };
-   template<class Dest, class Src> expr_set(Dest, Src)->expr_update<Dest, Src>;
-   template<class Op, class Src> expr_update(Op, Src)->expr_update<Op, Src>;
-   template<class Op, class Src> expr_update_rhs(Op, Src)->expr_update_rhs<Op, Src>;
+   template<class Dest, class Src> expr_set(code::rvalue, Dest, Src)->expr_update<Dest, Src>;
+
+
+
+
+   template<class Op, class Src, bool Rhs = bool{}, std::enable_if_t<
+      std::is_base_f_v<appliable, Op> &&
+      std::is_base_of_v<code, Src> | std::is_base_of_v<code::rvalue, Src>,
+      decltype(nullptr) > = decltype(nullptr){}>
+   struct expr_update;
+   // OR use SFINAE for deduction guides
+   template<class Arg0, class Arg1> expr_update(code::rvalue, expr_tvar, Arg0, Arg1)->
+      expr_update<Arg0, Arg1, std::is_base_f_v<appliable, Arg1>>;
+
+   template<class Op, class Src>
+   struct expr_update<Op, Src>: code::rvalue {
+      expr_tvar dest; [[no_unique_address]] Op op; [[no_unique_address]] Src src; loc _loc;
+   public:
+      template<bool = bool{}, bool = bool{}> MNL_INLINE decltype(nullptr) execute() const {
+         dest.exec_in([&]() MNL_INLINE{
+            const val &lhs = dest.execute(); auto &&rhs = src.execute();
+            try { return op(lhs, std::forward<decltype(rhs)>(rhs)); } catch (...) { trace_execute(_loc); }
+         }() );
+         return {};
+      }
+   };
+
+   template<class Op, class Src>
+   struct expr_update<Op, Src, true>: code::rvalue {
+      expr_tvar dest; [[no_unique_address]] Src src; [[no_unique_address]] Op op; loc _loc;
+   public:
+      template<bool = bool{}, bool = bool{}> MNL_INLINE decltype(nullptr) execute() const {
+         dest.exec_in([&]() MNL_INLINE{
+            auto &&lhs = src.execute(); const val &rhs = dest.execute();
+            try { return op(std::forward<decltype(lhs)>(lhs), rhs); } catch (...) { trace_execute(_loc); }
+         }() );
+         return {};
+      }
+   };
+
+
 
 
    template<class Dest, class Src> template<class Op, std::enable_if_t<std::is_base_f_v<appliable, Op> decltype(nullptr)> = decltype(nullptr){}>
