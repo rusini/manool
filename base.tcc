@@ -274,9 +274,10 @@ namespace aux {
 
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   // TODO: of maybe integrate update directly via a param
-   template< class Dest = code, class Src = code, std::enable_if_t<
-      std::is_base_of_v<code::lvalue, Dest> && std::is_base_of_v<code::rvalue, Src>, decltype(nullptr) > = decltype(nullptr){} >
+   template<class Dest = code, class Src = code, std::enable_if_t<
+      std::is_base_of_v<code, Dest> | std::is_base_of_v<code::lvalue, Dest> &&
+      std::is_base_of_v<code, Src>  | std::is_base_of_v<code::rvalue, Src>,
+      decltype(nullptr) > = decltype(nullptr){}>
    struct expr_set: code::rvalue {
       [[no_unique_address]] Dest dest; [[no_unique_address]] Src src;
    public:
