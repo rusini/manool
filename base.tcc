@@ -282,10 +282,9 @@ namespace aux {
       [[no_unique_address]] Dest dest; [[no_unique_address]] Src src;
    public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE decltype(nullptr) execute() const { dest.exec_in(src.execute()); return {}; }
-   public:
-      template<class Op, std::enable_if_t<std::is_base_f_v<appliable, Op> decltype(nullptr)> = decltype(nullptr){}> struct update_lhs;
-      template<class Op, std::enable_if_t<std::is_base_f_v<appliable, Op> decltype(nullptr)> = decltype(nullptr){}> struct update_rhs;
    };
+   template<class Dest, class Src> expr_set(Dest, Src)->expr_set<Dest, Src>;
+
    template<class Op, class Src, std::enable_if_t<
       std::is_base_f_v<appliable, Op> &&
       std::is_base_of_v<code, Src> | std::is_base_of_v<code::rvalue, Src>,
