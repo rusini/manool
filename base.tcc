@@ -298,8 +298,8 @@ namespace aux {
    struct expr_update<Op, Src>: code::rvalue {
       expr_tvar dest; [[no_unique_address]] Op op; [[no_unique_address]] Src src; loc _loc;
    public:
-      template<bool = bool{}, bool = bool{}> MNL_INLINE decltype(nullptr) execute() const {
-         dest.exec_in([&]() MNL_INLINE{
+      template<bool = bool{}, bool = bool{}> MNL_INLINE decltype(nullptr) execute() const { // relies on PRE optimization
+         dest.exec_in([&]() MNL_INLINE{ // TODO: think about move optimization
             const val &lhs = dest.execute(); auto &&rhs = src.execute();
             try { return op(lhs, std::forward<decltype(rhs)>(rhs)); } catch (...) { trace_execute(_loc); }
          }() );
@@ -310,7 +310,7 @@ namespace aux {
    struct expr_update<Op, Src, true>: code::rvalue {
       expr_tvar dest; [[no_unique_address]] Src src; [[no_unique_address]] Op op; loc _loc;
    public:
-      template<bool = bool{}, bool = bool{}> MNL_INLINE decltype(nullptr) execute() const {
+      template<bool = bool{}, bool = bool{}> MNL_INLINE decltype(nullptr) execute() const { // relies on PRE optimization
          dest.exec_in([&]() MNL_INLINE{
             auto &&lhs = src.execute(); const val &rhs = dest.execute();
             try { return op(std::forward<decltype(lhs)>(lhs), rhs); } catch (...) { trace_execute(_loc); }
