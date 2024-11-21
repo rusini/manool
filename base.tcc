@@ -280,7 +280,6 @@ namespace aux {
       decltype(nullptr) > = decltype(nullptr){}>
    struct expr_set: code::rvalue {
       [[no_unique_address]] Dest dest; [[no_unique_address]] Src src;
-   public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE decltype(nullptr) execute() const { dest.exec_in(src.execute()); return {}; }
    };
    template<class Dest, class Src> expr_set(code::rvalue, Dest, Src, loc)->expr_set<Dest, Src>;
@@ -319,16 +318,9 @@ namespace aux {
       }
    };
 
-
-   template<typename Dest = code> struct expr_move { MNL_RVALUE()
-      Dest dest;
-      MNL_INLINE val execute(bool = {}) const { return dest.exec_out(); }
-   private:
-      MNL_INLINE bool match(const code &rhs) {
-         return test<expr_move<>>(rhs) &&
-            aux::match(cast<const expr_move<> &>(rhs).dest, dest);
-      }
-      friend bool aux::match<>(const code &, expr_move &);
+   template<class Dest = code> struct expr_move: code::rvalue {
+      [[no_unique_address]] Dest dest;
+      template<bool = bool{}, bool = bool{}> MNL_INLINE val execute() const { return dest.exec_out(); }
    };
 
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
