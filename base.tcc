@@ -47,7 +47,13 @@ namespace aux {
 
    struct expr_tvar: code::lvalue { // "*t*emporary *var*iable"
       int offset;
-      template<bool = bool{}, bool = bool{}> MNL_INLINE const val &execute() const noexcept { return tstack[offset]; }
+      template<bool = bool{}, bool = bool{}> MNL_INLINE const val &execute() const { return tstack[offset]; }
+      MNL_INLINE void exec_in(val value) const { tstack[offset] = std::move(value); }
+      MNL_INLINE val exec_out() const { return std::move(tstack[offset]); }
+
+
+
+
       //MNL_INLINE void exec_in(const val &value) const noexcept { exec_in((val)value); }
       MNL_INLINE void exec_in(const val &value) const noexcept { tstack[offset] = value; } // is it better? -- measure!
       MNL_INLINE void exec_in(val &&value) const noexcept { tstack[offset].swap(value); }
