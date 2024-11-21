@@ -283,7 +283,7 @@ namespace aux {
    public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE decltype(nullptr) execute() const { dest.exec_in(src.execute()); return {}; }
    };
-   template<class Dest, class Src> expr_set(code::rvalue, Dest, Src)->expr_set<Dest, Src>;
+   template<class Dest, class Src> expr_set(code::rvalue, Dest, Src, loc)->expr_set<Dest, Src>;
 
    template<class Op, class Src, bool Rhs = bool{}, std::enable_if_t<
       std::is_base_f_v<appliable, Op> &&
@@ -291,9 +291,9 @@ namespace aux {
       decltype(nullptr) > = decltype(nullptr){}>
    struct expr_update;
    template<class Op, class Src, std::enable_if_t<!std::is_base_f_v<appliable, Src>, decltype(nullptr)> = decltype(nullptr){}>
-      expr_update(code::rvalue, expr_tvar, Op, Src)->expr_update<Op, Src>;
+      expr_update(code::rvalue, expr_tvar, Op, Src, loc)->expr_update<Op, Src>;
    template<class Op, class Src, std::enable_if_t< std::is_base_f_v<appliable, Op>,  decltype(nullptr)> = decltype(nullptr){}>
-      expr_update(code::rvalue, expr_tvar, Src, Op)->expr_update<Op, Src, true>;
+      expr_update(code::rvalue, expr_tvar, Src, Op, loc)->expr_update<Op, Src, true>;
    template<class Op, class Src>
    struct expr_update<Op, Src>: code::rvalue {
       expr_tvar dest; [[no_unique_address]] Op op; [[no_unique_address]] Src src; loc _loc;
