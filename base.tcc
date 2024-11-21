@@ -299,7 +299,7 @@ namespace aux {
       expr_tvar dest; [[no_unique_address]] Op op; [[no_unique_address]] Src src; loc _loc;
    public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE decltype(nullptr) execute() const { // relies on PRE optimization
-         dest.exec_in([&]() MNL_INLINE{ // TODO: think about move optimization
+         dest.exec_in([&]() MNL_INLINE{
             const val &lhs = dest.execute(); auto &&rhs = src.execute();
             try { return op(lhs, std::forward<decltype(rhs)>(rhs)); } catch (...) { trace_execute(_loc); }
          }() );
