@@ -285,7 +285,7 @@ namespace aux {
    };
    template<class Dest, class Src> expr_set(code::rvalue, Dest, Src, loc)->expr_set<Dest, Src>;
 
-   template<class Op, class Src, bool Rhs = bool{}, std::enable_if_t<
+   template<class Op, class Src = code, bool Rhs = bool{}, std::enable_if_t<
       std::is_base_f_v<appliable, Op> &&
       std::is_base_of_v<code, Src> | std::is_base_of_v<code::rvalue, Src>,
       decltype(nullptr) > = decltype(nullptr){}>
