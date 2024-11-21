@@ -311,6 +311,7 @@ namespace aux {
       [[no_unique_address]] Dest dest;
       template<bool = bool{}, bool = bool{}> MNL_INLINE val execute() const { return dest.exec_out(); }
    };
+   template<class Dest> expr_set(code::rvalue, Dest)->expr_move<Dest>;
 
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
