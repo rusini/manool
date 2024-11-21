@@ -292,7 +292,7 @@ namespace aux {
    struct expr_update;
    template<class Op, class Src, std::enable_if_t<!std::is_base_f_v<appliable, Src>, decltype(nullptr)> = decltype(nullptr){}>
       expr_update(code::rvalue, expr_tvar, Op, Src)->expr_update<Op, Src>;
-   template<class Op, class Src, std::enable_if_t<std::is_base_f_v<appliable, Op>, decltype(nullptr)> = decltype(nullptr){}>
+   template<class Op, class Src, std::enable_if_t< std::is_base_f_v<appliable, Op>,  decltype(nullptr)> = decltype(nullptr){}>
       expr_update(code::rvalue, expr_tvar, Src, Op)->expr_update<Op, Src, true>;
    template<class Op, class Src>
    struct expr_update<Op, Src>: code::rvalue {
