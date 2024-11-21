@@ -19,7 +19,7 @@ namespace MNL_AUX_UUID {
 
 namespace aux {
 
-   template<typename Val = val> struct expr_lit: code::rvalue {
+   template<typename Val = val> struct expr_lit: code::rvalue { // *lit*eral (immediate)
       [[no_unique_address]] Val value;
       template<bool = bool{}, bool = bool{}> MNL_INLINE const Val &execute() const noexcept { return value; } // sometimes stored as T &&
    };
@@ -32,20 +32,7 @@ namespace aux {
       template<bool = bool{}, bool = bool{}> MNL_INLINE decltype(nullptr) execute() const noexcept { return {}; }
    };
 
-
-
-   struct expr_tmp { MNL_LVALUE(true)
-      int off;
-      MNL_INLINE val execute(bool = {}) const { return tmp_stk[tmp_frm + off]; }
-      MNL_INLINE void exec_in(val &&value) const { tmp_stk[tmp_frm + off] = move(value); } // according to tests, better than tmp_stk[tmp_frm + off].swap(value)
-      MNL_INLINE val exec_out() const { return move(tmp_stk[tmp_frm + off]); }
-   private:
-      MNL_INLINE bool match(const code &) { return {}; }
-      friend bool aux::match<>(const code &, expr_tmp &);
-   };
-
-
-   struct expr_tvar: code::lvalue { // "*t*emporary *var*iable"
+   struct expr_tvar: code::lvalue { // *t*emporary *var*iable
       int offset;
       template<bool = bool{}, bool = bool{}> MNL_INLINE const val &execute() const { return tstack[offset]; }
    # if true
