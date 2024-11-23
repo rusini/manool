@@ -419,6 +419,20 @@ namespace aux {
       MNL_RVALUE()
       Cond cond; code body; loc _loc;
    public:
+      template<bool fast_sig = bool{}, bool = bool{}> MNL_INLINE val execute() const {
+         for (;;) {
+            const val &cond = this->cond.execute();
+            if (MNL_LIKELY(cond == true)) {
+               body.execute<fast_sig, true>();
+               if constexpr(fast_sig) if (MNL_UNLIKELY(sig_state.first)) return {};
+               continue;
+            }
+            if (MNL_LIKELY(cond == false)) return {};
+            MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
+         }
+      }
+
+
       MNL_INLINE decltype(nullptr) execute(bool fast_sig = false) const {
          for (;;) {
             auto &&cond = this->cond.execute(); // no prediction for "cond" on purpose - we admit here performing zero iterations for while-loops may be useful
