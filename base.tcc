@@ -440,15 +440,9 @@ namespace aux {
             if (!cast<bool>(cond) || MNL_UNLIKELY(body.execute(fast_sig), sig_state.first)) return {};
          }
       }
-   private:
-      MNL_INLINE bool match(const code &rhs) {
-         return test<expr_while<>>(rhs) &&
-            aux::match(cast<const expr_while<> &>(rhs).cond, cond) &&
-            aux::match(cast<const expr_while<> &>(rhs).body, body) &&
-            (_loc = cast<const expr_while<> &>(rhs)._loc, true);
-      }
-      friend bool aux::match<>(const code &, expr_while &);
    };
+
+
 
    template<typename Key = code> struct expr_on {
       MNL_RVALUE()
