@@ -311,7 +311,7 @@ namespace aux {
       [[no_unique_address]] Dest dest;
       template<bool = bool{}, bool = bool{}> MNL_INLINE val execute() const { return dest.exec_out(); }
    };
-   template<class Dest> expr_set(code::rvalue, Dest)->expr_move<Dest>;
+   template<class Dest> expr_move(code::rvalue, Dest)->expr_move<Dest>;
 
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -319,6 +319,21 @@ namespace aux {
       MNL_LVALUE(body1.is_lvalue() && body2.is_lvalue())
       Cond cond; code body1, body2; loc _loc;
    public:
+      template<bool fast_sig = bool{}, bool nores = bool{}> MNL_INLINE auto execute() const {
+         auto &&cond = this->cond.execute();
+         //if (MNL_UNLIKELY(!is<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
+         //return (as<bool>(cond) ? _.body1 : _.body2).execute<fast_sig, nores>();
+         if (MNL_LIKELY(is<true>(cond)))  return _.body1.execute<fast_sig, nores>();
+         if (MNL_LIKELY(is<false>(cond))) return _.body2.execute<fast_sig, nores>();
+         MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
+         // !!! it's sometimes beneficial to male a copy/move of val before use if the object comes as a return value (may be marked as escaped!)
+         // BEWARE of potentially aliased objects!!!
+         // due to bitwise packaging of tag/value for bool clang fails to fully propagate conditions (but gcc does), also clang seems to "reuse" the return object (potentially aliased!)
+         // we could ty to avoid ORing when constructing bools and instead ...
+      }
+
+
+
       MNL_INLINE val execute(bool fast_sig = false) const {
          auto &&cond = this->cond.execute();
          if (MNL_UNLIKELY(!test<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
