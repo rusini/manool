@@ -397,6 +397,31 @@ namespace aux {
    template<class Arg0> expr_and(code::rvalue, Arg0, code, loc)->expr_and<Arg0>;
 
 
+   struct _expr_or_misc { code arg1; };
+   template<class Arg0 = code, std::enable_if_t<
+      std::is_base_of_v<code, Arg0> | std::is_base_of_v<rvalue, Arg0>,
+      decltype(nullptr) > = decltype(nullptr){}>
+   struct expr_or: code::rvalue {
+      [[no_unique_address]] Arg0 cond; _expr_or_misc _; loc _loc;
+   public:
+      template<bool = bool{}, bool = bool{}> MNL_INLINE val execute() const {
+         const val &arg0 = cond.execute();
+         if (MNL_LIKELY(!is<bool>(arg0))) {
+            val arg1 = _.arg1.execute();
+            try { return sym::from_id<sym::id("|")>(std::forward<decltype(arg0)>(arg0), std::move(arg1)); } // TODO: use op for performance
+            catch (...) { trace_execute(_loc); }
+         }
+         if (as<bool>(arg0))
+            return true;
+         return [&]() MNL_INLINE{ // RVO
+            val arg1 = this->_.arg1.execute(); // NRVO
+            if (MNL_UNLIKELY(!is<bool>(arg1))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
+            return arg1;
+         }();
+      }
+   };
+   template<class Arg0> expr_or(code::rvalue, Arg0, _expr_or_misc, loc)->expr_or<Arg0>;
+   template<class Arg0> expr_or(code::rvalue, Arg0, code, loc)->expr_or<Arg0>;
 
 
 
