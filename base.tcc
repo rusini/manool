@@ -391,20 +391,6 @@ namespace aux {
             if (MNL_UNLIKELY(!is<bool>(arg1))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
             return arg1;
          }();
-
-
-         /*if (MNL_LIKELY(!is<bool>(arg0))) {
-            val arg1 = _.arg1.execute();
-            try { return op<sym::id("&")>(std::forward<decltype(arg0)>(arg0), std::move(arg1)); }
-            catch (...) { trace_execute(_loc); }
-         }
-         if (!as<bool>(arg0))
-            return false;
-         return [&]() MNL_INLINE{ // RVO
-            val arg1 = this->_.arg1.execute(); // NRVO
-            if (MNL_UNLIKELY(!is<bool>(arg1))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
-            return arg1;
-         }();*/
       }
    };
    template<class Arg0> expr_and(code::rvalue, Arg0, _expr_and_misc, loc)->expr_and<Arg0>;
