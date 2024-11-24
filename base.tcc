@@ -433,7 +433,17 @@ namespace aux {
    public:
       template<bool fast_sig = bool{}, bool = bool{}> MNL_INLINE decltype(nullptr) execute() const {
          for (;;) {
-            auto &&cond = this->cond.execute();
+            const val &cond = this->cond.execute();
+            if (MNL_LIKELY(op<sym::id<"==">>(true, cond))) {
+               _.body.execute<fast_sig, true>();
+               if (fast_sig && MNL_UNLIKELY(sig_state.first)) return {};
+               continue;
+            }
+            if (MNL_LIKELY(op<sym::id<"==">>(false, cond))) return {};
+            MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
+
+
+
             //if (MNL_UNLIKELY(!is<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
             //if (MNL_UNLIKELY(!as<bool>(cond)) return {}
             //_.body.execute<fast_sig, true>();
