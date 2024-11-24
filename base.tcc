@@ -441,20 +441,6 @@ namespace aux {
             }
             if (MNL_LIKELY(op<sym::id<"==">>(false, cond))) return {};
             MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
-
-
-
-            //if (MNL_UNLIKELY(!is<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
-            //if (MNL_UNLIKELY(!as<bool>(cond)) return {}
-            //_.body.execute<fast_sig, true>();
-            //if constexpr(fast_sig) if (MNL_UNLIKELY(sig_state.first)) return {};
-            if (MNL_LIKELY(is<true>(cond))) {
-               _.body.execute<fast_sig, true>();
-               if constexpr(fast_sig) if (MNL_UNLIKELY(sig_state.first)) return {};
-               continue;
-            }
-            if (MNL_LIKELY(is<false>(cond))) return {};
-            MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
          }
       }
    };
