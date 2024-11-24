@@ -370,6 +370,47 @@ namespace aux {
    template<class Cond> expr_if(code::rvalue, Cond, code, loc)->expr_if<Cond>;
 
 
+   struct _expr_and_misc { code arg1; };
+   template<class Arg0 = code, std::enable_if_t<std::is_class_v<Arg0>, decltype(nullptr)> = decltype(nullptr){}>
+   struct expr_and: code::rvalue {
+      Arg0 cond; _expr_and_misc _; loc _loc;
+      static_assert(std::is_base_of_v<code, Arg0> || std::is_base_of_v<rvalue, Arg0>);
+   public:
+      template<bool = bool{}, bool = bool{}> MNL_INLINE val execute() const {
+         const val &arg0 = cond.execute();
+         if (MNL_UNLIKELY(arg0 == false))
+            return false;
+         if (MNL_LIKELY(arg0 != true)) {
+            val arg1 = _.arg1.execute();
+            try { return sym::from_id<sym::id("&")>(std::forward<decltype(arg0)>(arg0), std::move(arg1)); }
+            catch (...) { trace_execute(_loc); }
+         }
+         return [&]() MNL_INLINE{ // RVO
+            val arg1 = _.arg1.execute(); // NRVO
+            if (MNL_UNLIKELY(!is<bool>(arg1))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
+            return arg1;
+         }();
+
+
+         /*if (MNL_LIKELY(!is<bool>(arg0))) {
+            val arg1 = _.arg1.execute();
+            try { return op<sym::id("&")>(std::forward<decltype(arg0)>(arg0), std::move(arg1)); }
+            catch (...) { trace_execute(_loc); }
+         }
+         if (!as<bool>(arg0))
+            return false;
+         return [&]() MNL_INLINE{ // RVO
+            val arg1 = this->_.arg1.execute(); // NRVO
+            if (MNL_UNLIKELY(!is<bool>(arg1))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
+            return arg1;
+         }();*/
+      }
+   };
+   template<class Arg0> expr_and(Arg0, _expr_and_misc, loc)->expr_and<Arg0>;
+   template<class Arg0> expr_and(Arg0, code, loc)->expr_and<Arg0>;
+
+
+
    template<typename Arg0 = code> struct expr_and {
       MNL_RVALUE()
       Arg0 arg0; code arg1; loc _loc;
