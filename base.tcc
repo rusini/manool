@@ -370,29 +370,6 @@ namespace aux {
    template<class Cond> expr_if(code::rvalue, Cond, code, loc)->expr_if<Cond>;
 
 
-
-
-
-   template<typename Cond = code> struct expr_if {
-      MNL_RVALUE()
-      Cond cond; code body; loc _loc;
-   public:
-      MNL_INLINE decltype(nullptr) execute(bool fast_sig = false) const {
-         auto &&cond = this->cond.execute();
-         if (MNL_UNLIKELY(!test<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
-         if (cast<bool>(cond)) body.execute(fast_sig);
-         return {};
-      }
-   private:
-      MNL_INLINE bool match(const code &rhs) {
-         return test<expr_if<>>(rhs) &&
-            aux::match(cast<const expr_if<> &>(rhs).cond, cond) &&
-            aux::match(cast<const expr_if<> &>(rhs).body, body) &&
-            (_loc = cast<const expr_if<> &>(rhs)._loc, true);
-      }
-      friend bool aux::match<>(const code &, expr_if &);
-   };
-
    template<typename Arg0 = code> struct expr_and {
       MNL_RVALUE()
       Arg0 arg0; code arg1; loc _loc;
