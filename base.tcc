@@ -185,7 +185,7 @@ namespace aux { // TODO: think about expr_seq optimization
       std::conditional_t<std::is_base_of_v<code, Target> | std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue> {
       [[no_unique_address]] Target target; [[no_unique_address]] Arg0 a0; code a1, a2; loc _loc;
    public:
-      template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute() const { // TODO: do we actually use custom a0 in opt rules?
+      template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute() const { // TODO: do we actually use custom a0 in opt rules? -- we could/should for sym target and thus avoid atomic inc/dec
          auto &&a0 = this->a0.execute(); val a1 = this->a1.execute(), a2 = this->a2.execute(); auto &&target = this->target.execute();
          try { return std::forward<decltype(target)>(target)(std::forward<a0>(a0), std::move(a1), std::move(a2)); }
          catch (...) { trace_execute(_loc); }
