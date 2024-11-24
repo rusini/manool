@@ -104,7 +104,7 @@ namespace aux { // TODO: think about expr_seq optimization
       MNL_INLINE void exec_in(val &&value) const { _exec_in(std::move(value)); }
    private:
       template<typename Val> MNL_INLINE void _exec_in(Val &&value) const {
-         if (!std::is_base_of_v<lvalue, expr_apply>) return rvalue::exec_in(std::forward<Val>(value));
+         if (!std::is_base_of_v<code::lvalue, expr_apply>) return rvalue::exec_in(std::forward<Val>(value)); // to aid DCE opt
          target.exec_in( [&]() MNL_INLINE{
             auto &&arg0 = this->arg0.execute(); val target = this->target.exec_out();
             try { return std::move(target).repl(std::forward<decltype(arg0)>(arg0), std::forward<Val>(value)); }
@@ -113,7 +113,7 @@ namespace aux { // TODO: think about expr_seq optimization
       }
    public:
       MNL_INLINE val exec_out() const {
-         if (!std::is_base_of_v<lvalue, expr_apply>) return rvalue::exec_out();
+         if (!std::is_base_of_v<code::lvalue, expr_apply>) return rvalue::exec_out(); // to aid DCE opt
          val argv_out[2 + 1];
          target.exec_in( [&]() MNL_INLINE{
             val argv[std::size(argv_out) - 1] = {arg0.execute()}, target = this->target.exec_out();
@@ -129,15 +129,15 @@ namespace aux { // TODO: think about expr_seq optimization
    // Application specialized for 2 arguments
    template<class Target, class Arg0, class Arg1>
    expr_apply(
-      std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue>,
+      std::conditional_t<std::is_base_of_v<code, Target> | std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue>,
       Target, Arg0, Arg1, loc )->
    expr_apply< 2,
-      std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>, Target, expr_lit<Target>>,
-      std::conditional_t<std::is_base_of_v<code, Arg0>   || std::is_base_of_v<code::rvalue, Arg0>,   Arg0,   expr_lit<Arg0>>,
-      std::conditional_t<std::is_base_of_v<code, Arg1>   || std::is_base_of_v<code::rvalue, Arg1>,   Arg1,   expr_lit<Arg1>> >;
+      std::conditional_t<std::is_base_of_v<code, Target> | std::is_base_of_v<code::rvalue, Target>, Target, expr_lit<Target>>,
+      std::conditional_t<std::is_base_of_v<code, Arg0>   | std::is_base_of_v<code::rvalue, Arg0>,   Arg0,   expr_lit<Arg0>>,
+      std::conditional_t<std::is_base_of_v<code, Arg1>   | std::is_base_of_v<code::rvalue, Arg1>,   Arg1,   expr_lit<Arg1>> >;
    template<class Target, class Arg0, class Arg1>
    struct expr_apply<2, Target, Arg0, Arg1>:
-      std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue> {
+      std::conditional_t<std::is_base_of_v<code, Target> | std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue> {
       [[no_unique_address]] Target target; [[no_unique_address]] Arg0 arg0; [[no_unique_address]] Arg1 arg1; loc _loc;
    public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute() const {
@@ -150,7 +150,7 @@ namespace aux { // TODO: think about expr_seq optimization
       MNL_INLINE void exec_in(val &&value) const { _exec_in(std::move(value)); }
    private:
       template<typename Val> MNL_INLINE void _exec_in(Val &&value) const {
-         if (!std::is_base_of_v<lvalue, expr_apply>) return rvalue::exec_in(std::forward<Val>(value));
+         if (!std::is_base_of_v<code::lvalue, expr_apply>) return rvalue::exec_in(std::forward<Val>(value)); // to aid DCE opt
          target.exec_in( [&]() MNL_INLINE{
             auto &&arg0 = this->arg0.execute(); auto &&arg1 = this->arg1.execute(); val target = this->target.exec_out();
             try { return std::move(target).repl(std::forward<decltype(arg0)>(arg0), std::forward<decltype(arg1)>(arg1), std::forward<Val>(value)); }
@@ -159,7 +159,7 @@ namespace aux { // TODO: think about expr_seq optimization
       }
    public:
       MNL_INLINE val exec_out() const {
-         if (!std::is_base_of_v<lvalue, expr_apply>) return rvalue::exec_out();
+         if (!std::is_base_of_v<code::lvalue, expr_apply>) return rvalue::exec_out(); // to aid DCE opt
          val argv_out[3 + 1];
          target.exec_in( [&]() MNL_INLINE{
             val argv[std::size(argv_out) - 1] = {arg0.execute(), arg1.execute()}, target = this->target.exec_out();
@@ -175,14 +175,14 @@ namespace aux { // TODO: think about expr_seq optimization
    // Application specialized for 3 arguments
    template<class Target, class Arg0>
    expr_apply(
-      std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue>,
+      std::conditional_t<std::is_base_of_v<code, Target> | std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue>,
       Target, Arg0, code, code, loc )->
    expr_apply< 3,
-      std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>, Target, expr_lit<Target>>,
-      std::conditional_t<std::is_base_of_v<code, Arg0>   || std::is_base_of_v<code::rvalue, Arg0>,   Arg0,   expr_lit<Arg0>> >;
+      std::conditional_t<std::is_base_of_v<code, Target> | std::is_base_of_v<code::rvalue, Target>, Target, expr_lit<Target>>,
+      std::conditional_t<std::is_base_of_v<code, Arg0>   | std::is_base_of_v<code::rvalue, Arg0>,   Arg0,   expr_lit<Arg0>> >;
    template<class Target, class Arg0>
    struct expr_apply<3, Target, Arg0>:
-      std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue> {
+      std::conditional_t<std::is_base_of_v<code, Target> | std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue> {
       [[no_unique_address]] Target target; [[no_unique_address]] Arg0 a0; code a1, a2; loc _loc;
    public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute() const {
@@ -195,7 +195,7 @@ namespace aux { // TODO: think about expr_seq optimization
       MNL_INLINE void exec_in(val &&value) const { _exec_in(std::move(value)); }
    private:
       template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
-         if (!std::is_base_of_v<lvalue, expr_apply>) return rvalue::exec_in(std::forward<Val>(value));
+         if (!std::is_base_of_v<code::lvalue, expr_apply>) return rvalue::exec_in(std::forward<Val>(value)); // to aid DCE opt
          target.exec_in([&]() MNL_INLINE{
             val argv[] = {a0.execute(), a1.execute(), a2.execute(), std::forward<Val>(value)}, target = this->target.exec_out();
             try { return std::move(target).repl(std::size(argv), argv); }
@@ -204,8 +204,8 @@ namespace aux { // TODO: think about expr_seq optimization
       }
    public:
       MNL_INLINE val exec_out() const {
-         if (!std::is_base_of_v<lvalue, expr_apply>) return rvalue::exec_out();
-         val argv_out[4];
+         if (!std::is_base_of_v<code::lvalue, expr_apply>) return rvalue::exec_out(); // to aid DCE opt
+         val argv_out[4]; // TODO: argv_out for self!!!
          target.exec_in([&]() MNL_INLINE{
             val argv[std::size(argv_out)] = {a0.execute(), a1.execute(), a2.execute()}, target = this->target.exec_out();
             try { return std::move(target).repl(std::size(argv), argv, argv_out); }
@@ -239,7 +239,7 @@ namespace aux { // TODO: think about expr_seq optimization
       MNL_INLINE void exec_in(val &&value) const { _exec_in(std::move(value)); }
    private:
       template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
-         if (!std::is_base_of_v<lvalue, expr_apply>) return rvalue::exec_in(std::forward<Val>(value));
+         if (!std::is_base_of_v<code::lvalue, expr_apply>) return rvalue::exec_in(std::forward<Val>(value)); // to aid DCE opt
          target.exec_in([&]() MNL_INLINE{
             val argv[] = {a0.execute(), a1.execute(), a2.execute(), a3.execute(), std::forward<Val>(value)}, target = this->target.exec_out();
             try { return std::move(target).repl(std::size(argv), argv); }
@@ -248,7 +248,7 @@ namespace aux { // TODO: think about expr_seq optimization
       }
    public:
       MNL_INLINE val exec_out() const {
-         if (!std::is_base_of_v<lvalue, expr_apply>) return rvalue::exec_out();
+         if (!std::is_base_of_v<code::lvalue, expr_apply>) return rvalue::exec_out(); // to aid DCE opt
          val argv_out[5];
          target.exec_in([&]() MNL_INLINE{
             val argv[std::size(argv_out)] = {a0.execute(), a1.execute(), a2.execute(), a3.execute()}, target = this->target.exec_out();
