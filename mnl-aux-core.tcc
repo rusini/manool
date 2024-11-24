@@ -541,7 +541,7 @@ namespace aux { namespace pub {
    // For multiple arguments
    template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
    MNL_INLINE inline val sym::operator()(int argc, Val argv[], val *argv_out) const {
-      if (MNL_UNLIKELY(!argc)) err_InvalidInvocation();
+      if (MNL_UNLIKELY(!argc)) err_InvalidInvocation(); // argc != 0 check may be eliminated due to inlining
       return (*this)(std::move(*argv), --argc, argc ? ++argv : nullptr, argv_out + !!argv_out); // relies on C++17 eval order
    }
    MNL_INLINE inline val sym::operator()(const val &a0, val a1, val a2) const

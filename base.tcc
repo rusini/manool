@@ -231,7 +231,7 @@ namespace aux { // TODO: think about expr_seq optimization
    public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute() const {
          val argv[] = {a0.execute(), a1.execute(), a2.execute(), a3.execute()}; auto &&target = this->target.execute();
-         try { return std::forward<decltype(target)>(target)(std::size(argv), argv); } // argc != 0 check eliminated due to inlining
+         try { return std::forward<decltype(target)>(target)(std::size(argv), argv); }
          catch (...) { trace_execute(_loc); }
       }
    public:
