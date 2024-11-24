@@ -249,10 +249,10 @@ namespace aux { // TODO: think about expr_seq optimization
    public:
       MNL_INLINE val exec_out() const {
          if (!std::is_base_of_v<code::lvalue, expr_apply>) return rvalue::exec_out(); // to aid DCE opt
-         val argv_out[5];
+         val argv_out[5 + 1];
          target.exec_in([&]() MNL_INLINE{
-            val argv[std::size(argv_out)] = {a0.execute(), a1.execute(), a2.execute(), a3.execute()}, target = this->target.exec_out();
-            try { return std::move(target).repl(std::size(argv), argv, argv_out); }
+            val argv[std::size(argv_out) - 1] = {a0.execute(), a1.execute(), a2.execute(), a3.execute()}, target = this->target.exec_out();
+            try { return std::move(target).repl(std::size(argv), argv, argv_out + 1); }
             catch (...) { trace_exec_out(_loc); }
          }() );
          return std::move(argv_out[std::size(argv_out) - 1]);
