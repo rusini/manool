@@ -82,7 +82,7 @@ namespace aux { // TODO: think about expr_seq optimization
    };
 
    // Application specialized for 1 argument
-   template<typename Target, typename Arg0>
+   template<class Target, class Arg0>
    expr_apply(
       std::conditional_t<std::is_base_of_v<code, Target> | std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue>,
       Target, Arg0, loc )->
@@ -127,7 +127,7 @@ namespace aux { // TODO: think about expr_seq optimization
    };
 
    // Application specialized for 2 arguments
-   template<typename Target, typename Arg0, typename Arg1>
+   template<class Target, class Arg0, class Arg1>
    expr_apply(
       std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue>,
       Target, Arg0, Arg1, loc )->
@@ -218,7 +218,7 @@ namespace aux { // TODO: think about expr_seq optimization
    };
 
    // Application specialized for 4 arguments
-   template<typename Target>
+   template<class Target>
    expr_apply(
       std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue>,
       Target, code, code, code, code, loc )->
