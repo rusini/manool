@@ -371,10 +371,11 @@ namespace aux {
 
 
    struct _expr_and_misc { code arg1; };
-   template<class Arg0 = code, std::enable_if_t<std::is_class_v<Arg0>, decltype(nullptr)> = decltype(nullptr){}>
+   template<class Arg0 = code, std::enable_if_t<
+      std::is_base_of_v<code, Arg0> | std::is_base_of_v<rvalue, Arg0>,
+      decltype(nullptr) > = decltype(nullptr){}>
    struct expr_and: code::rvalue {
-      Arg0 cond; _expr_and_misc _; loc _loc;
-      static_assert(std::is_base_of_v<code, Arg0> || std::is_base_of_v<rvalue, Arg0>);
+      [[no_unique_address]] Arg0 cond; _expr_and_misc _; loc _loc;
    public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE val execute() const {
          const val &arg0 = cond.execute();
@@ -406,8 +407,8 @@ namespace aux {
          }();*/
       }
    };
-   template<class Arg0> expr_and(Arg0, _expr_and_misc, loc)->expr_and<Arg0>;
-   template<class Arg0> expr_and(Arg0, code, loc)->expr_and<Arg0>;
+   template<class Arg0> expr_and(code::rvalue, Arg0, _expr_and_misc, loc)->expr_and<Arg0>;
+   template<class Arg0> expr_and(code::rvalue, Arg0, code, loc)->expr_and<Arg0>;
 
 
 
