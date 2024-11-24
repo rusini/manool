@@ -75,7 +75,7 @@ namespace aux { // TODO: think about expr_seq optimization
    struct expr_apply<0, Target>: code::rvalue {
       [[no_unique_address]] Target target; loc _loc;
    public:
-      template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute() const {
+      template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute() const { // TODO: eval target!
          try { return op<sym::id("Apply")>(std::forward<decltype(target)>(target), 0, {}); }
          catch (...) { trace_execute(_loc); }
       }
