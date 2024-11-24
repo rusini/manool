@@ -220,13 +220,13 @@ namespace aux { // TODO: think about expr_seq optimization
    // Application specialized for 4 arguments
    template<class Target>
    expr_apply(
-      std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue>,
+      std::conditional_t<std::is_base_of_v<code, Target> | std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue>,
       Target, code, code, code, code, loc )->
    expr_apply< 4,
-      std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::rvalue, Target>, Target, expr_lit<Target>> >;
+      std::conditional_t<std::is_base_of_v<code, Target> | std::is_base_of_v<code::rvalue, Target>, Target, expr_lit<Target>> >;
    template<class Target>
    struct expr_apply<4, Target>:
-      std::conditional_t<std::is_base_of_v<code, Target> || std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue> {
+      std::conditional_t<std::is_base_of_v<code, Target> | std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue> {
       [[no_unique_address]] Target target; code a0, a1, a2, a3; loc _loc; // arg types intentionally not parameterized
    public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute() const {
