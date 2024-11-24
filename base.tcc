@@ -422,8 +422,6 @@ namespace aux {
    template<class Arg0> expr_or(code::rvalue, Arg0, _expr_or_misc, loc)->expr_or<Arg0>;
    template<class Arg0> expr_or(code::rvalue, Arg0, code, loc)->expr_or<Arg0>;
 
-
-
    struct _expr_while_misc { code body; };
    template<class Cond = code, std::enable_if_t<
       std::is_base_of_v<code, Cond> | std::is_base_of_v<code::rvalue, Cond>,
@@ -446,35 +444,6 @@ namespace aux {
    };
    template<class Cond> expr_while(code::rvalue, Cond, _expr_while_misc, loc)->expr_while<Cond>;
    template<class Cond> expr_while(code::rvalue, Cond, code, loc)->expr_while<Cond>;
-
-
-
-   template<typename Cond = code> struct expr_while {
-      MNL_RVALUE()
-      Cond cond; code body; loc _loc;
-   public:
-      template<bool fast_sig = bool{}, bool = bool{}> MNL_INLINE val execute() const {
-         for (;;) {
-            const val &cond = this->cond.execute();
-            if (MNL_LIKELY(cond == true)) {
-               body.execute<fast_sig, true>();
-               if constexpr(fast_sig) if (MNL_UNLIKELY(sig_state.first)) return {};
-               continue;
-            }
-            if (MNL_LIKELY(cond == false)) return {};
-            MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
-         }
-      }
-
-
-      MNL_INLINE decltype(nullptr) execute(bool fast_sig = false) const {
-         for (;;) {
-            auto &&cond = this->cond.execute(); // no prediction for "cond" on purpose - we admit here performing zero iterations for while-loops may be useful
-            if (MNL_UNLIKELY(!test<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
-            if (!cast<bool>(cond) || MNL_UNLIKELY(body.execute(fast_sig), sig_state.first)) return {};
-         }
-      }
-   };
 
 
 
