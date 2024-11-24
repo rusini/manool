@@ -17,7 +17,7 @@
 
 namespace MNL_AUX_UUID {
 
-namespace aux {
+namespace aux { // TODO: think about expr_seq optimization
 
    template<typename Val = val> struct expr_lit: code::rvalue { // *lit*eral (immediate)
       [[no_unique_address]] Val value;
@@ -314,7 +314,6 @@ namespace aux {
    template<class Dest> expr_move(code::rvalue, Dest)->expr_move<Dest>;
 
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
    struct _expr_ifelse_misc { code body1, body2; };
    template<class Cond = code, std::enable_if_t<
