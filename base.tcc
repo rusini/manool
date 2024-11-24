@@ -364,13 +364,6 @@ namespace aux {
          if (MNL_LIKELY(cond == true))  return _.body.execute<fast_sig, true>();
          if (MNL_LIKELY(cond == false)) return {};
          MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
-
-
-
-         auto &&cond = this->cond.execute();
-         if (MNL_UNLIKELY(!is<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
-         if (as<bool>(cond)) _.body.execute<fast_sig, true>();
-         return {};
       }
    };
    template<class Cond> expr_if(code::rvalue, Cond, _expr_if_misc, loc)->expr_if<Cond>;
