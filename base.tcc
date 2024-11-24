@@ -176,7 +176,7 @@ namespace aux { // TODO: think about expr_seq optimization
    template<class Target, class Arg0>
    expr_apply(
       std::conditional_t<std::is_base_of_v<code, Target> | std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue>,
-      Target, Arg0, code, code, loc )-> // TODO: how `code` would capture `int` and alike here??
+      Target, Arg0, code, code, loc )->
    expr_apply< 3,
       std::conditional_t<std::is_base_of_v<code, Target> | std::is_base_of_v<code::rvalue, Target>, Target, expr_lit<Target>>,
       std::conditional_t<std::is_base_of_v<code, Arg0>   | std::is_base_of_v<code::rvalue, Arg0>,   Arg0,   code >;
