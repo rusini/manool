@@ -407,8 +407,8 @@ namespace aux {
       template<bool = bool{}, bool = bool{}> MNL_INLINE val execute() const {
          const val &arg0 = cond.execute();
          if (MNL_LIKELY(!is<bool>(arg0))) {
-            val arg1 = _.arg1.execute();
-            try { return sym::from_id<sym::id("|")>(std::forward<decltype(arg0)>(arg0), std::move(arg1)); } // TODO: use op for performance
+            auto &&arg1 = _.arg1.execute();
+            try { return op<sym::id("|")>(std::forward<decltype(arg0)>(arg0), std::forward<decltype(arg1)>(arg1)); }
             catch (...) { trace_execute(_loc); }
          }
          if (as<bool>(arg0))
