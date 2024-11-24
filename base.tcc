@@ -335,15 +335,15 @@ namespace aux {
    private:
       template<typename Val> MNL_INLINE void _exec_in(Val &&value) const {
          const val &cond = this->cond.execute();
-         if (MNL_LIKELY(cond == true))  return _.body1.exec_in(std::forward<Val>(value));
-         if (MNL_LIKELY(cond == false)) return _.body2.exec_in(std::forward<Val>(value));
+         if (MNL_LIKELY(op<sym::id<"==">>(true,  cond))) return _.body1.exec_in(std::forward<Val>(value));
+         if (MNL_LIKELY(op<sym::id<"==">>(false, cond))) return _.body2.exec_in(std::forward<Val>(value));
          MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
       }
    public:
       MNL_INLINE val exec_out() const {
          const val &cond = this->cond.execute();
-         if (MNL_LIKELY(cond == true))  return _.body1.exec_out();
-         if (MNL_LIKELY(cond == false)) return _.body2.exec_out();
+         if (MNL_LIKELY(op<sym::id<"==">>(true,  cond))) return _.body1.exec_out();
+         if (MNL_LIKELY(op<sym::id<"==">>(false, cond))) return _.body2.exec_out();
          MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
       }
    public:
@@ -361,8 +361,8 @@ namespace aux {
    public:
       template<bool fast_sig = bool{}, bool = bool{}> MNL_INLINE decltype(nullptr) execute() const {
          const val &cond = this->cond.execute();
-         if (MNL_LIKELY(cond == true))  return _.body.execute<fast_sig, true>();
-         if (MNL_LIKELY(cond == false)) return {};
+         if (MNL_LIKELY(op<sym::id<"==">>(true,  cond))) return _.body.execute<fast_sig, true>();
+         if (MNL_LIKELY(op<sym::id<"==">>(false, cond))) return {};
          MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
       }
    };
@@ -379,9 +379,9 @@ namespace aux {
    public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE val execute() const {
          const val &arg0 = cond.execute();
-         if (MNL_UNLIKELY(arg0 == false))
+         if (MNL_UNLIKELY(op<sym::id<"==">>(false, arg0)))
             return false;
-         if (MNL_LIKELY(arg0 != true)) {
+         if (MNL_LIKELY(op<sym::id<"<>">>(true, arg0))) {
             auto &&arg1 = _.arg1.execute();
             try { return op<sym::id("&")>(std::forward<decltype(arg0)>(arg0), std::forward<decltype(arg1)>(arg1)); }
             catch (...) { trace_execute(_loc); }
@@ -405,15 +405,15 @@ namespace aux {
    public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE val execute() const {
          const val &arg0 = cond.execute();
-         if (MNL_LIKELY(!is<bool>(arg0))) {
+         if (MNL_UNLIKELY(op<sym::id<"==">>(true, arg0)))
+            return true;
+         if (MNL_LIKELY(op<sym::id<"<>">>(false, arg0))) {
             auto &&arg1 = _.arg1.execute();
             try { return op<sym::id("|")>(std::forward<decltype(arg0)>(arg0), std::forward<decltype(arg1)>(arg1)); }
             catch (...) { trace_execute(_loc); }
          }
-         if (as<bool>(arg0))
-            return true;
          return [&]() MNL_INLINE{ // RVO
-            val arg1 = this->_.arg1.execute(); // NRVO
+            val arg1 = _.arg1.execute(); // NRVO
             if (MNL_UNLIKELY(!is<bool>(arg1))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
             return arg1;
          }();
