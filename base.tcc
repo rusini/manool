@@ -398,30 +398,7 @@ namespace aux {
 
 
 
-   template<typename Arg0 = code> struct expr_and {
-      MNL_RVALUE()
-      Arg0 arg0; code arg1; loc _loc;
-   public:
-      MNL_INLINE val execute(bool = {}) const {
-         {  auto &&arg0 = this->arg0.execute();
-            if (MNL_LIKELY(!test<bool>(arg0))) { val argv[]{(move)(arg0), arg1.execute()}; return MNL_SYM("&")(_loc, 2, argv); }
-            if (!cast<bool>(arg0)) return false;
-         }
-         return [&]()->val{ // RVO
-            auto arg1 = this->arg1.execute(); // NRVO
-            if (MNL_UNLIKELY(!test<bool>(arg1))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
-            return arg1;
-         }();
-      }
-   private:
-      MNL_INLINE bool match(const code &rhs) {
-         return test<expr_and<>>(rhs) &&
-            aux::match(cast<const expr_and<> &>(rhs).arg0, arg0) &&
-            aux::match(cast<const expr_and<> &>(rhs).arg1, arg1) &&
-            (_loc = cast<const expr_and<> &>(rhs)._loc, true);
-      }
-      friend bool aux::match<>(const code &, expr_and &);
-   };
+
 
    template<typename Arg0 = code> struct expr_or {
       MNL_RVALUE()
