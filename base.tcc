@@ -318,7 +318,7 @@ namespace aux {
 
    struct _expr_ifelse_misc { code body1, body2; };
    template<class Cond = code, std::enable_if_t<
-      std::is_base_of_v<code, Cond> | std::is_base_of_v<rvalue, Cond>,
+      std::is_base_of_v<code, Cond> | std::is_base_of_v<code::rvalue, Cond>,
       decltype(nullptr) > = decltype(nullptr){}>
    struct expr_ifelse: code::lvalue {
       [[no_unique_address]] Cond cond; _expr_ifelse_misc _; loc _loc;
@@ -354,7 +354,7 @@ namespace aux {
 
    struct _expr_if_misc { code body; };
    template<class Cond = code, std::enable_if_t<
-      std::is_base_of_v<code, Cond> | std::is_base_of_v<rvalue, Cond>,
+      std::is_base_of_v<code, Cond> | std::is_base_of_v<code::rvalue, Cond>,
       decltype(nullptr) > = decltype(nullptr){}>
    struct expr_if: code::rvalue {
       [[no_unique_address]] Cond cond; _expr_if_misc _; loc _loc;
@@ -372,7 +372,7 @@ namespace aux {
 
    struct _expr_and_misc { code arg1; };
    template<class Arg0 = code, std::enable_if_t<
-      std::is_base_of_v<code, Arg0> | std::is_base_of_v<rvalue, Arg0>,
+      std::is_base_of_v<code, Arg0> | std::is_base_of_v<code::rvalue, Arg0>,
       decltype(nullptr) > = decltype(nullptr){}>
    struct expr_and: code::rvalue {
       [[no_unique_address]] Arg0 cond; _expr_and_misc _; loc _loc;
@@ -398,7 +398,7 @@ namespace aux {
 
    struct _expr_or_misc { code arg1; };
    template<class Arg0 = code, std::enable_if_t<
-      std::is_base_of_v<code, Arg0> | std::is_base_of_v<rvalue, Arg0>,
+      std::is_base_of_v<code, Arg0> | std::is_base_of_v<code::rvalue, Arg0>,
       decltype(nullptr) > = decltype(nullptr){}>
    struct expr_or: code::rvalue {
       [[no_unique_address]] Arg0 cond; _expr_or_misc _; loc _loc;
@@ -426,7 +426,7 @@ namespace aux {
 
    struct _expr_while_misc { code body; };
    template<class Cond = code, std::enable_if_t<
-      std::is_base_of_v<code, Cond> | std::is_base_of_v<rvalue, Cond>,
+      std::is_base_of_v<code, Cond> | std::is_base_of_v<code::rvalue, Cond>,
       decltype(nullptr) > = decltype(nullptr){}>
    struct expr_while: code::rvalue {
       [[no_unique_address]] Cond cond; _expr_while_misc _; loc _loc;
@@ -448,8 +448,8 @@ namespace aux {
          }
       }
    };
-   template<class Cond> expr_while(Cond, _expr_while_misc, loc)->expr_while<Cond>;
-   template<class Cond> expr_while(Cond, code, loc)->expr_while<Cond>;
+   template<class Cond> expr_while(code::rvalue, Cond, _expr_while_misc, loc)->expr_while<Cond>;
+   template<class Cond> expr_while(code::rvalue, Cond, code, loc)->expr_while<Cond>;
 
 
 
