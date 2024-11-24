@@ -185,7 +185,7 @@ namespace aux { // TODO: think about expr_seq optimization
       std::conditional_t<std::is_base_of_v<code, Target> | std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue> {
       [[no_unique_address]] Target target; [[no_unique_address]] Arg0 a0; code a1, a2; loc _loc;
    public:
-      template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute() const {
+      template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute() const { // TODO: do we actually use custom a0 in opt rules?
          auto &&a0 = this->a0.execute(); val a1 = this->a1.execute(), a2 = this->a2.execute(); auto &&target = this->target.execute();
          try { return std::forward<decltype(target)>(target)(std::forward<a0>(a0), std::move(a1), std::move(a2)); }
          catch (...) { trace_execute(_loc); }
@@ -205,10 +205,10 @@ namespace aux { // TODO: think about expr_seq optimization
    public:
       MNL_INLINE val exec_out() const {
          if (!std::is_base_of_v<code::lvalue, expr_apply>) return rvalue::exec_out(); // to aid DCE opt
-         val argv_out[4]; // TODO: argv_out for self!!!
+         val argv_out[4 + 1];
          target.exec_in([&]() MNL_INLINE{
-            val argv[std::size(argv_out)] = {a0.execute(), a1.execute(), a2.execute()}, target = this->target.exec_out();
-            try { return std::move(target).repl(std::size(argv), argv, argv_out); }
+            val argv[std::size(argv_out) - 1] = {a0.execute(), a1.execute(), a2.execute()}, target = this->target.exec_out();
+            try { return std::move(target).repl(std::size(argv), argv, argv_out + 1); }
             catch (...) { trace_exec_out(_loc); }
          }() );
          return std::move(argv_out[std::size(argv_out) - 1]);
