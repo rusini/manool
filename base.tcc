@@ -227,7 +227,7 @@ namespace aux { // TODO: think about expr_seq optimization
    template<class Target>
    struct expr_apply<4, Target>:
       std::conditional_t<std::is_base_of_v<code, Target> | std::is_base_of_v<code::lvalue, Target>, code::lvalue, code::rvalue> {
-      [[no_unique_address]] Target target; code a0, a1, a2, a3; loc _loc; // arg types intentionally not parameterized
+      [[no_unique_address]] Target target; code a0, a1, a2, a3; loc _loc;
    public:
       template<bool = bool{}, bool = bool{}> MNL_INLINE auto execute() const {
          val argv[] = {a0.execute(), a1.execute(), a2.execute(), a3.execute()}; auto &&target = this->target.execute();
