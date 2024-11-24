@@ -368,7 +368,6 @@ namespace aux { // TODO: think about expr_seq optimization
    template<class Cond> expr_if(code::rvalue, Cond, _expr_if_misc, loc)->expr_if<Cond>;
    template<class Cond> expr_if(code::rvalue, Cond, code, loc)->expr_if<Cond>;
 
-
    struct _expr_and_misc { code arg1; };
    template<class Arg0 = code, std::enable_if_t<
       std::is_base_of_v<code, Arg0> | std::is_base_of_v<code::rvalue, Arg0>,
