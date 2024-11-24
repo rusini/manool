@@ -352,57 +352,33 @@ namespace aux {
    template<class Cond> expr_ifelse(code::lvalue, Cond, _expr_ifelse_misc, loc)->expr_ifelse<Cond>;
    template<class Cond> expr_ifelse(code::lvalue, Cond, code, code, loc)->expr_ifelse<Cond>;
 
-
-
-
-
-
-
-
-   template<typename Cond = code> struct expr_ifelse {
-      MNL_LVALUE(body1.is_lvalue() && body2.is_lvalue())
-      Cond cond; code body1, body2; loc _loc;
+   struct _expr_if_misc { code body; };
+   template<class Cond = code, std::enable_if_t<
+      std::is_base_of_v<code, Cond> | std::is_base_of_v<rvalue, Cond>,
+      decltype(nullptr) > = decltype(nullptr){}>
+   struct expr_if: code::rvalue {
+      [[no_unique_address]] Cond cond; _expr_if_misc _; loc _loc;
    public:
-      template<bool fast_sig = bool{}, bool nores = bool{}> MNL_INLINE auto execute() const {
-         auto &&cond = this->cond.execute();
-         //if (MNL_UNLIKELY(!is<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
-         //return (as<bool>(cond) ? _.body1 : _.body2).execute<fast_sig, nores>();
-         if (MNL_LIKELY(cond == true))  return body1.execute<fast_sig, nores>();
-         if (MNL_LIKELY(cond == false)) return body2.execute<fast_sig, nores>();
+      template<bool fast_sig = bool{}, bool = bool{}> MNL_INLINE decltype(nullptr) execute() const {
+         const val &cond = this->cond.execute();
+         if (MNL_LIKELY(cond == true))  return _.body.execute<fast_sig, true>();
+         if (MNL_LIKELY(cond == false)) return {};
          MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
-         // !!! it's sometimes beneficial to male a copy/move of val before use if the object comes as a return value (may be marked as escaped!)
-         // BEWARE of potentially aliased objects!!!
-         // due to bitwise packaging of tag/value for bool clang fails to fully propagate conditions (but gcc does), also clang seems to "reuse" the return object (potentially aliased!)
-         // we could ty to avoid ORing when constructing bools and instead ...
-      }
 
 
 
-      MNL_INLINE val execute(bool fast_sig = false) const {
          auto &&cond = this->cond.execute();
-         if (MNL_UNLIKELY(!test<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
-         return (cast<bool>(cond) ? body1 : body2).execute(fast_sig);
+         if (MNL_UNLIKELY(!is<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
+         if (as<bool>(cond)) _.body.execute<fast_sig, true>();
+         return {};
       }
-      MNL_INLINE void exec_in(val &&value) const {
-         auto &&cond = this->cond.execute();
-         if (MNL_UNLIKELY(!test<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
-         (cast<bool>(cond) ? body1 : body2).exec_in(move(value));
-      }
-      MNL_INLINE val exec_out() const {
-         auto &&cond = this->cond.execute();
-         if (MNL_UNLIKELY(!test<bool>(cond))) MNL_ERR_LOC(_loc, MNL_SYM("TypeMismatch"));
-         return (cast<bool>(cond) ? body1 : body2).exec_out();
-      }
-   private:
-      MNL_INLINE bool match(const code &rhs) {
-         return test<expr_ifelse<>>(rhs) &&
-            aux::match(cast<const expr_ifelse<> &>(rhs).cond,  cond)  &&
-            aux::match(cast<const expr_ifelse<> &>(rhs).body1, body1) &&
-            aux::match(cast<const expr_ifelse<> &>(rhs).body2, body2) &&
-            (_loc = cast<const expr_ifelse<> &>(rhs)._loc, true);
-      }
-      friend bool aux::match<>(const code &, expr_ifelse &);
    };
+   template<class Cond> expr_if(code::rvalue, Cond, _expr_if_misc, loc)->expr_if<Cond>;
+   template<class Cond> expr_if(code::rvalue, Cond, code, loc)->expr_if<Cond>;
+
+
+
+
 
    template<typename Cond = code> struct expr_if {
       MNL_RVALUE()
