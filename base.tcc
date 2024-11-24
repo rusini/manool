@@ -382,8 +382,8 @@ namespace aux {
          if (MNL_UNLIKELY(arg0 == false))
             return false;
          if (MNL_LIKELY(arg0 != true)) {
-            val arg1 = _.arg1.execute();
-            try { return sym::from_id<sym::id("&")>(std::forward<decltype(arg0)>(arg0), std::move(arg1)); }
+            auto &&arg1 = _.arg1.execute();
+            try { return op<sym::id("&")>(std::forward<decltype(arg0)>(arg0), std::forward<decltype(arg1)>(arg1)); }
             catch (...) { trace_execute(_loc); }
          }
          return [&]() MNL_INLINE{ // RVO
