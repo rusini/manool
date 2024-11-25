@@ -1023,35 +1023,34 @@ namespace aux { namespace pub {
          { return rhs.rep->tag == (decltype(root::tag))reinterpret_cast<std::uintptr_t>(&box<std::remove_cv_t<std::remove_reference_t<Dat>>>::tag); }
       template<typename Dat> MNL_INLINE friend Dat  as(const code &rhs) noexcept
          { return static_cast<box<std::remove_cv_t<std::remove_reference_t<Dat>>> *>(rhs.rep)->dat; }
-   public: // Mandatory bases for Dat
+   public: // Required bases for Dat
       struct nonvalue; struct rvalue; struct lvalue;
    private: // Concrete representation
       class root { public: // del copy cons, no move cons, del copy assignment, no move assignment (same for derived)
          /*atomic*/ long rc = 1;
          const unsigned tag; // custom RTTI (assuming appropriate memory/linking models or ABIs or ISAs)
-         root(const root &) = delete;
+         root(const root &) = delete; // move is impossible for box anyway
          MNL_INLINE explicit root(const std::byte *tag) noexcept: tag(reinterpret_cast<std::uintptr_t>(tag)) {}
          virtual ~root() = default;
-         virtual code compile(const code &self, const form &, const loc &) const = 0;
-         virtual code compile(code &&self, const form &, const loc &) const = 0;
-         virtual val  execute(std::false_type, std::false_type) const = 0;
-         virtual void execute(std::false_type, std::true_type)  const = 0;
+         virtual code compile(const code &self, const form &, const loc &) const = 0, compile(code &&self, const form &, const loc &) const = 0;
+         virtual val  execute(std::false_type, std::false_type) const = 0, 
+         virtual void execute(std::false_type, std::true_type)  const = 0, 
          virtual val  execute(std::true_type,  std::false_type) const = 0;
          virtual void execute(std::true_type,  std::true_type)  const = 0;
-         virtual void exec_in(const val &) const = 0; // concrete dat (e.g., expr_tv) may have Dat::exec_in(long long) etc. for optimization purposes
-         virtual void exec_in(val &&)      const = 0;
+         virtual void exec_in(const val &) const = 0, exec_in(val &&) const = 0;
          virtual val  exec_out() const = 0;
          virtual int  category() const noexcept = 0;
+         // concrete dat (e.g., expr_tv) may have Dat::exec_in(long long) etc. for optimization purposes
          //virtual bool is_rvalue() const noexcept = 0;
          //virtual bool is_lvalue() const noexcept = 0; // shall imply is_rvalue()
       } *rep = {};
       template<class Dat> class box final: public root { public:
          const Dat dat;
          static_assert(std::is_base_of_v<nonvalue, Dat>);
-         static std::byte tag; // custom RTTI
          explicit box(Dat &&dat) noexcept: root{&tag}, dat(std::move(dat)) {}
+         static std::byte tag; // custom RTTI
          code compile(const code &self, const form &form, const loc &loc) const override { return dat.compile(self, form, loc); }
-         code compile(code &&self, const form &form, const loc &loc) const override { return dat.compile(std::move(self), form, loc); }
+         code compile(code &&self,      const form &form, const loc &loc) const override { return dat.compile(std::move(self), form, loc); }
          MNL_HOT val  execute(std::false_type, std::false_type) const override { return dat.execute<>(); }
          MNL_HOT void execute(std::false_type, std::true_type)  const override { (void)dat.execute<bool{}, true>(); }
          MNL_HOT val  execute(std::true_type,  std::false_type) const override { return dat.execute<true>(); }
