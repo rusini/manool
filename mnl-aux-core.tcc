@@ -674,7 +674,7 @@ namespace aux { namespace pub {
    };
    template<typename Dat> class box final: val::root {
       Dat dat;
-      MNL_INLINE explicit box(Dat &&dat): root(&_tag), dat(std::move(dat)) {}
+      MNL_INLINE explicit box(Dat &&dat): root{&_tag}, dat(std::move(dat)) {}
       ~box() = default; // may happen to be trivially destructible
    private:
       static constexpr std::byte _tag{};
@@ -1030,9 +1030,10 @@ namespace aux { namespace pub {
          /*atomic*/ long rc = 1;
          const unsigned tag; // custom RTTI (assuming appropriate memory/linking models or ABIs or ISAs)
          root(const root &) = delete;
-         MNL_INLINE explicit root(const std::byte &tag) noexcept: tag(reinterpret_cast<std::uintptr_t>(&tag)) {}
+         MNL_INLINE explicit root(const std::byte *tag) noexcept: tag(reinterpret_cast<std::uintptr_t>(tag)) {}
          virtual ~root() = default;
-         virtual code compile(code &&self, const form &, const loc &) const = 0; // TODO: both && and const & occur in practice
+         virtual code compile(const code &self, const form &, const loc &) const = 0;
+         virtual code compile(code &&self, const form &, const loc &) const = 0;
          virtual val  execute(std::false_type, std::false_type) const = 0;
          virtual void execute(std::false_type, std::true_type)  const = 0;
          virtual val  execute(std::true_type,  std::false_type) const = 0;
@@ -1044,11 +1045,12 @@ namespace aux { namespace pub {
          //virtual bool is_rvalue() const noexcept = 0;
          //virtual bool is_lvalue() const noexcept = 0; // shall imply is_rvalue()
       } *rep = {};
-      template<typename Dat> class box final: public root { public:
+      template<class Dat> class box final: public root { public:
          const Dat dat;
          static_assert(std::is_base_of_v<nonvalue, Dat>);
          static std::byte tag; // custom RTTI
-         explicit box(Dat &&dat) noexcept: root{tag}, dat(std::move(dat)) {}
+         explicit box(Dat &&dat) noexcept: root{&tag}, dat(std::move(dat)) {}
+         code compile(const code &self, const form &form, const loc &loc) const override { return dat.compile(self, form, loc); }
          code compile(code &&self, const form &form, const loc &loc) const override { return dat.compile(std::move(self), form, loc); }
          MNL_HOT val  execute(std::false_type, std::false_type) const override { return dat.execute<>(); }
          MNL_HOT void execute(std::false_type, std::true_type)  const override { (void)dat.execute<bool{}, true>(); }
