@@ -980,6 +980,125 @@ namespace aux { namespace pub {
       { auto res = parse(source, move(origin)); source.clear(); return res; } // this is to release its resources earlier, which is useful in practice
    typedef ast form; // AST when it is to be compiled as a whole - for documentation purposes
 
+
+
+
+
+   class code { // compiled entity
+   public: // Standard operations
+      code() = default;
+      MNL_INLINE code(const code &rhs) noexcept: rep(rhs.rep) { addref(); }
+      MNL_INLINE code(code &&rhs) noexcept: rep(rhs.rep) { rhs.rep = {}; }
+      MNL_INLINE ~code() { release(); }
+      MNL_INLINE code &operator=(const code &rhs) noexcept { rhs.addref(), release(), rep = rhs.rep; return *this; }
+      MNL_INLINE code &operator=(code &&rhs) noexcept { swap(rhs); return *this; }
+      MNL_INLINE void swap(code &rhs) noexcept { using std::swap; swap(rep, rhs.rep); }
+      MNL_INLINE friend bool operator==(const code &lhs, const code &rhs) noexcept { return lhs.rep == rhs.rep; }
+      MNL_INLINE explicit operator bool() const noexcept { return rep; }
+   public: // Construction -- Implicit conversion (to) + Compilation/execution operations
+      template<typename Dat> code(Dat dat): rep(new box<Dat>{std::move(dat)}) {}
+   # if MNL_LEAN
+      MNL_INLINE code compile(const form &form, const loc &loc) const & { if (rep); else __builtin_unreachable(); return ((code)*this).compile(form, loc); }
+   # endif
+      MNL_INLINE code compile(const form &form, const loc &loc) && { return rep->compile(std::move(*this), form, loc); }
+
+      MNL_INLINE code compile(const form &form, const loc &loc) const &
+         { if (rep); else __builtin_unreachable(); return rep->compile(*this, form, loc); }
+      MNL_INLINE code compile(const form &form, const loc &loc) &&
+         { if (rep); else __builtin_unreachable(); return rep->compile(std::move(*this), form, loc); }
+
+
+
+      template<bool fast_sig = bool{}, bool nores = bool{}>
+      MNL_INLINE auto execute() const { return rep->execute(std::bool_constant<fast_sig>{}, std::bool_constant<nores>{}); }
+      MNL_INLINE void exec_in(const val &value) const { rep->exec_in(value); }
+      MNL_INLINE void exec_in(val &&value)      const { rep->exec_in(std::move(value)); }
+      MNL_INLINE val  exec_out() const { return rep->exec_out(); }
+      MNL_INLINE bool is_rvalue() const noexcept { return rep->category() >= true; }
+      MNL_INLINE bool is_lvalue() const noexcept { return rep->category() >= true << 1; }
+      //MNL_INLINE bool is_rvalue() const noexcept { return rep->is_rvalue(); }
+      //MNL_INLINE bool is_lvalue() const noexcept { return rep->is_lvalue(); } // implies is_rvalue()
+   public: // Extraction
+      template<typename Dat> MNL_INLINE friend bool is(const code &rhs) noexcept
+         { return rhs.rep->tag == (decltype(root::tag))reinterpret_cast<std::uintptr_t>(&box<std::remove_cv_t<std::remove_reference_t<Dat>>>::tag); }
+      template<typename Dat> MNL_INLINE friend Dat  as(const code &rhs) noexcept
+         { return static_cast<box<std::remove_cv_t<std::remove_reference_t<Dat>>> *>(rhs.rep)->dat; }
+   public: // Mandatory bases for Dat
+      struct nonvalue; struct rvalue; struct lvalue;
+   private: // Concrete representation
+      class root { public: // del copy cons, no move cons, del copy assignment, no move assignment (same for derived)
+         /*atomic*/ long rc = 1;
+         const unsigned tag; // custom RTTI (assuming appropriate memory/linking models or ABIs or ISAs)
+         root(const root &) = delete;
+         MNL_INLINE explicit root(const std::byte &tag) noexcept: tag(reinterpret_cast<std::uintptr_t>(&tag)) {}
+         virtual ~root() = default;
+         virtual code compile(code &&self, const form &, const loc &) const = 0; // TODO: both && and const & occur in practice
+         virtual val  execute(std::false_type, std::false_type) const = 0;
+         virtual void execute(std::false_type, std::true_type)  const = 0;
+         virtual val  execute(std::true_type,  std::false_type) const = 0;
+         virtual void execute(std::true_type,  std::true_type)  const = 0;
+         virtual void exec_in(const val &) const = 0; // concrete dat (e.g., expr_tv) may have Dat::exec_in(long long) etc. for optimization purposes
+         virtual void exec_in(val &&)      const = 0;
+         virtual val  exec_out() const = 0;
+         virtual int  category() const noexcept = 0;
+         //virtual bool is_rvalue() const noexcept = 0;
+         //virtual bool is_lvalue() const noexcept = 0; // shall imply is_rvalue()
+      } *rep = {};
+      template<typename Dat> class box final: public root { public:
+         const Dat dat;
+         static_assert(std::is_base_of_v<nonvalue, Dat>);
+         static std::byte tag; // custom RTTI
+         explicit box(Dat &&dat) noexcept: root{tag}, dat(std::move(dat)) {}
+         code compile(code &&self, const form &form, const loc &loc) const override { return dat.compile(std::move(self), form, loc); }
+         MNL_HOT val  execute(std::false_type, std::false_type) const override { return dat.execute<>(); }
+         MNL_HOT void execute(std::false_type, std::true_type)  const override { (void)dat.execute<bool{}, true>(); }
+         MNL_HOT val  execute(std::true_type,  std::false_type) const override { return dat.execute<true>(); }
+         MNL_HOT void execute(std::true_type,  std::true_type)  const override { (void)dat.execute<true, true>(); }
+         MNL_HOT void exec_in(const val &value) const override { dat.exec_in(value); }
+         MNL_HOT void exec_in(val &&value)      const override { dat.exec_in(std::move(value)); }
+         MNL_HOT val  exec_out() const override { return dat.exec_out(); }
+         virtual int  category() const noexcept override { return dat.is_lvalue() << 1 | dat.is_rvalue(); }
+         //bool is_rvalue() const noexcept override { return dat.is_rvalue(); }
+         //bool is_lvalue() const noexcept override { return dat.is_lvalue(); } // shall imply is_rvalue()
+      };
+   private: // Implementation helpers
+      MNL_INLINE void addref() const noexcept
+         { if (MNL_LIKELY(rep)) MNL_IF_WITHOUT_MT(++rep->rc) MNL_IF_WITH_MT(__atomic_add_fetch(&rep->rc, 1, __ATOMIC_RELAXED)); }
+      MNL_INLINE void release() const noexcept
+         { if (MNL_LIKELY(rep) && MNL_UNLIKELY(! MNL_IF_WITHOUT_MT(--rep->rc) MNL_IF_WITH_MT(__atomic_sub_fetch(&rep->rc, 1, __ATOMIC_ACQ_REL)) )) delete rep; }
+   private: // Support for <expr># expressions
+      MNL_INLINE val invoke(val &&self, const sym &op, int argc, val argv[], val *) { return self.default_invoke(op, argc, argv); }
+      friend mnl::box<code>;
+   };
+   template<typename Dat> std::byte code::box<Dat>::tag;
+   MNL_INLINE inline void swap(code &lhs, code &rhs) noexcept { lhs.swap(rhs); }
+   bool operator==(const code &, const code &) noexcept;
+   MNL_INLINE inline bool operator!=(const code &lhs, const code &rhs) noexcept { return std::rel_ops::operator!=(lhs, rhs); }
+
+
+
+   struct code::nonvalue {
+      static code compile(code &&self, const form &, const loc &) = delete;
+      template<bool fast_sig = bool{}, bool nores = bool{}> MNL_INLINE static val execute() noexcept { MNL_UNREACHABLE(); }
+      MNL_INLINE static void exec_in(const val &) noexcept { MNL_UNREACHABLE(); }
+      MNL_INLINE static val  exec_out() noexcept { MNL_UNREACHABLE(); }
+      MNL_INLINE static bool is_rvalue() noexcept { return {}; }
+      MNL_INLINE static bool is_lvalue() noexcept { return {}; }
+   };
+   struct code::rvalue: code::nonvalue {
+      MNL_INLINE static code compile(code &&self, const form &form, const loc &loc) { return aux::compile_apply(std::move(self), form, loc); }
+      template<bool fast_sig = bool{}, bool nores = bool{}> static val execute() = delete;
+      MNL_INLINE static bool is_rvalue() noexcept { return true; }
+   };
+   struct code::lvalue: code::rvalue {
+      static void exec_in(const val &) = delete;
+      static val exec_out() = delete;
+      MNL_INLINE static bool is_lvalue() noexcept { return true; }
+   };
+
+
+
+
    class code /*compiled entity*/ {
    public: // Standard operations
       code() = default;
