@@ -1002,10 +1002,8 @@ namespace aux { namespace pub {
    # endif
       MNL_INLINE code compile(const form &form, const loc &loc) && { return rep->compile(std::move(*this), form, loc); }
 
-      MNL_INLINE code compile(const form &form, const loc &loc) const &
-         { if (rep); else __builtin_unreachable(); return rep->compile(*this, form, loc); }
-      MNL_INLINE code compile(const form &form, const loc &loc) &&
-         { if (rep); else __builtin_unreachable(); return rep->compile(std::move(*this), form, loc); }
+      MNL_INLINE code compile(const form &form, const loc &loc) const & { return rep->compile(*this, form, loc); }
+      MNL_INLINE code compile(const form &form, const loc &loc) &&      { return rep->compile(std::move(*this), form, loc); }
 
 
 
