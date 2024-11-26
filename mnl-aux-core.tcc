@@ -1003,10 +1003,8 @@ namespace aux { namespace pub {
       MNL_INLINE void exec_in(const val &value) const { rep->exec_in(value); }
       MNL_INLINE void exec_in(val &&value) const      { rep->exec_in(std::move(value)); }
       MNL_INLINE val  exec_out() const { return rep->exec_out(); }
-      MNL_INLINE bool is_rvalue() const noexcept { return rep->category() >= true; }
-      MNL_INLINE bool is_lvalue() const noexcept { return rep->category() >= true << 1; }
-      //MNL_INLINE bool is_rvalue() const noexcept { return rep->is_rvalue(); }
-      //MNL_INLINE bool is_lvalue() const noexcept { return rep->is_lvalue(); } // implies is_rvalue()
+      MNL_INLINE bool is_rvalue() const noexcept { return rep->is_rvalue(); } // TODO: pure?
+      MNL_INLINE bool is_lvalue() const noexcept { return rep->is_lvalue(); } // implies is_rvalue()
    public:
       MNL_INLINE code compile(const form &form, const loc &loc) const & // for API completeness
          { if (*this); else __builtin_unreachable(); return ((code)*this).compile(form, loc); }
@@ -1036,10 +1034,8 @@ namespace aux { namespace pub {
          virtual void execute(std::true_type,  std::true_type)  const = 0;
          virtual void exec_in(const val &) const = 0, exec_in(val &&) const = 0;
          virtual val  exec_out() const = 0;
-         virtual int  category() const noexcept = 0;
-         // concrete dat (e.g., expr_tv) may have Dat::exec_in(long long) etc. for optimization purposes
-         //virtual bool is_rvalue() const noexcept = 0;
-         //virtual bool is_lvalue() const noexcept = 0; // shall imply is_rvalue()
+         virtual bool is_rvalue() const noexcept = 0;
+         virtual bool is_lvalue() const noexcept = 0; // shall imply is_rvalue()
       } *rep = {};
       template<class Dat> class box final: public root {
       public:
@@ -1056,9 +1052,8 @@ namespace aux { namespace pub {
          MNL_HOT void exec_in(const val &value) const override { dat.exec_in(value); }
          MNL_HOT void exec_in(val &&value)      const override { dat.exec_in(std::move(value)); }
          MNL_HOT val  exec_out() const override { return dat.exec_out(); }
-         virtual int  category() const noexcept override { return dat.is_lvalue() << 1 | dat.is_rvalue(); }
-         //bool is_rvalue() const noexcept override { return dat.is_rvalue(); }
-         //bool is_lvalue() const noexcept override { return dat.is_lvalue(); } // shall imply is_rvalue()
+         bool is_rvalue() const noexcept override { return dat.is_rvalue(); }
+         bool is_lvalue() const noexcept override { return dat.is_lvalue(); } // shall imply is_rvalue()
       };
    private: // Implementation helpers
       MNL_INLINE void hold() const noexcept
