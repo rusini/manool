@@ -601,7 +601,7 @@ namespace aux { namespace pub {
    class val::root {
    protected:
       MNL_INLINE explicit root(const std::byte *tag) noexcept: _tag(reinterpret_cast<std::uintptr_t>(tag)) {}
-      virtual ~root() = default; // trivially destructible
+      virtual ~root() = default;
    private:
       root(const root &) = delete;
       root &operator=(const root &) = delete; // would be implicitly deleted anyway
@@ -675,7 +675,7 @@ namespace aux { namespace pub {
    template<typename Dat> class box final: val::root {
       Dat dat;
       MNL_INLINE explicit box(Dat &&dat): root{&_tag}, dat(std::move(dat)) {}
-      ~box() = default; // may happen to be trivially destructible
+      ~box() = default;
    private:
       static constexpr std::byte _tag{};
       friend val; // to directly use Dat, ctor, dtor, and _tag
@@ -1024,7 +1024,7 @@ namespace aux { namespace pub {
          /*atomic*/ long rc = 1;
       protected:
          MNL_INLINE explicit root(const std::byte *tag) noexcept: tag(reinterpret_cast<std::uintptr_t>(tag)) {}
-         virtual ~root() = default; // trivially destructible
+         virtual ~root() = default;
       private:
          root(const root &) = delete;
          root &operator=(const root &) = delete; // would be implicitly deleted anyway
