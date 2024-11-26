@@ -908,6 +908,10 @@ namespace aux { namespace pub {
    }
    template<typename Dat> MNL_INLINE inline Dat val::as() const noexcept(std::is_nothrow_copy_constructible_v<Dat>) {
       return static_cast<box<std::decay_t<Dat>> *>(static_cast<root *>(rep.dat<void *>()))->dat;
+   } // TODO: why "inline" here?
+   template<typename Dat> MNL_INLINE inline Dat val::as() const noexcept(
+      noexcept(Dat(static_cast<box<std::decay_t<Dat>> *>(static_cast<root *>(rep.dat<void *>()))->dat)) ) {
+      return       static_cast<box<std::decay_t<Dat>> *>(static_cast<root *>(rep.dat<void *>()))->dat;
    }
    MNL_INLINE inline long val::rc() const noexcept
       { return static_cast<const root *>(rep.dat<void *>())->rc(); }
