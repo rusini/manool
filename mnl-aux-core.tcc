@@ -1010,9 +1010,9 @@ namespace aux { namespace pub {
          { if (*this); else __builtin_unreachable(); return ((code)*this).compile(form, loc); }
    public: // Extraction
       template<typename Dat> MNL_INLINE friend bool is(const code &rhs) noexcept
-         { return rhs.rep->tag == (decltype(root::tag))reinterpret_cast<std::uintptr_t>(&box<std::remove_cv_t<std::remove_reference_t<Dat>>>::tag); }
+         { return rhs.rep->tag == (decltype(root::tag))reinterpret_cast<std::uintptr_t>(&box<std::decay_t<Dat>>::tag); }
       template<typename Dat> MNL_INLINE friend Dat  as(const code &rhs) noexcept
-         { return static_cast<box<std::remove_cv_t<std::remove_reference_t<Dat>>> *>(rhs.rep)->dat; }
+         { return static_cast<box<std::decay_t<Dat>> *>(rhs.rep)->dat; }
 
 
       template<typename Dat> MNL_INLINE friend bool test(const code &rhs) noexcept
