@@ -1023,6 +1023,8 @@ namespace aux { namespace pub {
          const unsigned tag; // assume 64-bit small/medium code model or x32 ABI or 32-bit ISA
          MNL_NOTE(atomic) long rc = 1;
          // TODO: maybe we need to encapsulate rc behind "local" hold/unhold?
+         // We could also encapsulate tag behind "is"
+         // Is is overengineering or overabstraction??
       protected:
          MNL_INLINE explicit root(const std::byte *tag) noexcept: tag(reinterpret_cast<std::uintptr_t>(tag)) {}
          virtual ~root() = default;
