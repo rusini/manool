@@ -1003,8 +1003,8 @@ namespace aux { namespace pub {
       MNL_INLINE void exec_in(const val &value) const { rep->exec_in(value); }
       MNL_INLINE void exec_in(val &&value) const      { rep->exec_in(std::move(value)); }
       MNL_INLINE val  exec_out() const { return rep->exec_out(); }
-      MNL_NOCLOBBER MNL_INLINE bool is_rvalue() const noexcept { return rep->is_rvalue(); }
-      MNL_NOCLOBBER MNL_INLINE bool is_lvalue() const noexcept { return rep->is_lvalue(); } // implies is_rvalue()
+      MNL_INLINE bool is_rvalue() const noexcept { return rep->is_rvalue(); }
+      MNL_INLINE bool is_lvalue() const noexcept { return rep->is_lvalue(); } // implies is_rvalue()
    public:
       MNL_INLINE code compile(const form &form, const loc &loc) const & // for API completeness
          { if (*this); else __builtin_unreachable(); return ((code)*this).compile(form, loc); }
@@ -1052,8 +1052,8 @@ namespace aux { namespace pub {
          MNL_HOT void exec_in(const val &value) const override { dat.exec_in(value); }
          MNL_HOT void exec_in(val &&value)      const override { dat.exec_in(std::move(value)); }
          MNL_HOT val  exec_out() const override { return dat.exec_out(); }
-         MNL_NOCLOBBER bool is_rvalue() const noexcept override { return dat.is_rvalue(); }
-         MNL_NOCLOBBER bool is_lvalue() const noexcept override { return dat.is_lvalue(); } // shall imply is_rvalue()
+         bool is_rvalue() const noexcept override { return dat.is_rvalue(); }
+         bool is_lvalue() const noexcept override { return dat.is_lvalue(); } // shall imply is_rvalue()
       };
    private: // Implementation helpers
       MNL_INLINE void hold() const noexcept
