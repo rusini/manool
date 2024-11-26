@@ -1019,9 +1019,10 @@ namespace aux { namespace pub {
       struct nonvalue; struct rvalue; struct lvalue;
    private: // Concrete representation
       class root {
-      public: // del copy cons, no move cons, del copy assignment, no move assignment (same for derived)
-         const unsigned tag; // custom RTTI (assuming appropriate memory/linking models or ABIs or ISAs)
-         /*atomic*/ long rc = 1;
+      public:
+         const unsigned tag; // assume 64-bit small/medium code model or x32 ABI or 32-bit ISA
+         MNL_NOTE(atomic) long rc = 1;
+         // TODO: maybe we need to encapsulate rc behind "local" hold/unhold?
       protected:
          MNL_INLINE explicit root(const std::byte *tag) noexcept: tag(reinterpret_cast<std::uintptr_t>(tag)) {}
          virtual ~root() = default;
