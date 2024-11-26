@@ -1013,6 +1013,13 @@ namespace aux { namespace pub {
          { return rhs.rep->tag == (decltype(root::tag))reinterpret_cast<std::uintptr_t>(&box<std::remove_cv_t<std::remove_reference_t<Dat>>>::tag); }
       template<typename Dat> MNL_INLINE friend Dat  as(const code &rhs) noexcept
          { return static_cast<box<std::remove_cv_t<std::remove_reference_t<Dat>>> *>(rhs.rep)->dat; }
+
+
+      template<typename Dat> MNL_INLINE friend bool test(const code &rhs) noexcept
+         { return typeid(*rhs.rep) == typeid(box<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type>); }
+      template<typename Dat> MNL_INLINE friend Dat  cast(const code &rhs) noexcept
+         { return static_cast<box<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type> *>(rhs.rep)->dat; }
+
    public: // Required bases for Dat
       struct nonvalue; struct rvalue; struct lvalue;
    private: // Concrete representation
