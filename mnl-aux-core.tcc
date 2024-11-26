@@ -1034,8 +1034,8 @@ namespace aux { namespace pub {
          MNL_HOT virtual void execute(std::true_type,  std::true_type)  const = 0;
          MNL_HOT virtual void exec_in(const val &) const = 0, exec_in(val &&) const = 0;
          MNL_HOT virtual val  exec_out() const = 0;
-         MNL_NOCLOBBER virtual bool is_rvalue() const noexcept = 0;
-         MNL_NOCLOBBER virtual bool is_lvalue() const noexcept = 0; // shall imply is_rvalue()
+         MNL_PURE virtual bool is_rvalue() const noexcept = 0;
+         MNL_PURE virtual bool is_lvalue() const noexcept = 0; // shall imply is_rvalue()
       } *rep = {};
       template<class Dat> class box final: public root {
       public:
