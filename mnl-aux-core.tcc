@@ -1167,8 +1167,13 @@ namespace aux { namespace pub {
    MNL_INLINE inline void swap(code &lhs, code &rhs) noexcept { lhs.swap(rhs); }
    bool operator==(const code &, const code &) noexcept;
    MNL_INLINE inline bool operator!=(const code &lhs, const code &rhs) noexcept { return std::rel_ops::operator!=(lhs, rhs); }
-   template<typename>     bool test(const code &) noexcept;
-   template<typename Dat> Dat  cast(const code &) noexcept;
+
+
+   template<typename>     bool is(const code &) noexcept;
+   template<typename Dat> Dat  as(const code &) noexcept;
+
+   template<typename Dat> auto as_p(const code &arg) noexcept { return is<Dat>(arg) ? &as<const Dat &>(arg) : nullptr; }
+
 
    extern MNL_IF_WITH_MT(thread_local) sym::tab<> symtab;
    code compile(const form &, const loc & = MNL_IF_GCC5(loc)MNL_IF_GCC6(loc){});
