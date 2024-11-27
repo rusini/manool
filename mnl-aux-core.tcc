@@ -1012,21 +1012,9 @@ namespace aux { namespace pub {
    public: // Extraction
       template<typename Dat> MNL_INLINE friend bool is(const code &arg) noexcept
          { return arg.rep->tag == (decltype(root::tag))reinterpret_cast<std::uintptr_t>(&box<std::decay_t<Dat>>::tag); }
-      template<typename Dat> MNL_INLINE friend Dat  as(const code &arg) noexcept(std::is_nothrow_copy_constructible_v<Dat>)
-         { return static_cast<box<std::decay_t<Dat>> *>(arg.rep)->dat; }
-      template<typename Dat> MNL_INLINE friend Dat  as(const code &arg) noexcept(noexcept(Dat(std::declval<Dat>())))
-         { return static_cast<box<std::decay_t<Dat>> *>(arg.rep)->dat; }
-
       template<typename Dat> MNL_INLINE friend Dat  as(const code &arg) noexcept(
          noexcept(Dat(static_cast<box<std::decay_t<Dat>> *>(arg.rep)->dat)) )
          { return     static_cast<box<std::decay_t<Dat>> *>(arg.rep)->dat; }
-
-
-      template<typename Dat> MNL_INLINE friend bool test(const code &rhs) noexcept
-         { return typeid(*rhs.rep) == typeid(box<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type>); }
-      template<typename Dat> MNL_INLINE friend Dat  cast(const code &rhs) noexcept
-         { return static_cast<box<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type> *>(rhs.rep)->dat; }
-
    public: // Required bases for Dat
       struct nonvalue; struct rvalue; struct lvalue;
    private: // Concrete representation
