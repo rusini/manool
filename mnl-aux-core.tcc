@@ -906,15 +906,12 @@ namespace aux { namespace pub {
       return MNL_LIKELY(rep.tag() == 0xFFF8 + 0b111) && static_cast<const root *>(rep.dat<void *>())->_tag ==
          (decltype(root::_tag))reinterpret_cast<std::uintptr_t>(&box<std::decay_t<Dat>>::_tag);
    }
-   template<typename Dat> MNL_INLINE inline Dat val::as() const noexcept(std::is_nothrow_copy_constructible_v<Dat>) {
-      return static_cast<box<std::decay_t<Dat>> *>(static_cast<root *>(rep.dat<void *>()))->dat;
-   } // TODO: why "inline" here?
-   template<typename Dat> MNL_INLINE inline Dat val::as() const noexcept(
+   template<typename Dat> MNL_INLINE inline Dat  val::as() const noexcept(
       noexcept(Dat(static_cast<box<std::decay_t<Dat>> *>(static_cast<root *>(rep.dat<void *>()))->dat)) ) {
       return       static_cast<box<std::decay_t<Dat>> *>(static_cast<root *>(rep.dat<void *>()))->dat;
    }
-   MNL_INLINE inline long val::rc() const noexcept
-      { return static_cast<const root *>(rep.dat<void *>())->rc(); }
+   MNL_INLINE inline bool val::shared() const noexcept
+      { return static_cast<const root *>(rep.dat<void *>())->shared(); }
 
    // Fake test/cast for val outputs
    template<> MNL_INLINE inline bool val::test<const val &>() const noexcept { return true; }
