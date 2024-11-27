@@ -1086,6 +1086,10 @@ namespace aux { namespace pub {
    bool operator==(const code &, const code &) noexcept;
    MNL_INLINE inline bool operator!=(const code &lhs, const code &rhs) noexcept { return std::rel_ops::operator!=(lhs, rhs); }
 
+   template<typename>     bool is(const code &) noexcept;
+   template<typename Dat> Dat  as(const code &) noexcept;
+
+   template<typename Dat> auto as_p(const code &arg) noexcept { return is<Dat>(arg) ? &as<const Dat &>(arg) : nullptr; }
 
 
    struct code::nonvalue {
@@ -1107,72 +1111,6 @@ namespace aux { namespace pub {
       MNL_INLINE static bool is_lvalue() noexcept { return true; }
    };
 
-
-
-
-   class code /*compiled entity*/ {
-   public: // Standard operations
-      code() = default;
-      MNL_INLINE code(const code &rhs) noexcept: rep(rhs.rep) { addref(); }
-      MNL_INLINE code(code &&rhs) noexcept: rep(rhs.rep) { rhs.rep = {}; }
-      MNL_INLINE ~code() { release(); }
-      MNL_INLINE code &operator=(const code &rhs) noexcept { rhs.addref(), release(), rep = rhs.rep; return *this; }
-      MNL_INLINE code &operator=(code &&rhs) noexcept { swap(rhs); return *this; }
-      MNL_INLINE void swap(code &rhs) noexcept { using std::swap; swap(rep, rhs.rep); }
-      MNL_INLINE friend bool operator==(const code &lhs, const code &rhs) noexcept { return lhs.rep == rhs.rep; }
-      MNL_INLINE explicit operator bool() const noexcept { return rep; }
-   public: // Construction -- Implicit conversion (to) + Compilation/execution operations
-      template<typename Dat> code(Dat dat): rep(new box<Dat>{(move)(dat)}) {}
-      MNL_INLINE code compile(const form &form, const loc &loc) && { return rep->compile(move(*this), form, loc); }
-      MNL_INLINE val  execute(bool fast_sig = {}) const { return rep->execute(fast_sig); }
-      MNL_INLINE void exec_in(val &&val) const { rep->exec_in(move(val)); }
-      MNL_INLINE val  exec_out() const { return rep->exec_out(); }
-      MNL_INLINE bool is_rvalue() const noexcept { return rep->is_rvalue(); }
-      MNL_INLINE bool is_lvalue() const noexcept { return rep->is_lvalue(); } // implies is_rvalue()
-   public: // Extraction
-      template<typename Dat> MNL_INLINE friend bool test(const code &rhs) noexcept
-         { return typeid(*rhs.rep) == typeid(box<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type>); }
-      template<typename Dat> MNL_INLINE friend Dat  cast(const code &rhs) noexcept
-         { return static_cast<box<typename std::remove_cv<typename std::remove_reference<Dat>::type>::type> *>(rhs.rep)->dat; }
-   private: // Concrete representation
-      class root { public:
-         /*atomic*/ long rc = 1;
-         virtual ~root() = default;
-         virtual code compile(code &&self, const form &, const loc &) const = 0;
-         virtual val  execute(bool fast_sig) const = 0;
-         virtual void exec_in(val &&) const = 0;
-         virtual val  exec_out() const = 0;
-         virtual bool is_rvalue() const noexcept = 0;
-         virtual bool is_lvalue() const noexcept = 0; // shall imply is_rvalue()
-      } *rep{};
-      template<typename Dat> class box final: public root { public:
-         const Dat dat;
-         explicit box(Dat dat): dat((move)(dat)) {}
-         code compile(code &&self, const form &form, const loc &loc) const override { return dat.compile(move(self), form, loc); }
-         val  execute(bool fast_sig) const override { return dat.execute(fast_sig); }
-         void exec_in(val &&val) const override { dat.exec_in(move(val)); }
-         val  exec_out() const override { return dat.exec_out(); }
-         bool is_rvalue() const noexcept override { return dat.is_rvalue(); }
-         bool is_lvalue() const noexcept override { return dat.is_lvalue(); } // shall imply is_rvalue()
-      };
-   private: // Implementation helpers
-      MNL_INLINE void addref() const noexcept
-         { if (MNL_LIKELY(rep)) MNL_IF_WITHOUT_MT(++rep->rc) MNL_IF_WITH_MT(__atomic_add_fetch(&rep->rc, 1, __ATOMIC_RELAXED)); }
-      MNL_INLINE void release() const noexcept
-         { if (MNL_LIKELY(rep) && MNL_UNLIKELY(! MNL_IF_WITHOUT_MT(--rep->rc) MNL_IF_WITH_MT(__atomic_sub_fetch(&rep->rc, 1, __ATOMIC_ACQ_REL)) )) delete rep; }
-   private: // Support for <expr># expressions
-      MNL_INLINE val invoke(val &&self, const sym &op, int argc, val argv[], val *) { return self.default_invoke(op, argc, argv); }
-      friend mnl::box<code>;
-   };
-   MNL_INLINE inline void swap(code &lhs, code &rhs) noexcept { lhs.swap(rhs); }
-   bool operator==(const code &, const code &) noexcept;
-   MNL_INLINE inline bool operator!=(const code &lhs, const code &rhs) noexcept { return std::rel_ops::operator!=(lhs, rhs); }
-
-
-   template<typename>     bool is(const code &) noexcept;
-   template<typename Dat> Dat  as(const code &) noexcept;
-
-   template<typename Dat> auto as_p(const code &arg) noexcept { return is<Dat>(arg) ? &as<const Dat &>(arg) : nullptr; }
 
 
    extern MNL_IF_WITH_MT(thread_local) sym::tab<> symtab;
