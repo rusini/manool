@@ -999,7 +999,7 @@ namespace aux { namespace pub {
    public: // Construction -- Implicit conversion (to) + Compilation/execution operations
       template<typename Dat> code(Dat dat): rep(new box<Dat>{std::move(dat)}) {}
       MNL_INLINE code compile(const form &form, const loc &loc) && { return rep->compile(std::move(*this), form, loc); }
-      template<bool fast_sig = bool{}, bool nores = bool{}>
+      template<bool fast_sig = bool{}, bool nores = bool{}> // TODO: formatting?
       MNL_INLINE auto execute() const { return rep->execute(std::bool_constant<fast_sig>{}, std::bool_constant<nores>{}); }
       MNL_INLINE void exec_in(const val &value) const { rep->exec_in(value); }
       MNL_INLINE void exec_in(val &&value) const      { rep->exec_in(std::move(value)); }
@@ -1013,7 +1013,7 @@ namespace aux { namespace pub {
       template<typename Dat> MNL_INLINE friend bool is(const code &arg) noexcept
          { return arg.rep->tag == (decltype(root::tag))reinterpret_cast<std::uintptr_t>(&box<std::decay_t<Dat>>::tag); }
       template<typename Dat> MNL_INLINE friend Dat  as(const code &arg) noexcept(
-         noexcept(Dat(static_cast<box<std::decay_t<Dat>> *>(arg.rep)->dat)) )
+         noexcept(Dat(static_cast<box<std::decay_t<Dat>> *>(arg.rep)->dat)) ) // TODO: here explicit call to copy cons and below implicit
          { return     static_cast<box<std::decay_t<Dat>> *>(arg.rep)->dat; }
    public: // Required bases for Dat
       struct nonvalue; struct rvalue; struct lvalue; // TODO: maybe define them in a special header, not needed for some uses of the API
