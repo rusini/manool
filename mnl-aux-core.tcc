@@ -996,8 +996,14 @@ namespace aux { namespace pub {
       MNL_INLINE void swap(code &rhs) noexcept { using std::swap; swap(rep, rhs.rep); }
       MNL_INLINE friend bool operator==(const code &lhs, const code &rhs) noexcept { return lhs.rep == rhs.rep; }
       MNL_INLINE explicit operator bool() const noexcept { return rep; }
+   public: // Required bases for Dat
+      struct nonvalue; struct rvalue; struct lvalue; // TODO: maybe define them in a special header, not needed for some uses of the API
    public: // Construction -- Implicit conversion (to) + Compilation/execution operations
-      template<typename Dat> code(Dat dat): rep(new box<Dat>{std::move(dat)}) {}
+      template<typename Dat, std::enable_if_t<std::is_base_of_v<nonvalue, Dat>, decltype(nullptr)> = decltype(nullptr){}>
+      code(Dat dat): rep(new box<Dat>{std::move(dat)}) {}
+
+
+      template<typename Dat> code(Dat dat): rep(new box<Dat>{std::move(dat)}) {} // TODO: in uneval ctx no constraints will be checked (no instantiation)
       MNL_INLINE code compile(const form &form, const loc &loc) && { return rep->compile(std::move(*this), form, loc); }
       template<bool fast_sig = bool{}, bool nores = bool{}> // TODO: formatting?
       MNL_INLINE auto execute() const { return rep->execute(std::bool_constant<fast_sig>{}, std::bool_constant<nores>{}); }
@@ -1010,13 +1016,18 @@ namespace aux { namespace pub {
       MNL_INLINE code compile(const form &form, const loc &loc) const & // for API completeness
          { if (*this); else __builtin_unreachable(); return ((code)*this).compile(form, loc); }
    public: // Extraction
+      template<typename Dat> MNL_INLINE friend auto is(const code &arg) noexcept
+         { return arg.rep->tag == (decltype(root::tag))reinterpret_cast<std::uintptr_t>(&box<std::decay_t<Dat>>::tag); }
+      template<typename Dat> MNL_INLINE friend auto as(const code &arg) noexcept(std::is_nothrow_copy_constructible())
+         { return     static_cast<box<std::decay_t<Dat>> *>(arg.rep)->dat; }
+
+
+
       template<typename Dat> MNL_INLINE friend bool is(const code &arg) noexcept
          { return arg.rep->tag == (decltype(root::tag))reinterpret_cast<std::uintptr_t>(&box<std::decay_t<Dat>>::tag); }
       template<typename Dat> MNL_INLINE friend Dat  as(const code &arg) noexcept(
          noexcept(Dat(static_cast<box<std::decay_t<Dat>> *>(arg.rep)->dat)) ) // TODO: here explicit call to copy cons and below implicit
          { return     static_cast<box<std::decay_t<Dat>> *>(arg.rep)->dat; }
-   public: // Required bases for Dat
-      struct nonvalue; struct rvalue; struct lvalue; // TODO: maybe define them in a special header, not needed for some uses of the API
    private: // Concrete representation
       class root {
       public:
@@ -1042,7 +1053,7 @@ namespace aux { namespace pub {
       template<class Dat> class box final: public root {
       public:
          const Dat dat;
-         static_assert(std::is_base_of_v<nonvalue, Dat>);
+         static_assert(std::is_base_of_v<nonvalue, Dat>); // TODO: obsolete due to SFINAE in code ctor
          explicit box(Dat &&dat) noexcept: root{&tag}, dat(std::move(dat)) {}
          static std::byte tag; // custom RTTI
       private:
