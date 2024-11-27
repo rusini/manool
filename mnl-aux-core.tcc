@@ -1079,7 +1079,7 @@ namespace aux { namespace pub {
          { if (MNL_LIKELY(rep) && MNL_UNLIKELY(! MNL_IF_WITHOUT_MT(--rep->rc) MNL_IF_WITH_MT(__atomic_sub_fetch(&rep->rc, 1, __ATOMIC_ACQ_REL)) )) delete rep; }
    private: // Support for <expr># expressions
       MNL_INLINE val invoke(val &&self, const sym &op, int argc, val argv[], val *) { return self.default_invoke(op, argc, argv); }
-      friend mnl::box<code>;
+      friend mnl::box<code>; // TODO: maybe grant friendship to the _invoke function only?
    };
    template<typename Dat> std::byte code::box<Dat>::tag;
    MNL_INLINE inline void swap(code &lhs, code &rhs) noexcept { lhs.swap(rhs); }
