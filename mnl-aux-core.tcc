@@ -1016,7 +1016,7 @@ namespace aux { namespace pub {
          noexcept(Dat(static_cast<box<std::decay_t<Dat>> *>(arg.rep)->dat)) )
          { return     static_cast<box<std::decay_t<Dat>> *>(arg.rep)->dat; }
    public: // Required bases for Dat
-      struct nonvalue; struct rvalue; struct lvalue;
+      struct nonvalue; struct rvalue; struct lvalue; // TODO: maybe define them in a special header, not needed for some uses of the API
    private: // Concrete representation
       class root {
       public:
