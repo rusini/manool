@@ -996,9 +996,10 @@ namespace aux { namespace pub {
       MNL_INLINE void swap(code &rhs) noexcept { using std::swap; swap(rep, rhs.rep); }
       MNL_INLINE friend bool operator==(const code &lhs, const code &rhs) noexcept { return lhs.rep == rhs.rep; }
       MNL_INLINE explicit operator bool() const noexcept { return rep; }
-   public: // Required bases for Dat
-      struct nonvalue; struct rvalue; struct lvalue; // TODO: maybe define them in a special header, not needed for some uses of the API
    public: // Construction -- Implicit conversion (to) + Compilation/execution operations
+      struct nonvalue; struct rvalue; struct lvalue; // Required bases for Dat
+      template<typename Dat MNL_REQ(std::is_base_of_v<nonvalue, Dat>)> code(Dat dat): rep(new box<Dat>{std::move(dat)}) {}
+
       template<typename Dat, std::enable_if_t<std::is_base_of_v<nonvalue, Dat>, decltype(nullptr)> = decltype(nullptr){}>
       code(Dat dat): rep(new box<Dat>{std::move(dat)}) {}
 
@@ -1088,6 +1089,7 @@ namespace aux { namespace pub {
    template<typename Dat> auto as_p(const code &arg) noexcept { return is<Dat>(arg) ? &as<const Dat &>(arg) : nullptr; }
 
 
+   // TODO: maybe define them in a special header, not needed for some uses of the API
    struct code::nonvalue {
       static code compile(code &&self, const form &, const loc &) = delete;
       template<bool fast_sig = bool{}, bool nores = bool{}> MNL_INLINE static val execute() noexcept { MNL_UNREACHABLE(); }
