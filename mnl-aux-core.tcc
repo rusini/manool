@@ -999,12 +999,6 @@ namespace aux { namespace pub {
    public: // Construction -- Implicit conversion (to) + Compilation/execution operations
       struct nonvalue; struct rvalue; struct lvalue; // Bases for Dat
       template<typename Dat MNL_REQ(std::is_base_of_v<nonvalue, Dat>)> code(Dat dat): rep(new box<Dat>{std::move(dat)}) {}
-
-      template<typename Dat, std::enable_if_t<std::is_base_of_v<nonvalue, Dat>, decltype(nullptr)> = decltype(nullptr){}>
-      code(Dat dat): rep(new box<Dat>{std::move(dat)}) {}
-
-
-      template<typename Dat> code(Dat dat): rep(new box<Dat>{std::move(dat)}) {} // TODO: in uneval ctx no constraints will be checked (no instantiation)
       MNL_INLINE code compile(const form &form, const loc &loc) && { return rep->compile(std::move(*this), form, loc); }
       template<bool fast_sig = bool{}, bool nores = bool{}> // TODO: formatting?
       MNL_INLINE auto execute() const { return rep->execute(std::bool_constant<fast_sig>{}, std::bool_constant<nores>{}); }
