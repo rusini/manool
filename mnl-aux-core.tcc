@@ -1002,7 +1002,7 @@ namespace aux { namespace pub {
    public:
       MNL_INLINE code compile(const form &form, const loc &loc) && { return rep->compile(std::move(*this), form, loc); }
    public:
-      template<bool fast_sig = bool{}, bool nores = bool{}> MNL_INLINE auto execute() const
+      template<bool fast_sig = bool{}, bool nores = bool{}> MNL_INLINE auto execute() const // "auto" here is not a problem
          { return rep->execute(std::bool_constant<fast_sig>{}, std::bool_constant<nores>{}); }
    public:
       MNL_INLINE void exec_in(const val &value) const { rep->exec_in(value); }
