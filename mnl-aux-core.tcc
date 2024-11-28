@@ -275,9 +275,9 @@ namespace aux { namespace pub {
       struct boxable {};
    public: // Extraction
       template<typename Dat = decltype(nullptr) MNL_REQ(std::std::is_convertible_v<std::decay_t<Dat>, Dat>)>
-         MNL_INLINE friend bool test(const val &rhs) noexcept { return rhs.test<Dat>(); }
+         MNL_INLINE friend bool is(const val &arg) noexcept { return arg.is<Dat>(); }
       template<typename Dat = decltype(nullptr) MNL_REQ(std::std::is_convertible_v<std::decay_t<Dat>, Dat>)>
-         MNL_INLINE friend Dat  cast(const val &rhs) noexcept(std::is_nothrow_copy_constructible_v<Dat>) { return rhs.cast<Dat>(); }
+         MNL_INLINE friend Dat  as(const val &arg) noexcept(std::is_nothrow_copy_constructible_v<Dat>) { return arg.as<Dat>(); }
    public: // Misc essentials
       val default_invoke(const sym &op, int argc, val argv[]);
       long rc /*reference counter*/() const noexcept;
@@ -679,6 +679,7 @@ namespace aux { namespace pub {
    private:
       static constexpr std::byte _tag{};
       friend val; // to directly use Dat, ctor, dtor, and _tag
+      // TODO: add marker for Dat is OK
    private: // 50 VMT entries (+dtor)
       MNL_NOINLINE val _invoke(const val &self, const sym &op, int argc, val argv[], val *argv_out = {}) override
          { return invoke(self, op, argv, argv_out); }
