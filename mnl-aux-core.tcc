@@ -851,6 +851,24 @@ namespace aux { namespace pub {
    // TODO: provide extern instantiations
 
 
+   template<> template<bool, typename Self, typename Arg0>
+   val box<std::vector<val>>::apply_or_fetch(Self &&, Arg0 &&);
+   template<> template<typename Self, typename Arg0, typename Arg1>
+   val box<std::vector<val>>::apply(Self &&, Arg0 &&, Arg1 &&);
+   template<> template<bool, typename Self>
+   val box<std::vector<val>>::apply_or_fetch(Self &&, int, val []);
+   template<> template<typename Key0, typename Val>
+   val box<std::vector<val>>::repl(val &&, Key0 &&, Val &&);
+   template<> template<typename Key0, typename Key1, typename Val>
+   val box<std::vector<val>>::repl(val &&, Key0 &&, Key1 &&, Val &&);
+   template<>
+   val box<std::vector<val>>::repl(val &&, int, val [], val *);
+   template<> template<typename Self>
+   val box<std::vector<val>>::invoke(Self &&, const sym &, int, val [], val *);
+
+
+
+
    MNL_NOINLINE inline val::val(const char *dat): val((string)dat) {} // postponed definition because the complete type box<std::string> was needed
    // postponed definitions because the complete types box<std::vector<ast>>, box<std::pair<std::vector<ast>, loc>> were needed:
    MNL_INLINE inline ast::val(vector<ast> first, loc second)

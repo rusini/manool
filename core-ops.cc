@@ -1312,7 +1312,7 @@ namespace aux {
       return default_repl(std::forward<Self>(self), argc, argv, argv_out);
    }
    // TODO: make sure is<long long>(arg0) works for sym
-   template<> template<typename Self> val box<vector<val>>::invoke(Self &&self, const sym &op, int argc, val argv[], val *argv_out) {
+   template<> template<typename Self> val box<std::vector<val>>::invoke(Self &&self, const sym &op, int argc, val argv[], val *argv_out) {
       static const auto compact = [](vector<val> &dat)
          { if (MNL_UNLIKELY(dat.capacity() > dat.size() * 2)) dat.shrink_to_fit(); };
       switch (op) {
