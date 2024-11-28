@@ -274,10 +274,10 @@ namespace aux { namespace pub {
       MNL_INLINE val(char *dat): val((const char *)dat) {}
       struct boxable {};
    public: // Extraction
-      template<typename Dat = decltype(nullptr)> MNL_INLINE friend bool test(const val &rhs) noexcept
-         { return rhs.test<Dat>(); }
-      template<typename Dat = decltype(nullptr)> MNL_INLINE friend Dat  cast(const val &rhs) noexcept(std::is_nothrow_copy_constructible<Dat>::value)
-         { return rhs.cast<Dat>(); }
+      template<typename Dat = decltype(nullptr) MNL_REQ(std::std::is_convertible_v<std::decay_t<Dat>, Dat>)>
+         MNL_INLINE friend bool test(const val &rhs) noexcept { return rhs.test<Dat>(); }
+      template<typename Dat = decltype(nullptr) MNL_REQ(std::std::is_convertible_v<std::decay_t<Dat>, Dat>)>
+         MNL_INLINE friend Dat  cast(const val &rhs) noexcept(std::is_nothrow_copy_constructible_v<Dat>) { return rhs.cast<Dat>(); }
    public: // Misc essentials
       val default_invoke(const sym &op, int argc, val argv[]);
       long rc /*reference counter*/() const noexcept;
@@ -1046,7 +1046,7 @@ namespace aux { namespace pub {
       public:
          const Dat dat;
          static_assert(std::is_base_of_v<nonvalue, Dat>); // TODO: obsolete due to SFINAE in code ctor
-         explicit box(Dat &&dat) noexcept: root{&tag}, dat(std::move(dat)) {}
+         MNL_INLINE explicit box(Dat &&dat) noexcept: root{&tag}, dat(std::move(dat)) {}
          static std::byte tag; // custom RTTI
       private:
          code compile(code &&self, const form &form, const loc &loc) const override { return dat.compile(std::move(self), form, loc); }
