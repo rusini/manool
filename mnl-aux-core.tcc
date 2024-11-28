@@ -999,10 +999,12 @@ namespace aux { namespace pub {
    public: // Construction -- Implicit conversion (to) + Compilation/execution operations
       struct nonvalue; struct rvalue; struct lvalue; // Bases for Dat
       template<typename Dat MNL_REQ(std::is_base_of_v<nonvalue, Dat>)> code(Dat dat): rep(new box<Dat>{std::move(dat)}) {}
+   public:
       MNL_INLINE code compile(const form &form, const loc &loc) && { return rep->compile(std::move(*this), form, loc); }
+   public:
       template<bool fast_sig = bool{}, bool nores = bool{}> MNL_INLINE auto execute() const
          { return rep->execute(std::bool_constant<fast_sig>{}, std::bool_constant<nores>{}); }
-      MNL_INLINE auto execute() const { return rep->execute(std::bool_constant<fast_sig>{}, std::bool_constant<nores>{}); }
+   public:
       MNL_INLINE void exec_in(const val &value) const { rep->exec_in(value); }
       MNL_INLINE void exec_in(val &&value) const      { rep->exec_in(std::move(value)); }
       MNL_INLINE val  exec_out() const { return rep->exec_out(); }
