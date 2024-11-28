@@ -842,6 +842,72 @@ namespace aux { namespace pub {
       }
    };
 
+   template<typename Dat> MNL_NOINLINE val box<Dat>::_invoke(const val &self, const sym &op, int argc, val argv[], val *argv_out = {})
+      { return invoke(self, op, argv, argv_out); }
+   template<typename Dat> MNL_NOINLINE val box<Dat>::_invoke(val &&self,      const sym &op, int argc, val argv[], val *argv_out = {})
+      { return invoke(_mv(self), op, argv, argv_out); }
+   // For one argument (6 VMT entries)
+   template<typename Dat> MNL_HOT val box<Dat>::_apply(const val &self, const val &arg0) { return apply(self, arg0); }
+   template<typename Dat> MNL_HOT val box<Dat>::_apply(const val &self, val &&arg0) { return apply(self, _mv(arg0)); }
+   template<typename Dat> MNL_HOT val box<Dat>::_apply(const val &self, const sym &arg0) { return apply(self, arg0); }
+   template<typename Dat> MNL_HOT val box<Dat>::_apply(val &&self, const val &arg0) { return apply(_mv(self), arg0); }
+   template<typename Dat> MNL_HOT val box<Dat>::_apply(val &&self, val &&arg0) { return apply(_mv(self), _mv(arg0)); }
+   template<typename Dat> MNL_HOT val box<Dat>::_apply(val &&self, const sym &arg0) { return apply(_mv(self), arg0); }
+   // For one argument (6 VMT entries)
+   template<typename Dat> MNL_HOT val box<Dat>::_fetch(const val &self, const val &arg0) { return fetch(self, arg0); }
+   template<typename Dat> MNL_HOT val box<Dat>::_fetch(const val &self, val &&arg0) { return fetch(self, _mv(arg0)); }
+   template<typename Dat> MNL_HOT val box<Dat>::_fetch(const val &self, const sym &arg0) { return fetch(self, arg0); }
+   template<typename Dat> MNL_HOT val box<Dat>::_fetch(val &&self, const val &arg0) { return fetch(_mv(self), arg0); }
+   template<typename Dat> MNL_HOT val box<Dat>::_fetch(val &&self, val &&arg0) { return fetch(_mv(self), _mv(arg0)); }
+   template<typename Dat> MNL_HOT val box<Dat>::_fetch(val &&self, const sym &arg0) { return fetch(_mv(self), arg0); }
+   // For two arguments (12 VMT entries)
+   template<typename Dat> MNL_HOT val box<Dat>::_apply(const val &self, const val &arg0, const val &arg1) { return apply(self, arg0, arg1); }
+   template<typename Dat> MNL_HOT val box<Dat>::_apply(const val &self, const val &arg0, val &&arg1) { return apply(self, arg0, _mv(arg1)); }
+   template<typename Dat> MNL_HOT val box<Dat>::_apply(const val &self, const val &arg0, const sym &arg1) { return apply(self, arg0, arg1); }
+   template<typename Dat> MNL_HOT val box<Dat>::_apply(const val &self, val &&arg0, const val &arg1) { return apply(self, _mv(arg0), arg1); }
+   template<typename Dat> MNL_HOT val box<Dat>::_apply(const val &self, val &&arg0, val &&arg1) { return apply(self, _mv(arg0), _mv(arg1)); }
+   template<typename Dat> MNL_HOT val box<Dat>::_apply(const val &self, val &&arg0, const sym &arg1) { return apply(self, _mv(arg0), arg1); }
+   template<typename Dat> MNL_HOT val box<Dat>::_apply(val &&self, const val &arg0, const val &arg1) { return apply(_mv(self), arg0, arg1); }
+   template<typename Dat> MNL_HOT val box<Dat>::_apply(val &&self, const val &arg0, val &&arg1) { return apply(_mv(self), arg0, _mv(arg1)); }
+   template<typename Dat> MNL_HOT val box<Dat>::_apply(val &&self, const val &arg0, const sym &arg1) { return apply(_mv(self), arg0, arg1); }
+   template<typename Dat> MNL_HOT val box<Dat>::_apply(val &&self, val &&arg0, const val &arg1) { return apply(_mv(self), _mv(arg0), arg1); }
+   template<typename Dat> MNL_HOT val box<Dat>::_apply(val &&self, val &&arg0, val &&arg1) { return apply(_mv(self), _mv(arg0), _mv(arg1)); }
+   template<typename Dat> MNL_HOT val box<Dat>::_apply(val &&self, val &&arg0, const sym &arg1) { return apply(_mv(self), _mv(arg0), arg1); }
+   // For multiple arguments (4 VMT entries)
+   template<typename Dat> MNL_HOT val box<Dat>::_apply(const val &self, int argc, val argv[]) { return apply(self, argc, argv); }
+   template<typename Dat> MNL_HOT val box<Dat>::_apply(val &&self, int argc, val argv[]) { return apply(_mv(self), argc, argv); }
+   template<typename Dat> MNL_HOT val box<Dat>::_fetch(const val &self, int argc, val argv[]) { return fetch(self, argc, argv); }
+   template<typename Dat> MNL_HOT val box<Dat>::_fetch(val &&self, int argc, val argv[]) { return fetch(_mv(self), argc, argv); }
+   // For two arguments (6 VMT entries)
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, const val &key0, const val &value) { return repl(_mv(self), key0, value); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, const val &key0, val &&value) { return repl(_mv(self), key0, _mv(value)); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, val &&key0, const val &value) { return repl(_mv(self), _mv(key0), value); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, val &&key0, val &&value) { return repl(_mv(self), _mv(key0), _mv(value)); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, const sym &key0, const val &value) { return repl(_mv(self), key0, value); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, const sym &key0, val &&value) { return repl(_mv(self), key0, _mv(value)); }
+   // For three arguments (12 VMT entries)
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, const val &key0, const val &key1, const val &value) { return repl(_mv(self), key0, key1, value); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, const val &key0, const val &key1, val &&value) { return repl(_mv(self), key0, key1, _mv(value)); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, const val &key0, val &&key1, const val &value) { return repl(_mv(self), key0, _mv(key1), value); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, const val &key0, val &&key1, val &&value) { return repl(_mv(self), key0, _mv(key1), _mv(value)); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, const val &key0, const sym &key1, const val &value) { return repl(_mv(self), key0, key1, value); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, const val &key0, const sym &key1, val &&value) { return repl(_mv(self), key0, key1, _mv(value)); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, val &&key0, const val &key1, const val &value) { return repl(_mv(self), _mv(key0), key1, value); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, val &&key0, const val &key1, val &&value) { return repl(_mv(self), _mv(key0), key1, _mv(value)); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, val &&key0, val &&key1, const val &value) { return repl(_mv(self), _mv(key0), _mv(key1), value); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, val &&key0, val &&key1, val &&value) { return repl(_mv(self), _mv(key0), _mv(key1), _mv(value)); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, val &&key0, const sym &key1, const val &value) { return repl(_mv(self), _mv(key0), key1, value); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, val &&key0, const sym &key1, val &&value) { return repl(_mv(self), _mv(key0), key1, _mv(value)); }
+   // For multiple arguments (2 VMT entries)
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, int argc, val argv[])
+      { return repl(_mv(self), argc, argv); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, int argc, val argv[], val *argv_out)
+      { if (!argv_out) box<Dat>::__builtin_unreachable(); return repl(_mv(self), argc, argv, argv_out); }
+
+
+
+
+
    template<> val box<std::string>::invoke(val &&, const sym &, int, val [], val *);
    template<> val box<std::pair<std::vector<ast>, loc>>::invoke(val &&, const sym &, int, val [], val *);
    template<> val box<std::vector<val>>::invoke(val &&, const sym &, int, val [], val *);
