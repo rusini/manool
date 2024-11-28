@@ -997,7 +997,7 @@ namespace aux { namespace pub {
       MNL_INLINE friend bool operator==(const code &lhs, const code &rhs) noexcept { return lhs.rep == rhs.rep; }
       MNL_INLINE explicit operator bool() const noexcept { return rep; }
    public: // Construction -- Implicit conversion (to) + Compilation/execution operations
-      struct nonvalue; struct rvalue; struct lvalue; // Required bases for Dat
+      struct nonvalue; struct rvalue; struct lvalue; // Bases for Dat
       template<typename Dat MNL_REQ(std::is_base_of_v<nonvalue, Dat>)> code(Dat dat): rep(new box<Dat>{std::move(dat)}) {}
 
       template<typename Dat, std::enable_if_t<std::is_base_of_v<nonvalue, Dat>, decltype(nullptr)> = decltype(nullptr){}>
