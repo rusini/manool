@@ -709,12 +709,14 @@ namespace aux { namespace pub {
       template<class Invoke>
          MNL_INLINE val repl(const Invoke &invoke, val &&self, int argc, val [], val *argv_out = {})
          { return invoke(); }
+   private:
+      friend class val::box<Dat>;
    };
 
 
-   template<typename Dat> class box final: val::root {
-      Dat dat;
-      MNL_INLINE explicit box(Dat &&dat): root{&_tag}, dat(std::move(dat)) {}
+   template<typename Dat> class val::box final: val::root {
+      mnl::box<Dat> _; // or use inheritance?
+      MNL_INLINE explicit box(Dat &&dat): root{&_tag}, _{std::move(dat)} {}
       ~box() = default;
    private:
       static constexpr std::byte _tag{};
@@ -725,7 +727,7 @@ namespace aux { namespace pub {
          { return invoke(self, op, argv, argv_out); }
       MNL_NOINLINE val _invoke(val &&self,      const sym &op, int argc, val argv[], val *argv_out = {}) override
          { return invoke(_mv(self), op, argv, argv_out); }
-   private:
+   private: // TODO: having two inconsistent inline defs is already UB, even when not used
       // For one argument (6 VMT entries)
       MNL_HOT val _apply(const val &self, const val &arg0) override { return apply(self, arg0); }
       MNL_HOT val _apply(const val &self, val &&arg0) override { return apply(self, _mv(arg0)); }
@@ -795,8 +797,11 @@ namespace aux { namespace pub {
          { return apply_or_fetch<1>(std::forward<Self>(self), std::forward<Key0>(key0)); }
       template<bool Op, typename Self, typename Arg0> MNL_INLINE val apply_or_fetch(Self &&self, Arg0 &&arg0)
          { return default_apply_or_fetch<Op>(std::forward<Self>(self), std::forward<Arg0>(arg0)); }
-      template<typename Self, typename Arg0, typename Arg1> MNL_INLINE val apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1)
-         { return default_apply(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1)); }
+      template<typename Self, typename Arg0, typename Arg1> MNL_INLINE val apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
+         return _.apply(
+            [&]() MNL_INLINE{ return default_apply(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1)) },
+            std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1) );
+      }
       template<typename Self> MNL_INLINE val apply(Self &&self, int argc, val argv[])
          { return apply_or_fetch<0>(std::forward<Self>(self), argc, argv); }
       template<typename Self> MNL_INLINE val fetch(Self &&self, int argc, val argv[])
