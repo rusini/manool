@@ -730,7 +730,7 @@ namespace aux { namespace pub {
    private: // 50 VMT entries (+dtor)
       MNL_NOINLINE val _invoke(const val &self, const sym &op, int argc, val argv[], val *argv_out = {}) override;
       MNL_NOINLINE val _invoke(val &&self,      const sym &op, int argc, val argv[], val *argv_out = {}) override;
-   private: // TODO: having two inconsistent inline defs is already UB, even when not used
+   private:
       // For one argument (6 VMT entries)
       MNL_HOT val _apply(const val &self, const val &) override;
       MNL_HOT val _apply(const val &self, val &&) override;
