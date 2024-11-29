@@ -673,6 +673,9 @@ namespace aux { namespace pub {
       friend val;
    };
 
+
+
+
    template<typename Dat> struct box {
       Dat dat;
    private: // User-specializable
@@ -714,9 +717,11 @@ namespace aux { namespace pub {
    };
 
 
+
+
    template<typename Dat> class val::box final: val::root {
-      mnl::box<Dat> _; // or use inheritance?
-      MNL_INLINE explicit box(Dat &&dat): root{&_tag}, _{std::move(dat)} {}
+      Dat dat;
+      MNL_INLINE explicit box(Dat &&dat): root{&_tag}, dat(std::move(dat)) {}
       ~box() = default;
    private:
       static constexpr std::byte _tag{};
@@ -924,25 +929,25 @@ namespace aux { namespace pub {
    template<typename Dat> MNL_HOT val box<Dat>::_fetch(const val &self, int argc, val argv[]) { return fetch(self, argc, argv); }
    template<typename Dat> MNL_HOT val box<Dat>::_fetch(val &&self, int argc, val argv[]) { return fetch(_mv(self), argc, argv); }
    // For two arguments (6 VMT entries)
-   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, const val &k0, const val &value) { return repl(_mv(self), k0, value); }
-   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, const val &k0, val &&value) { return repl(_mv(self), k0, _mv(value)); }
-   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, val &&k0, const val &value) { return repl(_mv(self), _mv(k0), value); }
-   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, val &&k0, val &&value) { return repl(_mv(self), _mv(k0), _mv(value)); }
-   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, const sym &k0, const val &value) { return repl(_mv(self), k0, value); }
-   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, const sym &k0, val &&value) { return repl(_mv(self), k0, _mv(value)); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, const val &k0, const val &v) { return repl(_mv(self), k0, v); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, const val &k0, val &&v) { return repl(_mv(self), k0, _mv(v)); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, val &&k0, const val &v) { return repl(_mv(self), _mv(k0), v); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, val &&k0, val &&v) { return repl(_mv(self), _mv(k0), _mv(v)); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, const sym &k0, const val &v) { return repl(_mv(self), k0, v); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, const sym &k0, val &&v) { return repl(_mv(self), k0, _mv(v)); }
    // For three arguments (12 VMT entries)
-   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, const val &k0, const val &k1, const val &value) { return repl(_mv(self), k0, k1, value); }
-   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, const val &k0, const val &k1, val &&value) { return repl(_mv(self), k0, k1, _mv(value)); }
-   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, const val &k0, val &&k1, const val &value) { return repl(_mv(self), k0, _mv(k1), value); }
-   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, const val &k0, val &&k1, val &&value) { return repl(_mv(self), k0, _mv(k1), _mv(value)); }
-   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, const val &k0, const sym &k1, const val &value) { return repl(_mv(self), k0, k1, value); }
-   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, const val &k0, const sym &k1, val &&value) { return repl(_mv(self), k0, k1, _mv(value)); }
-   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, val &&k0, const val &k1, const val &value) { return repl(_mv(self), _mv(k0), k1, value); }
-   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, val &&k0, const val &k1, val &&value) { return repl(_mv(self), _mv(k0), k1, _mv(value)); }
-   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, val &&k0, val &&k1, const val &value) { return repl(_mv(self), _mv(k0), _mv(k1), value); }
-   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, val &&k0, val &&k1, val &&value) { return repl(_mv(self), _mv(k0), _mv(k1), _mv(value)); }
-   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, val &&k0, const sym &k1, const val &value) { return repl(_mv(self), _mv(k0), k1, value); }
-   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, val &&k0, const sym &k1, val &&value) { return repl(_mv(self), _mv(k0), k1, _mv(value)); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, const val &k0, const val &k1, const val &v) { return repl(_mv(self), k0, k1, v); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, const val &k0, const val &k1, val &&v) { return repl(_mv(self), k0, k1, _mv(v)); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, const val &k0, val &&k1, const val &v) { return repl(_mv(self), k0, _mv(k1), v); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, const val &k0, val &&k1, val &&v) { return repl(_mv(self), k0, _mv(k1), _mv(v)); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, const val &k0, const sym &k1, const val &v) { return repl(_mv(self), k0, k1, v); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, const val &k0, const sym &k1, val &&v) { return repl(_mv(self), k0, k1, _mv(v)); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, val &&k0, const val &k1, const val &v) { return repl(_mv(self), _mv(k0), k1, v); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, val &&k0, const val &k1, val &&v) { return repl(_mv(self), _mv(k0), k1, _mv(v)); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, val &&k0, val &&k1, const val &v) { return repl(_mv(self), _mv(k0), _mv(k1), v); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, val &&k0, val &&k1, val &&v) { return repl(_mv(self), _mv(k0), _mv(k1), _mv(v)); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, val &&k0, const sym &k1, const val &v) { return repl(_mv(self), _mv(k0), k1, v); }
+   template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, val &&k0, const sym &k1, val &&v) { return repl(_mv(self), _mv(k0), k1, _mv(v)); }
    // For multiple arguments (2 VMT entries)
    template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, int argc, val argv[])
       { return repl(_mv(self), argc, argv); }
