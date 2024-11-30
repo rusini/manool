@@ -911,26 +911,6 @@ namespace aux { namespace pub {
    template<> val box<std::vector<val>>::invoke(val &&, const sym &, int, val [], val *);
    template<> inline box<std::vector<val>>::~box() { while (!dat.empty()) dat.pop_back(); }
 
-   // TODO: provide specialization declarations for certain members of box instances <- not needed since we refer them from instantiated virtuals?
-   // TODO: provide extern instantiations
-
-
-   template<> template<bool, typename Self, typename Arg0>
-   val box<std::vector<val>>::apply_or_fetch(Self &&, Arg0 &&);
-   template<> template<typename Self, typename Arg0, typename Arg1>
-   val box<std::vector<val>>::apply(Self &&, Arg0 &&, Arg1 &&);
-   template<> template<bool, typename Self>
-   val box<std::vector<val>>::apply_or_fetch(Self &&, int, val []);
-   template<> template<typename Key0, typename Val>
-   val box<std::vector<val>>::repl(val &&, Key0 &&, Val &&);
-   template<> template<typename Key0, typename Key1, typename Val>
-   val box<std::vector<val>>::repl(val &&, Key0 &&, Key1 &&, Val &&);
-   template<>
-   val box<std::vector<val>>::repl(val &&, int, val [], val *);
-   template<> template<typename Self>
-   val box<std::vector<val>>::invoke(Self &&, const sym &, int, val [], val *);
-
-
 
 
    MNL_NOINLINE inline val::val(const char *dat): val((string)dat) {} // postponed definition because the complete type box<std::string> was needed
