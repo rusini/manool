@@ -1281,7 +1281,7 @@ namespace aux {
       }(); }();
       return default_repl(std::forward<Self>(self), std::forward<Key0>(key0), std::forward<Key1>(key1), std::move(value));
    }
-   template<>
+   template<> template<decltype(nullptr)>
    MNL_INLINE val box<std::vector<val>>::repl(val &&self, int argc, val argv[], val *argv_out) {
       if (MNL_LIKELY(argc > 2)) {
          if (MNL_LIKELY(is<long long>(argv[0])) && MNL_LIKELY((unsigned long long)as<long long>(argv[0]) < dat.size()))
