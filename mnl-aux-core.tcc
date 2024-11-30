@@ -900,21 +900,13 @@ namespace aux { namespace pub {
    template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, int argc, val argv[])
       { return repl(_mv(self), argc, argv); }
    template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, int argc, val argv[], val *argv_out)
-      { if (!argv_out) __builtin_unreachable(); return repl(_mv(self), argc, argv, argv_out); }
+      { if (argv_out); else __builtin_unreachable(); return repl(_mv(self), argc, argv, argv_out); }
 
    extern template class box<std::string>;
    extern template class box<std::pair<std::vector<ast>, loc>>>;
    extern template class box<std::vector<val>>;
    template<> inline box<std::vector<val>>::~box() { while (!dat.empty()) dat.pop_back(); }
 
-
-
-
-
-   template<> val box<std::string>::invoke(val &&, const sym &, int, val [], val *);
-   template<> val box<std::pair<std::vector<ast>, loc>>::invoke(val &&, const sym &, int, val [], val *);
-   template<> val box<std::vector<val>>::invoke(val &&, const sym &, int, val [], val *);
-   template<> inline box<std::vector<val>>::~box() { while (!dat.empty()) dat.pop_back(); }
 
 
 
