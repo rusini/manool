@@ -728,8 +728,8 @@ namespace aux { namespace pub {
       friend val; // to directly use Dat, ctor, dtor, and _tag
       // TODO: add marker for Dat is OK
    private: // 50 VMT entries (+dtor)
-      MNL_NOINLINE val _invoke(const val &self, const sym &op, int argc, val argv[], val *argv_out = {}) override;
-      MNL_NOINLINE val _invoke(val &&self,      const sym &op, int argc, val argv[], val *argv_out = {}) override;
+      MNL_NOINLINE val _invoke(const val &self, const sym &op, int argc, val [], val *argv_out = {}) override;
+      MNL_NOINLINE val _invoke(val &&self,      const sym &op, int argc, val [], val *argv_out = {}) override;
    private:
       // For one argument (6 VMT entries)
       MNL_HOT val _apply(const val &self, const val &) override;
@@ -759,10 +759,10 @@ namespace aux { namespace pub {
       MNL_HOT val _apply(val &&self, val &&, val &&) override;
       MNL_HOT val _apply(val &&self, val &&, const sym &) override;
       // For multiple arguments (4 VMT entries)
-      MNL_HOT val _apply(const val &self, int argc, val argv[]) override;
-      MNL_HOT val _apply(val &&self, int argc, val argv[]) override;
-      MNL_HOT val _fetch(const val &self, int argc, val argv[]) override;
-      MNL_HOT val _fetch(val &&self, int argc, val argv[]) override;
+      MNL_HOT val _apply(const val &self, int argc, val []) override;
+      MNL_HOT val _apply(val &&self, int argc, val []) override;
+      MNL_HOT val _fetch(const val &self, int argc, val []) override;
+      MNL_HOT val _fetch(val &&self, int argc, val []) override;
       // For two arguments (6 VMT entries)
       MNL_HOT val _repl(val &&self, const val &, const val &value) override;
       MNL_HOT val _repl(val &&self, const val &, val &&value) override;
@@ -784,8 +784,8 @@ namespace aux { namespace pub {
       MNL_HOT val _repl(val &&self, val &&, const sym &, const val &value) override;
       MNL_HOT val _repl(val &&self, val &&, const sym &, val &&value) override;
       // For multiple arguments (2 VMT entries)
-      MNL_HOT val _repl(val &&self, int argc, val argv[]) override;
-      MNL_HOT val _repl(val &&self, int argc, val argv[], val *argv_out) override;
+      MNL_HOT val _repl(val &&self, int argc, val []) override;
+      MNL_HOT val _repl(val &&self, int argc, val [], val *argv_out) override;
    private:
       template<typename Arg> static MNL_INLINE decltype(auto) _mv(Arg &&arg) noexcept { return std::move(arg); }
    private: // User-specializable
@@ -799,10 +799,7 @@ namespace aux { namespace pub {
       template<bool Op, typename Self, typename Arg0> MNL_INLINE val apply_or_fetch(Self &&self, Arg0 &&arg0)
          { return default_apply_or_fetch<Op>(std::forward<Self>(self), std::forward<Arg0>(arg0)); }
       template<typename Self, typename Arg0, typename Arg1> MNL_INLINE val apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
-         return _.apply(
-            [&]() MNL_INLINE{ return default_apply(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1)) },
-            std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1) );
-      }
+         { return default_apply(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1)); }
       template<typename Self> MNL_INLINE val apply(Self &&self, int argc, val argv[])
          { return apply_or_fetch<0>(std::forward<Self>(self), argc, argv); }
       template<typename Self> MNL_INLINE val fetch(Self &&self, int argc, val argv[])
@@ -948,7 +945,7 @@ namespace aux { namespace pub {
    template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, int argc, val argv[])
       { return repl(_mv(self), argc, argv); }
    template<typename Dat> MNL_HOT val box<Dat>::_repl(val &&self, int argc, val argv[], val *argv_out)
-      { if (!argv_out) box<Dat>::__builtin_unreachable(); return repl(_mv(self), argc, argv, argv_out); }
+      { if (!argv_out) __builtin_unreachable(); return repl(_mv(self), argc, argv, argv_out); }
 
 
 
