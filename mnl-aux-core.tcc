@@ -681,7 +681,7 @@ namespace aux { namespace pub {
       ~box() = default;
    private:
       static constexpr std::byte _tag{};
-      friend val; // to directly use Dat, ctor, dtor, and _tag
+      friend val; // to directly use dat, ctor, dtor, and _tag
    private: // 50 VMT entries (+dtor)
       val _invoke(const val &self, const sym &op, int argc, val [], val *argv_out = {}) override;
       val _invoke(val &&self,      const sym &op, int argc, val [], val *argv_out = {}) override;
