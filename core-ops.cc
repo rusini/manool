@@ -1226,12 +1226,14 @@ namespace aux {
 
    template<> template<bool Op, typename Self, typename Arg0>
    MNL_INLINE val box<std::vector<val>>::apply_or_fetch(Self &&self, Arg0 &&arg0) {
+      if constexpr (!std::is_same_v<Arg0, const sym &>)
       if (MNL_LIKELY(is<long long>(arg0)) && MNL_LIKELY((unsigned long long)as<long long>(arg0) < dat.size()))
          return dat[as<long long>(arg0)];
       return default_apply_or_fetch<Op>(std::forward<Self>(self), std::forward<Key0>(arg0));
    }
    template<> template<typename Self, typename Arg0, typename Arg1>
    MNL_INLINE val box<std::vector<val>>::apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
+      if constexpr (!std::is_same_v<Arg1, const sym &>)
       if (MNL_LIKELY(is<long long>(arg0)) && MNL_LIKELY((unsigned long long)as<long long>(arg0) < dat.size()))
          return dat[as<long long>(arg0)].fetch(std::forward<Arg1>(arg1));
       return default_apply(std::forward<Self>(self), std::forward<Arg0>(arg0), std::forward<Arg1>(arg1));
@@ -1248,9 +1250,9 @@ namespace aux {
       }
       return default_apply_or_fetch<Op>(std::forward<Self>(self), argc, argv);
    }
-
    template<> template<typename Key0, typename Val>
    MNL_INLINE val box<std::vector<val>>::repl(val &&self, Key0 &&key0, Val &&value) {
+      if constexpr (!std::is_same_v<Key0, const sym &>)
       if (MNL_LIKELY(is<long long>(key0)) && MNL_LIKELY((unsigned long long)as<long long>(key0) < dat.size()))
       if (std::is_same_v<Self, val> && MNL_LIKELY(!shared())) {
       # if true // We deem a check followed by a not-taken, correctly predicted branch better for performance than an extra store-after-load;
@@ -1268,6 +1270,7 @@ namespace aux {
    }
    template<> template<typename Key0, typename Key1, typename Val>
    MNL_INLINE val box<std::vector<val>>::repl(val &&self, Key0 &&key0, Key1 &&key1, Val &&value) {
+      if constexpr (!std::is_same_v<Key1, const sym &>)
       if (MNL_LIKELY(is<long long>(key0)) && MNL_LIKELY((unsigned long long)as<long long>(key0) < dat.size()))
       if (std::is_same_v<Self, val> && MNL_LIKELY(!shared())) {
          auto &elem = dat[as<long long>(key0)];
@@ -1311,7 +1314,7 @@ namespace aux {
       }
       return default_repl(std::forward<Self>(self), argc, argv, argv_out);
    }
-   // TODO: make sure is<long long>(arg0) works for sym
+
    template<> template<typename Self> val box<std::vector<val>>::invoke(Self &&self, const sym &op, int argc, val argv[], val *argv_out) {
       static const auto compact = [](vector<val> &dat)
          { if (MNL_UNLIKELY(dat.capacity() > dat.size() * 2)) dat.shrink_to_fit(); };
