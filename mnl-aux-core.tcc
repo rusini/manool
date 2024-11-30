@@ -673,52 +673,6 @@ namespace aux { namespace pub {
       friend val;
    };
 
-
-
-
-   template<typename Dat> struct box {
-      Dat dat;
-   private: // User-specializable
-      template<typename Self> MNL_INLINE val invoke(Self &&self, const sym &op, int argc, val argv[], val *argv_out)
-         { return dat.invoke(std::forward<Self>(self), op, argc, argv, argv_out); static_assert(std::is_base_v<boxable, Dat>); }
-   private:
-      template<class Invoke, typename Self, typename Arg0>
-         MNL_INLINE val apply(const Invoke &invoke, Self &&self, Arg0 &&arg0)
-         { return apply_or_fetch<0>(invoke, std::forward<Self>(self), std::forward<Arg0>(arg0)); }
-      template<class Invoke, typename Self, typename Arg0>
-         MNL_INLINE val fetch(const Invoke &invoke, Self &&self, Key0 &&key0)
-         { return apply_or_fetch<1>(invoke, std::forward<Self>(self), std::forward<Key0>(key0)); }
-      template<bool Op, class Invoke, typename Self, typename Arg0>
-         MNL_INLINE val apply_or_fetch(const Invoke &invoke, Self &&, Arg0 &&)
-         { return invoke(); }
-      template<class Invoke, typename Self, typename Arg0, typename Arg1>
-         MNL_INLINE val apply(const Invoke &invoke, Self &&self, Arg0 &&, Arg1 &&)
-         { return invoke(); }
-      template<class Invoke, typename Self>
-         MNL_INLINE val apply(const Invoke &invoke, Self &&self, int argc, val argv[])
-         { return apply_or_fetch<0>(invoke, std::forward<Self>(self), argc, argv); }
-      template<class Invoke, typename Self>
-         MNL_INLINE val fetch(const Invoke &invoke, Self &&self, int argc, val argv[])
-         { return apply_or_fetch<1>(invoke, std::forward<Self>(self), argc, argv); }
-      template<bool Op, class Invoke, typename Self>
-         MNL_INLINE val apply_or_fetch(const Invoke &invoke, Self &&self, int argc, val [])
-         { return invoke(); }
-      template<class Invoke, typename Key0, typename Val>
-         MNL_INLINE val repl(const Invoke &invoke, val &&self, Key0 &&, Val &&value)
-         { return invoke(); }
-      template<class Invoke, typename Key0, typename Key1, typename Val>
-         MNL_INLINE val repl(const Invoke &invoke, val &&self, Key0 &&, Key1 &&, Val &&value)
-         { return invoke(); }
-      template<class Invoke>
-         MNL_INLINE val repl(const Invoke &invoke, val &&self, int argc, val [], val *argv_out = {})
-         { return invoke(); }
-   private:
-      friend class val::box<Dat>;
-   };
-
-
-
-
 // TODO: add marker for Dat is OK
 
    template<typename Dat> class val::box final: val::root {
