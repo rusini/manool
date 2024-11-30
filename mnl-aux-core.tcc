@@ -683,64 +683,64 @@ namespace aux { namespace pub {
       static constexpr std::byte _tag{};
       friend val; // to directly use Dat, ctor, dtor, and _tag
    private: // 50 VMT entries (+dtor)
-      MNL_NOINLINE val _invoke(const val &self, const sym &op, int argc, val [], val *argv_out = {}) override;
-      MNL_NOINLINE val _invoke(val &&self,      const sym &op, int argc, val [], val *argv_out = {}) override;
+      val _invoke(const val &self, const sym &op, int argc, val [], val *argv_out = {}) override;
+      val _invoke(val &&self,      const sym &op, int argc, val [], val *argv_out = {}) override;
    private:
       // For one argument (6 VMT entries)
-      MNL_HOT val _apply(const val &self, const val &) override;
-      MNL_HOT val _apply(const val &self, val &&) override;
-      MNL_HOT val _apply(const val &self, const sym &) override;
-      MNL_HOT val _apply(val &&self, const val &) override;
-      MNL_HOT val _apply(val &&self, val &&) override;
-      MNL_HOT val _apply(val &&self, const sym &) override;
+      val _apply(const val &self, const val &) override;
+      val _apply(const val &self, val &&) override;
+      val _apply(const val &self, const sym &) override;
+      val _apply(val &&self, const val &) override;
+      val _apply(val &&self, val &&) override;
+      val _apply(val &&self, const sym &) override;
       // For one argument (6 VMT entries)
-      MNL_HOT val _fetch(const val &self, const val &) override;
-      MNL_HOT val _fetch(const val &self, val &&) override;
-      MNL_HOT val _fetch(const val &self, const sym &) override;
-      MNL_HOT val _fetch(val &&self, const val &) override;
-      MNL_HOT val _fetch(val &&self, val &&) override;
-      MNL_HOT val _fetch(val &&self, const sym &) override;
+      val _fetch(const val &self, const val &) override;
+      val _fetch(const val &self, val &&) override;
+      val _fetch(const val &self, const sym &) override;
+      val _fetch(val &&self, const val &) override;
+      val _fetch(val &&self, val &&) override;
+      val _fetch(val &&self, const sym &) override;
       // For two arguments (12 VMT entries)
-      MNL_HOT val _apply(const val &self, const val &, const val &) override;
-      MNL_HOT val _apply(const val &self, const val &, val &&) override;
-      MNL_HOT val _apply(const val &self, const val &, const sym &) override;
-      MNL_HOT val _apply(const val &self, val &&, const val &) override;
-      MNL_HOT val _apply(const val &self, val &&, val &&) override;
-      MNL_HOT val _apply(const val &self, val &&, const sym &) override;
-      MNL_HOT val _apply(val &&self, const val &, const val &) override;
-      MNL_HOT val _apply(val &&self, const val &, val &&) override;
-      MNL_HOT val _apply(val &&self, const val &, const sym &) override;
-      MNL_HOT val _apply(val &&self, val &&, const val &) override;
-      MNL_HOT val _apply(val &&self, val &&, val &&) override;
-      MNL_HOT val _apply(val &&self, val &&, const sym &) override;
+      val _apply(const val &self, const val &, const val &) override;
+      val _apply(const val &self, const val &, val &&) override;
+      val _apply(const val &self, const val &, const sym &) override;
+      val _apply(const val &self, val &&, const val &) override;
+      val _apply(const val &self, val &&, val &&) override;
+      val _apply(const val &self, val &&, const sym &) override;
+      val _apply(val &&self, const val &, const val &) override;
+      val _apply(val &&self, const val &, val &&) override;
+      val _apply(val &&self, const val &, const sym &) override;
+      val _apply(val &&self, val &&, const val &) override;
+      val _apply(val &&self, val &&, val &&) override;
+      val _apply(val &&self, val &&, const sym &) override;
       // For multiple arguments (4 VMT entries)
-      MNL_HOT val _apply(const val &self, int argc, val []) override;
-      MNL_HOT val _apply(val &&self, int argc, val []) override;
-      MNL_HOT val _fetch(const val &self, int argc, val []) override;
-      MNL_HOT val _fetch(val &&self, int argc, val []) override;
+      val _apply(const val &self, int argc, val []) override;
+      val _apply(val &&self, int argc, val []) override;
+      val _fetch(const val &self, int argc, val []) override;
+      val _fetch(val &&self, int argc, val []) override;
       // For two arguments (6 VMT entries)
-      MNL_HOT val _repl(val &&self, const val &, const val &value) override;
-      MNL_HOT val _repl(val &&self, const val &, val &&value) override;
-      MNL_HOT val _repl(val &&self, val &&, const val &value) override;
-      MNL_HOT val _repl(val &&self, val &&, val &&value) override;
-      MNL_HOT val _repl(val &&self, const sym &, const val &value) override;
-      MNL_HOT val _repl(val &&self, const sym &, val &&value) override;
+      val _repl(val &&self, const val &, const val &value) override;
+      val _repl(val &&self, const val &, val &&value) override;
+      val _repl(val &&self, val &&, const val &value) override;
+      val _repl(val &&self, val &&, val &&value) override;
+      val _repl(val &&self, const sym &, const val &value) override;
+      val _repl(val &&self, const sym &, val &&value) override;
       // For three arguments (12 VMT entries)
-      MNL_HOT val _repl(val &&self, const val &, const val &, const val &value) override;
-      MNL_HOT val _repl(val &&self, const val &, const val &, val &&value) override;
-      MNL_HOT val _repl(val &&self, const val &, val &&, const val &value) override;
-      MNL_HOT val _repl(val &&self, const val &, val &&, val &&value) override;
-      MNL_HOT val _repl(val &&self, const val &, const sym &, const val &value) override;
-      MNL_HOT val _repl(val &&self, const val &, const sym &, val &&value) override;
-      MNL_HOT val _repl(val &&self, val &&, const val &, const val &value) override;
-      MNL_HOT val _repl(val &&self, val &&, const val &, val &&value) override;
-      MNL_HOT val _repl(val &&self, val &&, val &&, const val &value) override;
-      MNL_HOT val _repl(val &&self, val &&, val &&, val &&value) override;
-      MNL_HOT val _repl(val &&self, val &&, const sym &, const val &value) override;
-      MNL_HOT val _repl(val &&self, val &&, const sym &, val &&value) override;
+      val _repl(val &&self, const val &, const val &, const val &value) override;
+      val _repl(val &&self, const val &, const val &, val &&value) override;
+      val _repl(val &&self, const val &, val &&, const val &value) override;
+      val _repl(val &&self, const val &, val &&, val &&value) override;
+      val _repl(val &&self, const val &, const sym &, const val &value) override;
+      val _repl(val &&self, const val &, const sym &, val &&value) override;
+      val _repl(val &&self, val &&, const val &, const val &value) override;
+      val _repl(val &&self, val &&, const val &, val &&value) override;
+      val _repl(val &&self, val &&, val &&, const val &value) override;
+      val _repl(val &&self, val &&, val &&, val &&value) override;
+      val _repl(val &&self, val &&, const sym &, const val &value) override;
+      val _repl(val &&self, val &&, const sym &, val &&value) override;
       // For multiple arguments (2 VMT entries)
-      MNL_HOT val _repl(val &&self, int argc, val []) override;
-      MNL_HOT val _repl(val &&self, int argc, val [], val *argv_out) override;
+      val _repl(val &&self, int argc, val []) override;
+      val _repl(val &&self, int argc, val [], val *argv_out) override;
    private:
       template<typename Arg> static MNL_INLINE decltype(auto) _mv(Arg &&arg) noexcept { return std::move(arg); }
    private: // User-specializable
