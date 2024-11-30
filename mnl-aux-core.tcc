@@ -719,6 +719,8 @@ namespace aux { namespace pub {
 
 
 
+// TODO: add marker for Dat is OK
+
    template<typename Dat> class val::box final: val::root {
       Dat dat;
       MNL_INLINE explicit box(Dat &&dat): root{&_tag}, dat(std::move(dat)) {}
@@ -726,7 +728,6 @@ namespace aux { namespace pub {
    private:
       static constexpr std::byte _tag{};
       friend val; // to directly use Dat, ctor, dtor, and _tag
-      // TODO: add marker for Dat is OK
    private: // 50 VMT entries (+dtor)
       MNL_NOINLINE val _invoke(const val &self, const sym &op, int argc, val [], val *argv_out = {}) override;
       MNL_NOINLINE val _invoke(val &&self,      const sym &op, int argc, val [], val *argv_out = {}) override;
@@ -810,7 +811,7 @@ namespace aux { namespace pub {
          { return default_repl(std::move(self), std::forward<Key0>(key0), std::forward<Val>(value)); }
       template<typename Key0, typename Key1, typename Val> MNL_INLINE val repl(val &&self, Key0 &&key0, Key1 &&key1, Val &&value)
          { return default_repl(std::move(self), std::forward<Key0>(key0), std::forward<Key1>(key1), std::forward<Val>(value)); }
-      MNL_INLINE val repl(val &&self, int argc, val argv[], val *argv_out = {})
+      template<decltype(nullptr) = decltype(nullptr)> MNL_INLINE val repl(val &&self, int argc, val argv[], val *argv_out = {})
          { return default_repl(std::move(self), argc, argv, argv_out); }
    private: // Utilities for forwarding to "invoke"
       template< typename Self, typename Arg0, std::enable_if_t<
