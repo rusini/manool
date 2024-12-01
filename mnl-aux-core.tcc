@@ -827,7 +827,7 @@ namespace aux { namespace pub {
          return _invoke(std::move(self), sym::from_id<sym::id("Repl")>, argc, argv, argv_out);
       }
    };
-   template<typename Dat> const std::byte box<Dat>::_tag;
+   template<typename Dat> const std::byte box<Dat>::_tag; // noninline
 
    template<typename Dat> val box<Dat>::_invoke(const val &self, const sym &op, int argc, val argv[], val *argv_out = {})
       { return invoke(self, op, argv, argv_out); }
