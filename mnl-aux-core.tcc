@@ -502,9 +502,6 @@ namespace aux { namespace pub {
       } vector_const_reverse_iterator_range, vcri_range;
       vcri_range operator-(long) const noexcept;
    public: // Related stuff
-      //friend sym;
-      friend val sym::operator()(int, val [], val *) const; // essential
-
       friend class proc_Min; friend class proc_Max;
    };
    MNL_INLINE inline void swap(val &lhs, val &rhs) noexcept { lhs.swap(rhs); }
