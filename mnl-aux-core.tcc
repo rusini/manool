@@ -675,7 +675,7 @@ namespace aux { namespace pub {
       MNL_INLINE explicit box(Dat &&dat): root{&_tag}, dat(std::move(dat)) {}
       ~box() = default; // inline
    private:
-      static inline const std::byte _tag; // "inline" may imply less conservative assumptions
+      static inline const std::byte _tag; // "inline" -> less conservative assumptions about the final address
       friend val; // to directly use dat, ctor, dtor, and _tag
    private: // 50 VMT entries (+dtor)
       MNL_NOINLINE val _invoke(const val &self, const sym &op, int argc, val [], val *argv_out = {}) override;
