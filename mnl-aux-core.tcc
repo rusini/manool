@@ -771,12 +771,12 @@ namespace aux { namespace pub {
          std::is_same_v<Arg0, const val &> | std::is_same_v<Arg0, val> | std::is_same_v<Arg0, const sym &> )>
       MNL_INLINE val default_apply(Self &&self, Arg0 &&arg0)
          { return default_apply_or_fetch<0>(std::forward<Self>(self), std::forward<Arg0>(arg0)); }
-      template< typename Self, typename Arg0 MNL_REQ(
+      template<typename Self, typename Arg0 MNL_REQ(
          std::is_same_v<Self, const val &> | std::is_same_v<Self, val> &&
          std::is_same_v<Arg0, const val &> | std::is_same_v<Arg0, val> | std::is_same_v<Arg0, const sym &> )>
       MNL_INLINE val default_fetch(Self &&self, Arg0 &&arg0)
          { return default_apply_or_fetch<1>(std::forward<Self>(self), std::forward<Arg0>(arg0)); }
-      template< bool Op, typename Self, typename Arg0 MNL_REQ(
+      template<bool Op, typename Self, typename Arg0 MNL_REQ(
          std::is_same_v<Self, const val &> | std::is_same_v<Self, val> &&
          std::is_same_v<Arg0, const val &> | std::is_same_v<Arg0, val> | std::is_same_v<Arg0, const sym &> )>
       MNL_INLINE val default_apply_or_fetch(Self &&self, Arg0 &&arg0) {
@@ -791,15 +791,15 @@ namespace aux { namespace pub {
          val argv[] = {std::forward<Arg0>(arg0), std::forward<Arg1>(arg1)};
          return _invoke(std::forward<Self>(self), sym::from_id<sym::id("Apply")>, std::size(argv), argv);
       }
-      template< typename Self, typename Arg0 MNL_REQ(
+      template<typename Self, typename Arg0 MNL_REQ(
          std::is_same_v<Self, const val &> | std::is_same_v<Self, val> )>
       MNL_INLINE val default_apply(Self &&self, int argc, val argv[])
          { default_apply_or_fetch<0>(std::forward<Self>(self), argc, argv); }
-      template< typename Self, typename Arg0 MNL_REQ(
+      template<typename Self, typename Arg0 MNL_REQ(
          std::is_same_v<Self, const val &> | std::is_same_v<Self, val> )>
       MNL_INLINE val default_fetch(Self &&self, int argc, val argv[])
          { default_apply_or_fetch<1>(std::forward<Self>(self), argc, argv); }
-      template< bool Op, typename Self, typename Arg0 MNL_REQ(
+      template<bool Op, typename Self, typename Arg0 MNL_REQ(
          std::is_same_v<Self, const val &> | std::is_same_v<Self, val> )>
       MNL_INLINE val default_apply_or_fetch(Self &&self, int argc, val argv[]) {
          return _invoke(std::forward<Self>(self), sym::from_id<sym::id(Op ? "Apply" : "Fetch")>, argc, argv);
