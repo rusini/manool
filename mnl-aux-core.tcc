@@ -673,9 +673,9 @@ namespace aux { namespace pub {
    template<typename Dat> class box final: val::root {
       Dat dat;
       MNL_INLINE explicit box(Dat &&dat): root{&_tag}, dat(std::move(dat)) {}
-      ~box() = default; // might be specialized
+      ~box() = default; // inline
    private:
-      static const std::byte _tag;
+      static inline const std::byte _tag; // "inline" implies more agressive optimization
       friend val; // to directly use dat, ctor, dtor, and _tag
    private: // 50 VMT entries (+dtor)
       MNL_NOINLINE val _invoke(const val &self, const sym &op, int argc, val [], val *argv_out = {}) override;
@@ -824,7 +824,6 @@ namespace aux { namespace pub {
          return _invoke(std::move(self), sym::from_id<sym::id("Repl")>, argc, argv, argv_out);
       }
    };
-   template<typename Dat> const std::byte box<Dat>::_tag; // noninline
 
    template<typename Dat> val box<Dat>::_invoke(const val &self, const sym &op, int argc, val argv[], val *argv_out = {})
       { return invoke(self, op, argv, argv_out); }
