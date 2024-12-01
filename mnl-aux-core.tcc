@@ -678,7 +678,7 @@ namespace aux { namespace pub {
       MNL_INLINE explicit box(Dat &&dat): root{&_tag}, dat(std::move(dat)) {}
       ~box() = default;
    private:
-      static constexpr std::byte _tag{};
+      static const std::byte _tag;
       friend val; // to directly use dat, ctor, dtor, and _tag
    private: // 50 VMT entries (+dtor)
       MNL_NOINLINE val _invoke(const val &self, const sym &op, int argc, val [], val *argv_out = {}) override;
@@ -827,6 +827,7 @@ namespace aux { namespace pub {
          return _invoke(std::move(self), sym::from_id<sym::id("Repl")>, argc, argv, argv_out);
       }
    };
+   template<typename Dat> const std::byte box<Dat>::_tag;
 
    template<typename Dat> val box<Dat>::_invoke(const val &self, const sym &op, int argc, val argv[], val *argv_out = {})
       { return invoke(self, op, argv, argv_out); }
@@ -893,6 +894,7 @@ namespace aux { namespace pub {
    extern template class box<std::string>;
    extern template class box<std::pair<std::vector<ast>, loc>>>;
    extern template class box<std::vector<val>>;
+
    template<> inline box<std::vector<val>>::~box() { while (!dat.empty()) dat.pop_back(); }
 
 
