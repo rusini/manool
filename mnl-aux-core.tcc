@@ -676,7 +676,7 @@ namespace aux { namespace pub {
    template<typename Dat> class box final: val::root {
       Dat dat;
       MNL_INLINE explicit box(Dat &&dat): root{&_tag}, dat(std::move(dat)) {}
-      ~box() = default;
+      ~box() = default; // might be specialized
    private:
       static const std::byte _tag;
       friend val; // to directly use dat, ctor, dtor, and _tag
