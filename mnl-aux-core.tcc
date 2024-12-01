@@ -673,7 +673,7 @@ namespace aux { namespace pub {
       friend val;
    };
 
-   template<typename Dat> class val::box final: val::root {
+   template<typename Dat> class box final: val::root {
       Dat dat;
       MNL_INLINE explicit box(Dat &&dat): root{&_tag}, dat(std::move(dat)) {}
       ~box() = default;
