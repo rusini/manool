@@ -673,8 +673,6 @@ namespace aux { namespace pub {
       friend val;
    };
 
-// TODO: add marker for Dat is OK
-
    template<typename Dat> class val::box final: val::root {
       Dat dat;
       MNL_INLINE explicit box(Dat &&dat): root{&_tag}, dat(std::move(dat)) {}
