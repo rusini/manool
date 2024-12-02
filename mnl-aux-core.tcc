@@ -644,25 +644,25 @@ namespace aux { namespace pub {
       MNL_HOT virtual val _fetch(const val &self, int argc, val []) = 0;
       MNL_HOT virtual val _fetch(val &&self,      int argc, val []) = 0;
       // For two arguments (6 VMT entries)
-      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, const val &, const val &) = 0;
-      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, const val &, val &&) = 0;
-      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, val &&, const val &) = 0;
-      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, val &&, val &&) = 0;
-      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, const sym &, const val &) = 0;
-      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, const sym &, val &&) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, const val &, const val &value) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, const val &, val &&value) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, val &&, const val &value) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, val &&, val &&value) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, const sym &, const val &value) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, const sym &, val &&value) = 0;
       // For three arguments (12 VMT entries)
-      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, const val &, const val &, const val &) = 0;
-      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, const val &, const val &, val &&) = 0;
-      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, const val &, val &&, const val &) = 0;
-      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, const val &, val &&, val &&) = 0;
-      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, const val &, const sym &, const val &) = 0;
-      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, const val &, const sym &, val &&) = 0;
-      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, val &&, const val &, const val &) = 0;
-      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, val &&, const val &, val &&) = 0;
-      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, val &&, val &&, const val &) = 0;
-      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, val &&, val &&, val &&) = 0;
-      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, val &&, const sym &, const val &) = 0;
-      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, val &&, const sym &, val &&) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, const val &, const val &, const val &value) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, const val &, const val &, val &&value) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, const val &, val &&, const val &value) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, const val &, val &&, val &&value) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, const val &, const sym &, const val &value) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, const val &, const sym &, val &&value) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, val &&, const val &, const val &value) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, val &&, const val &, val &&value) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, val &&, val &&, const val &value) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, val &&, val &&, val &&value) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, val &&, const sym &, const val &value) = 0;
+      [[nodiscard]] MNL_HOT virtual val _repl(val &&self, val &&, const sym &, val &&value) = 0;
       // For multiple arguments (2 VMT entries)
       [[nodiscard]] MNL_HOT virtual val _repl(val &&self, int argc, val []) = 0;
       [[nodiscard]] MNL_HOT virtual val _repl(val &&self, int argc, val [], val *argv_out) = 0; // see above about argv_out
