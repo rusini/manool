@@ -951,10 +951,18 @@ namespace aux { namespace pub {
    };
 
 
-   inline ast::val(std::initializer_list<ast> list, loc loc) {
+   inline ast::val(std::initializer_list<ast> init, const loc &loc): ast([&]() MNL_INLINE->ast{
+      if (MNL_LIKELY(init.empty())) return {};
+      ast res; for (const ast *it = init.end(); --it != init.begin();) res = cons{std::move(res), *it};
+      return cons{std::move(res), *init.begin(), loc};
+   }()) {}
+
+   {
+
       ast res;
       long count = list.size();
-      for (auto &elem: list) res = MNL_LIKELY(count--) ? cons{std::move(res), elem} : cons{std::move(res), elem, loc};
+      for (auto it = std::rbegin(list); it != list.begin(); --it)
+         res = MNL_LIKELY(it ) ? (--count, cons{std::move(res), elem}) : cons{std::move(res), elem, loc};
       return ast;
    }
 
