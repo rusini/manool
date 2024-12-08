@@ -109,20 +109,35 @@ namespace aux {
                }
             MNL_IF_WITH_MT(}();)
          }()) {}
+      public:
+         MNL_INLINE origin(const origin &rhs) noexcept: rep(rhs.rep) {
+            MNL_IF_WITHOUT_MT(++rc[rep]) MNL_IF_WITH_MT(__atomic_add_fetch(&rc[rep], 1, __ATOMIC_RELAXED));
+         }
+         MNL_INLINE origin &operator=(org src) {
+            swap(src); return *this;
+         }
          ~org() {
-            if (MNL_UNLIKELY())
+            if (MNL_UNLIKELY(! MNL_IF_WITHOUT_MT(--rc[rep]) MNL_IF_WITH_MT(__atomic_sub_fetch(&rc[rep], 1, __ATOMIC_RELAXED)) ))
             MNL_IF_WITH_MT(std::lock_guard{mutex}, [&]() MNL_INLINE{)
-               pool.push_back(id);
+               disp_name[rep].clear(), recycle_pool.push_back(rep);
             MNL_IF_WITH_MT(}();)
          }
-
+         void swap(org &other) {
+            using std::swap; swap(rep, other.rep);
+         }
       private:
          unsigned short rep;
+         static std::vector<std::string>    disp_name;
+         static std::vector<unsigned short> recycle_pool;
+         MNL_IF_WITH_MT(static std::mutex   mutex;)
+         static MNL_NOTE(atomic) long       rc[];
       private:
          MNL_INLINE static void hold() noexcept
             { MNL_IF_WITHOUT_MT(++rc[rep]) MNL_IF_WITH_MT(__atomic_add_fetch(&rc[rep], 1, __ATOMIC_RELAXED)); }
-         MNL_INLINE static void unhold() noexcept
-            { if (MNL_UNLIKELY(! MNL_IF_WITHOUT_MT(--rc[rep]) MNL_IF_WITH_MT(__atomic_sub_fetch(&rc[rep], 1, __ATOMIC_RELAXED)) )) free(rep); }
+         MNL_INLINE static void unhold() noexcept {
+            if (MNL_UNLIKELY(! MNL_IF_WITHOUT_MT(--rc[rep]) MNL_IF_WITH_MT(__atomic_sub_fetch(&rc[rep], 1, __ATOMIC_RELAXED)) ))
+               disp_name[rep].clear(), pool.push_back(rep);
+         }
 
          disp_name.size()) {
          }
@@ -134,14 +149,7 @@ namespace aux {
          static MNL_NOTE(atomic) long       org_rc[];
       } org;
 
-      unsigned short org;
       struct pos { MNL_PACK unsigned short line; unsigned char col; } _start, _final;
-      loc(pos _)
-
-      static std::vector<std::string>    org_disp_name;
-      static std::vector<unsigned short> org_pool;
-      MNL_IF_WITH_MT(static std::mutex   org_mutex;)
-      static MNL_NOTE(atomic) long       org_rc[];
    };
 
 // class sym ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
