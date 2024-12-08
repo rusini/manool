@@ -92,11 +92,11 @@ namespace aux {
    struct loc {
       class origin {
       public:
-         origin(std::string arg): rep([&]() MNL_INLINE{
+         origin(std::string rhs): rep([&]() MNL_INLINE{
             MNL_IF_WITH_MT(return std::lock_guard{mutex}, [&]() MNL_INLINE)
                if (pool.empty()) {
                   pool.reserve(disp_name.size() + 1);
-                  disp_name.push_back(std::move(arg)), rc[disp_name.size() - 1] = 1;
+                  disp_name.push_back(std::move(rhs)), rc[disp_name.size() - 1] = 1;
                   return (unsigned short)(disp_name.size() - 1);
                } else {
                   unsigned short res = pool.back(); pool.pop_back();
