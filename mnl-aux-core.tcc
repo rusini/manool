@@ -88,6 +88,62 @@ namespace aux {
    namespace aux { namespace pub { struct loc/*ation in source code*/ { shared_ptr<const string> origin; pair<int, int> _start, _final; }; } }
    namespace aux { template<size_t Argc> using args = array<val, Argc>; } // assume any g++-like compiler relaxes ISO/IEC 14882:2011 S8.5.1 P11 as in C++14
 
+
+   struct loc {
+      class org {
+      public:
+         MNL_INLINE org(): org(0) {}
+      public:
+         org(): org(0) {}
+      public:
+         org(std::string disp_name): id([&]() MNL_INLINE->decltype(id){
+            MNL_IF_WITH_MT(return std::lock_guard{mutex}, [&]() MNL_INLINE->decltype(id))
+               if (pool.empty()) {
+                  pool.reserve(disp_name.size() + 1);
+                  disp_name.push_back(std::move(disp_name)), rc[disp_name.size() - 1] = 1;
+                  return disp_name.size() - 1;
+               } else {
+                  auto id = pool.back(); pool.pop_back();
+                  disp_name[id] = std::move(disp_name), rc[id] = 1;
+                  return id;
+               }
+            MNL_IF_WITH_MT(}();)
+         }()) {}
+         ~org() {
+            if (MNL_UNLIKELY())
+            MNL_IF_WITH_MT(std::lock_guard{mutex}, [&]() MNL_INLINE{)
+               pool.push_back(id);
+            MNL_IF_WITH_MT(}();)
+         }
+
+      private:
+         unsigned short rep;
+      private:
+         MNL_INLINE static void hold() noexcept
+            { MNL_IF_WITHOUT_MT(++rc[rep]) MNL_IF_WITH_MT(__atomic_add_fetch(&rc[rep], 1, __ATOMIC_RELAXED)); }
+         MNL_INLINE static void unhold() noexcept
+            { if (MNL_UNLIKELY(! MNL_IF_WITHOUT_MT(--rc[rep]) MNL_IF_WITH_MT(__atomic_sub_fetch(&rc[rep], 1, __ATOMIC_RELAXED)) )) free(rep); }
+
+         disp_name.size()) {
+         }
+
+      private:
+         static std::vector<std::string>    org_disp_name;
+         static std::vector<unsigned short> org_pool;
+         MNL_IF_WITH_MT(static std::mutex   org_mutex;)
+         static MNL_NOTE(atomic) long       org_rc[];
+      } org;
+
+      unsigned short org;
+      struct pos { MNL_PACK unsigned short line; unsigned char col; } _start, _final;
+      loc(pos _)
+
+      static std::vector<std::string>    org_disp_name;
+      static std::vector<unsigned short> org_pool;
+      MNL_IF_WITH_MT(static std::mutex   org_mutex;)
+      static MNL_NOTE(atomic) long       org_rc[];
+   };
+
 // class sym ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace aux { namespace pub {
    class sym/*bol*/ {
