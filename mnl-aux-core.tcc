@@ -90,11 +90,12 @@ namespace aux {
 
 
    struct loc {
-      class origin {
+      class origin { // strictly minimal
       public:
          origin(std::string rhs): rep([&]() MNL_INLINE{
             MNL_IF_WITH_MT(return std::lock_guard{mutex}, [&]() MNL_INLINE)
                if (pool.empty()) {
+                  assert(disp_name.size() == (unsigned short)disp_name.size());
                   pool.reserve(disp_name.size() + 1);
                   disp_name.push_back(std::move(rhs));
                   return (unsigned short)(disp_name.size() - 1);
@@ -106,7 +107,7 @@ namespace aux {
             MNL_IF_WITH_MT(}();)
          }()) { rc[res] = 1; }
       public:
-         MNL_INLINE origin(const origin &rhs) noexcept: rep(rhs.rep) {
+         MNL_INLINE origin(const origin &rhs = none) noexcept: rep(rhs.rep) {
             MNL_IF_WITHOUT_MT(++rc[rep]) MNL_IF_WITH_MT(__atomic_add_fetch(&rc[rep], 1, __ATOMIC_RELAXED));
          }
          ~origin() {
@@ -116,18 +117,24 @@ namespace aux {
             MNL_IF_WITH_MT(}();)
          }
       public:
-         operator const string &() const noexcept { return disp_name[rep]; }
+         MNL_INLINE operator const string &() const noexcept { return disp_name[rep]; }
+         MNL_INLINE explicit operator bool() const noexcept { return rep; }
       private:
          unsigned short                     rep;
          static std::vector<std::string>    disp_name;
          static std::vector<unsigned short> pool;
          MNL_IF_WITH_MT(static std::mutex   mutex;)
          static MNL_NOTE(atomic) long       rc[];
+      private:
+         static const origin none;
       } origin;
       struct pos {
          MNL_PACK unsigned short line; unsigned char col;
       } _start, _final;
+   public:
+      MNL_INLINE explicit operator bool() const noexcept { return origin; }
    };
+   inline const origin origin::none = "";
 
 // class sym ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace aux { namespace pub {
