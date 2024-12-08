@@ -90,22 +90,18 @@ namespace aux {
 
 
    struct loc {
-      class org {
+      class origin {
       public:
-         MNL_INLINE org(): org(0) {}
-      public:
-         org(): org(0) {}
-      public:
-         org(std::string disp_name): id([&]() MNL_INLINE->decltype(id){
-            MNL_IF_WITH_MT(return std::lock_guard{mutex}, [&]() MNL_INLINE->decltype(id))
+         origin(std::string disp_name): rep([&]() MNL_INLINE{
+            MNL_IF_WITH_MT(return std::lock_guard{mutex}, [&]() MNL_INLINE)
                if (pool.empty()) {
                   pool.reserve(disp_name.size() + 1);
                   disp_name.push_back(std::move(disp_name)), rc[disp_name.size() - 1] = 1;
-                  return disp_name.size() - 1;
+                  return (unsigned short)(disp_name.size() - 1);
                } else {
-                  auto id = pool.back(); pool.pop_back();
-                  disp_name[id] = std::move(disp_name), rc[id] = 1;
-                  return id;
+                  unsigned short res = pool.back(); pool.pop_back();
+                  disp_name[res] = std::move(disp_name), rc[res] = 1;
+                  return res;
                }
             MNL_IF_WITH_MT(}();)
          }()) {}
@@ -113,22 +109,16 @@ namespace aux {
          MNL_INLINE origin(const origin &rhs) noexcept: rep(rhs.rep) {
             MNL_IF_WITHOUT_MT(++rc[rep]) MNL_IF_WITH_MT(__atomic_add_fetch(&rc[rep], 1, __ATOMIC_RELAXED));
          }
-         MNL_INLINE origin &operator=(org src) {
-            swap(src); return *this;
-         }
-         ~org() {
+         ~origin() {
             if (MNL_UNLIKELY(! MNL_IF_WITHOUT_MT(--rc[rep]) MNL_IF_WITH_MT(__atomic_sub_fetch(&rc[rep], 1, __ATOMIC_RELAXED)) ))
             MNL_IF_WITH_MT(std::lock_guard{mutex}, [&]() MNL_INLINE{)
-               disp_name[rep].clear(), recycle_pool.push_back(rep);
+               disp_name[rep].clear(), pool.push_back(rep);
             MNL_IF_WITH_MT(}();)
          }
-         void swap(org &other) {
-            using std::swap; swap(rep, other.rep);
-         }
       private:
-         unsigned short rep;
+         unsigned short                     rep;
          static std::vector<std::string>    disp_name;
-         static std::vector<unsigned short> recycle_pool;
+         static std::vector<unsigned short> pool;
          MNL_IF_WITH_MT(static std::mutex   mutex;)
          static MNL_NOTE(atomic) long       rc[];
       private:
