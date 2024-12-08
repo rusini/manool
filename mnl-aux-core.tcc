@@ -100,7 +100,7 @@ namespace aux {
                   return (unsigned short)(disp_name.size() - 1);
                } else {
                   unsigned short res = pool.back(); pool.pop_back();
-                  disp_name[res] = std::move(disp_name), rc[res] = 1;
+                  disp_name[res] = std::move(rhs), rc[res] = 1;
                   return res;
                }
             MNL_IF_WITH_MT(}();)
@@ -115,6 +115,8 @@ namespace aux {
                disp_name[rep].clear(), pool.push_back(rep);
             MNL_IF_WITH_MT(}();)
          }
+      public:
+         operator const string &() const noexcept { return disp_name[rep]; }
       private:
          unsigned short                     rep;
          static std::vector<std::string>    disp_name;
