@@ -943,6 +943,49 @@ namespace aux { namespace pub {
    extern template class box<std::vector<val>>;
 
 
+   struct cons: boxable { // cons cell
+      val car, cdr; mnl::loc loc;
+   private:
+      template<typename Self> val invoke(Self &&, const sym &, int, val [], val *);
+      friend class box<cons>;
+   };
+
+
+   inline ast::val(std::initializer_list<ast> list, loc loc) {
+      ast res;
+      for (auto &el: list) res = cons{std::move(res), el};
+      return ast;
+   }
+
+
+   MNL_INLINE inline bool ast::is_list() const noexcept
+      { return is<cons>() || is<>(); }
+
+   template<int Count MNL_REQ(Count >= 0)> MNL_INLINE inline ast ast::skip() const {
+      return Count ? skip<Count - 1>(as<cons>(*this).cdr) : *this;
+   }
+
+   template<int Count MNL_REQ(Count >= 0)> MNL_INLINE inline ast skip(const ast &ast)
+      { return Count ? skip<Count - 1>(as<cons>(ast).cdr) : ast; }
+
+   template<int Count MNL_REQ(Count >= 0)> MNL_INLINE inline ast at(const ast &ast)
+      { return *skip<Count>(ast); }
+
+
+   template<int Count MNL_REQ(Count >= 0)> MNL_INLINE inline ast ast::operator+ (std::integral_constant<int, Count>) const noexcept
+      { return Count ? (*this)[std::integral_constant<int, Count - 1>{}](as<cons>(*this).cdr) : *this; }
+   template<int Count MNL_REQ(Count >= 0)> MNL_INLINE inline ast ast::operator[](std::integral_constant<int, Count>) const noexcept
+      { return *(*this)[std::integral_constant<int, Count>{}]; }
+
+
+   static constexpr std::integral_constant<int, 0> _0 = {};
+   static constexpr std::integral_constant<int, 1> _1 = {};
+   static constexpr std::integral_constant<int, 2> _2 = {};
+   static constexpr std::integral_constant<int, 3> _3 = {};
+
+   v[_2]
+   v + _2
+
 
    MNL_NOINLINE inline val::val(const char *dat): val((string)dat) {} // postponed definition because the complete type box<std::string> was needed
    // postponed definitions because the complete types box<std::vector<ast>>, box<std::pair<std::vector<ast>, loc>> were needed:
