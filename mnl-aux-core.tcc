@@ -953,29 +953,27 @@ namespace aux { namespace pub {
 
    inline ast::val(std::initializer_list<ast> list, loc loc) {
       ast res;
-      for (auto &el: list) res = cons{std::move(res), el};
+      long count = list.size();
+      for (auto &elem: list) res = MNL_LIKELY(count--) ? cons{std::move(res), elem} : cons{std::move(res), elem, loc};
       return ast;
    }
 
 
-   MNL_INLINE inline bool ast::is_list() const noexcept
-      { return is<cons>() || is<>(); }
+   MNL_INLINE inline bool is_list(const ast &ast) noexcept
+      { return is<>(ast) || is<cons>(ast); }
 
-   template<int Count MNL_REQ(Count >= 0)> MNL_INLINE inline ast ast::skip() const {
-      return Count ? skip<Count - 1>(as<cons>(*this).cdr) : *this;
-   }
-
-   template<int Count MNL_REQ(Count >= 0)> MNL_INLINE inline ast skip(const ast &ast)
-      { return Count ? skip<Count - 1>(as<cons>(ast).cdr) : ast; }
-
-   template<int Count MNL_REQ(Count >= 0)> MNL_INLINE inline ast at(const ast &ast)
-      { return *skip<Count>(ast); }
-
+   MNL_INLINE inline ast ast::operator*() const noexcept
+      { return as<cons>(*this).car; }
 
    template<int Count MNL_REQ(Count >= 0)> MNL_INLINE inline ast ast::operator+ (std::integral_constant<int, Count>) const noexcept
       { return Count ? (*this)[std::integral_constant<int, Count - 1>{}](as<cons>(*this).cdr) : *this; }
    template<int Count MNL_REQ(Count >= 0)> MNL_INLINE inline ast ast::operator[](std::integral_constant<int, Count>) const noexcept
       { return *(*this)[std::integral_constant<int, Count>{}]; }
+
+   MNL_INLINE inline ast ast::begin() const noexcept
+      { return *this; }
+   MNL_INLINE inline ast ast::end() const noexcept
+      { return {}; }
 
 
    static constexpr std::integral_constant<int, 0> _0 = {};
@@ -983,8 +981,13 @@ namespace aux { namespace pub {
    static constexpr std::integral_constant<int, 2> _2 = {};
    static constexpr std::integral_constant<int, 3> _3 = {};
 
+   is_list(form[_1])
    v[_2]
    v + _2
+
+   is_list(form[of<1>])
+   v[of<2>]
+   v + of<2>
 
 
    MNL_NOINLINE inline val::val(const char *dat): val((string)dat) {} // postponed definition because the complete type box<std::string> was needed
