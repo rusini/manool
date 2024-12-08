@@ -96,15 +96,15 @@ namespace aux {
             MNL_IF_WITH_MT(return std::lock_guard{mutex}, [&]() MNL_INLINE)
                if (pool.empty()) {
                   pool.reserve(disp_name.size() + 1);
-                  disp_name.push_back(std::move(rhs)), rc[disp_name.size() - 1] = 1;
+                  disp_name.push_back(std::move(rhs));
                   return (unsigned short)(disp_name.size() - 1);
                } else {
                   unsigned short res = pool.back(); pool.pop_back();
-                  disp_name[res] = std::move(rhs), rc[res] = 1;
+                  disp_name[res] = std::move(rhs);
                   return res;
                }
             MNL_IF_WITH_MT(}();)
-         }()) {}
+         }()) { rc[res] = 1; }
       public:
          MNL_INLINE origin(const origin &rhs) noexcept: rep(rhs.rep) {
             MNL_IF_WITHOUT_MT(++rc[rep]) MNL_IF_WITH_MT(__atomic_add_fetch(&rc[rep], 1, __ATOMIC_RELAXED));
