@@ -121,25 +121,10 @@ namespace aux {
          static std::vector<unsigned short> pool;
          MNL_IF_WITH_MT(static std::mutex   mutex;)
          static MNL_NOTE(atomic) long       rc[];
-      private:
-         MNL_INLINE static void hold() noexcept
-            { MNL_IF_WITHOUT_MT(++rc[rep]) MNL_IF_WITH_MT(__atomic_add_fetch(&rc[rep], 1, __ATOMIC_RELAXED)); }
-         MNL_INLINE static void unhold() noexcept {
-            if (MNL_UNLIKELY(! MNL_IF_WITHOUT_MT(--rc[rep]) MNL_IF_WITH_MT(__atomic_sub_fetch(&rc[rep], 1, __ATOMIC_RELAXED)) ))
-               disp_name[rep].clear(), pool.push_back(rep);
-         }
-
-         disp_name.size()) {
-         }
-
-      private:
-         static std::vector<std::string>    org_disp_name;
-         static std::vector<unsigned short> org_pool;
-         MNL_IF_WITH_MT(static std::mutex   org_mutex;)
-         static MNL_NOTE(atomic) long       org_rc[];
-      } org;
-
-      struct pos { MNL_PACK unsigned short line; unsigned char col; } _start, _final;
+      } origin;
+      struct pos {
+         MNL_PACK unsigned short line; unsigned char col;
+      } _start, _final;
    };
 
 // class sym ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
