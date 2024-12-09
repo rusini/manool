@@ -945,8 +945,7 @@ namespace aux { namespace pub {
 
 
 
-   struct form: std::vector<val> { const loc _loc; };
-
+   struct form: std::deque<val> { const loc _loc; }; // either a complete form (AST for compound expression) or a subform (AKA a syntax object or list)
 
 
    MNL_INLINE inline std::vector<ast>::const_iterator ast::begin() const noexcept
@@ -973,10 +972,14 @@ namespace aux { namespace pub {
    MNL_INLINE inline const loc &ast::loc(const mnl::loc &_loc) const noexcept
       { return as<const form &>()._loc ? as<const form &>()._loc : loc; }
 
-   MNL_INLINE inline auto ast::operator+(long ix) const // actually may be unnecessary, MANOOL macros should manipulate form tails
+   MNL_INLINE inline auto ast::operator+(long ix) const
       { return ast::vci_range {std::vector(begin() + ix, end())}; }
    MNL_INLINE inline auto ast::operator-(long ix) const
       { return ast::vcri_range{std::vector(rbegin(), rend() - ix)}; }
+   // actually may be unnecessary, MANOOL macros should manipulate form tails
+
+
+
 
    return 
       vci_range {cast<const vector<ast> &>().begin() + sn, cast<const vector<ast> &>().end()} :
