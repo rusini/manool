@@ -943,6 +943,11 @@ namespace aux { namespace pub {
    extern template class box<std::vector<val>>;
 
 
+
+
+
+
+
    struct cons: boxable { // cons cell
       val car, cdr; mnl::loc loc;
    private:
@@ -957,14 +962,13 @@ namespace aux { namespace pub {
       return cons{std::move(res), *init.begin(), loc};
    }()) {}
 
-   {
 
-      ast res;
-      long count = list.size();
-      for (auto it = std::rbegin(list); it != list.begin(); --it)
-         res = MNL_LIKELY(it ) ? (--count, cons{std::move(res), elem}) : cons{std::move(res), elem, loc};
-      return ast;
-   }
+   v.for_each([&]() MNL_INLINE{
+      ...
+   });
+   v.for_each_rev([&]() MNL_INLINE{
+      ...
+   });
 
 
    MNL_INLINE inline bool is_list(const ast &ast) noexcept
@@ -999,6 +1003,7 @@ namespace aux { namespace pub {
 
 
    MNL_NOINLINE inline val::val(const char *dat): val((string)dat) {} // postponed definition because the complete type box<std::string> was needed
+
    // postponed definitions because the complete types box<std::vector<ast>>, box<std::pair<std::vector<ast>, loc>> were needed:
    MNL_INLINE inline ast::val(vector<ast> first, loc second)
       : ast(make_pair(move(first), move(second))) {}
