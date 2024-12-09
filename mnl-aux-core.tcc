@@ -945,40 +945,40 @@ namespace aux { namespace pub {
 
 
 
-   struct form: std::vector<val> { const mnl::loc loc; };
+   struct form: std::vector<val> { const loc _loc; };
 
-   // TODO: what if we inherit from std::vector?
 
 
    MNL_INLINE inline std::vector<ast>::const_iterator ast::begin() const noexcept
-      { return as<const form &>().elems.begin(); }
+      { return as<const form &>().begin(); }
    MNL_INLINE inline std::vector<ast>::const_iterator ast::end() const noexcept
-      { return as<const form &>().elems.end(); }
+      { return as<const form &>().end(); }
    MNL_INLINE inline std::vector<ast>::const_iterator ast::rbegin() const noexcept
-      { return as<const form &>().elems.rbegin(); }
+      { return as<const form &>().rbegin(); }
    MNL_INLINE inline std::vector<ast>::const_iterator ast::rend() const noexcept
-      { return as<const form &>().elems.rend(); }
+      { return as<const form &>().rend(); }
 
    MNL_INLINE inline bool ast::empty() const noexcept
-      { return as<const form &>().elems.empty(); }
+      { return as<const form &>().empty(); }
    MNL_INLINE inline long ast::size() const noexcept
-      { return as<const form &>().elems.size(); }
+      { return as<const form &>().size(); }
    MNL_INLINE inline const ast &ast::operator[](long ix) const noexcept
-      { return as<const form &>().elems[ix]; }
+      { return as<const form &>()[ix]; }
    MNL_INLINE inline const ast &ast::at(long ix) const
-      { return as<const form &>().elems.at(ix); }
+      { return as<const form &>().at(ix); }
    MNL_INLINE inline const ast &ast::front() const noexcept
-      { return as<const form &>().elems.front(); }
+      { return as<const form &>().front(); }
    MNL_INLINE inline const ast &ast::back() const noexcept
-      { return as<const form &>().elems.back(); }
-   MNL_INLINE inline const loc &ast::loc(const loc &loc) const noexcept
-      { return as<const form &>().loc ? as<const form &>().loc : loc; }
+      { return as<const form &>().back(); }
+   MNL_INLINE inline const loc &ast::loc(const mnl::loc &_loc) const noexcept
+      { return as<const form &>()._loc ? as<const form &>()._loc : loc; }
 
+   MNL_INLINE inline auto ast::operator+(long ix) const // actually may be unnecessary, MANOOL macros should manipulate form tails
+      { return ast::vci_range {std::vector(begin() + ix, end())}; }
+   MNL_INLINE inline auto ast::operator-(long ix) const
+      { return ast::vcri_range{std::vector(rbegin(), rend() - ix)}; }
 
-   MNL_INLINE inline ast  ast::operator+(long ix) const
-      { return form{std::vector(begin() + ix, end())}; }
-
-   return test<vector<ast>>() ?
+   return 
       vci_range {cast<const vector<ast> &>().begin() + sn, cast<const vector<ast> &>().end()} :
       vci_range {cast<const pair<vector<ast>, loc> &>().first.begin() + sn, cast<const pair<vector<ast>, loc> &>().first.end()}; }
    MNL_INLINE inline ast::vcri_range ast::operator-(long sn) const noexcept { return test<vector<ast>>() ?
@@ -1005,6 +1005,8 @@ namespace aux { namespace pub {
    }()) {}
 
 
+
+
    v.for_each([&]() MNL_INLINE{
       ...
    });
@@ -1028,6 +1030,8 @@ namespace aux { namespace pub {
       { return *this; }
    MNL_INLINE inline ast ast::end() const noexcept
       { return {}; }
+
+
 
 
    static constexpr std::integral_constant<int, 0> _0 = {};
