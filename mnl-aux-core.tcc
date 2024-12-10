@@ -945,9 +945,11 @@ namespace aux { namespace pub {
 
 
 
-   struct form: std::deque<val> { const loc _loc; }; // either a complete form (AST for compound expression) or a subform (AKA a syntax object or list)
+   struct form: std::deque<val> { const loc _loc; }; // AKA syntax object or list (either a complete form, ie AST for compound expression, or a subform)
 
 
+   MNL_INLINE inline ast::val(std::vector<ast> elems, const loc &_loc)
+      : ast(form{std::move(elems), _loc}) {}
    MNL_INLINE inline std::vector<ast>::const_iterator ast::begin() const noexcept
       { return as<const form &>().begin(); }
    MNL_INLINE inline std::vector<ast>::const_iterator ast::end() const noexcept
@@ -956,7 +958,6 @@ namespace aux { namespace pub {
       { return as<const form &>().rbegin(); }
    MNL_INLINE inline std::vector<ast>::const_iterator ast::rend() const noexcept
       { return as<const form &>().rend(); }
-
    MNL_INLINE inline bool ast::empty() const noexcept
       { return as<const form &>().empty(); }
    MNL_INLINE inline long ast::size() const noexcept
@@ -969,8 +970,8 @@ namespace aux { namespace pub {
       { return as<const form &>().front(); }
    MNL_INLINE inline const ast &ast::back() const noexcept
       { return as<const form &>().back(); }
-   MNL_INLINE inline const loc &ast::loc(const mnl::loc &_loc) const noexcept
-      { return as<const form &>()._loc ? as<const form &>()._loc : loc; }
+   MNL_INLINE inline const loc &ast::loc(const loc &_loc) const noexcept
+      { return as<const form &>()._loc ? as<const form &>()._loc : _loc; }
 
    MNL_INLINE inline auto ast::operator+(long ix) const
       { return ast::vci_range {std::vector(begin() + ix, end())}; }
