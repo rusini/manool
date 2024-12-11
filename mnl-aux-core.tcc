@@ -318,9 +318,9 @@ namespace aux { namespace pub {
       MNL_INLINE val(unsigned dat) noexcept: rep{0xFFF8 + 0b010, dat} {}
       MNL_INLINE val(char dat) noexcept:     val((unsigned)(unsigned char)dat) {}
       template<typename Dat> val(Dat dat): rep{0xFFF8 + 0b111, (void *)(root *)new box<Dat>{std::move(dat)}} {}
-      val(const char *);
-      MNL_INLINE val(char *dat): val((const char *)dat) {}
       struct boxable {};
+      template<auto = nullptr> MNL_NOINLINE val(const char *dat): val((std::string)dat) {}
+      template<auto = nullptr> MNL_INLINE val(char *dat): val((const char *)dat) {}
    public: // Extraction
       template<typename Dat = decltype(nullptr) MNL_REQ(std::std::is_convertible_v<std::decay_t<Dat>, Dat>)>
          MNL_INLINE friend bool is(const val &arg) noexcept { return arg.is<Dat>(); }
