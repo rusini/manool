@@ -532,41 +532,41 @@ namespace aux { namespace pub {
       struct form: std::deque<val> // AKA syntax object or list (either a complete form, i.e. AST for compound expression, or a subform)
          { const loc _loc; };
       // TODO: maybe allow for polymorphic invocation, but preserve optimization for the common case of "form"?
-      MNL_INLINE inline ast::val(std::vector<ast> elems, const loc &_loc)
+      MNL_INLINE ast::val(std::deque<ast> elems, const loc &_loc)
          : ast(form{std::move(elems), _loc}) {}
-      MNL_INLINE inline auto ast::begin() const noexcept // TODO: efficient polymorphic iteration is problematic in C++
+      MNL_INLINE auto ast::begin() const noexcept // TODO: efficient polymorphic iteration is problematic in C++
          { return as<const form &>().begin(); }
-      MNL_INLINE inline auto ast::end() const noexcept
+      MNL_INLINE auto ast::end() const noexcept
          { return as<const form &>().end(); }
-      MNL_INLINE inline auto ast::rbegin() const noexcept
+      MNL_INLINE auto ast::rbegin() const noexcept
          { return as<const form &>().rbegin(); }
-      MNL_INLINE inline auto ast::rend() const noexcept
+      MNL_INLINE auto ast::rend() const noexcept
          { return as<const form &>().rend(); }
-      MNL_INLINE inline bool ast::empty() const noexcept
+      MNL_INLINE bool ast::empty() const noexcept
          { return as<const form &>().empty(); }
-      MNL_INLINE inline long ast::size() const noexcept
+      MNL_INLINE long ast::size() const noexcept
          { return as<const form &>().size(); }
-      MNL_INLINE inline const ast &ast::operator[](long ix) const noexcept
+      MNL_INLINE const ast &ast::operator[](long ix) const noexcept
          { return as<const form &>()[ix]; }
-      MNL_INLINE inline const ast &ast::at(long ix) const
+      MNL_INLINE const ast &ast::at(long ix) const
          { return as<const form &>().at(ix); }
-      MNL_INLINE inline const ast &ast::front() const noexcept
+      MNL_INLINE const ast &ast::front() const noexcept
          { return as<const form &>().front(); }
-      MNL_INLINE inline const ast &ast::back() const noexcept
+      MNL_INLINE const ast &ast::back() const noexcept
          { return as<const form &>().back(); }
-      MNL_INLINE inline const loc &ast::_loc(const loc &_loc) const noexcept
+      MNL_INLINE const loc &ast::_loc(const loc &_loc) const noexcept
          { return as<const form &>()._loc ? as<const form &>()._loc : _loc; }
       typedef struct { std::deque<ast>::const_iterator _begin, _end;
          MNL_INLINE auto begin() const noexcept { return _begin; }
          MNL_INLINE auto end() const noexcept { return _end; }
       } vector_const_iterator_range, vci_range;
-      MNL_INLINE inline vci_range  ast::operator+(long ix) const
+      MNL_INLINE vci_range  ast::operator+(long ix) const
          { return {begin() + ix, end()}; }
       typedef struct { std::deque<ast>::const_reverse_iterator _begin, _end;
          MNL_INLINE auto begin() const noexcept { return _begin; }
          MNL_INLINE auto end() const noexcept { return _end; }
       } vector_const_reverse_iterator_range, vcri_range;
-      MNL_INLINE inline vcri_range ast::operator-(long ix) const
+      MNL_INLINE vcri_range ast::operator-(long ix) const
          { return {rbegin(), rend() - ix}; }
 
 
