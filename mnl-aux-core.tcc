@@ -529,7 +529,47 @@ namespace aux { namespace pub {
       MNL_INLINE bool operator!=(decltype(nullptr)) const noexcept { return !(*this == nullptr); }
       MNL_INLINE bool operator!=(const sym &rhs) const noexcept { return !(*this == rhs); }
    public: // Convenience -- Working with ASTs
-      struct form: std::deque<val> { const loc _loc; }; // AKA syntax object or list (either a complete form, ie AST for compound expression, or a subform)
+      struct form: std::deque<val> // AKA syntax object or list (either a complete form, i.e. AST for compound expression, or a subform)
+         { const loc _loc; };
+      MNL_INLINE inline ast::val(std::vector<ast> elems, const loc &_loc)
+         : ast(form{std::move(elems), _loc}) {}
+      MNL_INLINE inline std::vector<ast>::const_iterator ast::begin() const noexcept
+         { return as<const form &>().begin(); }
+      MNL_INLINE inline std::vector<ast>::const_iterator ast::end() const noexcept
+         { return as<const form &>().end(); }
+      MNL_INLINE inline std::vector<ast>::const_iterator ast::rbegin() const noexcept
+         { return as<const form &>().rbegin(); }
+      MNL_INLINE inline std::vector<ast>::const_iterator ast::rend() const noexcept
+         { return as<const form &>().rend(); }
+      MNL_INLINE inline bool ast::empty() const noexcept
+         { return as<const form &>().empty(); }
+      MNL_INLINE inline long ast::size() const noexcept
+         { return as<const form &>().size(); }
+      MNL_INLINE inline const ast &ast::operator[](long ix) const noexcept
+         { return as<const form &>()[ix]; }
+      MNL_INLINE inline const ast &ast::at(long ix) const
+         { return as<const form &>().at(ix); }
+      MNL_INLINE inline const ast &ast::front() const noexcept
+         { return as<const form &>().front(); }
+      MNL_INLINE inline const ast &ast::back() const noexcept
+         { return as<const form &>().back(); }
+      MNL_INLINE inline const loc &ast::_loc(const loc &_loc) const noexcept
+         { return as<const form &>()._loc ? as<const form &>()._loc : _loc; }
+      typedef struct { vector<ast>::const_iterator _begin, _end;
+         MNL_INLINE vector<ast>::const_iterator begin() const noexcept { return _begin; }
+         MNL_INLINE vector<ast>::const_iterator end() const noexcept { return _end; }
+      } vector_const_iterator_range, vci_range;
+      MNL_INLINE inline auto ast::operator+(long ix) const
+         { return ast::vci_range {std::vector(begin() + ix, end())}; }
+      typedef struct { vector<ast>::const_reverse_iterator _begin, _end;
+         MNL_INLINE vector<ast>::const_reverse_iterator begin() const noexcept { return _begin; }
+         MNL_INLINE vector<ast>::const_reverse_iterator end() const noexcept { return _end; }
+      } vector_const_reverse_iterator_range, vcri_range;
+      MNL_INLINE inline auto ast::operator-(long ix) const
+         { return ast::vcri_range{std::vector(rbegin(), rend() - ix)}; }
+
+
+
       val(vector<ast>, loc);
       vector<ast>::const_iterator begin() const noexcept, end() const noexcept;
       vector<ast>::const_reverse_iterator rbegin() const noexcept, rend() const noexcept;
@@ -946,7 +986,6 @@ namespace aux { namespace pub {
 
 
    struct form: std::deque<val> { const loc _loc; }; // AKA syntax object or list (either a complete form, ie AST for compound expression, or a subform)
-
 
    MNL_INLINE inline ast::val(std::vector<ast> elems, const loc &_loc)
       : ast(form{std::move(elems), _loc}) {}
