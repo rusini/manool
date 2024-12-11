@@ -534,13 +534,13 @@ namespace aux { namespace pub {
       // TODO: maybe allow for polymorphic invocation, but preserve optimization for the common case of "form"?
       MNL_INLINE val(std::deque<ast> elems, const loc &_loc)
          : ast(form{std::move(elems), _loc}) {}
-      MNL_INLINE auto begin() const noexcept // TODO: efficient polymorphic iteration is problematic in C++
+      MNL_INLINE std::deque<ast>::const_iterator begin() const noexcept // TODO: efficient polymorphic iteration is problematic in C++
          { return as<const form &>().begin(); }
-      MNL_INLINE auto end() const noexcept
+      MNL_INLINE std::deque<ast>::const_iterator end() const noexcept
          { return as<const form &>().end(); }
-      MNL_INLINE auto rbegin() const noexcept
+      MNL_INLINE std::deque<ast>::const_reverse_iterator rbegin() const noexcept
          { return as<const form &>().rbegin(); }
-      MNL_INLINE auto rend() const noexcept
+      MNL_INLINE std::deque<ast>::const_reverse_iterator rend() const noexcept
          { return as<const form &>().rend(); }
       MNL_INLINE bool empty() const noexcept
          { return as<const form &>().empty(); }
