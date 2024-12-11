@@ -534,13 +534,13 @@ namespace aux { namespace pub {
       // TODO: maybe allow for polymorphic invocation, but preserve optimization for the common case of "form"?
       MNL_INLINE inline ast::val(std::vector<ast> elems, const loc &_loc)
          : ast(form{std::move(elems), _loc}) {}
-      MNL_INLINE inline std::vector<ast>::const_iterator ast::begin() const noexcept
+      MNL_INLINE inline auto ast::begin() const noexcept
          { return as<const form &>().begin(); }
-      MNL_INLINE inline std::vector<ast>::const_iterator ast::end() const noexcept
+      MNL_INLINE inline auto ast::end() const noexcept
          { return as<const form &>().end(); }
-      MNL_INLINE inline std::vector<ast>::const_iterator ast::rbegin() const noexcept
+      MNL_INLINE inline auto ast::rbegin() const noexcept
          { return as<const form &>().rbegin(); }
-      MNL_INLINE inline std::vector<ast>::const_iterator ast::rend() const noexcept
+      MNL_INLINE inline auto ast::rend() const noexcept
          { return as<const form &>().rend(); }
       MNL_INLINE inline bool ast::empty() const noexcept
          { return as<const form &>().empty(); }
@@ -556,15 +556,15 @@ namespace aux { namespace pub {
          { return as<const form &>().back(); }
       MNL_INLINE inline const loc &ast::_loc(const loc &_loc) const noexcept
          { return as<const form &>()._loc ? as<const form &>()._loc : _loc; }
-      typedef struct { vector<ast>::const_iterator _begin, _end;
-         MNL_INLINE vector<ast>::const_iterator begin() const noexcept { return _begin; }
-         MNL_INLINE vector<ast>::const_iterator end() const noexcept { return _end; }
+      typedef struct { std::deque<ast>::const_iterator _begin, _end;
+         MNL_INLINE auto begin() const noexcept { return _begin; }
+         MNL_INLINE auto end() const noexcept { return _end; }
       } vector_const_iterator_range, vci_range;
       MNL_INLINE inline auto ast::operator+(long ix) const
          { return ast::vci_range {std::vector(begin() + ix, end())}; }
-      typedef struct { vector<ast>::const_reverse_iterator _begin, _end;
-         MNL_INLINE vector<ast>::const_reverse_iterator begin() const noexcept { return _begin; }
-         MNL_INLINE vector<ast>::const_reverse_iterator end() const noexcept { return _end; }
+      typedef struct { std::deque<ast>::const_reverse_iterator _begin, _end;
+         MNL_INLINE auto begin() const noexcept { return _begin; }
+         MNL_INLINE auto end() const noexcept { return _end; }
       } vector_const_reverse_iterator_range, vcri_range;
       MNL_INLINE inline auto ast::operator-(long ix) const
          { return ast::vcri_range{std::vector(rbegin(), rend() - ix)}; }
