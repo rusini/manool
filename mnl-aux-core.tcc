@@ -544,12 +544,12 @@ namespace aux { namespace pub {
       MNL_INLINE const loc &_loc(const loc &_loc) const noexcept { return as<const form &>()._loc ? as<const form &>()._loc : _loc; }
       typedef struct { std::deque<ast>::const_iterator _begin, _end;
          MNL_INLINE auto begin() const noexcept { return _begin; }
-         MNL_INLINE auto end() const noexcept   { return _end;   }
+         MNL_INLINE auto end()   const noexcept { return _end;   }
       } vector_const_iterator_range, vci_range;
       MNL_INLINE vci_range  operator+(long ix) const { return {begin() + ix, end()}; }
       typedef struct { std::deque<ast>::const_reverse_iterator _begin, _end;
          MNL_INLINE auto begin() const noexcept { return _begin; }
-         MNL_INLINE auto end() const noexcept   { return _end;   }
+         MNL_INLINE auto end()   const noexcept { return _end;   }
       } vector_const_reverse_iterator_range, vcri_range;
       MNL_INLINE vcri_range operator-(long ix) const { return {rbegin(), rend() - ix}; }
 
