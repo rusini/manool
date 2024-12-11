@@ -553,28 +553,6 @@ namespace aux { namespace pub {
          MNL_INLINE auto end()   const noexcept { return _end;   }
       } vector_const_reverse_iterator_range, vcri_range;
       MNL_INLINE vcri_range operator-(long ix) const { return {rbegin(), rend() - ix}; }
-
-
-
-      val(vector<ast>, loc);
-      vector<ast>::const_iterator begin() const noexcept, end() const noexcept;
-      vector<ast>::const_reverse_iterator rbegin() const noexcept, rend() const noexcept;
-      bool empty() const noexcept;
-      long size() const noexcept;
-      const ast &operator[](long) const noexcept, &at(long) const /*unused*/;
-      const ast &front() const noexcept, &back() const noexcept /*unused*/;
-      const loc &_loc(const loc &) const noexcept;
-      // list subranges:
-      typedef struct { vector<ast>::const_iterator _begin, _end;
-         MNL_INLINE vector<ast>::const_iterator begin() const noexcept { return _begin; }
-         MNL_INLINE vector<ast>::const_iterator end() const noexcept { return _end; }
-      } vector_const_iterator_range, vci_range;
-      vci_range  operator+(long) const noexcept;
-      typedef struct { vector<ast>::const_reverse_iterator _begin, _end;
-         MNL_INLINE vector<ast>::const_reverse_iterator begin() const noexcept { return _begin; }
-         MNL_INLINE vector<ast>::const_reverse_iterator end() const noexcept { return _end; }
-      } vector_const_reverse_iterator_range, vcri_range;
-      vcri_range operator-(long) const noexcept;
    public: // Related stuff
       friend class proc_Min; friend class proc_Max;
    };
