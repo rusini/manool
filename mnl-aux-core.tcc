@@ -534,7 +534,7 @@ namespace aux { namespace pub {
       // TODO: maybe allow for polymorphic invocation, but preserve optimization for the common case of "form"?
       MNL_INLINE inline ast::val(std::vector<ast> elems, const loc &_loc)
          : ast(form{std::move(elems), _loc}) {}
-      MNL_INLINE inline auto ast::begin() const noexcept
+      MNL_INLINE inline auto ast::begin() const noexcept // TODO: efficient polymorphic iteration is problematic in C++
          { return as<const form &>().begin(); }
       MNL_INLINE inline auto ast::end() const noexcept
          { return as<const form &>().end(); }
@@ -560,14 +560,14 @@ namespace aux { namespace pub {
          MNL_INLINE auto begin() const noexcept { return _begin; }
          MNL_INLINE auto end() const noexcept { return _end; }
       } vector_const_iterator_range, vci_range;
-      MNL_INLINE inline auto ast::operator+(long ix) const
-         { return ast::vci_range {std::vector(begin() + ix, end())}; }
+      MNL_INLINE inline vci_range  ast::operator+(long ix) const
+         { return {begin() + ix, end()}; }
       typedef struct { std::deque<ast>::const_reverse_iterator _begin, _end;
          MNL_INLINE auto begin() const noexcept { return _begin; }
          MNL_INLINE auto end() const noexcept { return _end; }
       } vector_const_reverse_iterator_range, vcri_range;
-      MNL_INLINE inline auto ast::operator-(long ix) const
-         { return ast::vcri_range{std::vector(rbegin(), rend() - ix)}; }
+      MNL_INLINE inline vcri_range ast::operator-(long ix) const
+         { return {rbegin(), rend() - ix}; }
 
 
 
