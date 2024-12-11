@@ -531,6 +531,7 @@ namespace aux { namespace pub {
    public: // Convenience -- Working with ASTs
       struct form: std::deque<val> // AKA syntax object or list (either a complete form, i.e. AST for compound expression, or a subform)
          { const loc _loc; };
+      // TODO: maybe allow for polymorphic invocation, but preserve optimization for the common case of "form"?
       MNL_INLINE inline ast::val(std::vector<ast> elems, const loc &_loc)
          : ast(form{std::move(elems), _loc}) {}
       MNL_INLINE inline std::vector<ast>::const_iterator ast::begin() const noexcept
