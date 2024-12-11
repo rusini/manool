@@ -529,12 +529,13 @@ namespace aux { namespace pub {
       MNL_INLINE bool operator!=(decltype(nullptr)) const noexcept { return !(*this == nullptr); }
       MNL_INLINE bool operator!=(const sym &rhs) const noexcept { return !(*this == rhs); }
    public: // Convenience -- Working with syntax objects (lists)
-      MNL_INLINE val(std::deque<ast> elems, const loc &_loc): ast(form{std::move(elems), _loc}) {}
-      struct form: std::deque<val> { const loc _loc; }; // either a complete form (AST for compound expression) or subform
-      MNL_INLINE std::deque<ast>::const_iterator begin() const noexcept          { return as<const form &>().begin();  }
-      MNL_INLINE std::deque<ast>::const_iterator end()   const noexcept          { return as<const form &>().end();    }
-      MNL_INLINE std::deque<ast>::const_reverse_iterator rbegin() const noexcept { return as<const form &>().rbegin(); }
-      MNL_INLINE std::deque<ast>::const_reverse_iterator rend()   const noexcept { return as<const form &>().rend();   }
+      // TODO: maybe provide more compact altenative to std::vector or just use std::vector!
+      MNL_INLINE val(std::vector<ast> elems, const loc &_loc): ast(form{std::move(elems), _loc}) {}
+      struct form: std::vector<val> { const loc _loc; }; // either a complete form (AST for compound expression) or subform
+      MNL_INLINE std::vector<ast>::const_iterator begin() const noexcept          { return as<const form &>().begin();  }
+      MNL_INLINE std::vector<ast>::const_iterator end()   const noexcept          { return as<const form &>().end();    }
+      MNL_INLINE std::vector<ast>::const_reverse_iterator rbegin() const noexcept { return as<const form &>().rbegin(); }
+      MNL_INLINE std::vector<ast>::const_reverse_iterator rend()   const noexcept { return as<const form &>().rend();   }
       MNL_INLINE bool empty() const noexcept { return as<const form &>().empty(); }
       MNL_INLINE long size()  const noexcept { return as<const form &>().size();  }
       MNL_INLINE const ast &operator[](long ix) const noexcept { return as<const form &>()[ix];    }
@@ -542,12 +543,12 @@ namespace aux { namespace pub {
       MNL_INLINE const ast &front() const noexcept { return as<const form &>().front(); }
       MNL_INLINE const ast &back()  const noexcept { return as<const form &>().back();  }
       MNL_INLINE const loc &_loc(const loc &_loc) const noexcept { return as<const form &>()._loc ? as<const form &>()._loc : _loc; }
-      typedef struct { std::deque<ast>::const_iterator _begin, _end;
+      typedef struct { std::vector<ast>::const_iterator _begin, _end;
          MNL_INLINE auto begin() const noexcept { return _begin; }
          MNL_INLINE auto end()   const noexcept { return _end;   }
       } vector_const_iterator_range, vci_range;
       MNL_INLINE vci_range  operator+(long ix) const { return {begin() + ix, end()}; }
-      typedef struct { std::deque<ast>::const_reverse_iterator _begin, _end;
+      typedef struct { std::vector<ast>::const_reverse_iterator _begin, _end;
          MNL_INLINE auto begin() const noexcept { return _begin; }
          MNL_INLINE auto end()   const noexcept { return _end;   }
       } vector_const_reverse_iterator_range, vcri_range;
