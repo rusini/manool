@@ -529,8 +529,8 @@ namespace aux { namespace pub {
       MNL_INLINE bool operator!=(decltype(nullptr)) const noexcept { return !(*this == nullptr); }
       MNL_INLINE bool operator!=(const sym &rhs) const noexcept { return !(*this == rhs); }
    public: // Convenience -- Working with ASTs
+      struct form: std::deque<val> { const loc _loc; }; // AKA syntax object or list (either a complete form, ie AST for compound expression, or a subform)
       val(vector<ast>, loc);
-      bool is_list() const noexcept;
       vector<ast>::const_iterator begin() const noexcept, end() const noexcept;
       vector<ast>::const_reverse_iterator rbegin() const noexcept, rend() const noexcept;
       bool empty() const noexcept;
@@ -972,84 +972,14 @@ namespace aux { namespace pub {
       { return as<const form &>().back(); }
    MNL_INLINE inline const loc &ast::loc(const loc &_loc) const noexcept
       { return as<const form &>()._loc ? as<const form &>()._loc : _loc; }
-
    MNL_INLINE inline auto ast::operator+(long ix) const
       { return ast::vci_range {std::vector(begin() + ix, end())}; }
    MNL_INLINE inline auto ast::operator-(long ix) const
       { return ast::vcri_range{std::vector(rbegin(), rend() - ix)}; }
-   // actually may be unnecessary, MANOOL macros should manipulate form tails
 
 
 
 
-   return 
-      vci_range {cast<const vector<ast> &>().begin() + sn, cast<const vector<ast> &>().end()} :
-      vci_range {cast<const pair<vector<ast>, loc> &>().first.begin() + sn, cast<const pair<vector<ast>, loc> &>().first.end()}; }
-   MNL_INLINE inline ast::vcri_range ast::operator-(long sn) const noexcept { return test<vector<ast>>() ?
-      vcri_range{cast<const vector<ast> &>().rbegin(), cast<const vector<ast> &>().rend() - sn} :
-      vcri_range{cast<const pair<vector<ast>, loc> &>().first.rbegin(), cast<const pair<vector<ast>, loc> &>().first.rend() - sn}; }
-
-
-
-
-
-
-   struct cons: boxable { // cons cell
-      val car, cdr; mnl::loc loc;
-   private:
-      template<typename Self> val invoke(Self &&, const sym &, int, val [], val *);
-      friend class box<cons>;
-   };
-
-
-   inline ast::val(std::initializer_list<ast> init, const loc &loc): ast([&]() MNL_INLINE->ast{
-      if (MNL_LIKELY(init.empty())) return {};
-      ast res; for (const ast *it = init.end(); --it != init.begin();) res = cons{std::move(res), *it};
-      return cons{std::move(res), *init.begin(), loc};
-   }()) {}
-
-
-
-
-   v.for_each([&]() MNL_INLINE{
-      ...
-   });
-   v.for_each_rev([&]() MNL_INLINE{
-      ...
-   });
-
-
-   MNL_INLINE inline bool is_list(const ast &ast) noexcept
-      { return is<>(ast) || is<cons>(ast); }
-
-   MNL_INLINE inline ast ast::operator*() const noexcept
-      { return as<cons>(*this).car; }
-
-   template<int Count MNL_REQ(Count >= 0)> MNL_INLINE inline ast ast::operator+ (std::integral_constant<int, Count>) const noexcept
-      { return Count ? (*this)[std::integral_constant<int, Count - 1>{}](as<cons>(*this).cdr) : *this; }
-   template<int Count MNL_REQ(Count >= 0)> MNL_INLINE inline ast ast::operator[](std::integral_constant<int, Count>) const noexcept
-      { return *(*this)[std::integral_constant<int, Count>{}]; }
-
-   MNL_INLINE inline ast ast::begin() const noexcept
-      { return *this; }
-   MNL_INLINE inline ast ast::end() const noexcept
-      { return {}; }
-
-
-
-
-   static constexpr std::integral_constant<int, 0> _0 = {};
-   static constexpr std::integral_constant<int, 1> _1 = {};
-   static constexpr std::integral_constant<int, 2> _2 = {};
-   static constexpr std::integral_constant<int, 3> _3 = {};
-
-   is_list(form[_1])
-   v[_2]
-   v + _2
-
-   is_list(form[of<1>])
-   v[of<2>]
-   v + of<2>
 
 
    MNL_NOINLINE inline val::val(const char *dat): val((string)dat) {} // postponed definition because the complete type box<std::string> was needed
