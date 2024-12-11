@@ -937,87 +937,11 @@ namespace aux { namespace pub {
    template<typename Dat> val box<Dat>::_repl(val &&self, int argc, val argv[], val *argv_out)
       { if (argv_out); else __builtin_unreachable(); return repl(_mv(self), argc, argv, argv_out); }
 
-
    template<> inline box<std::vector<val>>::~box() { while (!dat.empty()) dat.pop_back(); }
 
    extern template class box<std::string>;
    extern template class box<std::pair<std::vector<ast>, loc>>>;
    extern template class box<std::vector<val>>;
-
-
-
-
-   struct form: std::deque<val> { const loc _loc; }; // AKA syntax object or list (either a complete form, ie AST for compound expression, or a subform)
-
-   MNL_INLINE inline ast::val(std::vector<ast> elems, const loc &_loc)
-      : ast(form{std::move(elems), _loc}) {}
-   MNL_INLINE inline std::vector<ast>::const_iterator ast::begin() const noexcept
-      { return as<const form &>().begin(); }
-   MNL_INLINE inline std::vector<ast>::const_iterator ast::end() const noexcept
-      { return as<const form &>().end(); }
-   MNL_INLINE inline std::vector<ast>::const_iterator ast::rbegin() const noexcept
-      { return as<const form &>().rbegin(); }
-   MNL_INLINE inline std::vector<ast>::const_iterator ast::rend() const noexcept
-      { return as<const form &>().rend(); }
-   MNL_INLINE inline bool ast::empty() const noexcept
-      { return as<const form &>().empty(); }
-   MNL_INLINE inline long ast::size() const noexcept
-      { return as<const form &>().size(); }
-   MNL_INLINE inline const ast &ast::operator[](long ix) const noexcept
-      { return as<const form &>()[ix]; }
-   MNL_INLINE inline const ast &ast::at(long ix) const
-      { return as<const form &>().at(ix); }
-   MNL_INLINE inline const ast &ast::front() const noexcept
-      { return as<const form &>().front(); }
-   MNL_INLINE inline const ast &ast::back() const noexcept
-      { return as<const form &>().back(); }
-   MNL_INLINE inline const loc &ast::loc(const loc &_loc) const noexcept
-      { return as<const form &>()._loc ? as<const form &>()._loc : _loc; }
-   MNL_INLINE inline auto ast::operator+(long ix) const
-      { return ast::vci_range {std::vector(begin() + ix, end())}; }
-   MNL_INLINE inline auto ast::operator-(long ix) const
-      { return ast::vcri_range{std::vector(rbegin(), rend() - ix)}; }
-
-
-
-
-
-
-   MNL_NOINLINE inline val::val(const char *dat): val((string)dat) {} // postponed definition because the complete type box<std::string> was needed
-
-   // postponed definitions because the complete types box<std::vector<ast>>, box<std::pair<std::vector<ast>, loc>> were needed:
-   MNL_INLINE inline ast::val(vector<ast> first, loc second)
-      : ast(make_pair(move(first), move(second))) {}
-   MNL_INLINE inline bool ast::is_list() const noexcept
-      { return test<vector<ast>>() || test<pair<vector<ast>, loc>>(); }
-   MNL_INLINE inline std::vector<ast>::const_iterator ast::begin() const noexcept
-      { return (test<vector<ast>>() ? cast<const vector<ast> &>() : cast<const pair<vector<ast>, loc> &>().first).begin(); }
-   MNL_INLINE inline std::vector<ast>::const_iterator ast::end() const noexcept
-      { return (test<vector<ast>>() ? cast<const vector<ast> &>() : cast<const pair<vector<ast>, loc> &>().first).end(); }
-   MNL_INLINE inline std::vector<ast>::const_reverse_iterator ast::rbegin() const noexcept
-      { return (test<vector<ast>>() ? cast<const vector<ast> &>() : cast<const pair<vector<ast>, loc> &>().first).rbegin(); }
-   MNL_INLINE inline std::vector<ast>::const_reverse_iterator ast::rend() const noexcept
-      { return (test<vector<ast>>() ? cast<const vector<ast> &>() : cast<const pair<vector<ast>, loc> &>().first).rend(); }
-   MNL_INLINE inline bool ast::empty() const noexcept
-      { return (test<vector<ast>>() ? cast<const vector<ast> &>() : cast<const pair<vector<ast>, loc> &>().first).empty(); }
-   MNL_INLINE inline long ast::size() const noexcept
-      { return (test<vector<ast>>() ? cast<const vector<ast> &>() : cast<const pair<vector<ast>, loc> &>().first).size(); }
-   MNL_INLINE inline const ast &ast::operator[](long sn) const noexcept
-      { return (test<vector<ast>>() ? cast<const vector<ast> &>() : cast<const pair<vector<ast>, loc> &>().first)[sn]; }
-   MNL_INLINE inline const ast &ast::at(long sn) const
-      { return (test<vector<ast>>() ? cast<const vector<ast> &>() : cast<const pair<vector<ast>, loc> &>().first).at(sn); }
-   MNL_INLINE inline const ast &ast::front() const noexcept
-      { return (test<vector<ast>>() ? cast<const vector<ast> &>() : cast<const pair<vector<ast>, loc> &>().first).front(); }
-   MNL_INLINE inline const ast &ast::back() const noexcept
-      { return (test<vector<ast>>() ? cast<const vector<ast> &>() : cast<const pair<vector<ast>, loc> &>().first).back(); }
-   MNL_INLINE inline const loc &ast::_loc(const loc &_loc) const noexcept
-      { return test<pair<vector<ast>, loc>>() ? cast<const pair<vector<ast>, loc> &>().second : _loc; }
-   MNL_INLINE inline ast::vci_range  ast::operator+(long sn) const noexcept { return test<vector<ast>>() ?
-      vci_range {cast<const vector<ast> &>().begin() + sn, cast<const vector<ast> &>().end()} :
-      vci_range {cast<const pair<vector<ast>, loc> &>().first.begin() + sn, cast<const pair<vector<ast>, loc> &>().first.end()}; }
-   MNL_INLINE inline ast::vcri_range ast::operator-(long sn) const noexcept { return test<vector<ast>>() ?
-      vcri_range{cast<const vector<ast> &>().rbegin(), cast<const vector<ast> &>().rend() - sn} :
-      vcri_range{cast<const pair<vector<ast>, loc> &>().first.rbegin(), cast<const pair<vector<ast>, loc> &>().first.rend() - sn}; }
 
 // Resource Management Helpers /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    MNL_INLINE inline void val::hold() const noexcept {
