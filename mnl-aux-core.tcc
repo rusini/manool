@@ -940,7 +940,7 @@ namespace aux { namespace pub {
    template<> inline box<std::vector<val>>::~box() { while (!dat.empty()) dat.pop_back(); }
 
    extern template class box<std::string>;
-   extern template class box<std::pair<std::vector<ast>, loc>>>;
+   extern template class box<val::form>;
    extern template class box<std::vector<val>>;
 
 // Resource Management Helpers /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
