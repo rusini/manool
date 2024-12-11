@@ -520,10 +520,8 @@ namespace aux { namespace pub {
    private: // Implementation of sym::operator()
       template<typename Self> static MNL_HOT val _invoke(Self &&, const sym &, int, val [], val *); // Self == const val & | Self == val
       friend val sym::operator()(const val &, int, val [], val *) const, sym::operator()(val &&, int, val [], val *) const;
-
    private:
       template<typename Arg> static MNL_INLINE decltype(auto) _mv(Arg &&arg) noexcept { return std::move(arg); }
-
    public: // Convenience -- Direct comparison with other types
       bool operator==(decltype(nullptr)) const noexcept, operator==(const sym &) const noexcept;
       MNL_INLINE bool operator!=(decltype(nullptr)) const noexcept { return !(*this == nullptr); }
