@@ -529,9 +529,8 @@ namespace aux { namespace pub {
       MNL_INLINE bool operator!=(decltype(nullptr)) const noexcept { return !(*this == nullptr); }
       MNL_INLINE bool operator!=(const sym &rhs) const noexcept { return !(*this == rhs); }
    public: // Convenience -- Working with ASTs
-      struct form: std::deque<val> // AKA syntax object or list (either a complete form, i.e. AST for compound expression, or a subform)
-         { const loc _loc; };
       MNL_INLINE val(std::deque<ast> elems, const loc &_loc): ast(form{std::move(elems), _loc}) {}
+      struct form: std::deque<val> { const loc _loc; }; // syntax object or list (either a complete form, i.e. AST for compound expression, or a subform)
       MNL_INLINE std::deque<ast>::const_iterator begin() const noexcept          { return as<const form &>().begin(); }
       MNL_INLINE std::deque<ast>::const_iterator end() const noexcept            { return as<const form &>().end(); }
       MNL_INLINE std::deque<ast>::const_reverse_iterator rbegin() const noexcept { return as<const form &>().rbegin(); }
