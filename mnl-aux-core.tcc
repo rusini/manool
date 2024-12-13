@@ -1146,9 +1146,9 @@ namespace aux::pub {
    // TODO: maybe define them in a special header, not needed for some uses of the API
    struct code::nonvalue {
       static code compile(code &&self, const form &, const loc &) = delete;
-      template<bool fast_sig = bool{}, bool nores = bool{}> MNL_INLINE static val execute() noexcept { MNL_UNREACHABLE(); }
-      MNL_INLINE static void exec_in(const val &) noexcept { MNL_UNREACHABLE(); }
-      MNL_INLINE static val  exec_out() noexcept { MNL_UNREACHABLE(); }
+      template<bool fast_sig = bool{}, bool nores = bool{}> MNL_INLINE static val execute() noexcept { __builtin_unreachable(); }
+      MNL_INLINE static void exec_in(const val &) noexcept { __builtin_unreachable(); }
+      MNL_INLINE static val  exec_out() noexcept { __builtin_unreachable(); }
       MNL_INLINE static bool is_rvalue() noexcept { return {}; }
       MNL_INLINE static bool is_lvalue() noexcept { return {}; }
    };
