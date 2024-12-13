@@ -975,49 +975,48 @@ namespace aux { namespace pub {
    MNL_INLINE inline bool val::shared() const noexcept
       { return static_cast<const root *>(rep.dat<void *>())->shared(); }
 
-   // Fake test/cast for val outputs
-   template<> MNL_INLINE inline bool val::test<const val &>() const noexcept { return true; }
-   template<> MNL_INLINE inline bool val::test<val>() const noexcept         { return test<const val &>(); }
-   template<> MNL_INLINE inline const val &val::cast() const noexcept { return *this; }
-   template<> MNL_INLINE inline val        val::cast() const noexcept { return cast<const val &>(); }
+   template<> MNL_INLINE inline bool val::is<const val &>() const noexcept { return true; }
+   template<> MNL_INLINE inline bool val::is<val>() const noexcept         { return is<const val &>(); }
+   template<> MNL_INLINE inline const val &val::as() const noexcept { return *this; }
+   template<> MNL_INLINE inline val        val::as() const noexcept { return as<const val &>(); }
 
-   template<> MNL_INLINE inline bool val::test<decltype(nullptr)>() const noexcept { return rep.tag() == 0b000 - 8; }
-   template<> MNL_INLINE inline decltype(nullptr) val::cast() const noexcept { return nullptr; }
-   MNL_INLINE inline bool val::operator==(decltype(nullptr)) const noexcept { return test<>(); }
+   template<> MNL_INLINE inline bool val::is<decltype(nullptr)>() const noexcept { return rep.tag() == 0b000 - 8; }
+   template<> MNL_INLINE inline decltype(nullptr) val::as() const noexcept { return nullptr; }
+   MNL_INLINE inline bool val::operator==(decltype(nullptr)) const noexcept { return is<>(); }
 
-   template<> MNL_INLINE inline bool val::test<long long>() const noexcept { return rep.tag() == 0b001 - 8; }
-   template<> MNL_INLINE inline bool val::test<int>() const noexcept       { return test<long long>(); }
-   template<> MNL_INLINE inline long long val::cast() const noexcept { return rep.dat<long long>(); }
-   template<> MNL_INLINE inline int       val::cast() const noexcept { return cast<long long>(); }
-   template<> MNL_INLINE inline auto val::test<const long long &>() const noexcept { return test<long long>(); }
-   template<> MNL_INLINE inline auto val::cast<const long long &>() const noexcept { return cast<long long>(); }
-   template<> MNL_INLINE inline auto val::test<const int &>() const noexcept { return test<int>(); }
-   template<> MNL_INLINE inline auto val::cast<const int &>() const noexcept { return cast<int>(); }
+   template<> MNL_INLINE inline bool val::is<long long>() const noexcept { return rep.tag() == 0b001 - 8; }
+   template<> MNL_INLINE inline bool val::is<int>() const noexcept       { return is<long long>(); }
+   template<> MNL_INLINE inline long long val::as() const noexcept { return rep.dat<long long>(); }
+   template<> MNL_INLINE inline int       val::as() const noexcept { return as<long long>(); }
+   template<> MNL_INLINE inline auto val::is<const long long &>() const noexcept { return is<long long>(); }
+   template<> MNL_INLINE inline auto val::as<const long long &>() const noexcept { return as<long long>(); }
+   template<> MNL_INLINE inline auto val::is<const int &>() const noexcept { return is<int>(); }
+   template<> MNL_INLINE inline auto val::as<const int &>() const noexcept { return as<int>(); }
 
-   template<> MNL_INLINE inline bool val::test<double>() const noexcept { return rep.tag() < 0xFFF8 + 0b000; }
-   template<> MNL_INLINE inline double val::cast() const noexcept { return rep.dat<double>(); }
-   template<> MNL_INLINE inline auto val::test<const double &>() const noexcept { return test<double>(); }
-   template<> MNL_INLINE inline auto val::cast<const double &>() const noexcept { return cast<double>(); }
+   template<> MNL_INLINE inline bool val::is<double>() const noexcept { return rep.tag() < 0xFFF8 + 0b000; }
+   template<> MNL_INLINE inline double val::as() const noexcept { return rep.dat<double>(); }
+   template<> MNL_INLINE inline auto val::is<const double &>() const noexcept { return is<double>(); }
+   template<> MNL_INLINE inline auto val::as<const double &>() const noexcept { return as<double>(); }
 
-   template<> MNL_INLINE inline bool val::test<float>() const noexcept { return rep.tag() == 0xFFF8 + 0b010; }
-   template<> MNL_INLINE inline float val::cast() const noexcept { return rep.dat<float>(); }
+   template<> MNL_INLINE inline bool val::is<float>() const noexcept { return rep.tag() == 0xFFF8 + 0b010; }
+   template<> MNL_INLINE inline float val::as() const noexcept { return rep.dat<float>(); }
 
-   template<> MNL_INLINE inline bool val::test<const sym &>() const noexcept { return rep.tag() == 0xFFF8 + 0b110; }
-   template<> MNL_INLINE inline bool val::test<sym>() const noexcept         { return test<const sym &>(); }
-   template<> MNL_INLINE inline const sym &val::cast() const noexcept { return rep.dat<const sym &>(); }
-   template<> MNL_INLINE inline sym        val::cast() const noexcept { return cast<const sym &>(); }
-   MNL_INLINE inline bool val::operator==(const sym &rhs) const noexcept { return test<sym>() && cast<const sym &>() == rhs; }
+   template<> MNL_INLINE inline bool val::is<const sym &>() const noexcept { return rep.tag() == 0xFFF8 + 0b110; }
+   template<> MNL_INLINE inline bool val::is<sym>() const noexcept         { return is<const sym &>(); }
+   template<> MNL_INLINE inline const sym &val::as() const noexcept { return rep.dat<const sym &>(); }
+   template<> MNL_INLINE inline sym        val::as() const noexcept { return as<const sym &>(); }
+   MNL_INLINE inline bool val::operator==(const sym &rhs) const noexcept { return is<sym>() && as<const sym &>() == rhs; }
 
-   template<> MNL_INLINE inline bool val::test<bool>() const noexcept { return rep.tag() == 0xFFF8 + 0b100 | rep.tag() == 0xFFF8 + 0b101; }
-   template<> MNL_INLINE inline bool val::cast() const noexcept { return rep.tag() & true; }
+   template<> MNL_INLINE inline bool val::is<bool>() const noexcept { return rep.tag() == 0xFFF8 + 0b100 | rep.tag() == 0xFFF8 + 0b101; }
+   template<> MNL_INLINE inline bool val::as() const noexcept { return rep.tag() & true; }
 
-   template<> MNL_INLINE inline bool val::test<unsigned>() const noexcept { return rep.tag() == 0xFFF8 + 0b011; }
-   template<> MNL_INLINE inline bool val::test<char>() const noexcept     { return test<unsigned>(); }
-   template<> MNL_INLINE inline unsigned val::cast() const noexcept { return rep.dat<unsigned>(); }
-   template<> MNL_INLINE inline char     val::cast() const noexcept { return cast<unsigned>(); }
+   template<> MNL_INLINE inline bool val::is<unsigned>() const noexcept { return rep.tag() == 0xFFF8 + 0b011; }
+   template<> MNL_INLINE inline bool val::is<char>() const noexcept     { return is<unsigned>(); }
+   template<> MNL_INLINE inline unsigned val::as() const noexcept { return rep.dat<unsigned>(); }
+   template<> MNL_INLINE inline char     val::as() const noexcept { return as<unsigned>(); }
 
-   template<> MNL_INLINE inline bool val::test<const char *>() const noexcept { return test<std::string>; }
-   template<> MNL_INLINE inline const char *val::cast() const noexcept { return cast<const std::string &>().c_str(); }
+   template<> MNL_INLINE inline bool val::is<const char *>() const noexcept { return is<std::string>; }
+   template<> MNL_INLINE inline const char *val::as() const noexcept { return as<const std::string &>().c_str(); }
 
 // Signals, Exceptions, and Invocation Traces //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace aux { namespace pub {
