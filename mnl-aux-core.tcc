@@ -980,11 +980,11 @@ namespace aux { namespace pub {
    template<> MNL_INLINE inline const val &val::as() const noexcept { return *this; }
    template<> MNL_INLINE inline val        val::as() const noexcept { return as<const val &>(); }
 
-   template<> MNL_INLINE inline bool val::is<decltype(nullptr)>() const noexcept { return rep.tag() == 0b000 - 8; }
+   template<> MNL_INLINE inline bool val::is<decltype(nullptr)>() const noexcept { return rep.tag() == 0xFFF8 + 0b000; }
    template<> MNL_INLINE inline decltype(nullptr) val::as() const noexcept { return nullptr; }
    MNL_INLINE inline bool val::operator==(decltype(nullptr)) const noexcept { return is<>(); }
 
-   template<> MNL_INLINE inline bool val::is<long long>() const noexcept { return rep.tag() == 0b001 - 8; }
+   template<> MNL_INLINE inline bool val::is<long long>() const noexcept { return rep.tag() == 0xFFF8 + 0b001; }
    template<> MNL_INLINE inline bool val::is<int>() const noexcept       { return is<long long>(); }
    template<> MNL_INLINE inline long long val::as() const noexcept { return rep.dat<long long>(); }
    template<> MNL_INLINE inline int       val::as() const noexcept { return as<long long>(); }
@@ -993,7 +993,7 @@ namespace aux { namespace pub {
    template<> MNL_INLINE inline auto val::is<const int &>() const noexcept { return is<int>(); }
    template<> MNL_INLINE inline auto val::as<const int &>() const noexcept { return as<int>(); }
 
-   template<> MNL_INLINE inline bool val::is<double>() const noexcept { return rep.tag() < 0xFFF8 + 0b000; }
+   template<> MNL_INLINE inline bool val::is<double>() const noexcept { return rep.tag() < 0xFFF8; }
    template<> MNL_INLINE inline double val::as() const noexcept { return rep.dat<double>(); }
    template<> MNL_INLINE inline auto val::is<const double &>() const noexcept { return is<double>(); }
    template<> MNL_INLINE inline auto val::as<const double &>() const noexcept { return as<double>(); }
