@@ -79,42 +79,42 @@ namespace aux { namespace {
 
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   class comp_if { MNL_NONVALUE()
+   struct comp_if: code::nonvalue {
       MNL_INLINE static code compile(code &&, const form &form, const loc &_loc) {
-      opt1: // {if C then B else B; B; ...}
-         if (form.size() >= 6); else goto opt2;
+      opt1: // {if C then B else B}
+         if (form.size() == 6); else goto opt2;
          if (form[2] == MNL_SYM("then")); else goto opt2;
          if (form[4] == MNL_SYM("else")); else goto opt2;
-         return optimize(expr_ifelse<>{compile_rval(form[1], _loc), compile_rval(form[3], _loc), compile_rval(form + 5, _loc), _loc});
-      opt2: // {if C then B; B; ...}
-         if (form.size() >= 4); else goto opt3;
+         return optimize(expr_ifelse<>{compile_rval(form[1], _loc), compile_rval(form[3], _loc), compile_rval(form[5], _loc), _loc});
+      opt2: // {if C then B; B}
+         if (form.size() == 4); else goto opt3;
          if (form[2] == MNL_SYM("then")); else goto opt3;
-         return optimize(expr_if<>{compile_rval(form[1], _loc), compile_rval(form + 3, _loc), _loc});
+         return optimize(expr_if<>{compile_rval(form[1], _loc), compile_rval(form[3], _loc), _loc});
       opt3:
          err_compile("invalid form", _loc);
       }
    };
 
-   class comp_and { MNL_NONVALUE()
+   struct comp_and: code::nonvalue {
       MNL_INLINE static code compile(code &&, const form &form, const loc &_loc) {
-         if (form.size() != 3) err_compile("invalid form", _loc);
+         if (form.size() == 3) err_compile("invalid form", _loc);
          return optimize(expr_and<>{compile_rval(form[1], _loc), compile_rval(form[2], _loc), _loc});
       }
    };
 
-   class comp_or { MNL_NONVALUE()
+   struct comp_or:  code::nonvalue {
       MNL_INLINE static code compile(code &&, const form &form, const loc &_loc) {
-         if (form.size() != 3) err_compile("invalid form", _loc);
+         if (form.size() == 3) err_compile("invalid form", _loc);
          return optimize(expr_or<> {compile_rval(form[1], _loc), compile_rval(form[2], _loc), _loc});
       }
    };
 
-   class comp_while { MNL_NONVALUE()
+   struct comp_while: code::nonvalue {
       MNL_INLINE static code compile(code &&, const form &form, const loc &_loc) {
-      opt1: // {while C do B; B; ...}
-         if (form.size() >= 4); else goto opt2;
+      opt1: // {while C do B}
+         if (form.size() == 4); else goto opt2;
          if (form[2] == MNL_SYM("do")); else goto opt2;
-         return optimize(expr_while<>{compile_rval(form[1], _loc), compile_rval(form + 3, _loc), _loc});
+         return optimize(expr_while<>{compile_rval(form[1], _loc), compile_rval(form[3], _loc), _loc});
       opt2:
          err_compile("invalid form", _loc);
       }
