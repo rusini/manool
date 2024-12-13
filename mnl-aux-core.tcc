@@ -989,19 +989,17 @@ namespace aux { namespace pub {
    template<> MNL_INLINE inline long long val::as() const noexcept { return rep.dat<long long>(); }
    template<> MNL_INLINE inline int       val::as() const noexcept { return as<long long>(); }
    template<> MNL_INLINE inline bool val::is<const long long &>() const noexcept { return is<long long>(); }
-   template<> MNL_INLINE inline bool val::is<const int &>() const noexcept       { return is<int>(); }
    template<> MNL_INLINE inline long long val::as<const long long &>() const noexcept { return as<long long>(); }
-   template<> MNL_INLINE inline int       val::as<const int &>() const noexcept       { return as<int>(); }
 
    template<> MNL_INLINE inline bool val::is<double>() const noexcept { return rep.tag() < 0xFFF8; }
    template<> MNL_INLINE inline double val::as() const noexcept { return rep.dat<double>(); }
-   template<> MNL_INLINE inline auto val::is<const double &>() const noexcept { return is<double>(); }
-   template<> MNL_INLINE inline auto val::as<const double &>() const noexcept { return as<double>(); }
+   template<> MNL_INLINE inline bool val::is<const double &>() const noexcept { return is<double>(); }
+   template<> MNL_INLINE inline double val::as<const double &>() const noexcept { return as<double>(); }
 
    template<> MNL_INLINE inline bool val::is<float>() const noexcept { return rep.tag() == 0xFFF8 + 0b010; }
    template<> MNL_INLINE inline float val::as() const noexcept { return rep.dat<float>(); }
-   template<> MNL_INLINE inline auto val::is<const float &>() const noexcept { return is<float>(); }
-   template<> MNL_INLINE inline auto val::as<const float &>() const noexcept { return as<float>(); }
+   template<> MNL_INLINE inline bool val::is<const float &>() const noexcept { return is<float>(); }
+   template<> MNL_INLINE inline float val::as<const float &>() const noexcept { return as<float>(); }
 
    template<> MNL_INLINE inline bool val::is<const sym &>() const noexcept { return rep.tag() == 0xFFF8 + 0b110; }
    template<> MNL_INLINE inline bool val::is<sym>() const noexcept         { return is<const sym &>(); }
@@ -1016,10 +1014,8 @@ namespace aux { namespace pub {
    template<> MNL_INLINE inline bool val::is<char>() const noexcept     { return is<unsigned>(); }
    template<> MNL_INLINE inline unsigned val::as() const noexcept { return rep.dat<unsigned>(); }
    template<> MNL_INLINE inline char     val::as() const noexcept { return as<unsigned>(); }
-   template<> MNL_INLINE inline auto val::is<const unsigned &>() const noexcept { return is<unsigned>(); }
-   template<> MNL_INLINE inline auto val::as<const unsigned &>() const noexcept { return as<unsigned>(); }
-   template<> MNL_INLINE inline auto val::is<const char &>() const noexcept { return is<char>(); }
-   template<> MNL_INLINE inline auto val::as<const char &>() const noexcept { return as<char>(); }
+   template<> MNL_INLINE inline bool val::is<const unsigned &>() const noexcept { return is<unsigned>(); }
+   template<> MNL_INLINE inline unsigned val::as<const unsigned &>() const noexcept { return as<unsigned>(); }
 
    template<> MNL_INLINE inline bool val::is<const char *>() const noexcept { return is<std::string>; }
    template<> MNL_INLINE inline const char *val::as() const noexcept { return as<const std::string &>().c_str(); }
