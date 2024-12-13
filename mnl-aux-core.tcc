@@ -1038,7 +1038,7 @@ namespace aux { namespace pub {
 }} // namespace aux::pub
 
 // Translation Infrastructure //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-namespace aux { namespace pub {
+namespace aux::pub {
    ast parse(const string &, string origin = "<anonymous>");
    MNL_INLINE inline ast parse(string &&source, string origin = "<anonymous>") // parse won't take advantage of source's resources, but
       { auto res = parse(source, move(origin)); source.clear(); return res; } // this is to release its resources earlier, which is useful in practice
@@ -1163,12 +1163,10 @@ namespace aux { namespace pub {
       MNL_INLINE static bool is_lvalue() noexcept { return true; }
    };
 
-
-
-   extern MNL_IF_WITH_MT(thread_local) sym::tab<> symtab;
-   code compile(const form &, const loc & = MNL_IF_GCC5(loc)MNL_IF_GCC6(loc){});
+   inline MNL_IF_WITH_MT(thread_local) sym::tab<> symtab;
+   code compile(const form &, const loc & = {});
    MNL_NORETURN void err_compile(const char *msg, const loc &);
-}} // namespace aux::pub
+} // namespace aux::pub
 
 // Primitive Operations ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
