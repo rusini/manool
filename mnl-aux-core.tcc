@@ -1051,17 +1051,17 @@ namespace aux::pub {
    class code { // compiled entity
    public: // Standard operations
       code() = default;
-      MNL_INLINE code(const code &rhs) noexcept: rep(rhs.rep) { hold(); }
-      MNL_INLINE code(code &&rhs) noexcept: rep(rhs.rep) { rhs.rep = {}; }
+      MNL_INLINE code(const code &src) noexcept: rep(src.rep) { hold(); }
+      MNL_INLINE code(code &&src) noexcept: rep(src.rep) { src.rep = {}; }
       MNL_INLINE ~code() { unhold(); }
-      MNL_INLINE code &operator=(const code &rhs) noexcept { rhs.hold(), unhold(), rep = rhs.rep; return *this; }
-      MNL_INLINE code &operator=(code &&rhs) noexcept { swap(rhs); return *this; }
-      MNL_INLINE void swap(code &rhs) noexcept { using std::swap; swap(rep, rhs.rep); }
+      MNL_INLINE code &operator=(const code &src) noexcept { src.hold(), unhold(), rep = src.rep; return *this; }
+      MNL_INLINE code &operator=(code &&src) noexcept { swap(src); return *this; } // prefer compactness over performance
+      MNL_INLINE void swap(code &other) noexcept { using std::swap; swap(rep, other.rep); }
       MNL_INLINE friend bool operator==(const code &lhs, const code &rhs) noexcept { return lhs.rep == rhs.rep; }
       MNL_INLINE explicit operator bool() const noexcept { return rep; }
    public: // Construction -- Implicit conversion (to) + Compilation/execution operations
       struct nonvalue; struct rvalue; struct lvalue; // bases for Dat
-      template<typename Dat MNL_REQ(std::is_base_of_v<nonvalue, Dat>)> code(Dat dat): rep(new box<Dat>{std::move(dat)}) {}
+      template<class Dat MNL_REQ(std::is_base_of_v<nonvalue, Dat>)> code(Dat dat): rep(new box<Dat>{std::move(dat)}) {}
    public:
       MNL_INLINE code compile(const form &form, const loc &loc) && { return rep->compile(std::move(*this), form, loc); }
    public:
@@ -1087,7 +1087,7 @@ namespace aux::pub {
       class root {
       public:
          const unsigned tag; // assume 64-bit small/medium code model or x32 ABI or 32-bit ISA
-         MNL_NOTE(atomic) long rc = 1;
+         MNL_NOTE(atomic) long rc = 1; // TODO: use "mutable"?
       protected:
          MNL_INLINE explicit root(const std::byte *tag) noexcept: tag(reinterpret_cast<std::uintptr_t>(tag)) {}
          virtual ~root() = default;
