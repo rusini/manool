@@ -126,7 +126,7 @@ namespace aux {
          MNL_IF_WITH_MT(static std::mutex   mutex;)
          static MNL_NOTE(atomic) long       rc[];
       private:
-         static const origin none;
+         static inine const origin none = "";
       } origin;
       struct pos {
          MNL_PACK unsigned short line; unsigned char col;
@@ -134,7 +134,6 @@ namespace aux {
    public:
       MNL_INLINE explicit operator bool() const noexcept { return origin; }
    };
-   inline const origin origin::none = "";
 
 // class sym ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace aux { namespace pub {
