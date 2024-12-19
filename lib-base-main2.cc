@@ -80,18 +80,18 @@ namespace aux { namespace {
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    struct comp_if: code::nonvalue {
-      MNL_INLINE static code compile(code &&, const form &form, const loc &_loc) {
+      MNL_INLINE static code compile(code &&, const ast &form, const loc &loc) {
       opt1: // {if C then B else B}
          if (form.size() == 6); else goto opt2;
          if (form[2] == MNL_SYM("then")); else goto opt2;
          if (form[4] == MNL_SYM("else")); else goto opt2;
-         return optimize(expr_ifelse<>{compile_rval(form[1], _loc), compile_rval(form[3], _loc), compile_rval(form[5], _loc), _loc});
-      opt2: // {if C then B; B}
+         return optimize(expr_ifelse<>{compile_rval(form[1], loc), compile_rval(form[3], loc), compile_rval(form[5], loc), loc});
+      opt2: // {if C then B}
          if (form.size() == 4); else goto opt3;
          if (form[2] == MNL_SYM("then")); else goto opt3;
-         return optimize(expr_if<>{compile_rval(form[1], _loc), compile_rval(form[3], _loc), _loc});
+         return optimize(expr_if<>{compile_rval(form[1], loc), compile_rval(form[3], loc), loc});
       opt3:
-         err_compile("invalid form", _loc);
+         err_compile("invalid form", loc);
       }
    };
 
