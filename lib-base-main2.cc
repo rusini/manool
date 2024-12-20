@@ -677,27 +677,27 @@ namespace aux { namespace {
          return [&]() MNL_INLINE{
             std::deque<code> saved_tmp_ents;
             for (auto &&el: tmp_ids) saved_tmp_ents.push_back(symtab[el]), symtab.update(el, {});
-            auto saved_tmp_cnt = move(tmp_cnt); tmp_cnt = 0;
-            auto saved_tmp_ids = move(tmp_ids); tmp_ids.clear();
+            auto saved_tmp_cnt = std::move(tmp_cnt); tmp_cnt = 0;
+            auto saved_tmp_ids = std::move(tmp_ids); tmp_ids.clear();
 
             std::deque<code> overriding_ents;
             for (auto &&el: form[1]) { auto ent = pub::compile(el[2], loc);
-               overriding_ents.push_back(ent.is_rvalue() ? optimize(expr_lit<>{ent.execute()}) : move(ent)); }
+               overriding_ents.push_back(ent.is_rvalue() ? optimize(expr_lit<>{ent.execute()}) : std::move(ent)); }
 
-            tmp_ids = move(saved_tmp_ids);
-            tmp_cnt = move(saved_tmp_cnt);
-            for (auto &&el: tmp_ids) symtab.update(el, move(saved_tmp_ents.front())), saved_tmp_ents.pop_front();
+            tmp_ids = std::move(saved_tmp_ids);
+            tmp_cnt = std::move(saved_tmp_cnt);
+            for (auto &&el: tmp_ids) symtab.update(el, std::move(saved_tmp_ents.front())), saved_tmp_ents.pop_front();
 
             std::deque<code> overriden_ents;
             for (auto &&el: form[1]) overriden_ents.push_back(symtab[as<const sym &>(el[1])]),
-               symtab.update(as<const sym &>(el[1]), move(overriding_ents.front())), overriding_ents.pop_front();
+               symtab.update(as<const sym &>(el[1]), std::move(overriding_ents.front())), overriding_ents.pop_front();
             std::vector<sym> erased_tmp_ids;
             for (auto &&el: form[1]) if (tmp_ids.erase(as<const sym &>(el[1]))) erased_tmp_ids.push_back(as<const sym &>(el[1]));
 
             auto body = pub::compile(form[3], loc);
 
-            for (auto &&el: erased_tmp_ids) tmp_ids.insert(move(el));
-            for (auto &&el: form[1]) symtab.update(as<const sym &>(el[1]), move(overriden_ents.front())), overriden_ents.pop_front();
+            for (auto &&el: erased_tmp_ids) tmp_ids.insert(std::move(el));
+            for (auto &&el: form[1]) symtab.update(as<const sym &>(el[1]), std::move(overriden_ents.front())), overriden_ents.pop_front();
 
             return body;
          }();
@@ -714,8 +714,8 @@ namespace aux { namespace {
          return [&]() MNL_INLINE{
             std::deque<code> saved_tmp_ents;
             for (auto &&el: tmp_ids) saved_tmp_ents.push_back(symtab[el]), symtab.update(el, {});
-            auto saved_tmp_cnt = move(tmp_cnt); tmp_cnt = 0;
-            auto saved_tmp_ids = move(tmp_ids); tmp_ids.clear();
+            auto saved_tmp_cnt = std::move(tmp_cnt); tmp_cnt = 0;
+            auto saved_tmp_ids = std::move(tmp_ids); tmp_ids.clear();
             struct expr_inner_lit: code::rvalue {
                mutable /*atomic*/ bool defined{}; mutable val value;
             public:
@@ -736,20 +736,20 @@ namespace aux { namespace {
             for (auto &&el: form[2]) as<const expr_inner_lit &>(symtab[as<const sym &>(el[1])]).set(overriding_values.front()),
                overriding_values.push_back(val(overriding_values.front())), overriding_values.pop_front(); // resource leak possible, by design
 
-            for (auto &&el: form[2]) symtab.update(as<const sym &>(el[1]), move(overriden_ents.front())), overriden_ents.pop_front();
-            tmp_ids = move(saved_tmp_ids);
-            tmp_cnt = move(saved_tmp_cnt);
-            for (auto &&el: tmp_ids) symtab.update(el, move(saved_tmp_ents.front())), saved_tmp_ents.pop_front();
+            for (auto &&el: form[2]) symtab.update(as<const sym &>(el[1]), std::move(overriden_ents.front())), overriden_ents.pop_front();
+            tmp_ids = std::move(saved_tmp_ids);
+            tmp_cnt = std::move(saved_tmp_cnt);
+            for (auto &&el: tmp_ids) symtab.update(el, std::move(saved_tmp_ents.front())), saved_tmp_ents.pop_front();
 
             for (auto &&el: form[2]) overriden_ents.push_back(symtab[as<const sym &>(el[1])]),
-               symtab.update(as<const sym &>(el[1]), optimize(expr_lit<>{move(overriding_values.front())})), overriding_values.pop_front();
+               symtab.update(as<const sym &>(el[1]), optimize(expr_lit<>{std::move(overriding_values.front())})), overriding_values.pop_front();
             std::vector<sym> erased_tmp_ids;
             for (auto &&el: form[2]) if (tmp_ids.erase(as<const sym &>(el[1]))) erased_tmp_ids.push_back(as<const sym &>(el[1]));
 
             auto body = pub::compile(form[4], loc);
 
-            for (auto &&el: erased_tmp_ids) tmp_ids.insert(move(el));
-            for (auto &&el: form[2]) symtab.update(as<const sym &>(el[1]), move(overriden_ents.front())), overriden_ents.pop_front();
+            for (auto &&el: erased_tmp_ids) tmp_ids.insert(std::move(el));
+            for (auto &&el: form[2]) symtab.update(as<const sym &>(el[1]), std::move(overriden_ents.front())), overriden_ents.pop_front();
 
             return body;
          }();
