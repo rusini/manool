@@ -667,9 +667,9 @@ namespace aux { namespace {
       MNL_INLINE static code compile(code &&, const ast &form, const loc &loc) {
       opt1: // {let {I = E; ...} in E}
          {  if (form.size() == 4); else goto opt2;
-            if (is<val::list>(form[1])); else goto opt2;
+            if (is<ast::list>(form[1])); else goto opt2;
             if (form[2] == MNL_SYM("in")); else goto opt2;
-            for (auto &&el: form[1]) if (is<val::list>(el) && el.size() == 3 && el[0] == MNL_SYM("=") && is<sym>(el[1])); else goto opt2;
+            for (auto &&el: form[1]) if (is<ast::list>(el) && el.size() == 3 && el[0] == MNL_SYM("=") && is<sym>(el[1])); else goto opt2;
          }
          {  sym::tab<bool> tab; for (auto &&el: form[1]) if (!tab[as<const sym &>(el[1])])
                tab.update(as<const sym &>(el[1]), true); else err_compile("ambiguous bindings", loc);
@@ -704,9 +704,9 @@ namespace aux { namespace {
       opt2: // {let rec {I = V; ...} in E}
          {  if (form.size() == 5); else goto opt3;
             if (form[1] == MNL_SYM("rec")); else goto opt3;
-            if (is<val::list>(form[2])); else goto opt3;
+            if (is<ast::list>(form[2])); else goto opt3;
             if (form[3] == MNL_SYM("in")); else goto opt3;
-            for (auto &&el: form[2]) if (is<val::list>(el) && el.size() == 3 && el[0] == MNL_SYM("=") && is<sym>(el[1])); else goto opt3;
+            for (auto &&el: form[2]) if (is<ast::list>(el) && el.size() == 3 && el[0] == MNL_SYM("=") && is<sym>(el[1])); else goto opt3;
          }
          {  sym::tab<bool> tab; for (auto &&el: form[2]) if (!tab[as<const sym &>(el[1])])
                tab.update(as<const sym &>(el[1]), true); else err_compile("ambiguous bindings", loc);
