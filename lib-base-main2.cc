@@ -663,25 +663,25 @@ namespace aux { namespace {
       }
    };
 
-   class comp_let { MNL_NONVALUE()
-      MNL_INLINE static code compile(code &&, const form &form, const loc &_loc) {
-      opt1: // {let {I = E; ...} in E}, {let {I = E; ...} in B; B; B; ...}
-         {  if (form.size() >= 4); else goto opt2;
-            if (form[1].is_list()); else goto opt2;
+   struct comp_let: code::nonvalue {
+      MNL_INLINE static code compile(code &&, const ast &form, const loc &loc) {
+      opt1: // {let {I = E; ...} in E}
+         {  if (form.size() == 4); else goto opt2;
+            if (is<val::list>(form[1])); else goto opt2;
             if (form[2] == MNL_SYM("in")); else goto opt2;
-            for (auto &&el: form[1]) if (el.is_list() && el.size() == 3 && el[0] == MNL_SYM("=") && test<sym>(el[1])); else goto opt2;
+            for (auto &&el: form[1]) if (is<val::list>(el) && el.size() == 3 && el[0] == MNL_SYM("=") && is<sym>(el[1])); else goto opt2;
          }
-         {  sym::tab<bool> tab; for (auto &&el: form[1]) if (!tab[cast<const sym &>(el[1])])
-               tab.update(cast<const sym &>(el[1]), true); else err_compile("ambiguous bindings", _loc);
+         {  sym::tab<bool> tab; for (auto &&el: form[1]) if (!tab[as<const sym &>(el[1])])
+               tab.update(as<const sym &>(el[1]), true); else err_compile("ambiguous bindings", loc);
          }
-         return [&]()->code{
+         return [&]() MNL_INLINE{
             deque<code> saved_tmp_ents;
             for (auto &&el: tmp_ids) saved_tmp_ents.push_back(symtab[el]), symtab.update(el, {});
             auto saved_tmp_cnt = move(tmp_cnt); tmp_cnt = 0;
             auto saved_tmp_ids = move(tmp_ids); tmp_ids.clear();
 
             deque<code> overriding_ents;
-            for (auto &&el: form[1]) { auto ent = pub::compile(el[2], _loc);
+            for (auto &&el: form[1]) { auto ent = pub::compile(el[2], loc);
                overriding_ents.push_back(ent.is_rvalue() ? optimize(expr_lit<>{ent.execute()}) : move(ent)); }
 
             tmp_ids = move(saved_tmp_ids);
@@ -689,29 +689,29 @@ namespace aux { namespace {
             for (auto &&el: tmp_ids) symtab.update(el, move(saved_tmp_ents.front())), saved_tmp_ents.pop_front();
 
             deque<code> overriden_ents;
-            for (auto &&el: form[1]) overriden_ents.push_back(symtab[cast<const sym &>(el[1])]),
-               symtab.update(cast<const sym &>(el[1]), move(overriding_ents.front())), overriding_ents.pop_front();
+            for (auto &&el: form[1]) overriden_ents.push_back(symtab[as<const sym &>(el[1])]),
+               symtab.update(as<const sym &>(el[1]), move(overriding_ents.front())), overriding_ents.pop_front();
             vector<sym> erased_tmp_ids;
-            for (auto &&el: form[1]) if (tmp_ids.erase(cast<const sym &>(el[1]))) erased_tmp_ids.push_back(cast<const sym &>(el[1]));
+            for (auto &&el: form[1]) if (tmp_ids.erase(as<const sym &>(el[1]))) erased_tmp_ids.push_back(as<const sym &>(el[1]));
 
-            auto body = form.size() == 4 ? pub::compile(form[3], _loc) : compile_rval(form + 3, _loc);
+            auto body = pub::compile(form[3], loc);
 
             for (auto &&el: erased_tmp_ids) tmp_ids.insert(move(el));
-            for (auto &&el: form[1]) symtab.update(cast<const sym &>(el[1]), move(overriden_ents.front())), overriden_ents.pop_front();
+            for (auto &&el: form[1]) symtab.update(as<const sym &>(el[1]), move(overriden_ents.front())), overriden_ents.pop_front();
 
             return body;
          }();
-      opt2: // {let rec {I = V; ...} in E}, {let rec {I = V; ...} in B; B; B; ...}
-         {  if (form.size() >= 5); else goto opt3;
+      opt2: // {let rec {I = V; ...} in E}
+         {  if (form.size() == 5); else goto opt3;
             if (form[1] == MNL_SYM("rec")); else goto opt3;
-            if (form[2].is_list()); else goto opt3;
+            if (is<val::list>(form[2])); else goto opt3;
             if (form[3] == MNL_SYM("in")); else goto opt3;
-            for (auto &&el: form[2]) if (el.is_list() && el.size() == 3 && el[0] == MNL_SYM("=") && test<sym>(el[1])); else goto opt3;
+            for (auto &&el: form[2]) if (is<val::list>(el) && el.size() == 3 && el[0] == MNL_SYM("=") && is<sym>(el[1])); else goto opt3;
          }
-         {  sym::tab<bool> tab; for (auto &&el: form[2]) if (!tab[cast<const sym &>(el[1])])
-               tab.update(cast<const sym &>(el[1]), true); else err_compile("ambiguous bindings", _loc);
+         {  sym::tab<bool> tab; for (auto &&el: form[2]) if (!tab[as<const sym &>(el[1])])
+               tab.update(as<const sym &>(el[1]), true); else err_compile("ambiguous bindings", loc);
          }
-         return [&]()->code{
+         return [&]() MNL_INLINE{
             deque<code> saved_tmp_ents;
             for (auto &&el: tmp_ids) saved_tmp_ents.push_back(symtab[el]), symtab.update(el, {});
             auto saved_tmp_cnt = move(tmp_cnt); tmp_cnt = 0;
@@ -728,33 +728,33 @@ namespace aux { namespace {
                }
             };
             deque<code> overriden_ents;
-            for (auto &&el: form[2]) overriden_ents.push_back(symtab[cast<const sym &>(el[1])]),
-               symtab.update(cast<const sym &>(el[1]), expr_inner_lit{});
+            for (auto &&el: form[2]) overriden_ents.push_back(symtab[as<const sym &>(el[1])]),
+               symtab.update(as<const sym &>(el[1]), expr_inner_lit{});
 
             deque<val> overriding_values;
-            for (auto &&el: form[2]) overriding_values.push_back(compile_rval(el[2], _loc).execute());
-            for (auto &&el: form[2]) cast<const expr_inner_lit &>(symtab[cast<const sym &>(el[1])]).set(overriding_values.front()),
+            for (auto &&el: form[2]) overriding_values.push_back(compile_rval(el[2], loc).execute());
+            for (auto &&el: form[2]) as<const expr_inner_lit &>(symtab[as<const sym &>(el[1])]).set(overriding_values.front()),
                overriding_values.push_back(val(overriding_values.front())), overriding_values.pop_front(); // resource leak possible, by design
 
-            for (auto &&el: form[2]) symtab.update(cast<const sym &>(el[1]), move(overriden_ents.front())), overriden_ents.pop_front();
+            for (auto &&el: form[2]) symtab.update(as<const sym &>(el[1]), move(overriden_ents.front())), overriden_ents.pop_front();
             tmp_ids = move(saved_tmp_ids);
             tmp_cnt = move(saved_tmp_cnt);
             for (auto &&el: tmp_ids) symtab.update(el, move(saved_tmp_ents.front())), saved_tmp_ents.pop_front();
 
-            for (auto &&el: form[2]) overriden_ents.push_back(symtab[cast<const sym &>(el[1])]),
-               symtab.update(cast<const sym &>(el[1]), optimize(expr_lit<>{move(overriding_values.front())})), overriding_values.pop_front();
+            for (auto &&el: form[2]) overriden_ents.push_back(symtab[as<const sym &>(el[1])]),
+               symtab.update(as<const sym &>(el[1]), optimize(expr_lit<>{move(overriding_values.front())})), overriding_values.pop_front();
             vector<sym> erased_tmp_ids;
-            for (auto &&el: form[2]) if (tmp_ids.erase(cast<const sym &>(el[1]))) erased_tmp_ids.push_back(cast<const sym &>(el[1]));
+            for (auto &&el: form[2]) if (tmp_ids.erase(as<const sym &>(el[1]))) erased_tmp_ids.push_back(as<const sym &>(el[1]));
 
-            auto body = form.size() == 5 ? pub::compile(form[4], _loc) : compile_rval(form + 4, _loc);
+            auto body = pub::compile(form[4], loc);
 
             for (auto &&el: erased_tmp_ids) tmp_ids.insert(move(el));
-            for (auto &&el: form[2]) symtab.update(cast<const sym &>(el[1]), move(overriden_ents.front())), overriden_ents.pop_front();
+            for (auto &&el: form[2]) symtab.update(as<const sym &>(el[1]), move(overriden_ents.front())), overriden_ents.pop_front();
 
             return body;
          }();
       opt3:
-         err_compile("invalid form", _loc);
+         err_compile("invalid form", loc);
       }
    };
 
