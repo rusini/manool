@@ -675,12 +675,12 @@ namespace aux { namespace {
                tab.update(as<const sym &>(el[1]), true); else err_compile("ambiguous bindings", loc);
          }
          return [&]() MNL_INLINE{
-            deque<code> saved_tmp_ents;
+            std::deque<code> saved_tmp_ents;
             for (auto &&el: tmp_ids) saved_tmp_ents.push_back(symtab[el]), symtab.update(el, {});
             auto saved_tmp_cnt = move(tmp_cnt); tmp_cnt = 0;
             auto saved_tmp_ids = move(tmp_ids); tmp_ids.clear();
 
-            deque<code> overriding_ents;
+            std::deque<code> overriding_ents;
             for (auto &&el: form[1]) { auto ent = pub::compile(el[2], loc);
                overriding_ents.push_back(ent.is_rvalue() ? optimize(expr_lit<>{ent.execute()}) : move(ent)); }
 
@@ -688,10 +688,10 @@ namespace aux { namespace {
             tmp_cnt = move(saved_tmp_cnt);
             for (auto &&el: tmp_ids) symtab.update(el, move(saved_tmp_ents.front())), saved_tmp_ents.pop_front();
 
-            deque<code> overriden_ents;
+            std::deque<code> overriden_ents;
             for (auto &&el: form[1]) overriden_ents.push_back(symtab[as<const sym &>(el[1])]),
                symtab.update(as<const sym &>(el[1]), move(overriding_ents.front())), overriding_ents.pop_front();
-            vector<sym> erased_tmp_ids;
+            std::vector<sym> erased_tmp_ids;
             for (auto &&el: form[1]) if (tmp_ids.erase(as<const sym &>(el[1]))) erased_tmp_ids.push_back(as<const sym &>(el[1]));
 
             auto body = pub::compile(form[3], loc);
@@ -712,26 +712,26 @@ namespace aux { namespace {
                tab.update(as<const sym &>(el[1]), true); else err_compile("ambiguous bindings", loc);
          }
          return [&]() MNL_INLINE{
-            deque<code> saved_tmp_ents;
+            std::deque<code> saved_tmp_ents;
             for (auto &&el: tmp_ids) saved_tmp_ents.push_back(symtab[el]), symtab.update(el, {});
             auto saved_tmp_cnt = move(tmp_cnt); tmp_cnt = 0;
             auto saved_tmp_ids = move(tmp_ids); tmp_ids.clear();
-            struct expr_inner_lit { MNL_RVALUE()
+            struct expr_inner_lit: code::rvalue {
                mutable /*atomic*/ bool defined{}; mutable val value;
             public:
                MNL_INLINE void set(const val &value) const noexcept {
                   this->value = value, MNL_IF_WITHOUT_MT(defined = true) MNL_IF_WITH_MT(__atomic_store_n(&defined, true, __ATOMIC_RELEASE));
                }
-               MNL_INLINE val execute(bool) const {
+               template<bool = bool{}, bool = bool{}> MNL_INLINE val execute() const {
                   if (MNL_LIKELY(MNL_IF_WITHOUT_MT(defined) MNL_IF_WITH_MT(__atomic_load_n(&defined, __ATOMIC_ACQUIRE)))) return value;
                   MNL_ERR(MNL_SYM("LetRecUndefined"));
                }
             };
-            deque<code> overriden_ents;
+            std::deque<code> overriden_ents;
             for (auto &&el: form[2]) overriden_ents.push_back(symtab[as<const sym &>(el[1])]),
                symtab.update(as<const sym &>(el[1]), expr_inner_lit{});
 
-            deque<val> overriding_values;
+            std::deque<val> overriding_values;
             for (auto &&el: form[2]) overriding_values.push_back(compile_rval(el[2], loc).execute());
             for (auto &&el: form[2]) as<const expr_inner_lit &>(symtab[as<const sym &>(el[1])]).set(overriding_values.front()),
                overriding_values.push_back(val(overriding_values.front())), overriding_values.pop_front(); // resource leak possible, by design
@@ -743,7 +743,7 @@ namespace aux { namespace {
 
             for (auto &&el: form[2]) overriden_ents.push_back(symtab[as<const sym &>(el[1])]),
                symtab.update(as<const sym &>(el[1]), optimize(expr_lit<>{move(overriding_values.front())})), overriding_values.pop_front();
-            vector<sym> erased_tmp_ids;
+            std::vector<sym> erased_tmp_ids;
             for (auto &&el: form[2]) if (tmp_ids.erase(as<const sym &>(el[1]))) erased_tmp_ids.push_back(as<const sym &>(el[1]));
 
             auto body = pub::compile(form[4], loc);
