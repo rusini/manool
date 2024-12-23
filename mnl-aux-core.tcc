@@ -199,7 +199,7 @@ namespace aux { namespace pub {
       MNL_INLINE static void release(decltype(rep) rep) noexcept
          { if (MNL_UNLIKELY(! MNL_IF_WITHOUT_MT(--rc[rep]) MNL_IF_WITH_MT(__atomic_sub_fetch(&rc[rep], 1, __ATOMIC_RELAXED)) )) free(rep); }
    public: // Related stuff
-      template<typename = class code> class tab/*le*/; // do not: move "= class code" to the definition below (compiler bug)
+      template<typename> class tab/*le*/;
       friend val;
       friend box<string>; friend box<vector<val>>; // direct access to "enum rep" members required, for performance reasons
       template<int> friend struct aux::_record;    // ditto
@@ -212,7 +212,7 @@ namespace aux { namespace pub {
    MNL_INLINE inline bool operator<=(const sym &lhs, const sym &rhs) noexcept { return std::rel_ops::operator<=(lhs, rhs); }
    MNL_INLINE inline bool operator>=(const sym &lhs, const sym &rhs) noexcept { return std::rel_ops::operator>=(lhs, rhs); }
 
-   template<typename Val> class sym::tab {
+   template<typename Val = class code> class sym::tab {
    public: // Standard operations
       tab() = default;
       tab(const tab &rhs): rep(rhs.rep), undef(rhs.undef) { addref(); }
@@ -245,8 +245,8 @@ namespace aux { namespace pub {
       MNL_NOINLINE void update(initializer_list<pair<sym, Val>> il) { for (auto &&kv: il) update(kv); }
       MNL_INLINE   void update(pair<const sym &, Val> kv) { update(kv.first, (move)(kv.second)); }
    private: // Concrete representation
-      vector<typename std::conditional<std::is_same<Val, bool>::value, unsigned char, Val>::type> rep;
-      Val undef{};
+      std::vector<std::conditional_t<std::is_same_v<Val, bool>, unsigned char, Val>> rep;
+      Val undef = {};
    private: // Implementation helpers
       void addref()  const noexcept
          { for (int sn = 0; sn < (int)rep.size(); ++sn) if (MNL_UNLIKELY(rep[sn] != undef)) sym::addref (static_cast<decltype(sym::rep)>(sn)); }
