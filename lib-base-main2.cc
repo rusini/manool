@@ -570,42 +570,42 @@ namespace aux { namespace {
             tvar_cnt -= form[1].size();
             for (auto &&el: form[1]) symtab.update(as<const sym &>(el), std::move(overriden_ents.front())), overriden_ents.pop_front();
 
-            switch (form[1].size()) {
-            case 0: return std::move(body);
-               static constexpr _ = [](auto _var_count, auto &body) MNL_INLINE{
-                  struct expr: code::lvalue {
-                     [[no_unique_address]] decltype(_var_count) var_count; code body;
-                  public:
-                     template<bool fast_sig, bool nores> MNL_INLINE val execute() const {
-                        tvar_stk.resize(tvar_stk.size() + decltype(var_count){}), tvar_frm = tvar_stk.data() + tvar_off;
-                        struct _ { int sn; MNL_INLINE ~_() { for (; sn; --sn) tvar_stk.pop_back(); } } _{var_count};
-                        return body.execute<fast_sig, nores>();
-                     }
-                     template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
-                        tvar_stk.resize(tvar_stk.size() + decltype(var_count){}), tvar_frm = tvar_stk.data() + tvar_off;
-                        struct _ { int sn; MNL_INLINE ~_() { for (; sn; --sn) tvar_stk.pop_back(); } } _{var_count};
-                        body.exec_in(std::forward<Val>(value));
-                     }
-                     MNL_INLINE val exec_out() const {
-                        tvar_stk.resize(tvar_stk.size() + decltype(var_count){}), tvar_frm = tvar_stk.data() + tvar_off;
-                        struct _ { int sn; MNL_INLINE ~_() { for (; sn; --sn) tvar_stk.pop_back(); } } _{var_count};
-                        return body.exec_out();
-                     }
-                  public:
-                     MNL_INLINE bool is_lvalue() const noexcept { return body.is_lvalue(); }
-                  };
-                  return expr{_var_count, std::move(body)};
+            const auto _ = [&](auto _var_count) MNL_INLINE{
+               struct expr: code::lvalue {
+                  [[no_unique_address]] decltype(_var_count) var_count; code body;
+               public:
+                  template<bool fast_sig, bool nores> MNL_INLINE val execute() const {
+                     tvar_stk.resize(tvar_stk.size() + var_count), tvar_frm = tvar_stk.data() + tvar_off;
+                     struct _ { int sn; MNL_INLINE ~_() { for (; sn; --sn) tvar_stk.pop_back(); } } _{var_count};
+                     return body.execute<fast_sig, nores>();
+                  }
+                  template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
+                     tvar_stk.resize(tvar_stk.size() + var_count), tvar_frm = tvar_stk.data() + tvar_off;
+                     struct _ { int sn; MNL_INLINE ~_() { for (; sn; --sn) tvar_stk.pop_back(); } } _{var_count};
+                     body.exec_in(std::forward<Val>(value));
+                  }
+                  MNL_INLINE val exec_out() const {
+                     tvar_stk.resize(tvar_stk.size() + var_count), tvar_frm = tvar_stk.data() + tvar_off;
+                     struct _ { int sn; MNL_INLINE ~_() { for (; sn; --sn) tvar_stk.pop_back(); } } _{var_count};
+                     return body.exec_out();
+                  }
+               public:
+                  MNL_INLINE bool is_lvalue() const noexcept { return body.is_lvalue(); }
                };
-            default: return _((int)form[1].size(), body);
-            case 1:  return _(std::integral_constant<int, 1>{}, body);
-            case 2:  return _(std::integral_constant<int, 2>{}, body);
-            case 3:  return _(std::integral_constant<int, 3>{}, body);
-            case 4:  return _(std::integral_constant<int, 4>{}, body);
-            case 5:  return _(std::integral_constant<int, 5>{}, body);
-            case 6:  return _(std::integral_constant<int, 6>{}, body);
-            case 7:  return _(std::integral_constant<int, 7>{}, body);
-            case 8:  return _(std::integral_constant<int, 8>{}, body);
-
+               return expr{_var_count, std::move(body)};
+            };
+            switch (form[1].size()) {
+            case 0:  return std::move(body);
+            default: return _((int)form[1].size());
+            case 1:  return _(std::integral_constant<int, 1>{});
+            case 2:  return _(std::integral_constant<int, 2>{});
+            case 3:  return _(std::integral_constant<int, 3>{});
+            case 4:  return _(std::integral_constant<int, 4>{});
+            case 5:  return _(std::integral_constant<int, 5>{});
+            case 6:  return _(std::integral_constant<int, 6>{});
+            case 7:  return _(std::integral_constant<int, 7>{});
+            case 8:  return _(std::integral_constant<int, 8>{});
+            }
                {  struct expr: code::lvalue {
                      MNL_LVALUE(body.is_lvalue()) const int var_count; code body; MNL_M1(var_count)
                   };
