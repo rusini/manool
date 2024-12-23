@@ -704,6 +704,8 @@ namespace aux { namespace {
       opt3:
          err_compile("invalid form", _loc);
       }
+   private:
+      template<auto Const> using _constant = std::integral_constant<decltype(Const), Const>;
    };
 
    struct comp_let: code::nonvalue {
