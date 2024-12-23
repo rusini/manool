@@ -570,29 +570,29 @@ namespace aux { namespace {
             tvar_cnt -= form[1].size();
             for (auto &&el: form[1]) symtab.update(as<const sym &>(el), std::move(overriden_ents.front())), overriden_ents.pop_front();
 
-            const auto _ = [&](auto _var_count) MNL_INLINE{
+            const auto _ = [&](auto count) MNL_INLINE{
                struct expr: code::lvalue {
-                  [[no_unique_address]] decltype(_var_count) var_count; code body;
+                  [[no_unique_address]] decltype(count) var_count; code body;
                public:
                   template<bool fast_sig, bool nores> MNL_INLINE val execute() const {
                      tvar_stk.resize(tvar_stk.size() + var_count), tvar_frm = tvar_stk.data() + tvar_off;
-                     struct _ { int sn; MNL_INLINE ~_() { for (; sn; --sn) tvar_stk.pop_back(); } } _{var_count};
+                     struct _ { int sn; MNL_INLINE ~_() { _Pragma("GCC unroll 8") for (; sn; --sn) tvar_stk.pop_back(); } } _{var_count};
                      return body.execute<fast_sig, nores>();
                   }
                   template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
                      tvar_stk.resize(tvar_stk.size() + var_count), tvar_frm = tvar_stk.data() + tvar_off;
-                     struct _ { int sn; MNL_INLINE ~_() { for (; sn; --sn) tvar_stk.pop_back(); } } _{var_count};
+                     struct _ { int sn; MNL_INLINE ~_() { _Pragma("GCC unroll 8") for (; sn; --sn) tvar_stk.pop_back(); } } _{var_count};
                      body.exec_in(std::forward<Val>(value));
                   }
                   MNL_INLINE val exec_out() const {
                      tvar_stk.resize(tvar_stk.size() + var_count), tvar_frm = tvar_stk.data() + tvar_off;
-                     struct _ { int sn; MNL_INLINE ~_() { for (; sn; --sn) tvar_stk.pop_back(); } } _{var_count};
+                     struct _ { int sn; MNL_INLINE ~_() { _Pragma("GCC unroll 8") for (; sn; --sn) tvar_stk.pop_back(); } } _{var_count};
                      return body.exec_out();
                   }
                public:
                   MNL_INLINE bool is_lvalue() const noexcept { return body.is_lvalue(); }
                };
-               return expr{_var_count, std::move(body)};
+               return expr{count, std::move(body)};
             };
             switch (form[1].size()) {
             case 0:  return std::move(body);
