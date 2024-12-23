@@ -544,33 +544,76 @@ namespace aux { namespace {
       }
    };
 
-   class comp_var { MNL_NONVALUE()
-      MNL_INLINE static code compile(code &&, const form &form, const loc &_loc) {
-      opt1: // {var {I; ...} in B; B; ...}
+   class comp_var: code::nonvalue {
+      friend code::box<comp_var>;
+      MNL_INLINE static code compile(code &&, const ast &form, const loc &loc) {
+      opt1: // {var {I; ...} in B}
          {  if (form.size() >= 4); else goto opt2;
-            if (form[1].is_list()); else goto opt2;
+            if (is<ast::list>(form[1])); else goto opt2;
             if (form[2] == MNL_SYM("in")); else goto opt2;
-            for (auto &&el: form[1]) if (test<sym>(el)); else goto opt2;
+            for (auto &&el: form[1]) if (is<sym>(el)); else goto opt2;
          }
-         {  if (tmp_cnt + (long)form[1].size() > lim<decltype(tmp_cnt)>::max()) MNL_ERR(MNL_SYM("LimitExceeded"));
+         {  if (tvar_cnt + (long)form[1].size() > std::numeric_limits<decltype(tvar_cnt)>::max()) MNL_ERR(MNL_SYM("LimitExceeded"));
          }
-         {  sym::tab<bool> tab; for (auto &&el: form[1]) if (!tab[cast<const sym &>(el)])
-               tab.update(cast<const sym &>(el), true); else err_compile("ambiguous bindings", _loc);
+         {  sym::tab<bool> tab; for (auto &&el: form[1]) if (!tab[as<const sym &>(el)])
+               tab.update(as<const sym &>(el), true); else err_compile("ambiguous bindings", loc);
          }
-         {  deque<code> overriden_ents;
-            for (auto &&el: form[1]) overriden_ents.push_back(symtab[cast<const sym &>(el)]),
-               symtab.update(cast<const sym &>(el), expr_tmp{tmp_cnt++});
-            vector<sym> inserted_tmp_ids;
-            for (auto &&el: form[1]) if (tmp_ids.insert(cast<const sym &>(el)).second) inserted_tmp_ids.push_back(cast<const sym &>(el));
+         {  std::deque<code> overriden_ents;
+            for (auto &&el: form[1]) overriden_ents.push_back(symtab[as<const sym &>(el)]),
+               symtab.update(as<const sym &>(el), expr_tvar{tvar_cnt++});
+            std::vector<sym> inserted_tvar_ids;
+            for (auto &&el: form[1]) if (tvar_ids.insert(as<const sym &>(el)).second) inserted_tvar_ids.push_back(as<const sym &>(el));
 
-            auto body = compile_rval(form + 3, _loc);
+            auto body = compile_rval(form[3], loc);
 
-            for (auto &&el: inserted_tmp_ids) tmp_ids.erase(move(el));
-            tmp_cnt -= form[1].size();
-            for (auto &&el: form[1]) symtab.update(cast<const sym &>(el), move(overriden_ents.front())), overriden_ents.pop_front();
+            for (auto &&el: inserted_tvar_ids) tvar_ids.erase(std::move(el)); // TODO: ineffective move
+            tvar_cnt -= form[1].size();
+            for (auto &&el: form[1]) symtab.update(as<const sym &>(el), std::move(overriden_ents.front())), overriden_ents.pop_front();
 
             switch (form[1].size()) {
-            case 0: return move(body);
+            case 0: return std::move(body);
+               static constexpr _ = [](auto _var_count, auto &body) MNL_INLINE{
+                  struct expr: code::lvalue {
+                     [[no_unique_address]] decltype(_var_count) var_count; code body;
+                  public:
+                     template<bool fast_sig, bool nores> MNL_INLINE val execute() const {
+                        tvar_stk.resize(tvar_stk.size() + decltype(var_count){}), tvar_frm = tvar_stk.data() + tvar_off;
+                        struct _ { int sn; MNL_INLINE ~_() { for (; sn; --sn) tvar_stk.pop_back(); } } _{var_count};
+                        return body.execute<fast_sig, nores>();
+                     }
+                     template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
+                        tvar_stk.resize(tvar_stk.size() + decltype(var_count){}), tvar_frm = tvar_stk.data() + tvar_off;
+                        struct _ { int sn; MNL_INLINE ~_() { for (; sn; --sn) tvar_stk.pop_back(); } } _{var_count};
+                        body.exec_in(std::forward<Val>(value));
+                     }
+                     MNL_INLINE val exec_out() const {
+                        tvar_stk.resize(tvar_stk.size() + decltype(var_count){}), tvar_frm = tvar_stk.data() + tvar_off;
+                        struct _ { int sn; MNL_INLINE ~_() { for (; sn; --sn) tvar_stk.pop_back(); } } _{var_count};
+                        return body.exec_out();
+                     }
+                  public:
+                     MNL_INLINE bool is_lvalue() const noexcept { return body.is_lvalue(); }
+                  };
+                  return expr{_var_count, std::move(body)};
+               };
+            default: return _((int)form[1].size(), body);
+            case 1:  return _(std::integral_constant<int, 1>{}, body);
+            case 2:  return _(std::integral_constant<int, 2>{}, body);
+            case 3:  return _(std::integral_constant<int, 3>{}, body);
+            case 4:  return _(std::integral_constant<int, 4>{}, body);
+            case 5:  return _(std::integral_constant<int, 5>{}, body);
+            case 6:  return _(std::integral_constant<int, 6>{}, body);
+            case 7:  return _(std::integral_constant<int, 7>{}, body);
+            case 8:  return _(std::integral_constant<int, 8>{}, body);
+
+               {  struct expr: code::lvalue {
+                     MNL_LVALUE(body.is_lvalue()) const int var_count; code body; MNL_M1(var_count)
+                  };
+               default: return expr{(int)form[1].size(), move(body)};
+               }
+
+
+
             # define MNL_M1(VAR_COUNT) \
                MNL_INLINE val execute(bool fast_sig) const { \
                   tmp_stk.resize(tmp_stk.size() + VAR_COUNT); \
