@@ -59,11 +59,12 @@ namespace aux { namespace pub {
    // Temporary Variable Accounting ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    // Compile-time accounting
-   extern MNL_IF_WITH_MT(thread_local) int      tmp_cnt; // count for current frame layout
-   extern MNL_IF_WITH_MT(thread_local) set<sym> tmp_ids; // all temporaries
+   inline MNL_IF_WITH_MT(thread_local) int           tvar_cnt; // count for current frame layout
+   inline MNL_IF_WITH_MT(thread_local) std::set<sym> tvar_ids; // all temporaries
    // Run-time accounting
-   extern MNL_IF_WITH_MT(thread_local) vector<val>                  tmp_stk; // stack
-   extern MNL_IF_WITH_MT(thread_local) decltype(tmp_stk)::size_type tmp_frm; // frame pointer
+   inline MNL_IF_WITH_MT(thread_local) std::vector<val>              tvar_stk; // stack
+   inline MNL_IF_WITH_MT(thread_local) decltype(tvar_stk)::size_type tvar_off; // frame offset
+   inline MNL_IF_WITH_MT(thread_local) val                          *tvar_frm; // frame pointer (redundant)
 
    // Essential Stuff //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    code make_lit(const val &);
