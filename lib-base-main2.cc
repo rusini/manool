@@ -576,17 +576,17 @@ namespace aux { namespace {
                public:
                   template<bool fast_sig, bool nores> MNL_INLINE val execute() const {
                      tvar_stk.resize(tvar_stk.size() + var_count), tvar_frm = tvar_stk.data() + tvar_off;
-                     struct _ { int sn; MNL_INLINE ~_() { _Pragma("GCC unroll 10") for (; sn; --sn) tvar_stk.pop_back(); } } _{var_count};
+                     struct _ { int ix; MNL_INLINE ~_() { _Pragma("GCC unroll 10") for (; ix; --ix) tvar_stk.pop_back(); } } _{var_count};
                      return body.execute<fast_sig, nores>();
                   }
                   template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
                      tvar_stk.resize(tvar_stk.size() + var_count), tvar_frm = tvar_stk.data() + tvar_off;
-                     struct _ { int sn; MNL_INLINE ~_() { _Pragma("GCC unroll 10") for (; sn; --sn) tvar_stk.pop_back(); } } _{var_count};
+                     struct _ { int ix; MNL_INLINE ~_() { _Pragma("GCC unroll 10") for (; ix; --ix) tvar_stk.pop_back(); } } _{var_count};
                      body.exec_in(std::forward<Val>(value));
                   }
                   MNL_INLINE val exec_out() const {
                      tvar_stk.resize(tvar_stk.size() + var_count), tvar_frm = tvar_stk.data() + tvar_off;
-                     struct _ { int sn; MNL_INLINE ~_() { _Pragma("GCC unroll 10") for (; sn; --sn) tvar_stk.pop_back(); } } _{var_count};
+                     struct _ { int ix; MNL_INLINE ~_() { _Pragma("GCC unroll 10") for (; ix; --ix) tvar_stk.pop_back(); } } _{var_count};
                      return body.exec_out();
                   }
                public:
