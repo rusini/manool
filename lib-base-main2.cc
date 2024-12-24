@@ -638,17 +638,17 @@ namespace aux { namespace {
                public:
                   template<bool fast_sig, bool nores> MNL_INLINE val execute() const {
                      struct _ { int ix; MNL_INLINE ~_() { _Pragma("GCC unroll 8") for (; ix; --ix) tvar_stk.pop_back(); } } _;
-                     _Pragma("GCC unroll 8") for (_.ix = 0; _.ix < (int)init.size(); ++_.ix) tvar_stk.push_back(init[_.ix].execute());
+                     _Pragma("GCC unroll 10") for (_.ix = 0; _.ix < (int)init.size(); ++_.ix) tvar_stk.push_back(init[_.ix].execute());
                      return body.execute<fast_sig, nores>();
                   }
                   template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
                      struct _ { int ix; MNL_INLINE ~_() { _Pragma("GCC unroll 8") for (; ix; --ix) tvar_stk.pop_back(); } } _;
-                     _Pragma("GCC unroll 8") for (_.ix = 0; _.ix < (int)init.size(); ++_.ix) tvar_stk.push_back(init[_.ix].execute());
+                     _Pragma("GCC unroll 10") for (_.ix = 0; _.ix < (int)init.size(); ++_.ix) tvar_stk.push_back(init[_.ix].execute());
                      body.exec_in(std::forward<Val>(value));
                   }
                   MNL_INLINE val exec_out() const {
                      struct _ { int ix; MNL_INLINE ~_() { _Pragma("GCC unroll 8") for (; ix; --ix) tvar_stk.pop_back(); } } _;
-                     _Pragma("GCC unroll 8") for (_.ix = 0; _.ix < (int)init.size(); ++_.ix) tvar_stk.push_back(init[_.ix].execute());
+                     _Pragma("GCC unroll 10") for (_.ix = 0; _.ix < (int)init.size(); ++_.ix) tvar_stk.push_back(init[_.ix].execute());
                      return body.exec_out();
                   }
                public:
