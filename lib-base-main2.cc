@@ -632,6 +632,39 @@ namespace aux { namespace {
             tmp_cnt -= form[1].size();
             for (auto &&el: form[1]) symtab.update(cast<const sym &>(el[1]), move(overriden_ents.front())), overriden_ents.pop_front();
 
+            const auto compile = [&](auto &&_init) MNL_INLINE{
+               struct expr: code::lvalue {
+                  decltype(_init) init; code body;
+               public:
+                  template<bool fast_sig, bool nores> MNL_INLINE val execute() const {
+                     struct _ { int ix; MNL_INLINE ~_() { _Pragma("GCC unroll 8") for (; ix; --ix) tvar_stk.pop_back(); } } _;
+                     _Pragma("GCC unroll 8") for (_.ix = 0; _.ix < (int)init.size(); ++_.ix) tvar_stk.push_back(init[_.ix].execute());
+                     return body.execute<fast_sig, nores>();
+                  }
+                  template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
+                     struct _ { int ix; MNL_INLINE ~_() { _Pragma("GCC unroll 8") for (; ix; --ix) tvar_stk.pop_back(); } } _;
+                     _Pragma("GCC unroll 8") for (_.ix = 0; _.ix < (int)init.size(); ++_.ix) tvar_stk.push_back(init[_.ix].execute());
+                     body.exec_in(std::forward<Val>(value));
+                  }
+                  MNL_INLINE val exec_out() const {
+                     struct _ { int ix; MNL_INLINE ~_() { _Pragma("GCC unroll 8") for (; ix; --ix) tvar_stk.pop_back(); } } _;
+                     _Pragma("GCC unroll 8") for (_.ix = 0; _.ix < (int)init.size(); ++_.ix) tvar_stk.push_back(init[_.ix].execute());
+                     return body.exec_out();
+                  }
+               public:
+                  MNL_INLINE bool is_lvalue() const noexcept { return body.is_lvalue(); }
+               };
+               return expr{std::move(_init), std::move(body)};
+            };
+            switch (form[1].size()) {
+            default: return compile(std::move(init));
+            case 1:  return compile(std::array{std::move(init[0])});
+            case 2:  return compile(std::array{std::move(init[0]), std::move(init[1])});
+            case 3:  return compile(std::array{std::move(init[0]), std::move(init[1]), std::move(init[2])});
+            case 4:  return compile(std::array{std::move(init[0]), std::move(init[1]), std::move(init[2]), std::move(init[3])});
+            case 5:  return compile(std::array{std::move(init[0]), std::move(init[1]), std::move(init[2]), std::move(init[3]), std::move(init[4])});
+            }
+
             switch (form[1].size()) {
             # define MNL_M1(VAR_COUNT) \
                MNL_INLINE val execute(bool fast_sig) const { \
