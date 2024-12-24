@@ -667,41 +667,9 @@ namespace aux { namespace {
             case 4:  return compile(std::array{std::move(init[0]), std::move(init[1]), std::move(init[2]), std::move(init[3])});
             case 5:  return compile(std::array{std::move(init[0]), std::move(init[1]), std::move(init[2]), std::move(init[3]), std::move(init[4])});
             }
-
-            switch (form[1].size()) {
-            # define MNL_M1(VAR_COUNT) \
-               MNL_INLINE val execute(bool fast_sig) const { \
-                  struct _ { int sn; MNL_INLINE ~_() { for (; sn; --sn) tmp_stk.pop_back(); } } _; \
-                  for (_.sn = 0; _.sn < VAR_COUNT; ++_.sn) tmp_stk.push_back(init[_.sn].execute()); \
-                  return body.execute(fast_sig); \
-               } \
-               MNL_INLINE void exec_in(val &&value) const { \
-                  struct _ { int sn; MNL_INLINE ~_() { for (; sn; --sn) tmp_stk.pop_back(); } } _; \
-                  for (_.sn = 0; _.sn < VAR_COUNT; ++_.sn) tmp_stk.push_back(init[_.sn].execute()); \
-                  body.exec_in(move(value)); \
-               } \
-               MNL_INLINE val exec_out() const { \
-                  struct _ { int sn; MNL_INLINE ~_() { for (; sn; --sn) tmp_stk.pop_back(); } } _; \
-                  for (_.sn = 0; _.sn < VAR_COUNT; ++_.sn) tmp_stk.push_back(init[_.sn].execute()); \
-                  return body.exec_out(); \
-               } \
-            // end # define MNL_M1(VAR_COUNT)
-               {  struct expr { MNL_LVALUE(body.is_lvalue()) vector<code> init; code body; MNL_M1((int)init.size()) };
-               default: return expr{move(init), move(body)};
-               }
-            # define MNL_M2(VAR_COUNT) struct expr { MNL_LVALUE(body.is_lvalue()) code init[VAR_COUNT]; code body; MNL_M1(VAR_COUNT) };
-               { MNL_M2(1) case 1: return expr{move(init[0]), move(body)}; }
-               { MNL_M2(2) case 2: return expr{move(init[0]), move(init[1]), move(body)}; }
-               { MNL_M2(3) case 3: return expr{move(init[0]), move(init[1]), move(init[2]), move(body)}; }
-               { MNL_M2(4) case 4: return expr{move(init[0]), move(init[1]), move(init[2]), move(init[3]), move(body)}; }
-               { MNL_M2(5) case 5: return expr{move(init[0]), move(init[1]), move(init[2]), move(init[3]), move(init[4]), move(body)}; }
-               { MNL_M2(6) case 6: return expr{move(init[0]), move(init[1]), move(init[2]), move(init[3]), move(init[4]), move(init[5]), move(body)}; }
-            # undef MNL_M2
-            # undef MNL_M1
-            }
          }
       opt3:
-         err_compile("invalid form", _loc);
+         err_compile("invalid form", loc);
       }
    };
 
