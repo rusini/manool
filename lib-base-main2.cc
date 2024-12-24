@@ -626,7 +626,7 @@ namespace aux { namespace {
             vector<sym> inserted_tmp_ids;
             for (auto &&el: form[1]) if (tmp_ids.insert(cast<const sym &>(el[1])).second) inserted_tmp_ids.push_back(cast<const sym &>(el[1]));
 
-            auto body = compile_rval(form + 3, _loc);
+            auto body = compile_rval(form[3], loc);
 
             for (auto &&el: inserted_tmp_ids) tmp_ids.erase(move(el));
             tmp_cnt -= form[1].size();
