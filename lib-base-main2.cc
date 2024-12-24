@@ -570,9 +570,9 @@ namespace aux { namespace {
             tvar_cnt -= form[1].size();
             for (auto &&el: form[1]) symtab.update(as<const sym &>(el), std::move(overriden_ents.front())), overriden_ents.pop_front();
 
-            const auto compile = [&](auto count) MNL_INLINE{
+            const auto compile = [&](auto _var_count) MNL_INLINE{
                struct expr: code::lvalue {
-                  [[no_unique_address]] decltype(count) var_count; code body;
+                  [[no_unique_address]] decltype(_var_count) var_count; code body;
                public:
                   template<bool fast_sig, bool nores> MNL_INLINE val execute() const {
                      tvar_stk.resize(tvar_stk.size() + var_count), tvar_frm = tvar_stk.data() + tvar_off;
@@ -592,7 +592,7 @@ namespace aux { namespace {
                public:
                   MNL_INLINE bool is_lvalue() const noexcept { return body.is_lvalue(); }
                };
-               return expr{count, std::move(body)};
+               return expr{_var_count, std::move(body)};
             };
             switch (form[1].size()) {
             case 0:  return std::move(body);
@@ -700,8 +700,6 @@ namespace aux { namespace {
       opt3:
          err_compile("invalid form", _loc);
       }
-   private:
-      template<auto Const> using _constant = std::integral_constant<decltype(Const), Const>;
    };
 
    struct comp_let: code::nonvalue {
