@@ -570,7 +570,7 @@ namespace aux { namespace {
             tvar_cnt -= form[1].size();
             for (auto &&el: form[1]) symtab.update(as<const sym &>(el), std::move(overriden_ents.front())), overriden_ents.pop_front();
 
-            const auto _ = [&](auto count) MNL_INLINE{
+            const auto compile = [&](auto count) MNL_INLINE{
                struct expr: code::lvalue {
                   [[no_unique_address]] decltype(count) var_count; code body;
                public:
@@ -596,15 +596,15 @@ namespace aux { namespace {
             };
             switch (form[1].size()) {
             case 0:  return std::move(body);
-            default: return _((int)form[1].size());
-            case 1:  return _(std::integral_constant<int, 1>{});
-            case 2:  return _(std::integral_constant<int, 2>{});
-            case 3:  return _(std::integral_constant<int, 3>{});
-            case 4:  return _(std::integral_constant<int, 4>{});
-            case 5:  return _(std::integral_constant<int, 5>{});
-            case 6:  return _(std::integral_constant<int, 6>{});
-            case 7:  return _(std::integral_constant<int, 7>{});
-            case 8:  return _(std::integral_constant<int, 8>{});
+            default: return compile((int)form[1].size());
+            case 1:  return compile(std::integral_constant<int, 1>{});
+            case 2:  return compile(std::integral_constant<int, 2>{});
+            case 3:  return compile(std::integral_constant<int, 3>{});
+            case 4:  return compile(std::integral_constant<int, 4>{});
+            case 5:  return compile(std::integral_constant<int, 5>{});
+            case 6:  return compile(std::integral_constant<int, 6>{});
+            case 7:  return compile(std::integral_constant<int, 7>{});
+            case 8:  return compile(std::integral_constant<int, 8>{});
             }
          }
       opt2: // {var {I = V; ...} in B; B; ...}
