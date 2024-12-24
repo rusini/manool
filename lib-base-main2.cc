@@ -607,18 +607,18 @@ namespace aux { namespace {
             case 8:  return compile(std::integral_constant<int, 8>{});
             }
          }
-      opt2: // {var {I = V; ...} in B; B; ...}
-         {  if (form.size() >= 4); else goto opt3;
-            if (form[1].is_list()); else goto opt3;
+      opt2: // {var {I = V; ...} in B}
+         {  if (form.size() == 4); else goto opt3;
+            if (is<ast::list>(form[1])); else goto opt3;
             if (form[2] == MNL_SYM("in")); else goto opt3;
-            for (auto &&el: form[1]) if (el.is_list() && el.size() == 3 && el[0] == MNL_SYM("=") && test<sym>(el[1])); else goto opt3;
+            for (auto &&el: form[1]) if (is<ast::list>(el) && el.size() == 3 && el[0] == MNL_SYM("=") && is<sym>(el[1])); else goto opt3;
          }
-         {  if (tmp_cnt + (long)form[1].size() > lim<decltype(tmp_cnt)>::max()) MNL_ERR(MNL_SYM("LimitExceeded"));
+         {  if (tvar_cnt + (long)form[1].size() > std::numeric_limits<decltype(tvar_cnt)>::max()) MNL_ERR(MNL_SYM("LimitExceeded"));
          }
-         {  sym::tab<bool> tab; for (auto &&el: form[1]) if (!tab[cast<const sym &>(el[1])])
-               tab.update(cast<const sym &>(el[1]), true); else err_compile("ambiguous bindings", _loc);
+         {  sym::tab<bool> tab; for (auto &&el: form[1]) if (!tab[as<const sym &>(el[1])])
+               tab.update(as<const sym &>(el[1]), true); else err_compile("ambiguous bindings", loc);
          }
-         {  vector<code> init; init.reserve(form[1].size()); for (auto &&el: form[1]) init.push_back(compile_rval(el[2], _loc));
+         {  std::vector<code> init; init.reserve(form[1].size()); for (auto &&el: form[1]) init.push_back(compile_rval(el[2], loc));
 
             deque<code> overriden_ents;
             for (auto &&el: form[1]) overriden_ents.push_back(symtab[cast<const sym &>(el[1])]),
@@ -660,12 +660,20 @@ namespace aux { namespace {
                return expr{std::move(_init), std::move(body)};
             };
             switch (form[1].size()) {
-            default: return compile(std::move(init));
-            case 1:  return compile(std::array{std::move(init[0])});
-            case 2:  return compile(std::array{std::move(init[0]), std::move(init[1])});
-            case 3:  return compile(std::array{std::move(init[0]), std::move(init[1]), std::move(init[2])});
-            case 4:  return compile(std::array{std::move(init[0]), std::move(init[1]), std::move(init[2]), std::move(init[3])});
-            case 5:  return compile(std::array{std::move(init[0]), std::move(init[1]), std::move(init[2]), std::move(init[3]), std::move(init[4])});
+            default: return compile(
+               std::move(init) );
+            case 1:  return compile(
+               std::array{std::move(init[0])} );
+            case 2:  return compile(
+               std::array{std::move(init[0]), std::move(init[1])} );
+            case 3:  return compile(
+               std::array{std::move(init[0]), std::move(init[1]), std::move(init[2])} );
+            case 4:  return compile(
+               std::array{std::move(init[0]), std::move(init[1]), std::move(init[2]), std::move(init[3])} );
+            case 5:  return compile(
+               std::array{std::move(init[0]), std::move(init[1]), std::move(init[2]), std::move(init[3]), std::move(init[4])} );
+            case 6:  return compile(
+               std::array{std::move(init[0]), std::move(init[1]), std::move(init[2]), std::move(init[3]), std::move(init[4]), std::move(init[5])} );
             }
          }
       opt3:
