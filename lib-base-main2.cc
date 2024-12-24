@@ -606,43 +606,6 @@ namespace aux { namespace {
             case 7:  return _(std::integral_constant<int, 7>{});
             case 8:  return _(std::integral_constant<int, 8>{});
             }
-               {  struct expr: code::lvalue {
-                     MNL_LVALUE(body.is_lvalue()) const int var_count; code body; MNL_M1(var_count)
-                  };
-               default: return expr{(int)form[1].size(), move(body)};
-               }
-
-
-
-            # define MNL_M1(VAR_COUNT) \
-               MNL_INLINE val execute(bool fast_sig) const { \
-                  tmp_stk.resize(tmp_stk.size() + VAR_COUNT); \
-                  struct _ { int sn; MNL_INLINE ~_() { for (; sn; --sn) tmp_stk.pop_back(); } } _{VAR_COUNT}; \
-                  return body.execute(fast_sig); \
-               } \
-               MNL_INLINE void exec_in(val &&value) const { \
-                  tmp_stk.resize(tmp_stk.size() + VAR_COUNT); \
-                  struct _ { int sn; MNL_INLINE ~_() { for (; sn; --sn) tmp_stk.pop_back(); } } _{VAR_COUNT}; \
-                  body.exec_in(move(value)); \
-               } \
-               MNL_INLINE val exec_out() const { \
-                  tmp_stk.resize(tmp_stk.size() + VAR_COUNT); \
-                  struct _ { int sn; MNL_INLINE ~_() { for (; sn; --sn) tmp_stk.pop_back(); } } _{VAR_COUNT}; \
-                  return body.exec_out(); \
-               } \
-            // end # define MNL_M1(VAR_COUNT)
-               {  struct expr { MNL_LVALUE(body.is_lvalue()) const int var_count; code body; MNL_M1(var_count) };
-               default: return expr{(int)form[1].size(), move(body)};
-               }
-            # define MNL_M2(VAR_COUNT) \
-               {  struct expr { MNL_LVALUE(body.is_lvalue()) code body; MNL_M1(VAR_COUNT) }; \
-               case VAR_COUNT: return expr{move(body)}; \
-               } \
-            // end # define MNL_M2(VAR_COUNT)
-               MNL_M2(1) MNL_M2(2) MNL_M2(3) MNL_M2(4) MNL_M2(5) MNL_M2(6) MNL_M2(7) MNL_M2(8)
-            # undef MNL_M2
-            # undef MNL_M1
-            }
          }
       opt2: // {var {I = V; ...} in B; B; ...}
          {  if (form.size() >= 4); else goto opt3;
