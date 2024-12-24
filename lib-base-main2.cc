@@ -620,17 +620,17 @@ namespace aux { namespace {
          }
          {  std::vector<code> init; init.reserve(form[1].size()); for (auto &&el: form[1]) init.push_back(compile_rval(el[2], loc));
 
-            deque<code> overriden_ents;
-            for (auto &&el: form[1]) overriden_ents.push_back(symtab[cast<const sym &>(el[1])]),
-               symtab.update(cast<const sym &>(el[1]), expr_tmp{tmp_cnt++});
-            vector<sym> inserted_tmp_ids;
-            for (auto &&el: form[1]) if (tmp_ids.insert(cast<const sym &>(el[1])).second) inserted_tmp_ids.push_back(cast<const sym &>(el[1]));
+            std::deque<code> overriden_ents;
+            for (auto &&el: form[1]) overriden_ents.push_back(symtab[as<const sym &>(el)]),
+               symtab.update(as<const sym &>(el), expr_tvar{tvar_cnt++});
+            std::vector<sym> inserted_tvar_ids;
+            for (auto &&el: form[1]) if (tvar_ids.insert(as<const sym &>(el)).second) inserted_tvar_ids.push_back(as<const sym &>(el));
 
             auto body = compile_rval(form[3], loc);
 
-            for (auto &&el: inserted_tmp_ids) tmp_ids.erase(move(el));
-            tmp_cnt -= form[1].size();
-            for (auto &&el: form[1]) symtab.update(cast<const sym &>(el[1]), move(overriden_ents.front())), overriden_ents.pop_front();
+            for (auto &&el: inserted_tvar_ids) tvar_ids.erase(std::move(el)); // TODO: ineffective move
+            tvar_cnt -= form[1].size();
+            for (auto &&el: form[1]) symtab.update(as<const sym &>(el), std::move(overriden_ents.front())), overriden_ents.pop_front();
 
             const auto compile = [&](auto &&_init) MNL_INLINE{
                struct expr: code::lvalue {
