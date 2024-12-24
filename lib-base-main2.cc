@@ -634,7 +634,7 @@ namespace aux { namespace {
 
             const auto compile = [&](auto &&_init) MNL_INLINE{
                struct expr: code::lvalue {
-                  decltype(_init) init; code body;
+                  std::remove_reference_t<decltype(_init)> init; code body;
                public:
                   template<bool fast_sig, bool nores> MNL_INLINE val execute() const {
                      struct _ { int ix; MNL_INLINE ~_() { _Pragma("GCC unroll 8") for (; ix; --ix) tvar_stk.pop_back(); } } _;
