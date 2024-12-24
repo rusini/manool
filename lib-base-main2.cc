@@ -654,7 +654,6 @@ namespace aux { namespace {
                         tvar_stk.push_back(init[_.ix].execute()), tvar_frm = tvar_stk.data() + tvar_off;
                      return body.exec_out();
                   }
-               private:
                public:
                   MNL_INLINE bool is_lvalue() const noexcept { return body.is_lvalue(); }
                };
