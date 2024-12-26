@@ -319,10 +319,11 @@ namespace aux { namespace {
       }
    };
 
-   class comp_case { MNL_NONVALUE()
-      MNL_INLINE static code compile(code &&, const form &form, const loc &_loc) {
-      opt1: // {case V of {K = B; ...} else B; B; ...}
-         {  if (form.size() >= 6); else goto opt2;
+   class comp_case: code::nonvalue {
+      friend code::box<comp_var>;
+      MNL_INLINE static code compile(code &&, const ast &form, const loc &loc) {
+      opt1: // {case V of {K = B; ...} else B}
+         {  if (form.size() == 6); else goto opt2;
             if (form[2] == MNL_SYM("of")); else goto opt2;
             if (form[4] == MNL_SYM("else")); else goto opt2;
             for (auto &&el: form[3]) if (el.is_list() && el.size() == 3 && el[0] == MNL_SYM("=")); else goto opt2;
@@ -331,24 +332,24 @@ namespace aux { namespace {
          }
          {  auto key = compile_rval(form[1], _loc);
 
-            set<sym> descr; vector<code> arms;
+            std::set<sym> descr; std::vector<code> arms;
 
-            deque<code> saved_tmp_ents;
-            for (auto &&el: tmp_ids) saved_tmp_ents.push_back(symtab[el]), symtab.update(el, {});
-            auto saved_tmp_cnt = move(tmp_cnt); tmp_cnt = 0;
-            auto saved_tmp_ids = move(tmp_ids); tmp_ids.clear();
-            deque<sym> keys; for (auto &&el: form[3])
+            std::deque<code> saved_tmp_ents;
+            for (auto &&el: tvar_ids) saved_tvar_ents.push_back(symtab[el]), symtab.update(el, {});
+            auto saved_tvar_cnt = move(tvar_cnt); tvar_cnt = 0;
+            auto saved_tvar_ids = move(tvar_ids); tvar_ids.clear();
+            std::deque<sym> keys; for (auto &&el: form[3])
                if (keys.push_back(eval_sym(el[1], _loc)), !descr.insert(keys.back()).second) err_compile("ambiguous bindings", _loc);
-            tmp_ids = move(saved_tmp_ids);
-            tmp_cnt = move(saved_tmp_cnt);
-            for (auto &&el: tmp_ids) symtab.update(el, move(saved_tmp_ents.front())), saved_tmp_ents.pop_front();
+            tvar_ids = move(saved_tvar_ids);
+            tvar_cnt = move(saved_tvar_cnt);
+            for (auto &&el: tvar_ids) symtab.update(el, move(saved_tvar_ents.front())), saved_tvar_ents.pop_front();
 
-            {  sym::tab<> tab; for (auto &&el: form[3]) tab.update(move(keys.front()), compile_rval(el[2], _loc)), keys.pop_front();
+            {  sym::tab<> tab; for (auto &&el: form[3]) tab.update(move(keys.front()), compile_rval(el[2], _loc)), keys.pop_front(); // TODO: ineffective move
                arms.reserve(descr.size()); for (auto &&el: descr) arms.push_back(tab[el]);
             }
 
-            struct expr { MNL_LVALUE(_is_lvalue())
-               code key; record_descr descr; vector<code> arms; code else_arm;
+            struct expr: code::lvalue {
+               code key; record_descr descr; std::vector<code> arms; code else_arm;
             public:
                MNL_INLINE val execute(bool fast_sig) const {
                   auto key = this->key.execute();
@@ -366,7 +367,7 @@ namespace aux { namespace {
                      arms[descr[cast<const sym &>(key)]] : else_arm).exec_out();
                }
             private:
-               MNL_INLINE bool _is_lvalue() const noexcept
+               MNL_INLINE bool is_lvalue() const noexcept
                   { for (auto &&el: arms) if (!el.is_lvalue()) return false; return else_arm.is_lvalue(); }
             };
             return expr{move(key), move(descr), move(arms), compile_rval(form + 5, _loc)};
@@ -392,7 +393,7 @@ namespace aux { namespace {
             tmp_cnt = move(saved_tmp_cnt);
             for (auto &&el: tmp_ids) symtab.update(el, move(saved_tmp_ents.front())), saved_tmp_ents.pop_front();
 
-            {  sym::tab<> tab; for (auto &&el: form + 3) tab.update(move(keys.front()), compile_rval(el[2], _loc)), keys.pop_front();
+            {  sym::tab<> tab; for (auto &&el: form + 3) tab.update(move(keys.front()), compile_rval(el[2], _loc)), keys.pop_front(); // TODO: ineffective move
                arms.reserve(descr.size()); for (auto &&el: descr) arms.push_back(tab[el]);
             }
 
@@ -714,7 +715,7 @@ namespace aux { namespace {
 
             auto body = pub::compile(form[3], loc);
 
-            for (auto &&el: erased_tvar_ids) tvar_ids.insert(std::move(el));
+            for (auto &&el: erased_tvar_ids) tvar_ids.insert(std::move(el)); // TODO: ineffective move
             for (auto &&el: form[1]) symtab.update(as<const sym &>(el[1]), std::move(overriden_ents.front())), overriden_ents.pop_front();
 
             return body;
@@ -766,7 +767,7 @@ namespace aux { namespace {
 
             auto body = pub::compile(form[4], loc);
 
-            for (auto &&el: erased_tvar_ids) tvar_ids.insert(std::move(el));
+            for (auto &&el: erased_tvar_ids) tvar_ids.insert(std::move(el)); // TODO: ineffective move
             for (auto &&el: form[2]) symtab.update(as<const sym &>(el[1]), std::move(overriden_ents.front())), overriden_ents.pop_front();
 
             return body;
@@ -978,7 +979,7 @@ namespace aux { namespace {
             tmp_cnt = move(saved_tmp_cnt);
             for (auto &&el: tmp_ids) symtab.update(el, move(saved_tmp_ents.front())), saved_tmp_ents.pop_front();
 
-            {  sym::tab<> tab; for (auto &&el: form + 2) tab.update(move(keys.front()), compile_rval(el[2], _loc)), keys.pop_front();
+            {  sym::tab<> tab; for (auto &&el: form + 2) tab.update(move(keys.front()), compile_rval(el[2], _loc)), keys.pop_front(); // TODO: ineffective move
                items.reserve(descr.size()); for (auto &&el: descr) items.push_back(tab[el]);
             }
 
