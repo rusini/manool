@@ -440,12 +440,13 @@ namespace aux { namespace {
       stk_check();
       if (MNL_UNLIKELY(1 != arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
       tvar_stk.reserve(tvar_stk.size() + 1);
-      saved_tvar_off = tvar_off, tvar_frm = tvar_stk.data() + (tvar_off = tvar_stk.size());
-      tvar_stk.push_back(std::forward<Arg0>(arg0));
       const struct _ {
          const decltype(tvar_off) saved_tvar_off = tvar_off;
-         MNL_INLINE ~_() { tvar_stk.pop_back(), tvar_frm = tvar_stk.data() + (tvar_off = saved_tvar_off);
+      public:
+         MNL_INLINE ~_() { tvar_stk.pop_back(); tvar_frm = tvar_stk.data() + (tvar_off = saved_tvar_off);
       } _;
+      tvar_frm = tvar_stk.data() + (tvar_off = tvar_stk.size());
+      tvar_stk.push_back(std::forward<Arg0>(arg0));
       return body.execute();
    }
    template<typename Var_count> template<typename Self, typename Arg0, typename Arg1>
@@ -455,7 +456,8 @@ namespace aux { namespace {
       tvar_stk.reserve(tvar_stk.size() + 2);
       const struct _ {
          const decltype(tvar_off) saved_tvar_off = tvar_off;
-         MNL_INLINE ~_() { tvar_stk.pop_back(), tvar_stk.pop_back(), tvar_frm = tvar_stk.data() + (tvar_off = saved_tvar_off);
+      public:
+         MNL_INLINE ~_() { tvar_stk.pop_back(), tvar_stk.pop_back(); tvar_frm = tvar_stk.data() + (tvar_off = saved_tvar_off);
       } _;
       tvar_frm = tvar_stk.data() + (tvar_off = tvar_stk.size());
       tvar_stk.push_back(std::forward<Arg0>(arg0)), tvar_stk.push_back(std::forward<Arg1>(arg1));
