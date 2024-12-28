@@ -66,6 +66,41 @@ namespace aux { namespace pub {
    inline MNL_IF_WITH_MT(thread_local) decltype(tvar_stk)::size_type tvar_off; // frame offset
    inline MNL_IF_WITH_MT(thread_local) val                          *tvar_frm; // frame pointer (redundant)
 
+   inline MNL_IF_WITH_MT(thread_local) class tvar_stk {
+      static inline MNL_IF_WITH_MT(thread_local) std::vector<val>          vec;
+      static inline MNL_IF_WITH_MT(thread_local) decltype(vec)::size_type  off;
+      static inline MNL_IF_WITH_MT(thread_local) val                       *frm;
+   private:
+      explicit tvar_stk() = default;
+      tvar_stk(const tvar_stk &) = delete;
+   public:
+      MNL_INLINE void reserve(int count = 1)
+         { vector.reserve(vector.size() + count); }
+      MNL_INLINE void push(decltype(nullptr), int count = 1)
+         { vector.resize(vector.size() + count); }
+      template<typename Val> MNL_INLINE void push(Val &&val, int count = 1)
+         { MNL_UNROLL(10) for (; --count;) vector.push_back(val); vector.push_back(std::forward<Val>(val)); }
+      MNL_INLINE void pop(int count = 1)
+         { MNL_UNROLL(10) for (; count; --count) vector.pop_back(); }
+
+
+      MNL_INLINE void push(const val &val) { vector.push_back(val); }
+      MNL_INLINE void push(      val &val) { vector.push_back(std::move(val)); }
+      MNL_INLINE void pop(int count = 1) { MNL_UNROLL(10) for (; count; --count) vector.pop_back(); }
+   public:
+      MNL_INLINE const val &operator[](int ix) const noexcept { return frm[ix]; }
+      MNL_INLINE       val &operator[](int ix)       noexcept { return frm[ix]; }
+   public:
+      class new_frm_mgr {
+         decltype(frm_off) saved_frm_off = frm_off;
+      public:
+         MNL_INLINE explicit new_frm_mgr() noexcept { frm_ptr = vector.data() + (frm_off = vector.size()); }
+         MNL_INLINE ~new_frm_mgr()                  { frm_ptr = vector.data() + (frm_off = saved_frm_off); }
+      };
+   public:
+      tvar_stk _inst;
+   } &tvar_stk = tvar_stk::_inst;
+
    // Essential Stuff //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    code make_lit(const val &);
 
