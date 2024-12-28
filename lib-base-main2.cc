@@ -434,7 +434,7 @@ namespace aux { namespace {
    template<typename Arg_count> struct _expr_proc {
       [[no_unique_address]] Arg_count arg_count; code body;
    private:
-      template<typename Arg_count> struct cleanup {
+      template<typename Arg_count> class cleanup {
          const Arg_count arg_count;
          decltype(tvar_off) saved_tvar_off = tvar_off;
       public:
