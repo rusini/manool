@@ -437,38 +437,46 @@ namespace aux { namespace {
 
    template<typename Var_count> template<typename Self, typename Arg0>
    MNL_INLINE val box<_expr_proc<Var_count>>::apply(Self &&self, Arg0 &&arg0) {
-      if (MNL_UNLIKELY(arg_count != 1)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      struct _ {
-         decltype(tvar_off) saved_tvar_off = tvar_off; decltype(arg_count) ix = 0;
-         MNL_INLINE ~_() { _Pragma("GCC unroll 10") for (tvar_frm = tvar_stk.data() + (tvar_off = saved_tvar_off); ix; --ix) tvar_stk.pop_back(); }
+      stk_check();
+      if (MNL_UNLIKELY(1 != arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+      tvar_stk.reserve(tvar_stk.size() + 1);
+      saved_tvar_off = tvar_off, tvar_frm = tvar_stk.data() + (tvar_off = tvar_stk.size());
+      tvar_stk.push_back(std::forward<Arg0>(arg0));
+      const struct _ {
+         const decltype(tvar_off) saved_tvar_off = tvar_off;
+         MNL_INLINE ~_() { tvar_stk.pop_back(), tvar_frm = tvar_stk.data() + (tvar_off = saved_tvar_off);
       } _;
-      tvar_frm = tvar_stk.data() + (tvar_off = tvar_stk.size());
-      tvar_stk.push_back(std::forward<Arg0>(arg0)), _.sn = 1;
       return body.execute();
    }
    template<typename Var_count> template<typename Self, typename Arg0, typename Arg1>
    MNL_INLINE val box<_expr_proc<Var_count>>::apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
       stk_check();
-      if (MNL_UNLIKELY(arg_count != 2)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      struct _ {
-         decltype(tvar_off) saved_tvar_off = tvar_off; decltype(arg_count) ix = 0;
-         MNL_INLINE ~_() { _Pragma("GCC unroll 10") for (tvar_frm = tvar_stk.data() + (tvar_off = saved_tvar_off); ix; --ix) tvar_stk.pop_back(); }
+      if (MNL_UNLIKELY(2 != arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+      tvar_stk.reserve(tvar_stk.size() + 2);
+      const struct _ {
+         const decltype(tvar_off) saved_tvar_off = tvar_off;
+         MNL_INLINE ~_() { tvar_stk.pop_back(), tvar_stk.pop_back(), tvar_frm = tvar_stk.data() + (tvar_off = saved_tvar_off);
       } _;
       tvar_frm = tvar_stk.data() + (tvar_off = tvar_stk.size());
-      tvar_stk.push_back(std::forward<Arg0>(arg0)), _.sn = 1;
-      tvar_stk.push_back(std::forward<Arg1>(arg1)), _.sn = 2;
+      tvar_stk.push_back(std::forward<Arg0>(arg0)), tvar_stk.push_back(std::forward<Arg1>(arg1));
       return body.execute();
    }
    template<typename Arg_count> template<typename Self>
    MNL_INLINE val box<_expr_proc<Arg_count>>::apply(Self &&self, int argc, val argv[]) {
       stk_check();
       if (MNL_UNLIKELY(argc != arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      struct _ {
-         decltype(tvar_off) saved_tvar_off = tvar_off; decltype(arg_count) ix = 0;
-         MNL_INLINE ~_() { _Pragma("GCC unroll 10") for (tvar_frm = tvar_stk.data() + (tvar_off = saved_tvar_off); ix; --ix) tvar_stk.pop_back(); }
-      } _;
-      _Pragma("GCC unroll 10")
-      for (tvar_frm = tvar_stk.data() + (tvar_off = tvar_stk.size()); _.ix < dat.arg_count; ++_.ix) tvar_stk.push_back(std::move(argv[_.ix]));
+      tvar_stk.reserve(tvar_stk.size() + argc);
+      const struct _ {
+         const Arg_count arg_count;
+         const decltype(tvar_off) saved_tvar_off = tvar_off;
+      public:
+         MNL_INLINE ~_() {
+            _Pragma("GCC unroll 10") for (int ix = arg_count; ix; --ix) tvar_stk.pop_back();
+            tvar_frm = tvar_stk.data() + (tvar_off = saved_tvar_off);
+         }
+      } _{dat.arg_count};
+      tvar_frm = tvar_stk.data() + (tvar_off = tvar_stk.size());
+      _Pragma("GCC unroll 10") for (int ix = 0; ix < dat.arg_count; ++ix) tvar_stk.push_back(std::move(argv[ix]));
       return dat.body.execute();
    }
    template<typename Arg_count> template<typename Self>
