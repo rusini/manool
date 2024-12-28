@@ -445,8 +445,8 @@ namespace aux { namespace {
       };
    };
 
-   template<typename Var_count> template<typename Self, typename Arg0>
-   MNL_INLINE val box<_expr_proc<Var_count>>::apply(Self &&self, Arg0 &&arg0) {
+   template<typename Arg_count> template<typename Self, typename Arg0>
+   MNL_INLINE val box<_expr_proc<Arg_count>>::apply(Self &&self, Arg0 &&arg0) {
       stk_check();
       if (MNL_UNLIKELY(1 != arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
       tvar_stk.reserve(tvar_stk.size() + 1);
@@ -459,8 +459,8 @@ namespace aux { namespace {
       tvar_stk.push_back(std::forward<Arg0>(arg0));
       return body.execute();
    }
-   template<typename Var_count> template<typename Self, typename Arg0, typename Arg1>
-   MNL_INLINE val box<_expr_proc<Var_count>>::apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
+   template<typename Arg_count> template<typename Self, typename Arg0, typename Arg1>
+   MNL_INLINE val box<_expr_proc<Arg_count>>::apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
       stk_check();
       if (MNL_UNLIKELY(2 != arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
       tvar_stk.reserve(tvar_stk.size() + 2);
