@@ -470,7 +470,7 @@ namespace aux { namespace {
       tvar_stk.reserve(tvar_stk.size() + arg_count);
       const struct _ {
          const Arg_count arg_count;
-         const decltype(tvar_off) saved_tvar_off = tvar_off;
+         decltype(tvar_off) saved_tvar_off = tvar_off;
       public:
          MNL_INLINE ~_() {
             _Pragma("GCC unroll 10") for (int ix = arg_count; ix; --ix) tvar_stk.pop_back();
