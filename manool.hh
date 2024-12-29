@@ -88,10 +88,10 @@ namespace aux { namespace pub {
       MNL_INLINE       val &operator[](int ix)       noexcept { return frm[ix]; }
    public:
       class new_frm_mgr {
-         decltype(frm_off) saved_frm_off = frm_off;
+         decltype(_inst.frm_off) saved_frm_off = _inst.frm_off;
       public:
-         MNL_INLINE explicit new_frm_mgr() noexcept { frm_ptr = vector.data() + (frm_off = vector.size()); }
-         MNL_INLINE ~new_frm_mgr()                  { frm_ptr = vector.data() + (frm_off = saved_frm_off); }
+         MNL_INLINE explicit new_frm_mgr() noexcept { _inst.frm_ptr = _inst.vector.data() + (_inst.frm_off = _inst.vector.size()); }
+         MNL_INLINE ~new_frm_mgr()                  { _inst.frm_ptr = _inst.vector.data() + (_inst.frm_off = saved_frm_off); }
       };
    public:
       tvar_stk _inst;
