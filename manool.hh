@@ -83,11 +83,6 @@ namespace aux { namespace pub {
          { vector.push_back(std::forward<Val>(val)), frm_ptr = vector.dat() + frm_off; }
       MNL_INLINE void pop(int count = 1)
          { MNL_UNROLL(10) for (; count; --count) vector.pop_back(); }
-
-
-      MNL_INLINE void push(const val &val) { vector.push_back(val); }
-      MNL_INLINE void push(      val &val) { vector.push_back(std::move(val)); }
-      MNL_INLINE void pop(int count = 1) { MNL_UNROLL(10) for (; count; --count) vector.pop_back(); }
    public:
       MNL_INLINE const val &operator[](int ix) const noexcept { return frm[ix]; }
       MNL_INLINE       val &operator[](int ix)       noexcept { return frm[ix]; }
