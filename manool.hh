@@ -81,7 +81,7 @@ namespace aux { namespace pub {
          { vector.resize(vector.size() + count), frm_ptr = vector.dat() + frm_off; }
       template<typename Val> MNL_INLINE void push(Val &&val)
          { vector.push_back(std::forward<Val>(val)), frm_ptr = vector.dat() + frm_off; }
-      MNL_INLINE void pop(int count = 1)
+      MNL_INLINE void pop(int count = 1) noexcept
          { MNL_UNROLL(10) for (; count; --count) vector.pop_back(); }
    public:
       MNL_INLINE const val &operator[](int ix) const noexcept { return frm[ix]; }
