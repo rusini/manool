@@ -67,19 +67,20 @@ namespace aux { namespace pub {
    inline MNL_IF_WITH_MT(thread_local) val                          *tvar_frm; // frame pointer (redundant)
 
    inline MNL_IF_WITH_MT(thread_local) class tvar_stk {
-      static inline MNL_IF_WITH_MT(thread_local) std::vector<val>          vector;
-      static inline MNL_IF_WITH_MT(thread_local) decltype(vec)::size_type  frm_off;
-      static inline MNL_IF_WITH_MT(thread_local) val                       *frm_ptr;
+      std::vector<val>            vector;
+      decltype(vector)::size_type frm_off;
+      decltype(vector)::pointer   frm_ptr;
    private:
       explicit tvar_stk() = default;
       tvar_stk(const tvar_stk &) = delete;
+      tvar_stk &operator=(const tvar_stk &) = delete;
    public:
       MNL_INLINE void reserve(int count = 1)
          { vector.reserve(vector.size() + count), frm_ptr = vector.dat() + frm_off; }
       MNL_INLINE void push(decltype(nullptr), int count = 1)
          { vector.resize(vector.size() + count), frm_ptr = vector.dat() + frm_off; }
-      template<typename Val> MNL_INLINE void push(Val &&val, int count = 1)
-         { MNL_UNROLL(10) for (; --count;) vector.push_back(val); vector.push_back(std::forward<Val>(val)), frm_ptr = vector.dat() + frm_off; }
+      template<typename Val> MNL_INLINE void push(Val &&val)
+         { vector.push_back(std::forward<Val>(val)), frm_ptr = vector.dat() + frm_off; }
       MNL_INLINE void pop(int count = 1)
          { MNL_UNROLL(10) for (; count; --count) vector.pop_back(); }
 
