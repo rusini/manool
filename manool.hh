@@ -94,7 +94,7 @@ namespace aux { namespace pub {
          MNL_INLINE ~new_frm_mgr()                  { _inst.frm_ptr = _inst.vector.data() + (_inst.frm_off = saved_frm_off); }
       };
    public:
-      tvar_stk _inst;
+      inline static tvar_stk _inst;
    } &tvar_stk = tvar_stk::_inst;
 
    // Essential Stuff //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
