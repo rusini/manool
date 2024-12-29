@@ -88,7 +88,7 @@ namespace aux { namespace pub {
       MNL_INLINE       val &operator[](int ix)       noexcept { return frm[ix]; }
    public:
       class new_frm_mgr {
-         decltype(_inst.frm_off) saved_frm_off = _inst.frm_off;
+         decltype(frm_off) saved_frm_off = _inst.frm_off;
       public:
          MNL_INLINE explicit new_frm_mgr() noexcept { _inst.frm_ptr = _inst.vector.data() + (_inst.frm_off = _inst.vector.size()); }
          MNL_INLINE ~new_frm_mgr()                  { _inst.frm_ptr = _inst.vector.data() + (_inst.frm_off = saved_frm_off); }
