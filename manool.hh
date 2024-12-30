@@ -66,10 +66,18 @@ namespace aux { namespace pub {
    inline MNL_IF_WITH_MT(thread_local) decltype(tvar_stk)::size_type tvar_off; // frame offset
    inline MNL_IF_WITH_MT(thread_local) val                          *tvar_frm; // frame pointer (redundant)
 
-   inline MNL_IF_WITH_MT(thread_local) class tvar_stk {
-      std::vector<val>            vector;
-      decltype(vector)::size_type frm_off;
-      decltype(vector)::pointer   frm_ptr;
+
+   extern MNL_IF_WITH_MT(thread_local) union tvar_stack tvar_stack;
+
+   inline MNL_IF_WITH_MT(thread_local) union tvar_stack {
+      struct {
+         std::vector<val>            vector;
+         decltype(vector)::size_type frm_off;
+         decltype(vector)::pointer   frm_ptr;
+      } rep;
+   public:
+
+
    private:
       explicit tvar_stk() = default;
       tvar_stk(const tvar_stk &) = delete;
@@ -87,12 +95,40 @@ namespace aux { namespace pub {
       MNL_INLINE const val &operator[](int ix) const noexcept { return frm[ix]; }
       MNL_INLINE       val &operator[](int ix)       noexcept { return frm[ix]; }
    public:
+      class buffer {
+         std::byte buf[sizeof(tvar_stack)];
+         friend tvar_stack;
+      };
+
+      class manager {
+         void *operator new(std::size_t) = delete;
+         void *operator new[](std::size_t) = delete;
+         void operator delete(void *) noexcept = delete;
+         void operator delete[](void *) noexcept = delete;
+      };
+      class stack_manager: manager {
+         tvar_stack &stack;
+      public:
+         MNL_INLINE explicit stack_manager(buffer &stack): stack(*reinterpret_cast<tvar_stack *>(stack.buf)) { new(&stack) tvar_stack; }
+         MNL_INLINE ~stack_manager() { stack.~tvar_stack(); }
+      };
+
+
+
+      // frame_manager
+      // scope_manager
+      // stack_manager -- construct/destruct (thread_local) stack (instead of using more expensive normal C++ construction)
       class new_frm_mgr {
          decltype(frm_off) saved_frm_off = _inst.frm_off;
       public:
          MNL_INLINE explicit new_frm_mgr() noexcept { _inst.frm_ptr = _inst.vector.data() + (_inst.frm_off = _inst.vector.size()); }
          MNL_INLINE ~new_frm_mgr()                  { _inst.frm_ptr = _inst.vector.data() + (_inst.frm_off = saved_frm_off); }
-      };
+      private:
+         void *operator new(std::size_t) = delete;
+         void *operator new[](std::size_t) = delete;
+         void operator delete(void *) noexcept = delete;
+         void operator delete[](void *) noexcept = delete;
+    };
    public:
       inline static MNL_IF_WITH_MT(thread_local) tvar_stk _inst;
    } &tvar_stk = tvar_stk::_inst;
