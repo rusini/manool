@@ -72,16 +72,45 @@ namespace aux { namespace pub {
    inline MNL_IF_WITH_MT(thread_local) union tvar_stack {
       struct {
          std::vector<val>            vector;
-         decltype(vector)::size_type frm_off;
-         decltype(vector)::pointer   frm_ptr;
+         decltype(vector)::size_type frm_off = vector.size(); // TODO: types?
+         decltype(vector)::pointer   frm_ptr = vector.data() + frm_off;
       } rep;
    public:
-
-
-   private:
       explicit tvar_stk() = default;
-      tvar_stk(const tvar_stk &) = delete;
-      tvar_stk &operator=(const tvar_stk &) = delete;
+   public:
+      class stack_manager: manager {
+         decltype(rep) &_;
+      public:
+         MNL_INLINE explicit stack_manager(union tvar_stack &stack = tvar_stack) noexcept: _(stack.rep)
+            { new(&stack) decltype(rep); }
+         MNL_INLINE ~stack_manager()
+            { typedef decltype(tvar_stack::rep) _stack; stack.~_stack(); }
+      };
+      class frame_manager: manager {
+         decltype(rep) &_;
+         decltype(frm_off) saved_frm_off;
+      public:
+         MNL_INLINE explicit stack_manager(union tvar_stack &stack = tvar_stack) noexcept: _(stack.rep), saved_frm_off(_.frm_ptr)
+            { stack.frm_ptr = stack.vector.data() + (stack.frm_off = stack.vector.size()); }
+         MNL_INLINE ~stack_manager()
+            { stack.frm_ptr = stack.vector.data() + (stack.frm_off = saved_frm_off); }
+      };
+      class scope_manager: manager {
+         decltype(rep) &_;
+         int size;
+      public:
+         MNL_INLINE explicit stack_manager(int size = 1, union tvar_stack &stack = tvar_stack) noexcept: _(stack.rep), size(size)
+            { _.vector.reserve(size); }
+         MNL_INLINE ~stack_manager()
+            { MNL_UNROLL(10) for (; size; --size) _.vector.pop_back(); }
+      };
+   public:
+      MNL_INLINE void push(decltype(nullptr), int count = 1)
+         { vector.resize(vector.size() + count), frm_ptr = vector.dat() + frm_off; }
+      template<typename Val> MNL_INLINE void push(Val &&val)
+         { vector.push_back(std::forward<Val>(val)), frm_ptr = vector.dat() + frm_off; }
+
+
    public:
       MNL_INLINE void reserve(int count = 1)
          { vector.reserve(vector.size() + count), frm_ptr = vector.dat() + frm_off; }
@@ -131,7 +160,7 @@ namespace aux { namespace pub {
     };
    public:
       inline static MNL_IF_WITH_MT(thread_local) tvar_stk _inst;
-   } &tvar_stk = tvar_stk::_inst;
+   } tvar_stack;
 
    // Essential Stuff //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    code make_lit(const val &);
