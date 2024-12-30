@@ -71,36 +71,37 @@ namespace aux { namespace pub {
 
    inline MNL_IF_WITH_MT(thread_local) union tvar_stack {
       struct {
-         std::vector<val>            vector;
-         decltype(vector)::size_type frm_off = vector.size(); // TODO: types?
-         decltype(vector)::pointer   frm_ptr = vector.data() + frm_off;
+         std::vector<val> vector;
+         int frm_off  = vector.size();
+         val *frm_ptr = vector.data() + frm_off;
       } rep;
    public:
-      explicit tvar_stk() = default;
+      MNL_INLINE explicit tvar_stack() {}
+      MNL_INLINE ~tvar_stack() {}
    public:
       class stack_manager: manager {
-         decltype(rep) &_;
+         decltype(rep) &_; // should not escape in practice and value propagation should be in place
       public:
-         MNL_INLINE explicit stack_manager(union tvar_stack &stack = tvar_stack) noexcept: _(stack.rep)
+         MNL_INLINE explicit stack_manager(tvar_stack &stack = mnl::tvar_stack) noexcept: _(stack.rep)
             { new(&stack) decltype(rep); }
          MNL_INLINE ~stack_manager()
-            { typedef decltype(tvar_stack::rep) _stack; stack.~_stack(); }
+            { typedef decltype(rep) rep; _.~rep(); }
       };
       class frame_manager: manager {
-         decltype(rep) &_;
+         decltype(rep) &_; // should not escape in practice and value propagation should be in place
          decltype(frm_off) saved_frm_off;
       public:
-         MNL_INLINE explicit stack_manager(union tvar_stack &stack = tvar_stack) noexcept: _(stack.rep), saved_frm_off(_.frm_ptr)
-            { stack.frm_ptr = stack.vector.data() + (stack.frm_off = stack.vector.size()); }
+         MNL_INLINE explicit stack_manager(tvar_stack &stack = mnl::tvar_stack) noexcept: _(stack.rep), saved_frm_off(_.frm_ptr)
+            { _.frm_ptr = _.vector.data() + (_.frm_off = _.vector.size()); }
          MNL_INLINE ~stack_manager()
-            { stack.frm_ptr = stack.vector.data() + (stack.frm_off = saved_frm_off); }
+            { _.frm_ptr = _.vector.data() + (_.frm_off = saved_frm_off); }
       };
       class scope_manager: manager {
          decltype(rep) &_;
          int size;
       public:
-         MNL_INLINE explicit stack_manager(int size = 1, union tvar_stack &stack = tvar_stack) noexcept: _(stack.rep), size(size)
-            { _.vector.reserve(size); }
+         MNL_INLINE explicit stack_manager(int size = 1, tvar_stack &stack = mnl::tvar_stack): _(stack.rep), size(size)
+            { _.vector.reserve(size), _.frm_ptr = _.vector.data() + _.frm_off; }
          MNL_INLINE ~stack_manager()
             { MNL_UNROLL(10) for (; size; --size) _.vector.pop_back(); }
       };
