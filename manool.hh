@@ -67,7 +67,9 @@ namespace aux { namespace pub {
    inline MNL_IF_WITH_MT(thread_local) val                          *tvar_frm; // frame pointer (redundant)
 
 
-   extern MNL_IF_WITH_MT(thread_local) union tvar_stack tvar_stack;
+   //extern MNL_IF_WITH_MT(thread_local) union tvar_stack tvar_stack;
+
+   // TODO: the fact we disable new does not preclude at all "dynamic" scoping (we can wrap in a struct)
 
    inline MNL_IF_WITH_MT(thread_local) union tvar_stack {
       struct {
@@ -79,6 +81,19 @@ namespace aux { namespace pub {
       MNL_INLINE explicit tvar_stack() {}
       MNL_INLINE ~tvar_stack() {}
    public:
+      MNL_INLINE auto stack_mgr() noexcept {
+         new(&rep) decltype(rep);
+         return finally{[this]() MNL_INLINE{ typedef decltype(rep) _; rep.~_(); }};
+      }
+      MNL_INLINE auto frame_mgr() noexcept {
+         auto saved_frm_off = rep.frm_off; rep.frm_ptr = rep.vector.data() + (rep.frm_off = rep.vector.size());
+         return finally{[this, saved_frm_off]() MNL_INLINE{ rep.frm_ptr = rep.vector.data() + (rep.frm_off = saved_frm_off); }};
+      }
+      MNL_INLINE auto scope_mgr(int size = 1) {
+         rep.vector.reserve(rep.vector.size() + size), rep.frm_ptr = rep.vector.data() + rep.frm_off;
+         return finally{[this, size]() MNL_INLINE{ MNL_UNROLL(10) for (; size; --size) rep.vector.pop_back(); }};
+      }
+   public:
       class stack_manager: manager {
          decltype(rep) &_; // should not escape in practice and value propagation should be in place
       public:
@@ -89,9 +104,9 @@ namespace aux { namespace pub {
       };
       class frame_manager: manager {
          decltype(rep) &_; // should not escape in practice and value propagation should be in place
-         decltype(frm_off) saved_frm_off;
+         int saved_frm_off;
       public:
-         MNL_INLINE explicit stack_manager(tvar_stack &stack = mnl::tvar_stack) noexcept: _(stack.rep), saved_frm_off(_.frm_ptr)
+         MNL_INLINE explicit frame_manager(tvar_stack &stack = mnl::tvar_stack) noexcept: _(stack.rep), saved_frm_off(_.frm_ptr)
             { _.frm_ptr = _.vector.data() + (_.frm_off = _.vector.size()); }
          MNL_INLINE ~stack_manager()
             { _.frm_ptr = _.vector.data() + (_.frm_off = saved_frm_off); }
@@ -100,7 +115,7 @@ namespace aux { namespace pub {
          decltype(rep) &_;
          int size;
       public:
-         MNL_INLINE explicit stack_manager(int size = 1, tvar_stack &stack = mnl::tvar_stack): _(stack.rep), size(size)
+         MNL_INLINE explicit scope_manager(int size = 1, tvar_stack &stack = mnl::tvar_stack): _(stack.rep), size(size)
             { _.vector.reserve(size), _.frm_ptr = _.vector.data() + _.frm_off; }
          MNL_INLINE ~stack_manager()
             { MNL_UNROLL(10) for (; size; --size) _.vector.pop_back(); }
@@ -110,6 +125,9 @@ namespace aux { namespace pub {
          { vector.resize(vector.size() + count), frm_ptr = vector.dat() + frm_off; }
       template<typename Val> MNL_INLINE void push(Val &&val)
          { vector.push_back(std::forward<Val>(val)), frm_ptr = vector.dat() + frm_off; }
+   public:
+      MNL_INLINE const val &operator[](int ix) const noexcept { return rep.frm_ptr[ix]; }
+      MNL_INLINE       val &operator[](int ix)       noexcept { return rep.frm_ptr[ix]; }
 
 
    public:
