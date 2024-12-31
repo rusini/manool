@@ -67,6 +67,16 @@ namespace aux { namespace pub {
    inline MNL_IF_WITH_MT(thread_local) val                          *tvar_frm; // frame pointer (redundant)
 
 
+   template<class Functor> struct defer: Functor {
+      ~defer() { (*this)(); }
+   private:
+      defer(const defer &) = delete;
+      defer &operator=(const defer &) = delete;
+      using Functor::operator();
+   };
+   template<class Functor> defer(Functor)->defer<Functor>;
+
+
    //extern MNL_IF_WITH_MT(thread_local) union tvar_stack tvar_stack;
 
    // TODO: the fact we disable new does not preclude at all "dynamic" scoping (we can wrap in a struct)
@@ -81,15 +91,15 @@ namespace aux { namespace pub {
       MNL_INLINE explicit tvar_stack() {}
       MNL_INLINE ~tvar_stack() {}
    public:
-      MNL_INLINE auto stack_mgr() noexcept {
+      MNL_INLINE auto stack_guard() noexcept {
          new(&rep) decltype(rep);
          return finally{[this]() MNL_INLINE{ typedef decltype(rep) _; rep.~_(); }};
       }
-      MNL_INLINE auto frame_mgr() noexcept {
+      MNL_INLINE auto frame_guard() noexcept {
          auto saved_frm_off = rep.frm_off; rep.frm_ptr = rep.vector.data() + (rep.frm_off = rep.vector.size());
          return finally{[this, saved_frm_off]() MNL_INLINE{ rep.frm_ptr = rep.vector.data() + (rep.frm_off = saved_frm_off); }};
       }
-      MNL_INLINE auto scope_mgr(int size = 1) {
+      MNL_INLINE auto scope_guard(int size = 1) {
          rep.vector.reserve(rep.vector.size() + size), rep.frm_ptr = rep.vector.data() + rep.frm_off;
          return finally{[this, size]() MNL_INLINE{ MNL_UNROLL(10) for (; size; --size) rep.vector.pop_back(); }};
       }
