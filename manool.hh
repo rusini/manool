@@ -92,8 +92,8 @@ namespace aux { namespace pub {
       MNL_INLINE ~tvar_stack() {}
    public:
       MNL_INLINE auto stack_guard() noexcept {
-         new(&rep) decltype(rep);
-         return finally{[this]() MNL_INLINE{ typedef decltype(rep) _; rep.~_(); }};
+         new(&rep) struct rep;
+         return finally{[this]() MNL_INLINE{ rep.~rep(); }};
       }
       MNL_INLINE auto frame_guard() noexcept {
          auto saved_frm_off = rep.frm_off; rep.frm_ptr = rep.vector.data() + (rep.frm_off = rep.vector.size());
