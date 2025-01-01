@@ -81,28 +81,62 @@ namespace aux { namespace pub {
 
    // TODO: the fact we disable new does not preclude at all "dynamic" scoping (we can wrap in a struct)
 
+   template<typename Elem> class vector {
+      Elem *base;
+      Elem *top, *limit;
+   public:
+      void reserve(int size) {
+         if ((unsigned long)top + size * sizeof *top < (unsigned long)limit) return; // comparing addresses to avoid UB
+      }
+   };
+
+
+
    inline MNL_IF_WITH_MT(thread_local) union tvar_stack {
       struct {
-         std::vector<val> vector;
-         int frm_off  = vector.size();
-         val *frm_ptr = vector.data() + frm_off;
+         std::vector<val> vec;
+         int frm_off  = vec.size();
+         val *frm_ptr = vec.data() + frm_off;
       } rep;
    public:
-      MNL_INLINE explicit tvar_stack() {}
+      MNL_INLINE explicit tvar_stack() noexcept {}
       MNL_INLINE ~tvar_stack() {}
    public:
       MNL_INLINE auto stack_guard() noexcept {
          new(&rep) struct rep;
          return finally{[this]() MNL_INLINE{ rep.~rep(); }};
       }
+
+      template<class Init> MNL_INLINE auto frame_guard(Init scope_init = []{}, int size = 0) noexcept {
+         auto saved_frm_off = rep.frm_off;
+         scope_init
+         rep.frm_ptr = rep.vector.data() + (rep.frm_off = rep.vector.size());
+         return finally{[this, saved_frm_off]() MNL_INLINE{
+            MNL_UNROLL(10) for (; size; --size) rep.vector.pop_back();
+            rep.frm_ptr = rep.vector.data() + (rep.frm_off = saved_frm_off);
+         }};
+      }
+
       MNL_INLINE auto frame_guard() noexcept {
          auto saved_frm_off = rep.frm_off; rep.frm_ptr = rep.vector.data() + (rep.frm_off = rep.vector.size());
          return finally{[this, saved_frm_off]() MNL_INLINE{ rep.frm_ptr = rep.vector.data() + (rep.frm_off = saved_frm_off); }};
       }
       MNL_INLINE auto scope_guard(int size = 1) {
-         rep.vector.reserve(rep.vector.size() + size), rep.frm_ptr = rep.vector.data() + rep.frm_off;
+         rep.vec.reserve(rep.vec.size() + size), rep.frm_ptr = rep.vec.data() + rep.frm_off;
          return finally{[this, size]() MNL_INLINE{ MNL_UNROLL(10) for (; size; --size) rep.vector.pop_back(); }};
       }
+   public:
+      MNL_INLINE void push(decltype(nullptr), int count = 1)
+         { vector.resize(vector.size() + count), frm_ptr = vector.dat() + frm_off; }
+      template<typename Val> MNL_INLINE void push(Val &&val)
+         { vector.push_back(std::forward<Val>(val)), frm_ptr = vector.dat() + frm_off; }
+   public:
+      MNL_INLINE const val &operator[](int ix) const noexcept { return rep.frm_ptr[ix]; }
+      MNL_INLINE       val &operator[](int ix)       noexcept { return rep.frm_ptr[ix]; }
+
+
+
+
    public:
       class stack_manager: manager {
          decltype(rep) &_; // should not escape in practice and value propagation should be in place
