@@ -106,17 +106,6 @@ namespace aux { namespace pub {
          new(&rep) struct rep;
          return finally{[this]() MNL_INLINE{ rep.~rep(); }};
       }
-
-      template<class Init> MNL_INLINE auto frame_guard(Init scope_init = []{}, int size = 0) noexcept {
-         auto saved_frm_off = rep.frm_off;
-         scope_init
-         rep.frm_ptr = rep.vector.data() + (rep.frm_off = rep.vector.size());
-         return finally{[this, saved_frm_off]() MNL_INLINE{
-            MNL_UNROLL(10) for (; size; --size) rep.vector.pop_back();
-            rep.frm_ptr = rep.vector.data() + (rep.frm_off = saved_frm_off);
-         }};
-      }
-
       MNL_INLINE auto frame_guard() noexcept {
          auto saved_frm_off = rep.frm_off; rep.frm_ptr = rep.vector.data() + (rep.frm_off = rep.vector.size());
          return finally{[this, saved_frm_off]() MNL_INLINE{ rep.frm_ptr = rep.vector.data() + (rep.frm_off = saved_frm_off); }};
