@@ -487,19 +487,13 @@ namespace aux { namespace {
       stk_check();
       if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
       if (MNL_UNLIKELY(argc != arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      tvar_stk.reserve(tvar_stk.size() + arg_count);
-      const struct _ {
-         const Arg_count arg_count;
-         decltype(tvar_off) saved_tvar_off = tvar_off;
-      public:
-         MNL_INLINE ~_() {
-            _Pragma("GCC unroll 10") for (int ix = arg_count; ix; --ix) tvar_stk.pop_back();
-            tvar_frm = tvar_stk.data() + (tvar_off = saved_tvar_off);
-         }
-      } _{dat.arg_count};
-      tvar_frm = tvar_stk.data() + (tvar_off = tvar_stk.size());
-      _Pragma("GCC unroll 10") for (int ix = 0; ix < dat.arg_count; ++ix) tvar_stk.push_back(std::move(argv[ix]));
-      return dat.body.execute();
+      int ix = {};
+      return tstack.frame_guard(), tstack.scope_guard(ix), [&]() MNL_INLINE{
+         [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{
+            MNL_UNROLL(10) for (; ix < dat.arg_count; ++ix) tstack.push_back(std::move(argv[ix]));
+         }();
+         return body.execute();
+      }();
    }
 
 
