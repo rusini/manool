@@ -449,6 +449,22 @@ namespace aux { namespace {
    MNL_INLINE val box<_expr_proc<Arg_count>>::apply(Self &&self, Arg0 &&arg0) {
       stk_check();
       if (MNL_UNLIKELY(1 != arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+
+      return tstack.frame_guard(), tstack.scope_guard([&]() MNL_INLINE{}), [&]() MNL_INLINE{
+         tstack.push(std::forward<Arg0>(arg0)), ++count;
+         return body.execute();
+      }();
+
+
+      [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{
+         int count = 0;
+         return tstack.frame_guard(), tstack.scope_guard(count), [&]() MNL_INLINE{
+            tstack.push(std::forward<Arg0>(arg0)), ++count;
+            return body.execute();
+         }();
+      }();
+
+
       tvar_stk.reserve(tvar_stk.size() + 1);
       const struct _ {
          const decltype(tvar_off) saved_tvar_off = tvar_off;
