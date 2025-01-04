@@ -481,18 +481,6 @@ namespace aux { namespace {
          }();
          return body.execute();
       }();
-
-
-
-      tvar_stk.reserve(tvar_stk.size() + arg_count);
-      const struct _ {
-         const Arg_count arg_count;
-         decltype(tvar_off) saved_tvar_off = tvar_off;
-         MNL_INLINE ~_() { MNL_UNROLL(10) for (int ix = arg_count; ix; --ix) tvar_stk.pop_back(); tvar_frm = tvar_stk.data() + (tvar_off = saved_tvar_off); }
-      } _{dat.arg_count};
-      tvar_frm = tvar_stk.data() + (tvar_off = tvar_stk.size());
-      MNL_UNROLL(10) for (int ix = 0; ix < dat.arg_count; ++ix) tvar_stk.push_back(std::move(argv[ix]));
-      return dat.body.execute();
    }
    template<typename Arg_count> template<typename Self>
    MNL_INLINE val box<_expr_proc<Arg_count>>::invoke(Self &&self, const sym &op, int argc, val argv[], val *) {
