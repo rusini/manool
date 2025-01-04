@@ -449,50 +449,41 @@ namespace aux { namespace {
    MNL_INLINE val box<_expr_proc<Arg_count>>::apply(Self &&self, Arg0 &&arg0) {
       stk_check();
       if (MNL_UNLIKELY(1 != arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-
-      return tstack.frame_guard(), tstack.scope_guard([&]() MNL_INLINE{}), [&]() MNL_INLINE{
-         tstack.push(std::forward<Arg0>(arg0)), ++count;
+      int ix = {};
+      return tstack.frame_guard(), tstack.scope_guard(ix), [&]() MNL_INLINE{
+         [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{
+            tstack.push(std::forward<Arg0>(arg0)), ++ix;
+         }();
          return body.execute();
       }();
-
-
-      [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{
-         int count = 0;
-         return tstack.frame_guard(), tstack.scope_guard(count), [&]() MNL_INLINE{
-            tstack.push(std::forward<Arg0>(arg0)), ++count;
-            return body.execute();
-         }();
-      }();
-
-
-      tvar_stk.reserve(tvar_stk.size() + 1);
-      const struct _ {
-         const decltype(tvar_off) saved_tvar_off = tvar_off;
-      public:
-         MNL_INLINE ~_() { tvar_stk.pop_back(); tvar_frm = tvar_stk.data() + (tvar_off = saved_tvar_off);
-      } _;
-      tvar_frm = tvar_stk.data() + (tvar_off = tvar_stk.size());
-      tvar_stk.push_back(std::forward<Arg0>(arg0));
-      return body.execute();
    }
    template<typename Arg_count> template<typename Self, typename Arg0, typename Arg1>
    MNL_INLINE val box<_expr_proc<Arg_count>>::apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
       stk_check();
       if (MNL_UNLIKELY(2 != arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      tvar_stk.reserve(tvar_stk.size() + 2);
-      const struct _ {
-         const decltype(tvar_off) saved_tvar_off = tvar_off;
-      public:
-         MNL_INLINE ~_() { tvar_stk.pop_back(), tvar_stk.pop_back(); tvar_frm = tvar_stk.data() + (tvar_off = saved_tvar_off);
-      } _;
-      tvar_frm = tvar_stk.data() + (tvar_off = tvar_stk.size());
-      tvar_stk.push_back(std::forward<Arg0>(arg0)), tvar_stk.push_back(std::forward<Arg1>(arg1));
-      return body.execute();
+      int ix = {};
+      return tstack.frame_guard(), tstack.scope_guard(ix), [&]() MNL_INLINE{
+         [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{
+            tstack.push(std::forward<Arg0>(arg0)), ++ix;
+            tstack.push(std::forward<Arg1>(arg1)), ++ix;
+         }();
+         return body.execute();
+      }();
    }
    template<typename Arg_count> template<typename Self>
    MNL_INLINE val box<_expr_proc<Arg_count>>::apply(Self &&self, int argc, val argv[]) {
       stk_check();
       if (MNL_UNLIKELY(argc != arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+      int ix = {};
+      return tstack.frame_guard(), tstack.scope_guard(ix), [&]() MNL_INLINE{
+         [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{
+            MNL_UNROLL(10) for (; ix < dat.arg_count; ++ix) tstack.push_back(std::move(argv[ix]));
+         }();
+         return body.execute();
+      }();
+
+
+
       tvar_stk.reserve(tvar_stk.size() + arg_count);
       const struct _ {
          const Arg_count arg_count;

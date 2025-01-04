@@ -110,15 +110,8 @@ namespace aux { namespace pub {
          auto saved_frm_off = rep.frm_off; rep.frm_ptr = rep.vector.data() + (rep.frm_off = rep.vector.size());
          return finally{[this, saved_frm_off]() MNL_INLINE{ rep.frm_ptr = rep.vector.data() + (rep.frm_off = saved_frm_off); }};
       }
-      MNL_INLINE auto scope_guard(const int size = 1) {
-         if (MNL_UNLIKELY(rep.vec.size() + size >= rep.vec.capacity()))
-            if (rep.vec.capacity() << 1 <= rep.vec.max_size()) rep.vec.reserve(rep.vec.capacity() << 1); else __builtin_unreachable();
-
-
-
-
-         rep.vec.reserve(rep.vec.size() + size), rep.frm_ptr = rep.vec.data() + rep.frm_off;
-         return finally{[this, &size]() MNL_INLINE{ MNL_UNROLL(10) for (auto count = size; count; --count) rep.vector.pop_back(); }}; // TODO: mutable
+      MNL_INLINE auto scope_guard(const int &size = 1) {
+         return finally{[this, &size]() MNL_INLINE{ MNL_UNROLL(10) for (auto count = size; count; --count) rep.vector.pop_back(); }};
       }
    public:
       MNL_INLINE void push(decltype(nullptr), int count = 1)
