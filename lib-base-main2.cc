@@ -463,7 +463,7 @@ namespace aux { namespace {
       if (MNL_UNLIKELY(2 != arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
       int ix = {};
       return tstack.frame_guard(), tstack.scope_guard(ix), [&]() MNL_INLINE{
-         [&](MNL_RESTRICT(tstack)) MNL_INLINE{
+         [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{
             tstack.push(std::forward<Arg0>(arg0)), ++ix;
             tstack.push(std::forward<Arg1>(arg1)), ++ix;
          }();
