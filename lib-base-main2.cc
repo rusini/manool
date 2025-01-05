@@ -433,16 +433,6 @@ namespace aux { namespace {
 
    template<typename Arg_count> struct _expr_proc {
       [[no_unique_address]] Arg_count arg_count; code body;
-   private:
-      template<typename Arg_count> class cleanup {
-         const Arg_count arg_count;
-         decltype(tvar_off) saved_tvar_off = tvar_off;
-      public:
-         MNL_INLINE explicit cleanup(Arg_count arg_count) noexcept
-            : arg_count(arg_count) { tvar_stk.reserve(tvar_stk.size() + arg_count); tvar_frm = tvar_stk.data() + (tvar_off = tvar_stk.size()); }
-         MNL_INLINE ~cleanup()
-            { MNL_UNROLL(10) for (int ix = arg_count; ix; --ix) tvar_stk.pop_back(); tvar_frm = tvar_stk.data() + (tvar_off = saved_tvar_off); }
-      };
    };
 
    template<typename Arg_count> template<typename Self, typename Arg0>
