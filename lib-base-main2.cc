@@ -439,10 +439,10 @@ namespace aux { namespace {
    MNL_INLINE val box<_expr_proc<Arg_count>>::apply(Self &&self, Arg0 &&arg0) {
       stk_check();
       if (MNL_UNLIKELY(1 != arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      int ix = {};
-      return tstack.frame_guard(), tstack.scope_guard(ix), [&]() MNL_INLINE{
+      int count = {};
+      return tstack.frame_guard(), tstack.scope_guard(count), [&]() MNL_INLINE{
          [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{
-            tstack.push(std::forward<Arg0>(arg0)), ++ix;
+            tstack.push(std::forward<Arg0>(arg0)), ++count;
          }();
          return body.execute();
       }();
@@ -451,11 +451,11 @@ namespace aux { namespace {
    MNL_INLINE val box<_expr_proc<Arg_count>>::apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
       stk_check();
       if (MNL_UNLIKELY(2 != arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      int ix = {};
-      return tstack.frame_guard(), tstack.scope_guard(ix), [&]() MNL_INLINE{
+      int count = {};
+      return tstack.frame_guard(), tstack.scope_guard(count), [&]() MNL_INLINE{
          [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{
-            tstack.push(std::forward<Arg0>(arg0)), ++ix;
-            tstack.push(std::forward<Arg1>(arg1)), ++ix;
+            tstack.push(std::forward<Arg0>(arg0)), ++count;
+            tstack.push(std::forward<Arg1>(arg1)), ++count;
          }();
          return body.execute();
       }();
@@ -464,10 +464,10 @@ namespace aux { namespace {
    MNL_INLINE val box<_expr_proc<Arg_count>>::apply(Self &&self, int argc, val argv[]) {
       stk_check();
       if (MNL_UNLIKELY(argc != arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      int ix = {};
-      return tstack.frame_guard(), tstack.scope_guard(ix), [&]() MNL_INLINE{
+      int count = {};
+      return tstack.frame_guard(), tstack.scope_guard(count), [&]() MNL_INLINE{
          [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{
-            MNL_UNROLL(10) for (; ix < dat.arg_count; ++ix) tstack.push_back(std::move(argv[ix]));
+            MNL_UNROLL(10) for (; count < dat.arg_count; ++count) tstack.push_back(std::move(argv[count]));
          }();
          return body.execute();
       }();
@@ -477,10 +477,10 @@ namespace aux { namespace {
       stk_check();
       if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
       if (MNL_UNLIKELY(argc != arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      int ix = {};
-      return tstack.frame_guard(), tstack.scope_guard(ix), [&]() MNL_INLINE{
+      int count = {};
+      return tstack.frame_guard(), tstack.scope_guard(count), [&]() MNL_INLINE{
          [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{
-            MNL_UNROLL(10) for (; ix < dat.arg_count; ++ix) tstack.push_back(std::move(argv[ix]));
+            MNL_UNROLL(10) for (; count < dat.arg_count; ++count) tstack.push_back(std::move(argv[count]));
          }();
          return body.execute();
       }();
