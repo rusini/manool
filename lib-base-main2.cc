@@ -473,7 +473,6 @@ namespace aux { namespace {
          body.execute();
    }
 
-
    class comp_proc { MNL_NONVALUE()
       MNL_INLINE static code compile(code &&, const form &form, const loc &_loc) {
       opt1: // {proc {I; ...} as B; B; ...}
