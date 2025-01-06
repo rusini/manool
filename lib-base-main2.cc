@@ -440,10 +440,8 @@ namespace aux { namespace {
       stk_check();
       if (MNL_UNLIKELY(1 != arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
       int count = {};
-      return tstack.frame_guard(), tstack.scope_guard(count),
-         [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{
-            tstack.push(std::forward<Arg0>(arg0)), ++count;
-         }(),
+      return tstack.frame_guard(), tstack.scope_guard(count), [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{
+         tstack.push(std::forward<Arg0>(arg0)), ++count; }(),
          body.execute();
    }
    template<typename Arg_count> template<typename Self, typename Arg0, typename Arg1>
@@ -451,25 +449,18 @@ namespace aux { namespace {
       stk_check();
       if (MNL_UNLIKELY(2 != arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
       int count = {};
-      return tstack.frame_guard(), tstack.scope_guard(count), [&]() MNL_INLINE{
-         [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{
-            tstack.push(std::forward<Arg0>(arg0)), ++count;
-            tstack.push(std::forward<Arg1>(arg1)), ++count;
-         }();
-         return body.execute();
-      }();
+      return tstack.frame_guard(), tstack.scope_guard(count), [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{
+         tstack.push(std::forward<Arg0>(arg0)), ++count; tstack.push(std::forward<Arg1>(arg1)), ++count; }(),
+         body.execute();
    }
    template<typename Arg_count> template<typename Self>
    MNL_INLINE val box<_expr_proc<Arg_count>>::apply(Self &&self, int argc, val argv[]) {
       stk_check();
       if (MNL_UNLIKELY(argc != arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
       int count = {};
-      return tstack.frame_guard(), tstack.scope_guard(count), [&]() MNL_INLINE{
-         [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{
-            MNL_UNROLL(10) for (; count < dat.arg_count; ++count) tstack.push_back(std::move(argv[count]));
-         }();
-         return body.execute();
-      }();
+      return tstack.frame_guard(), tstack.scope_guard(count), [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{
+         MNL_UNROLL(10) for (; count < dat.arg_count; ++count) tstack.push_back(std::move(argv[count])); }(),
+         body.execute();
    }
    template<typename Arg_count> template<typename Self>
    MNL_INLINE val box<_expr_proc<Arg_count>>::invoke(Self &&self, const sym &op, int argc, val argv[], val *) {
