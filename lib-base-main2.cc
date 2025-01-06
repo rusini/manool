@@ -440,12 +440,9 @@ namespace aux { namespace {
       stk_check();
       if (MNL_UNLIKELY(1 != arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
       int count = {};
-      return tstack.frame_guard(), tstack.scope_guard(count), [&]() MNL_INLINE{
-         [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{
-            tstack.push(std::forward<Arg0>(arg0)), ++count;
-         }();
-         return body.execute();
-      }();
+      return tstack.frame_guard(), tstack.scope_guard(count), [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{
+         tstack.push(std::forward<Arg0>(arg0)), ++count;
+      }(), body.execute();
    }
    template<typename Arg_count> template<typename Self, typename Arg0, typename Arg1>
    MNL_INLINE val box<_expr_proc<Arg_count>>::apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
