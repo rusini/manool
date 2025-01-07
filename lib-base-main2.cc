@@ -439,17 +439,9 @@ namespace aux { namespace {
    MNL_INLINE val box<_expr_proc<Arg_count>>::apply(Self &&self, Arg0 &&arg0) {
       stk_check();
       if (MNL_UNLIKELY(1 != arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      return
-         tstack.frame_guard(),
-         [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{ tstack.push(std::forward<Arg0>(arg0)), ++count; }(),
-         tstack.scope_guard(),
-         body.execute();
-
-
-
-      int count = {};
+      int count = 0;
       return tstack.frame_guard(), tstack.scope_guard(count), [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{
-         tstack.push(std::forward<Arg0>(arg0)), count = 1; }(),
+         tstack.push(std::forward<Arg0>(arg0)), ++count; }(),
          body.execute();
    }
    template<typename Arg_count> template<typename Self, typename Arg0, typename Arg1>
@@ -702,7 +694,7 @@ namespace aux { namespace {
                   template<bool fast_sig, bool nores> MNL_INLINE val execute() const {
                      int index = 0;
                      return tstack.scope_guard(index),
-                        [&](int size = init.size()) MNL_INLINE{ MNL_UNROLL(10) for (; index < size; ++index) tstack.push(init[index].execute()); }(),
+                        [&](int size = init.size()) MNL_INLINE{ MNL_UNROLL(10) while (index < size) tstack.push(init[index++].execute()); }(),
                         body.execute<fast_sig, nores>();
 
                      struct _ { int ix; MNL_INLINE ~_() { _Pragma("GCC unroll 10") for (; ix; --ix) tvar_stk.pop_back(); } } _;
