@@ -95,8 +95,8 @@ namespace aux { namespace pub {
    inline MNL_IF_WITH_MT(thread_local) union tvar_stack {
       struct {
          std::vector<val> vec;
-         int frm_off  = vec.size();
-         val *frm_ptr = vec.data() + frm_off;
+         int frm_off  = {};
+         val *frm_ptr = {};
       } rep;
    public:
       MNL_INLINE explicit tvar_stack() noexcept {}
