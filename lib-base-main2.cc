@@ -449,13 +449,25 @@ namespace aux { namespace {
 
       int count = {};
       return tstack.frame_guard(), tstack.scope_guard(count), [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{
-         tstack.push(std::forward<Arg0>(arg0)), ++count; }(),
+         tstack.push(std::forward<Arg0>(arg0)), count = 1; }(),
          body.execute();
    }
    template<typename Arg_count> template<typename Self, typename Arg0, typename Arg1>
    MNL_INLINE val box<_expr_proc<Arg_count>>::apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
       stk_check();
       if (MNL_UNLIKELY(2 != arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+      int count = 1;
+      return
+         tstack.frame_guard(),
+         [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{ tstack.push(std::forward<Arg0>(arg0)); }(),
+         tstack.scope_guard(count),
+         [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{ tstack.push(std::forward<Arg0>(arg0)), count = 2; }(),
+
+         [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{
+            tstack.push(std::forward<Arg0>(arg0)), ++count; tstack.push(std::forward<Arg1>(arg1)), ++count; }(),
+         body.execute();
+
+
       int count = {};
       return tstack.frame_guard(), tstack.scope_guard(count), [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{
          tstack.push(std::forward<Arg0>(arg0)), ++count; tstack.push(std::forward<Arg1>(arg1)), ++count; }(),
