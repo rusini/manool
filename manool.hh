@@ -115,9 +115,9 @@ namespace aux { namespace pub {
       }
    public:
       MNL_INLINE void push(decltype(nullptr), int count = 1)
-         { vector.resize(vector.size() + count), frm_ptr = vector.dat() + frm_off; }
+         { MNL_UNROLL(10) for (; count; --count) rep.vec.emplace_back(); rep.frm_ptr = rep.vec.dat() + rep.frm_off; }
       template<typename Val> MNL_INLINE void push(Val &&val)
-         { vector.push_back(std::forward<Val>(val)), frm_ptr = vector.dat() + frm_off; }
+         { rep.vec.push_back(std::forward<Val>(val)), rep.frm_ptr = rep.vec.dat() + rep.frm_off; }
    public:
       MNL_INLINE const val &operator[](int ix) const noexcept { return rep.frm_ptr[ix]; }
       MNL_INLINE       val &operator[](int ix)       noexcept { return rep.frm_ptr[ix]; }
