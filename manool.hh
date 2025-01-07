@@ -110,8 +110,11 @@ namespace aux { namespace pub {
          auto saved_frm_off = rep.frm_off; rep.frm_ptr = rep.vector.data() + (rep.frm_off = rep.vector.size());
          return finally{[this, saved_frm_off]() MNL_INLINE{ rep.frm_ptr = rep.vector.data() + (rep.frm_off = saved_frm_off); }};
       }
-      MNL_INLINE auto scope_guard(const int &size = 1) {
-         return finally{[this, &size]() MNL_INLINE{ MNL_UNROLL(10) for (auto count = size; count; --count) rep.vector.pop_back(); }};
+      MNL_INLINE auto scope_guard(int &count) {
+         return finally{[this, &size]() MNL_INLINE{ MNL_UNROLL(10) for (; count; --count) rep.vector.pop_back(); }};
+      }
+      MNL_INLINE auto scope_guard(int &&size = 1) {
+         return scope_guard(size);
       }
    public:
       MNL_INLINE void push(decltype(nullptr), int count = 1)
