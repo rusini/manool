@@ -680,6 +680,11 @@ namespace aux { namespace {
                   std::remove_reference_t<decltype(_init)> init; code body;
                public:
                   template<bool fast_sig, bool nores> MNL_INLINE val execute() const {
+                     int index = 0;
+                     return tstack.scope_guard(index),
+                        [&](int size = init.size()) MNL_INLINE{ MNL_UNROLL(10) for (; index < size; ++index) tstack.push(init[index].execute()); }(),
+                        body.execute<fast_sig, nores>();
+
                      struct _ { int ix; MNL_INLINE ~_() { _Pragma("GCC unroll 10") for (; ix; --ix) tvar_stk.pop_back(); } } _;
                      _Pragma("GCC unroll 10") for (_.ix = 0; _.ix < (int)init.size(); ++_.ix)
                         tvar_stk.push_back(init[_.ix].execute()), tvar_frm = tvar_stk.data() + tvar_off;
