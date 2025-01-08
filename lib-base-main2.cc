@@ -618,12 +618,10 @@ namespace aux { namespace {
                   [[no_unique_address]] decltype(_var_count) var_count; code body;
                public:
                   template<bool fast_sig, bool nores> MNL_INLINE val execute() const {
-                     [&] MNL_INLINE(const decltype(*this) &MNL_RESTRICTED self = *this){
-                        int index = 0;
-                        return tstack.scope_guard(index), [&] MNL_INLINE(decltype(tstack) &MNL_RESTRICT tstack = tstack)
-                           { MNL_UNROLL(10) for (int count = var_count; index < count; ++index) tstack.push(); }(),
-                           body.execute<fast_sig, nores>();
-                     }();
+                     int index = 0;
+                     return tstack.scope_guard(index), [&] MNL_INLINE(decltype(tstack) &MNL_RESTRICT tstack = tstack)
+                        { MNL_UNROLL(10) for (int count = var_count; index < count; ++index) tstack.push(); }(),
+                        body.execute<fast_sig, nores>();
                   }
                   template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
                      int index = 0;
