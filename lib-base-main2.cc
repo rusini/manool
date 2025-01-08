@@ -459,7 +459,7 @@ namespace aux { namespace {
       if (MNL_UNLIKELY(argc != dat.arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
       int index = 0;
       return tstack.frame_guard(), tstack.scope_guard(index), [&] MNL_INLINE(decltype(tstack) &MNL_RESTRICT tstack = tstack)
-         { MNL_UNROLL(10) for (; index < argc; ++index) tstack.push_back(std::move(argv[index])); }(),
+         { MNL_UNROLL(10) for (; index < argc; ++index) tstack.push(std::move(argv[index])); }(),
          dat.body.execute();
    }
    template<typename Arg_count> template<typename Self>
@@ -469,7 +469,7 @@ namespace aux { namespace {
       if (MNL_UNLIKELY(argc != dat.arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
       int index = 0;
       return tstack.frame_guard(), tstack.scope_guard(index), [&] MNL_INLINE(decltype(tstack) &MNL_RESTRICT tstack = tstack)
-         { MNL_UNROLL(10) for (; index < argc; ++index) tstack.push_back(std::move(argv[index])); }(),
+         { MNL_UNROLL(10) for (; index < argc; ++index) tstack.push(std::move(argv[index])); }(),
          dat.body.execute();
    }
 
