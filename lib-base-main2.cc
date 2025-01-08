@@ -439,39 +439,27 @@ namespace aux { namespace {
    MNL_INLINE val box<_expr_proc<Arg_count>>::apply(Self &&self, Arg0 &&arg0) {
       stk_check();
       if (MNL_UNLIKELY(1 != arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      int count = 0;
-      return tstack.frame_guard(), tstack.scope_guard(count), [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{
-         tstack.push(std::forward<Arg0>(arg0)), ++count; }(),
+      int ix;
+      return tstack.frame_guard(), tstack.scope_guard(ix), [&](decltype(tstack) &MNL_RESTRICT tstack = tstack)
+         MNL_INLINE{ tstack.push(std::forward<Arg0>(arg0)), ++ix; }(),
          body.execute();
    }
    template<typename Arg_count> template<typename Self, typename Arg0, typename Arg1>
    MNL_INLINE val box<_expr_proc<Arg_count>>::apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
       stk_check();
       if (MNL_UNLIKELY(2 != arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      int count = 1;
-      return
-         tstack.frame_guard(),
-         [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{ tstack.push(std::forward<Arg0>(arg0)); }(),
-         tstack.scope_guard(count),
-         [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{ tstack.push(std::forward<Arg0>(arg0)), count = 2; }(),
-
-         [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{
-            tstack.push(std::forward<Arg0>(arg0)), ++count; tstack.push(std::forward<Arg1>(arg1)), ++count; }(),
-         body.execute();
-
-
-      int count = {};
-      return tstack.frame_guard(), tstack.scope_guard(count), [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{
-         tstack.push(std::forward<Arg0>(arg0)), ++count; tstack.push(std::forward<Arg1>(arg1)), ++count; }(),
+      int ix;
+      return tstack.frame_guard(), tstack.scope_guard(ix), [&](decltype(tstack) &MNL_RESTRICT tstack = tstack)
+         MNL_INLINE{ tstack.push(std::forward<Arg0>(arg0)), ++ix; tstack.push(std::forward<Arg1>(arg1)), ++ix; }(),
          body.execute();
    }
    template<typename Arg_count> template<typename Self>
    MNL_INLINE val box<_expr_proc<Arg_count>>::apply(Self &&self, int argc, val argv[]) {
       stk_check();
       if (MNL_UNLIKELY(argc != arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      int count = {};
-      return tstack.frame_guard(), tstack.scope_guard(count), [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{
-         MNL_UNROLL(10) for (; count < dat.arg_count; ++count) tstack.push_back(std::move(argv[count])); }(),
+      int ix;
+      return tstack.frame_guard(), tstack.scope_guard(ix), [&](decltype(tstack) &MNL_RESTRICT tstack = tstack, int count = dat.arg_count)
+         MNL_INLINE{ MNL_UNROLL(10) for (ix = 0; ix < count; ++ix) tstack.push_back(std::move(argv[ix])); }(),
          body.execute();
    }
    template<typename Arg_count> template<typename Self>
@@ -630,6 +618,12 @@ namespace aux { namespace {
                   [[no_unique_address]] decltype(_var_count) var_count; code body;
                public:
                   template<bool fast_sig, bool nores> MNL_INLINE val execute() const {
+                     int ix;
+                     return tstack.scope_guard(ix), [&](int size = var_count, decltype(tstack) &tstack = tstack) MNL_INLINE
+                        { MNL_UNROLL(10) for (ix = 0; ix < size; ++ix) tstack.push(); }(),
+
+
+
                      tvar_stk.resize(tvar_stk.size() + var_count), tvar_frm = tvar_stk.data() + tvar_off;
                      struct _ { int ix; MNL_INLINE ~_() { _Pragma("GCC unroll 10") for (; ix; --ix) tvar_stk.pop_back(); } } _{var_count};
                      return body.execute<fast_sig, nores>();
@@ -696,23 +690,18 @@ namespace aux { namespace {
                      return tstack.scope_guard(ix),
                         [&](int size = init.size()) MNL_INLINE{ MNL_UNROLL(10) for (ix = 0; ix < size; ++ix) tstack.push(init[ix].execute()); }(),
                         body.execute<fast_sig, nores>();
-
-                     struct _ { int ix; MNL_INLINE ~_() { _Pragma("GCC unroll 10") for (; ix; --ix) tvar_stk.pop_back(); } } _;
-                     _Pragma("GCC unroll 10") for (_.ix = 0; _.ix < (int)init.size(); ++_.ix)
-                        tvar_stk.push_back(init[_.ix].execute()), tvar_frm = tvar_stk.data() + tvar_off;
-                     return body.execute<fast_sig, nores>();
                   }
                   template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
-                     struct _ { int ix; MNL_INLINE ~_() { _Pragma("GCC unroll 10") for (; ix; --ix) tvar_stk.pop_back(); } } _;
-                     _Pragma("GCC unroll 10") for (_.ix = 0; _.ix < (int)init.size(); ++_.ix)
-                        tvar_stk.push_back(init[_.ix].execute()), tvar_frm = tvar_stk.data() + tvar_off;
-                     body.exec_in(std::forward<Val>(value));
+                     int ix;
+                     return tstack.scope_guard(ix),
+                        [&](int size = init.size()) MNL_INLINE{ MNL_UNROLL(10) for (ix = 0; ix < size; ++ix) tstack.push(init[ix].execute()); }(),
+                        body.exec_in(std::forward<Val>(value));
                   }
                   MNL_INLINE val exec_out() const {
-                     struct _ { int ix; MNL_INLINE ~_() { _Pragma("GCC unroll 10") for (; ix; --ix) tvar_stk.pop_back(); } } _;
-                     _Pragma("GCC unroll 10") for (_.ix = 0; _.ix < (int)init.size(); ++_.ix)
-                        tvar_stk.push_back(init[_.ix].execute()), tvar_frm = tvar_stk.data() + tvar_off;
-                     return body.exec_out();
+                     int ix;
+                     return tstack.scope_guard(ix),
+                        [&](int size = init.size()) MNL_INLINE{ MNL_UNROLL(10) for (ix = 0; ix < size; ++ix) tstack.push(init[ix].execute()); }(),
+                        body.exec_out();
                   }
                public:
                   MNL_INLINE bool is_lvalue() const noexcept { return body.is_lvalue(); }
