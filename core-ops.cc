@@ -1229,7 +1229,7 @@ namespace aux {
       if constexpr (!std::is_same_v<Arg0, const sym &>)
       if (MNL_LIKELY(is<long long>(arg0)) && MNL_LIKELY((unsigned long long)as<long long>(arg0) < dat.size()))
          return dat[as<long long>(arg0)];
-      return default_apply_or_fetch<Op>(std::forward<Self>(self), std::forward<Key0>(arg0));
+      return default_apply_or_fetch<Op>(std::forward<Self>(self), std::forward<Arg0>(arg0));
    }
    template<> template<typename Self, typename Arg0, typename Arg1>
    MNL_INLINE val box<std::vector<val>>::apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
