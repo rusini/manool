@@ -467,9 +467,9 @@ namespace aux { namespace {
       stk_check();
       if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
       if (MNL_UNLIKELY(argc != arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      int count = {};
-      return tstack.frame_guard(), tstack.scope_guard(count), [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE{
-         MNL_UNROLL(10) for (; count < dat.arg_count; ++count) tstack.push_back(std::move(argv[count])); }(),
+      int ix;
+      return tstack.frame_guard(), tstack.scope_guard(ix), [&](decltype(tstack) &MNL_RESTRICT tstack = tstack, int count = dat.arg_count)
+         MNL_INLINE{ MNL_UNROLL(10) for (ix = 0; ix < count; ++ix) tstack.push_back(std::move(argv[ix])); }(),
          body.execute();
    }
 
