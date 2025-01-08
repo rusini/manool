@@ -117,8 +117,8 @@ namespace aux { namespace pub {
          return scope_guard(size);
       }
    public:
-      MNL_INLINE void push(decltype(nullptr), int count = 1)
-         { MNL_UNROLL(10) for (; count; --count) rep.vec.emplace_back(); rep.frm_ptr = rep.vec.dat() + rep.frm_off; }
+      MNL_INLINE void push(decltype(nullptr) = {})
+         { rep.vec.emplace_back(nullptr), rep.frm_ptr = rep.vec.dat() + rep.frm_off; }
       template<typename Val> MNL_INLINE void push(Val &&val)
          { rep.vec.emplace_back(std::forward<Val>(val)), rep.frm_ptr = rep.vec.dat() + rep.frm_off; }
    public:
