@@ -693,15 +693,17 @@ namespace aux { namespace {
                         body.execute<fast_sig, nores>();
                   }
                   template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
-                     int index = 0;
+                     int index;
+                     int count = init.size(); const code *init = this->init.data();
                      return tstack.scope_guard(index), [&] MNL_INLINE()
-                        { MNL_UNROLL(10) for (int count = init.size(); index < count; ++index) tstack.push(init[index].execute()); }(),
+                        { MNL_UNROLL(10) for (index = 0; index < count; ++index) tstack.push(init[index].execute()); }(),
                         body.exec_in(std::forward<Val>(value));
                   }
                   MNL_INLINE val exec_out() const {
-                     int index = 0;
+                     int index;
+                     int count = init.size(); const code *init = this->init.data();
                      return tstack.scope_guard(index), [&] MNL_INLINE()
-                        { MNL_UNROLL(10) for (int count = init.size(); index < count; ++index) tstack.push(init[index].execute()); }(),
+                        { MNL_UNROLL(10) for (index = 0; index < count; ++index) tstack.push(init[index].execute()); }(),
                         body.exec_out();
                   }
                public:
