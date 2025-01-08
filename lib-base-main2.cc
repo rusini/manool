@@ -678,26 +678,26 @@ namespace aux { namespace {
             tvar_cnt -= form[1].size();
             for (auto &&el: form[1]) symtab.update(as<const sym &>(el), std::move(overriden_ents.front())), overriden_ents.pop_front();
 
-            const auto compile = [&](auto &&_init) MNL_INLINE{
+            const auto compile = [&] MNL_INLINE(auto &&_init){
                struct expr: code::lvalue {
                   std::remove_reference_t<decltype(_init)> init; code body;
                public:
                   template<bool fast_sig, bool nores> MNL_INLINE val execute() const {
                      int index = 0;
-                     return tstack.scope_guard(index), [&]()
-                        MNL_INLINE{ MNL_UNROLL(10) for (int count = init.size(); index < count; ++index) tstack.push(init[index].execute()); }(),
+                     return tstack.scope_guard(index), [&] MNL_INLINE()
+                        { MNL_UNROLL(10) for (int count = init.size(); index < count; ++index) tstack.push(init[index].execute()); }(),
                         body.execute<fast_sig, nores>();
                   }
                   template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
-                     int index;
-                     return tstack.scope_guard(index),
-                        [&](int size = init.size()) MNL_INLINE{ MNL_UNROLL(10) for (index = 0; index < size; ++index) tstack.push(init[index].execute()); }(),
+                     int index = 0;
+                     return tstack.scope_guard(index), [&] MNL_INLINE()
+                        { MNL_UNROLL(10) for (int count = init.size(); index < count; ++index) tstack.push(init[index].execute()); }(),
                         body.exec_in(std::forward<Val>(value));
                   }
                   MNL_INLINE val exec_out() const {
-                     int index;
-                     return tstack.scope_guard(index),
-                        [&](int size = init.size()) MNL_INLINE{ MNL_UNROLL(10) for (index = 0; index < size; ++index) tstack.push(init[index].execute()); }(),
+                     int index = 0;
+                     return tstack.scope_guard(index), [&] MNL_INLINE()
+                        { MNL_UNROLL(10) for (int count = init.size(); index < count; ++index) tstack.push(init[index].execute()); }(),
                         body.exec_out();
                   }
                public:
