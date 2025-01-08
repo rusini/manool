@@ -457,9 +457,9 @@ namespace aux { namespace {
    MNL_INLINE val box<_expr_proc<Arg_count>>::apply(Self &&self, int argc, val argv[]) {
       stk_check();
       if (MNL_UNLIKELY(argc != dat.arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      int index;
+      int index = 0;
       return tstack.frame_guard(), tstack.scope_guard(index), [&] MNL_INLINE(decltype(tstack) &MNL_RESTRICT tstack = tstack)
-         { MNL_UNROLL(10) for (index = 0; index < argc; ++index) tstack.push_back(std::move(argv[index])); }(),
+         { MNL_UNROLL(10) for (; index < argc; ++index) tstack.push_back(std::move(argv[index])); }(),
          dat.body.execute();
    }
    template<typename Arg_count> template<typename Self>
@@ -467,9 +467,9 @@ namespace aux { namespace {
       stk_check();
       if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
       if (MNL_UNLIKELY(argc != dat.arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      int index;
+      int index = 0;
       return tstack.frame_guard(), tstack.scope_guard(index), [&] MNL_INLINE(decltype(tstack) &MNL_RESTRICT tstack = tstack)
-         { MNL_UNROLL(10) for (index = 0; index < argc; ++index) tstack.push_back(std::move(argv[index])); }(),
+         { MNL_UNROLL(10) for (; index < argc; ++index) tstack.push_back(std::move(argv[index])); }(),
          dat.body.execute();
    }
 
