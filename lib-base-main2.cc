@@ -618,25 +618,22 @@ namespace aux { namespace {
                   [[no_unique_address]] decltype(_var_count) var_count; code body;
                public:
                   template<bool fast_sig, bool nores> MNL_INLINE val execute() const {
-                     int ix;
-                     return tstack.scope_guard(ix), [&](int size = var_count, decltype(tstack) &tstack = tstack) MNL_INLINE
-                        { MNL_UNROLL(10) for (ix = 0; ix < size; ++ix) tstack.push(); }(),
-
-
-
-                     tvar_stk.resize(tvar_stk.size() + var_count), tvar_frm = tvar_stk.data() + tvar_off;
-                     struct _ { int ix; MNL_INLINE ~_() { _Pragma("GCC unroll 10") for (; ix; --ix) tvar_stk.pop_back(); } } _{var_count};
-                     return body.execute<fast_sig, nores>();
+                     int index;
+                     return tstack.scope_guard(index), [&](int count = var_count, decltype(tstack) &tstack = tstack)
+                        MNL_INLINE { MNL_UNROLL(10) for (index = 0; index < count; ++index) tstack.push(); }(),
+                        body.execute<fast_sig, nores>();
                   }
                   template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
-                     tvar_stk.resize(tvar_stk.size() + var_count), tvar_frm = tvar_stk.data() + tvar_off;
-                     struct _ { int ix; MNL_INLINE ~_() { _Pragma("GCC unroll 10") for (; ix; --ix) tvar_stk.pop_back(); } } _{var_count};
-                     body.exec_in(std::forward<Val>(value));
+                     int index;
+                     return tstack.scope_guard(index), [&](int count = var_count, decltype(tstack) &tstack = tstack)
+                        MNL_INLINE { MNL_UNROLL(10) for (index = 0; index < count; ++index) tstack.push(); }(),
+                        body.exec_in(std::forward<Val>(value));
                   }
                   MNL_INLINE val exec_out() const {
-                     tvar_stk.resize(tvar_stk.size() + var_count), tvar_frm = tvar_stk.data() + tvar_off;
-                     struct _ { int ix; MNL_INLINE ~_() { _Pragma("GCC unroll 10") for (; ix; --ix) tvar_stk.pop_back(); } } _{var_count};
-                     return body.exec_out();
+                     int index;
+                     return tstack.scope_guard(index), [&](int count = var_count, decltype(tstack) &tstack = tstack)
+                        MNL_INLINE { MNL_UNROLL(10) for (index = 0; index < count; ++index) tstack.push(); }(),
+                        body.exec_out();
                   }
                public:
                   MNL_INLINE bool is_lvalue() const noexcept { return body.is_lvalue(); }
@@ -686,21 +683,21 @@ namespace aux { namespace {
                   std::remove_reference_t<decltype(_init)> init; code body;
                public:
                   template<bool fast_sig, bool nores> MNL_INLINE val execute() const {
-                     int ix;
-                     return tstack.scope_guard(ix),
-                        [&](int size = init.size()) MNL_INLINE{ MNL_UNROLL(10) for (ix = 0; ix < size; ++ix) tstack.push(init[ix].execute()); }(),
+                     int index;
+                     return tstack.scope_guard(index), [&](int count = init.size())
+                        MNL_INLINE{ MNL_UNROLL(10) for (index = 0; index < count; ++index) tstack.push(init[index].execute()); }(),
                         body.execute<fast_sig, nores>();
                   }
                   template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
-                     int ix;
-                     return tstack.scope_guard(ix),
-                        [&](int size = init.size()) MNL_INLINE{ MNL_UNROLL(10) for (ix = 0; ix < size; ++ix) tstack.push(init[ix].execute()); }(),
+                     int index;
+                     return tstack.scope_guard(index),
+                        [&](int size = init.size()) MNL_INLINE{ MNL_UNROLL(10) for (index = 0; index < size; ++index) tstack.push(init[index].execute()); }(),
                         body.exec_in(std::forward<Val>(value));
                   }
                   MNL_INLINE val exec_out() const {
-                     int ix;
-                     return tstack.scope_guard(ix),
-                        [&](int size = init.size()) MNL_INLINE{ MNL_UNROLL(10) for (ix = 0; ix < size; ++ix) tstack.push(init[ix].execute()); }(),
+                     int index;
+                     return tstack.scope_guard(index),
+                        [&](int size = init.size()) MNL_INLINE{ MNL_UNROLL(10) for (index = 0; index < size; ++index) tstack.push(init[index].execute()); }(),
                         body.exec_out();
                   }
                public:
