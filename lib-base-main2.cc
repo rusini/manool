@@ -618,21 +618,21 @@ namespace aux { namespace {
                   [[no_unique_address]] decltype(_var_count) var_count; code body;
                public:
                   template<bool fast_sig, bool nores> MNL_INLINE val execute() const {
-                     int index;
-                     return tstack.scope_guard(index), [&](int count = var_count, decltype(tstack) &tstack = tstack)
-                        MNL_INLINE { MNL_UNROLL(10) for (index = 0; index < count; ++index) tstack.push(); }(),
+                     int index = 0;
+                     return tstack.scope_guard(index), [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE
+                        { MNL_UNROLL(10) for (int count = var_count; index < count; ++index) tstack.push(); }(),
                         body.execute<fast_sig, nores>();
                   }
                   template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
-                     int index;
-                     return tstack.scope_guard(index), [&](int count = var_count, decltype(tstack) &tstack = tstack)
-                        MNL_INLINE { MNL_UNROLL(10) for (index = 0; index < count; ++index) tstack.push(); }(),
+                     int index = 0;
+                     return tstack.scope_guard(index), [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE
+                        { MNL_UNROLL(10) for (int count = var_count; index < count; ++index) tstack.push(); }(),
                         body.exec_in(std::forward<Val>(value));
                   }
                   MNL_INLINE val exec_out() const {
-                     int index;
-                     return tstack.scope_guard(index), [&](int count = var_count, decltype(tstack) &tstack = tstack)
-                        MNL_INLINE { MNL_UNROLL(10) for (index = 0; index < count; ++index) tstack.push(); }(),
+                     int index = 0;
+                     return tstack.scope_guard(index), [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE
+                        { MNL_UNROLL(10) for (int count = var_count; index < count; ++index) tstack.push(); }(),
                         body.exec_out();
                   }
                public:
@@ -683,9 +683,9 @@ namespace aux { namespace {
                   std::remove_reference_t<decltype(_init)> init; code body;
                public:
                   template<bool fast_sig, bool nores> MNL_INLINE val execute() const {
-                     int index;
-                     return tstack.scope_guard(index), [&](int count = init.size())
-                        MNL_INLINE{ MNL_UNROLL(10) for (index = 0; index < count; ++index) tstack.push(init[index].execute()); }(),
+                     int index = 0;
+                     return tstack.scope_guard(index), [&]()
+                        MNL_INLINE{ MNL_UNROLL(10) for (int count = init.size(); index < count; ++index) tstack.push(init[index].execute()); }(),
                         body.execute<fast_sig, nores>();
                   }
                   template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
