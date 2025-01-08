@@ -613,25 +613,25 @@ namespace aux { namespace {
             tvar_cnt -= form[1].size();
             for (auto &&el: form[1]) symtab.update(as<const sym &>(el), std::move(overriden_ents.front())), overriden_ents.pop_front();
 
-            const auto compile = [&](auto _var_count) MNL_INLINE{
+            const auto compile = [&] MNL_INLINE(auto _var_count){
                struct expr: code::lvalue {
                   [[no_unique_address]] decltype(_var_count) var_count; code body;
                public:
                   template<bool fast_sig, bool nores> MNL_INLINE val execute() const {
                      int index = 0;
-                     return tstack.scope_guard(index), [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE
+                     return tstack.scope_guard(index), [&] MNL_INLINE(decltype(tstack) &MNL_RESTRICT tstack = tstack)
                         { MNL_UNROLL(10) for (int count = var_count; index < count; ++index) tstack.push(); }(),
                         body.execute<fast_sig, nores>();
                   }
                   template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
                      int index = 0;
-                     return tstack.scope_guard(index), [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE
+                     return tstack.scope_guard(index), [&] MNL_INLINE(decltype(tstack) &MNL_RESTRICT tstack = tstack)
                         { MNL_UNROLL(10) for (int count = var_count; index < count; ++index) tstack.push(); }(),
                         body.exec_in(std::forward<Val>(value));
                   }
                   MNL_INLINE val exec_out() const {
                      int index = 0;
-                     return tstack.scope_guard(index), [&](decltype(tstack) &MNL_RESTRICT tstack = tstack) MNL_INLINE
+                     return tstack.scope_guard(index), [&] MNL_INLINE(decltype(tstack) &MNL_RESTRICT tstack = tstack)
                         { MNL_UNROLL(10) for (int count = var_count; index < count; ++index) tstack.push(); }(),
                         body.exec_out();
                   }
@@ -641,8 +641,8 @@ namespace aux { namespace {
                return expr{_var_count, std::move(body)};
             };
             switch (form[1].size()) {
-            case 0:  return std::move(body);
             default: return compile((int)form[1].size());
+            case 0:  return body; // automatic move
             case 1:  return compile(std::integral_constant<int, 1>{});
             case 2:  return compile(std::integral_constant<int, 2>{});
             case 3:  return compile(std::integral_constant<int, 3>{});
