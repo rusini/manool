@@ -537,28 +537,28 @@ namespace aux { namespace {
             }
          }
       opt2: // {proc {I,I?; ...} as B; B; ...}
-         {  if (form.size() >= 4); else goto opt3;
-            if (form[1].is_list()); else goto opt3;
+         {  if (form.size() == 4); else goto opt3;
+            if (is<ast::list>(form[1])); else goto opt3;
             if (form[2] == MNL_SYM("as")); else goto opt3;
-            for (auto &&el: form[1]) if (test<sym>(el) ||
-               el.is_list() && el.size() == 2 && el[0] == MNL_SYM("?") && test<sym>(el[1])); else goto opt3;
+            for (auto &&el: form[1]) if (is<sym>(el) ||
+               is<ast::list>(el) && el.size() == 2 && el[0] == MNL_SYM("?") && is<sym>(el[1])); else goto opt3;
          }
          {  if (form[1].size() > val::max_argc) MNL_ERR(MNL_SYM("LimitExceeded"));
          }
-         {  sym::tab<bool> tab; for (auto &&el: form[1]) if (!tab[cast<const sym &>(test<sym>(el) ? el : el[1])])
-               tab.update(cast<const sym &>(test<sym>(el) ? el : el[1]), true); else err_compile("ambiguous bindings", _loc);
+         {  sym::tab<bool> tab; for (auto &&el: form[1]) if (!tab[as<const sym &>(is<sym>(el) ? el : el[1])])
+               tab.update(as<const sym &>(is<sym>(el) ? el : el[1]), true); else err_compile("ambiguous bindings", loc);
          }
-         {  deque<code> saved_tmp_ents;
+         {  std::deque<code> saved_tmp_ents;
             for (auto &&el: tmp_ids) saved_tmp_ents.push_back(symtab[el]), symtab.update(el, {});
             auto saved_tmp_cnt = move(tmp_cnt); tmp_cnt = 0;
             auto saved_tmp_ids = move(tmp_ids); tmp_ids.clear();
-            deque<code> overriden_ents;
+            std::deque<code> overriden_ents;
             for (auto &&el: form[1]) overriden_ents.push_back(symtab[cast<const sym &>(test<sym>(el) ? el : el[1])]),
                symtab.update(cast<const sym &>(test<sym>(el) ? el : el[1]), expr_tmp{tmp_cnt++});
             for (auto &&el: form[1]) tmp_ids.insert(cast<const sym &>(test<sym>(el) ? el : el[1]));
 
-            vector<unsigned char> mode; for (auto &&el: form[1]) mode.push_back(!test<sym>(el));
-            auto body = compile_rval(form + 3, _loc);
+            std::vector<unsigned char> mode; for (auto &&el: form[1]) mode.push_back(!test<sym>(el));
+            auto body = compile_rval(form[3], loc);
 
             for (auto &&el: form[1]) symtab.update(cast<const sym &>(test<sym>(el) ? el : el[1]), move(overriden_ents.front())), overriden_ents.pop_front();
             tmp_ids = move(saved_tmp_ids);
