@@ -536,7 +536,7 @@ namespace aux { namespace {
             auto saved_tvar_ids = std::move(tvar_ids); tvar_ids.clear();
             std::deque<code> overriden_ents;
             for (auto &&el: form[1]) overriden_ents.push_back(symtab[as<const sym &>(is<sym>(el) ? el : el[1])]),
-               symtab.update(as<const sym &>(is<sym>(el) ? el : el[1]), expr_tmp{tvar_cnt++});
+               symtab.update(as<const sym &>(is<sym>(el) ? el : el[1]), expr_tvar{tvar_cnt++});
             for (auto &&el: form[1]) tvar_ids.insert(as<const sym &>(is<sym>(el) ? el : el[1]));
 
             std::vector<unsigned char> mode; for (auto &&el: form[1]) mode.push_back(!is<sym>(el));
@@ -571,7 +571,7 @@ namespace aux { namespace {
             return optimize(expr_lit<>{proc{move(mode), move(body)}});
          }
       opt3:
-         err_compile("invalid form", _loc);
+         err_compile("invalid form", loc);
       }
    };
 
