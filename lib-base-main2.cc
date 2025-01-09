@@ -536,7 +536,7 @@ namespace aux { namespace {
             # undef MNL_M1
             }
          }
-      opt2: // {proc {I,I?; ...} as B; B; ...}
+      opt2: // {proc {I,I?; ...} as B}
          {  if (form.size() == 4); else goto opt3;
             if (is<ast::list>(form[1])); else goto opt3;
             if (form[2] == MNL_SYM("as")); else goto opt3;
@@ -548,22 +548,22 @@ namespace aux { namespace {
          {  sym::tab<bool> tab; for (auto &&el: form[1]) if (!tab[as<const sym &>(is<sym>(el) ? el : el[1])])
                tab.update(as<const sym &>(is<sym>(el) ? el : el[1]), true); else err_compile("ambiguous bindings", loc);
          }
-         {  std::deque<code> saved_tmp_ents;
-            for (auto &&el: tmp_ids) saved_tmp_ents.push_back(symtab[el]), symtab.update(el, {});
-            auto saved_tmp_cnt = move(tmp_cnt); tmp_cnt = 0;
-            auto saved_tmp_ids = move(tmp_ids); tmp_ids.clear();
+         {  std::deque<code> saved_tvar_ents;
+            for (auto &&el: tvar_ids) saved_tvar_ents.push_back(symtab[el]), symtab.update(el, {});
+            auto saved_tvar_cnt = std::move(tvar_cnt); tvar_cnt = 0;
+            auto saved_tvar_ids = std::move(tvar_ids); tvar_ids.clear();
             std::deque<code> overriden_ents;
-            for (auto &&el: form[1]) overriden_ents.push_back(symtab[cast<const sym &>(test<sym>(el) ? el : el[1])]),
-               symtab.update(cast<const sym &>(test<sym>(el) ? el : el[1]), expr_tmp{tmp_cnt++});
-            for (auto &&el: form[1]) tmp_ids.insert(cast<const sym &>(test<sym>(el) ? el : el[1]));
+            for (auto &&el: form[1]) overriden_ents.push_back(symtab[as<const sym &>(is<sym>(el) ? el : el[1])]),
+               symtab.update(as<const sym &>(is<sym>(el) ? el : el[1]), expr_tmp{tvar_cnt++});
+            for (auto &&el: form[1]) tvar_ids.insert(as<const sym &>(is<sym>(el) ? el : el[1]));
 
-            std::vector<unsigned char> mode; for (auto &&el: form[1]) mode.push_back(!test<sym>(el));
+            std::vector<unsigned char> mode; for (auto &&el: form[1]) mode.push_back(!is<sym>(el));
             auto body = compile_rval(form[3], loc);
 
-            for (auto &&el: form[1]) symtab.update(cast<const sym &>(test<sym>(el) ? el : el[1]), move(overriden_ents.front())), overriden_ents.pop_front();
-            tmp_ids = move(saved_tmp_ids);
-            tmp_cnt = move(saved_tmp_cnt);
-            for (auto &&el: tmp_ids) symtab.update(el, move(saved_tmp_ents.front())), saved_tmp_ents.pop_front();
+            for (auto &&el: form[1]) symtab.update(as<const sym &>(is<sym>(el) ? el : el[1]), std::move(overriden_ents.front())), overriden_ents.pop_front();
+            tvar_ids = std::move(saved_tvar_ids);
+            tvar_cnt = std::move(saved_tvar_cnt);
+            for (auto &&el: tvar_ids) symtab.update(el, std::move(saved_tvar_ents.front())), saved_tvar_ents.pop_front();
 
             struct proc {
                vector<unsigned char> mode; code body;
