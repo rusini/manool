@@ -431,9 +431,8 @@ namespace aux { namespace {
 
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   template<typename Arg_count> struct _expr_proc {
-      [[no_unique_address]] Arg_count arg_count; code body;
-   };
+   template<typename Arg_count> struct _expr_proc { [[no_unique_address]] Arg_count arg_count; code body; };
+   template<typename Arg_count> _expr_proc(Arg_count, code)->_expr_proc<Arg_count>;
 
    template<typename Arg_count> template<typename Self, typename Arg0>
    MNL_INLINE val box<_expr_proc<Arg_count>>::apply(Self &&self, Arg0 &&arg0) {
