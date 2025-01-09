@@ -518,32 +518,6 @@ namespace aux { namespace {
             case 5:  return optimize(expr_lit<>{_expr_proc{std::integral_constant<int, 6>{}, std::move(body)}});
             case 6:  return optimize(expr_lit<>{_expr_proc{std::integral_constant<int, 7>{}, std::move(body)}});
             }
-            # define MNL_M1(ARG_COUNT) \
-               MNL_INLINE val invoke(val &&self, const sym &op, int argc, val argv[], val *) { \
-                  stk_check(); \
-                  if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv); \
-                  if (MNL_UNLIKELY(argc != ARG_COUNT)) MNL_ERR(MNL_SYM("InvalidInvocation")); \
-                  struct _ { \
-                     decltype(tmp_frm) saved_tmp_frm; int sn; \
-                     MNL_INLINE ~_() { for (; sn; --sn) tmp_stk.pop_back(); tmp_frm = move(saved_tmp_frm); } \
-                  } _; \
-                  _.saved_tmp_frm = move(tmp_frm), tmp_frm = tmp_stk.size(); \
-                  for (_.sn = 0; _.sn < ARG_COUNT; ++_.sn) tmp_stk.push_back(move(argv[_.sn])); \
-                  return body.execute(); \
-               } \
-            // end # define MNL_M1(ARG_COUNT)
-               {  struct proc { const int arg_count; code body; MNL_M1(arg_count) };
-               default: return optimize(expr_lit<>{proc{(int)form[1].size(), move(body)}});
-               }
-            # define MNL_M2(ARG_COUNT) \
-               {  struct proc { code body; MNL_M1(ARG_COUNT) }; \
-               case ARG_COUNT: return optimize(expr_lit<>{proc{move(body)}}); \
-               } \
-            // end # define MNL_M2(ARG_COUNT)
-               MNL_M2(0) MNL_M2(1) MNL_M2(2) MNL_M2(3) MNL_M2(4) MNL_M2(5) MNL_M2(6)
-            # undef MNL_M2
-            # undef MNL_M1
-            }
          }
       opt2: // {proc {I,I?; ...} as B}
          {  if (form.size() == 4); else goto opt3;
