@@ -510,13 +510,13 @@ namespace aux { namespace {
 
             switch (form[1].size()) {
             default: return optimize(expr_lit<>{_expr_proc{(int)form[1].size(),              std::move(body)}});
-            case 0:  return optimize(expr_lit<>{_expr_proc{std::integral_constant<int, 1>{}, std::move(body)}});
-            case 1:  return optimize(expr_lit<>{_expr_proc{std::integral_constant<int, 2>{}, std::move(body)}});
-            case 2:  return optimize(expr_lit<>{_expr_proc{std::integral_constant<int, 3>{}, std::move(body)}});
-            case 3:  return optimize(expr_lit<>{_expr_proc{std::integral_constant<int, 4>{}, std::move(body)}});
-            case 4:  return optimize(expr_lit<>{_expr_proc{std::integral_constant<int, 5>{}, std::move(body)}});
-            case 5:  return optimize(expr_lit<>{_expr_proc{std::integral_constant<int, 6>{}, std::move(body)}});
-            case 6:  return optimize(expr_lit<>{_expr_proc{std::integral_constant<int, 7>{}, std::move(body)}});
+            case 0:  return optimize(expr_lit<>{_expr_proc{std::integral_constant<int, 0>{}, std::move(body)}});
+            case 1:  return optimize(expr_lit<>{_expr_proc{std::integral_constant<int, 1>{}, std::move(body)}});
+            case 2:  return optimize(expr_lit<>{_expr_proc{std::integral_constant<int, 2>{}, std::move(body)}});
+            case 3:  return optimize(expr_lit<>{_expr_proc{std::integral_constant<int, 3>{}, std::move(body)}});
+            case 4:  return optimize(expr_lit<>{_expr_proc{std::integral_constant<int, 4>{}, std::move(body)}});
+            case 5:  return optimize(expr_lit<>{_expr_proc{std::integral_constant<int, 5>{}, std::move(body)}});
+            case 6:  return optimize(expr_lit<>{_expr_proc{std::integral_constant<int, 6>{}, std::move(body)}});
             }
          }
       opt2: // {proc {I,I?; ...} as B}
