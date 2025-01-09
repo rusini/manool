@@ -478,34 +478,35 @@ namespace aux { namespace {
          dat.body.execute();
    }
 
-   class comp_proc { MNL_NONVALUE()
-      MNL_INLINE static code compile(code &&, const form &form, const loc &_loc) {
-      opt1: // {proc {I; ...} as B; B; ...}
-         {  if (form.size() >= 4); else goto opt2;
-            if (form[1].is_list()); else goto opt2;
+   class comp_proc: code::nonvalue {
+      friend code::box<comp_proc>;
+      MNL_INLINE static code compile(code &&, const ast &form, const loc &loc) {
+      opt1: // {proc {I; ...} as B}
+         {  if (form.size() == 4); else goto opt2;
+            if (is<ast::list>(form[1])); else goto opt2;
             if (form[2] == MNL_SYM("as")); else goto opt2;
-            for (auto &&el: form[1]) if (test<sym>(el)); else goto opt2;
+            for (auto &&el: form[1]) if (is<sym>(el)); else goto opt2;
          }
          {  if (form[1].size() > val::max_argc) MNL_ERR(MNL_SYM("LimitExceeded"));
          }
-         {  sym::tab<bool> tab; for (auto &&el: form[1]) if (!tab[cast<const sym &>(el)])
-               tab.update(cast<const sym &>(el), true); else err_compile("ambiguous bindings", _loc);
+         {  sym::tab<bool> tab; for (auto &&el: form[1]) if (!tab[as<const sym &>(el)])
+               tab.update(as<const sym &>(el), true); else err_compile("ambiguous bindings", loc);
          }
-         {  deque<code> saved_tmp_ents;
-            for (auto &&el: tmp_ids) saved_tmp_ents.push_back(symtab[el]), symtab.update(el, {});
-            auto saved_tmp_cnt = move(tmp_cnt); tmp_cnt = 0;
-            auto saved_tmp_ids = move(tmp_ids); tmp_ids.clear();
-            deque<code> overriden_ents;
-            for (auto &&el: form[1]) overriden_ents.push_back(symtab[cast<const sym &>(el)]),
-               symtab.update(cast<const sym &>(el), expr_tmp{tmp_cnt++});
-            for (auto &&el: form[1]) tmp_ids.insert(cast<const sym &>(el));
+         {  std::deque<code> saved_tvar_ents;
+            for (auto &&el: tvar_ids) saved_tvar_ents.push_back(symtab[el]), symtab.update(el, {});
+            auto saved_tvar_cnt = std::move(tvar_cnt); tvar_cnt = 0;
+            auto saved_tvar_ids = std::move(tvar_ids); tvar_ids.clear();
+            std::deque<code> overriden_ents;
+            for (auto &&el: form[1]) overriden_ents.push_back(symtab[as<const sym &>(el)]),
+               symtab.update(as<const sym &>(el), expr_tvar{tvar_cnt++});
+            for (auto &&el: form[1]) tvar_ids.insert(as<const sym &>(el));
 
-            auto body = compile_rval(form + 3, _loc);
+            auto body = compile_rval(form[3], loc);
 
-            for (auto &&el: form[1]) symtab.update(cast<const sym &>(el), move(overriden_ents.front())), overriden_ents.pop_front();
-            tmp_ids = move(saved_tmp_ids);
-            tmp_cnt = move(saved_tmp_cnt);
-            for (auto &&el: tmp_ids) symtab.update(el, move(saved_tmp_ents.front())), saved_tmp_ents.pop_front();
+            for (auto &&el: form[1]) symtab.update(as<const sym &>(el), std::move(overriden_ents.front())), overriden_ents.pop_front();
+            tvar_ids = std::move(saved_tvar_ids);
+            tvar_cnt = std::move(saved_tvar_cnt);
+            for (auto &&el: tvar_ids) symtab.update(el, std::move(saved_tvar_ents.front())), saved_tvar_ents.pop_front();
 
             switch (form[1].size()) {
             # define MNL_M1(ARG_COUNT) \
@@ -596,7 +597,7 @@ namespace aux { namespace {
       friend code::box<comp_var>;
       MNL_INLINE static code compile(code &&, const ast &form, const loc &loc) {
       opt1: // {var {I; ...} in B}
-         {  if (form.size() >= 4); else goto opt2;
+         {  if (form.size() == 4); else goto opt2;
             if (is<ast::list>(form[1])); else goto opt2;
             if (form[2] == MNL_SYM("in")); else goto opt2;
             for (auto &&el: form[1]) if (is<sym>(el)); else goto opt2;
