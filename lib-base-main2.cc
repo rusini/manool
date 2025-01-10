@@ -539,7 +539,7 @@ namespace aux { namespace {
                symtab.update(as<const sym &>(is<sym>(el) ? el : el[1]), expr_tvar{tvar_cnt++});
             for (auto &&el: form[1]) tvar_ids.insert(as<const sym &>(is<sym>(el) ? el : el[1]));
 
-            std::vector<unsigned char> mode; for (auto &&el: form[1]) mode.push_back(!is<sym>(el)); // TODO: reserve to save mem
+            std::vector<unsigned char> mode; mode.reserve(form[1].size()); for (auto &&el: form[1]) mode.push_back(!is<sym>(el));
             auto body = compile_rval(form[3], loc);
 
             for (auto &&el: form[1]) symtab.update(as<const sym &>(is<sym>(el) ? el : el[1]), std::move(overriden_ents.front())), overriden_ents.pop_front();
