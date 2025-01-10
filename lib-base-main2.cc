@@ -479,7 +479,7 @@ namespace aux { namespace {
 
    class comp_proc: code::nonvalue {
       friend code::box<comp_proc>;
-      MNL_INLINE static code compile(code &&, const ast &form, const loc &loc) {
+      MNL_INLINE static code compile(code &&, const ast &MNL_RESTRICT form, const loc &loc) {
       opt1: // {proc {I; ...} as B}
          {  if (form.size() == 4); else goto opt2;
             if (is<ast::list>(form[1])); else goto opt2;
@@ -508,14 +508,14 @@ namespace aux { namespace {
             for (auto &&el: tvar_ids) symtab.update(el, std::move(saved_tvar_ents.front())), saved_tvar_ents.pop_front();
 
             switch (form[1].size()) {
-            default: return optimize(expr_lit<>{_expr_proc{(int)form[1].size(),              std::move(body)}});
-            case 0:  return optimize(expr_lit<>{_expr_proc{std::integral_constant<int, 0>{}, std::move(body)}});
-            case 1:  return optimize(expr_lit<>{_expr_proc{std::integral_constant<int, 1>{}, std::move(body)}});
-            case 2:  return optimize(expr_lit<>{_expr_proc{std::integral_constant<int, 2>{}, std::move(body)}});
-            case 3:  return optimize(expr_lit<>{_expr_proc{std::integral_constant<int, 3>{}, std::move(body)}});
-            case 4:  return optimize(expr_lit<>{_expr_proc{std::integral_constant<int, 4>{}, std::move(body)}});
-            case 5:  return optimize(expr_lit<>{_expr_proc{std::integral_constant<int, 5>{}, std::move(body)}});
-            case 6:  return optimize(expr_lit<>{_expr_proc{std::integral_constant<int, 6>{}, std::move(body)}});
+            default: return aux::optimize(expr_lit<>{_expr_proc{(int)form[1].size(),              std::move(body)}});
+            case 0:  return aux::optimize(expr_lit<>{_expr_proc{std::integral_constant<int, 0>{}, std::move(body)}});
+            case 1:  return aux::optimize(expr_lit<>{_expr_proc{std::integral_constant<int, 1>{}, std::move(body)}});
+            case 2:  return aux::optimize(expr_lit<>{_expr_proc{std::integral_constant<int, 2>{}, std::move(body)}});
+            case 3:  return aux::optimize(expr_lit<>{_expr_proc{std::integral_constant<int, 3>{}, std::move(body)}});
+            case 4:  return aux::optimize(expr_lit<>{_expr_proc{std::integral_constant<int, 4>{}, std::move(body)}});
+            case 5:  return aux::optimize(expr_lit<>{_expr_proc{std::integral_constant<int, 5>{}, std::move(body)}});
+            case 6:  return aux::optimize(expr_lit<>{_expr_proc{std::integral_constant<int, 6>{}, std::move(body)}});
             }
          }
       opt2: // {proc {I,I?; ...} as B}
@@ -568,7 +568,7 @@ namespace aux { namespace {
                   }
                }
             };
-            return optimize(expr_lit<>{proc{move(mode), move(body)}});
+            return aux::optimize(expr_lit<>{proc{std::move(mode), std::move(body)}});
          }
       opt3:
          err_compile("invalid form", loc);
