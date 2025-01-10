@@ -493,7 +493,7 @@ namespace aux { namespace {
          }
          {  std::deque<code> saved_tvar_ents;
             for (auto &&el: tvar_ids) saved_tvar_ents.push_back(symtab[el]), symtab.update(el, {});
-            auto saved_tvar_cnt = std::move(tvar_cnt); tvar_cnt = 0;
+            auto saved_tvar_cnt = std::move(tvar_cnt); tvar_cnt = {};
             auto saved_tvar_ids = std::move(tvar_ids); tvar_ids.clear();
             std::deque<code> overriden_ents;
             for (auto &&el: form[1]) overriden_ents.push_back(symtab[as<const sym &>(el)]),
@@ -532,7 +532,7 @@ namespace aux { namespace {
          }
          {  std::deque<code> saved_tvar_ents;
             for (auto &&el: tvar_ids) saved_tvar_ents.push_back(symtab[el]), symtab.update(el, {});
-            auto saved_tvar_cnt = std::move(tvar_cnt); tvar_cnt = 0;
+            auto saved_tvar_cnt = std::move(tvar_cnt); tvar_cnt = {};
             auto saved_tvar_ids = std::move(tvar_ids); tvar_ids.clear();
             std::deque<code> overriden_ents;
             for (auto &&el: form[1]) overriden_ents.push_back(symtab[as<const sym &>(is<sym>(el) ? el : el[1])]),
