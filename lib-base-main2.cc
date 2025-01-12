@@ -548,9 +548,24 @@ namespace aux { namespace {
             for (auto &&el: tvar_ids) symtab.update(el, std::move(saved_tvar_ents.front())), saved_tvar_ents.pop_front();
 
             struct proc {
-               vector<unsigned char> mode; code body;
+               std::vector<unsigned char> mode; code body;
             public:
-               MNL_INLINE val invoke(val &&self, const sym &op, int argc, val argv[], val *argv_out) {
+               template<typename Self> MNL_INLINE val invoke(Self &&self, const sym &op, int argc, val argv[], val *argv_out) {
+                  stk_check();
+                  int arg_count = (int)mode.size(); const unsigned char *mode = this->mode.data();
+                  if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+                  if (MNL_UNLIKELY(argc != (int)mode.size())) MNL_ERR(MNL_SYM("InvalidInvocation"));
+                  int index = 0;
+                  return tstack.frame_guard(), tstack.scope_guard(index),
+                     [&] MNL_INLINE(decltype(tstack) &MNL_RESTRICT tstack = tstack)
+                     { MNL_UNROLL(10) for (; index < argc; ++index) tstack.push(std::move(argv[index])); }(),
+                     dat.body.execute(),
+                     [&] MNL_INLINE(decltype(tstack) &MNL_RESTRICT tstack = tstack)
+                     { MNL_UNROLL(10) for (; index; tstack.pop_back()) if (MNL_UNLIKELY(mode[--index])) argv_out[index].swap(tstack.back()); }();
+
+
+
+
                   stk_check();
                   if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
                   if (MNL_UNLIKELY(argc != (int)mode.size())) MNL_ERR(MNL_SYM("InvalidInvocation"));
