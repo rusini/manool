@@ -91,6 +91,15 @@ namespace aux { namespace pub {
    };
 
 
+   inline MNL_IF_WITH_MT(thread_local) struct vtable {
+      int           cnt, max;
+      std::set<sym> ids;
+   } vtable;
+   inline MNL_IF_WITH_MT(thread_local) struct vstack {
+      val *frm, *top;
+   } vstack;
+
+
 
    inline MNL_IF_WITH_MT(thread_local) union tvar_stack {
       struct {

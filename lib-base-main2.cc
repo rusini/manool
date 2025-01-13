@@ -459,6 +459,11 @@ namespace aux { namespace {
       stk_check();
       if (MNL_UNLIKELY(argc != dat.arg_count))
          return default_apply(std::forward<Self>(self), argc, argv);
+      
+
+
+
+
       int index = 0;
       return tstack.frame_guard(), tstack.scope_guard(index), [&] MNL_INLINE(decltype(tstack) &MNL_RESTRICT tstack = tstack)
          { MNL_UNROLL(10) for (; index < argc; ++index) tstack.push(std::move(argv[index])); }(),
@@ -621,6 +626,11 @@ namespace aux { namespace {
                   [[no_unique_address]] decltype(_var_count) var_count; code body;
                public:
                   template<bool fast_sig, bool nores> MNL_INLINE val execute() const {
+                     int count = var_count;
+                     [&] MNL_INLINE(decltype(tstack) &MNL_RESTRICT tstack = tstack)
+                        { MNL_UNROLL(10) for (int index = 0; index < count; ++index) tstack.push(); }();
+                     return tstack.scope_guard(count), body.execute<fast_sig, nores>();
+
                      int index = 0;
                      int count = var_count;
                      return tstack.scope_guard(index), [&] MNL_INLINE(decltype(tstack) &MNL_RESTRICT tstack = tstack)
