@@ -691,24 +691,21 @@ namespace aux { namespace {
                   std::remove_reference_t<decltype(_init)> init; code body;
                public:
                   template<bool fast_sig, bool nores> MNL_INLINE val execute() const {
-                     int index = 0;
-                     int count = init.size(); const code *init = this->init.data();
+                     int index; int count = init.size(); const code *init = this->init.data();
                      return tstack.scope_guard(index), [&] MNL_INLINE()
-                        { MNL_UNROLL(10) for (; index < count; ++index) tstack.push(init[index].execute()); }(),
+                        { MNL_UNROLL(10) for (index = 0; index < count; ++index) tstack.push(init[index].execute()); }(),
                         body.execute<fast_sig, nores>();
                   }
                   template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
-                     int index = 0;
-                     int count = init.size(); const code *init = this->init.data();
+                     int index; int count = init.size(); const code *init = this->init.data();
                      return tstack.scope_guard(index), [&] MNL_INLINE()
-                        { MNL_UNROLL(10) for (; index < count; ++index) tstack.push(init[index].execute()); }(),
+                        { MNL_UNROLL(10) for (index = 0; index < count; ++index) tstack.push(init[index].execute()); }(),
                         body.exec_in(std::forward<Val>(value));
                   }
                   MNL_INLINE val exec_out() const {
-                     int index = 0;
-                     int count = init.size(); const code *init = this->init.data();
+                     int index; int count = init.size(); const code *init = this->init.data();
                      return tstack.scope_guard(index), [&] MNL_INLINE()
-                        { MNL_UNROLL(10) for (; index < count; ++index) tstack.push(init[index].execute()); }(),
+                        { MNL_UNROLL(10) for (index = 0; index < count; ++index) tstack.push(init[index].execute()); }(),
                         body.exec_out();
                   }
                public:
