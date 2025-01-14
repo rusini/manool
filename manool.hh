@@ -98,9 +98,11 @@ namespace aux { namespace pub {
 
    inline MNL_IF_WITH_MT(thread_local) class vstack {
       union mem {
+      private:
          val _;
          mem() = default;
          ~mem() = default;
+         friend vstack;
       } *frame, *limit;
    public:
       MNL_INLINE void push(decltype(nullptr) = {}) noexcept                           { push(nullptr); }
