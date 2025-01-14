@@ -115,8 +115,8 @@ namespace aux { namespace pub {
    private:
       MNL_INLINE void pop() noexcept { --limit->_.~val(); }
    public:
-      MNL_INLINE auto frame_guard(mem mem[]) noexcept {
-         auto saved_frame = frame, saved_limit = limit; limit = frame = mem;
+      MNL_INLINE auto frame_guard(storage_elem storage[]) noexcept {
+         auto saved_frame = frame, saved_limit = limit; limit = frame = storage;
          return finally{[this, saved_frame, saved_limit]() MNL_INLINE{ frame = saved_frame, limit = saved_limit; }};
       }
       MNL_INLINE auto scope_guard() noexcept {
