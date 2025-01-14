@@ -97,16 +97,19 @@ namespace aux { namespace pub {
    } vtable;
 
    inline MNL_IF_WITH_MT(thread_local) class vstack {
-      union mem {
+   public:
+      union storage_elem {
       private:
          val _;
-         mem() = default;
-         ~mem() = default;
+         storage_elem() = default;
+         ~storage_elem() = default;
          friend vstack;
-      } *frame, *limit;
+      };
+   private:
+      storage_elem *frame, *limit;
    public:
-      MNL_INLINE void push(decltype(nullptr) = {}) noexcept                           { push(nullptr); }
-      template<typename Val> MNL_INLINE void push(Val &&_) noexcept(noexcept(val(_))) { new(&limit++->_) val(std::forward<Val>(_)); }
+      MNL_INLINE void push(decltype(nullptr) = {}) noexcept                                              { push(nullptr); }
+      template<typename Val> MNL_INLINE void push(Val &&_) noexcept(noexcept(val(std::forward<Val>(_)))) { new(&limit++->_) val(std::forward<Val>(_)); }
       MNL_INLINE const val &operator[](int index) const noexcept { return frame[index]; }
       MNL_INLINE       val &operator[](int index)       noexcept { return frame[index]; }
    private:
@@ -121,9 +124,6 @@ namespace aux { namespace pub {
          return finally{[this, saved_limit]() MNL_INLINE{ MNL_UNROLL(10) while (limit != saved_limit) pop(); }};
       }
    } vstack;
-
-__has_include
-(<foo>)
 
    inline MNL_IF_WITH_MT(thread_local) union tvar_stack {
       struct {
