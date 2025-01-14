@@ -436,20 +436,20 @@ namespace aux { namespace {
 
    template<typename Arg_count> template<typename Self, typename Arg0>
    MNL_INLINE val box<_expr_proc<Arg_count>>::apply(Self &&self, Arg0 &&arg0) {
-      stk_check(sizeof(vstack::cell[1]));
+      stk_check(sizeof(vstack::cell[dat.var_count]));
       if (MNL_UNLIKELY(1 != dat.arg_count))
          return default_apply(std::forward<Self>(self), std::forward<Arg0>(arg0));
-      vstack::cell frame[1];
+      vstack::cell frame[dat.var_count];
       return vstack.frame_guard(frame), vstack.scope_guard(), [&] MNL_INLINE(decltype(vstack) &MNL_RESTRICT vstack = vstack)
          { vstack.push(std::forward<Arg0>(arg0)); }(),
          dat.body.execute();
    }
    template<typename Arg_count> template<typename Self, typename Arg0, typename Arg1>
    MNL_INLINE val box<_expr_proc<Arg_count>>::apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
-      stk_check(sizeof(vstack::cell[2]));
+      stk_check(sizeof(vstack::cell[dat.var_count]));
       if (MNL_UNLIKELY(2 != dat.arg_count))
          return default_apply(std::forward<Self>(self), std::forward<Key0>(arg0), std::forward<Arg1>(arg1));
-      vstack::cell frame[2];
+      vstack::cell frame[dat.var_count];
       return vstack.frame_guard(frame), vstack.scope_guard(), [&] MNL_INLINE(decltype(vstack) &MNL_RESTRICT vstack = vstack)
          { vstack.push(std::forward<Arg0>(arg0)); vstack.push(std::forward<Arg1>(arg1)); }(),
          dat.body.execute();
