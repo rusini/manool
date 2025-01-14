@@ -631,10 +631,10 @@ namespace aux { namespace {
                         { MNL_UNROLL(10) for (int index = 0; index < count; ++index) tstack.push(); }();
                      return tstack.scope_guard(count), body.execute<fast_sig, nores>();
 
-                     int index = 0;
+                     int index;
                      int count = var_count;
                      return tstack.scope_guard(index), [&] MNL_INLINE(decltype(tstack) &MNL_RESTRICT tstack = tstack)
-                        { MNL_UNROLL(10) for (; index < count; ++index) tstack.push(); }(),
+                        { MNL_UNROLL(10) for (index = 0; index < count; ++index) tstack.push(); }(),
                         body.execute<fast_sig, nores>();
                   }
                   template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
