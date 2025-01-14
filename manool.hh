@@ -103,8 +103,8 @@ namespace aux { namespace pub {
          ~mem() = default;
       } *frame, *limit;
    public:
-      MNL_INLINE void push(decltype(nullptr) = {}) noexcept                               { push(nullptr); }
-      template<typename Dat> MNL_INLINE void push(Dat &&dat) noexcept(noexcept(val(dat))) { new(&limit++->_) val(std::forward<Dat>(dat)); }
+      MNL_INLINE void push(decltype(nullptr) = {}) noexcept                           { push(nullptr); }
+      template<typename Val> MNL_INLINE void push(Val &&_) noexcept(noexcept(val(_))) { new(&limit++->_) val(std::forward<Val>(_)); }
       MNL_INLINE const val &operator[](int index) const noexcept { return frame[index]; }
       MNL_INLINE       val &operator[](int index)       noexcept { return frame[index]; }
    private:
