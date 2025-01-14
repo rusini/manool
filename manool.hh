@@ -95,8 +95,28 @@ namespace aux { namespace pub {
       int           cnt, max;
       std::set<sym> ids;
    } vtable;
-   inline MNL_IF_WITH_MT(thread_local) struct vstack {
-      val *frm, *top;
+
+   inline MNL_IF_WITH_MT(thread_local) class vstack {
+      union mem {
+         val _;
+         mem() = default;
+         ~mem() = default;
+      } *frame, *limit;
+   public:
+      MNL_INLINE void push(decltype(nullptr) = {}) noexcept             { push(nullptr); }
+      template<typename Dat> MNL_INLINE void push(Dat &&value) noexcept { new(&frame++->_) val(std::forward<Dat>(value)); }
+      MNL_INLINE const val &operator[](int index) const noexcept        { return frame[index]; }
+      MNL_INLINE       val &operator[](int index)       noexcept        { return frame[index]; }
+   private:
+      MNL_INLINE void pop() noexcept { --top->_.~val(); }
+   public:
+      MNL_INLINE auto scope_guard(int count) noexcept {
+         return finally{[count]() MNL_INLINE{ MNL_UNROLL(10) for (; count; --count) pop(); }};
+      }
+      MNL_INLINE auto frame_guard(frame frame[]) noexcept {
+         auto saved_frm = frm, saved_top = top; top = frm = reinterpret_cast<val *>(frame);
+         return finally{[saved_frm, saved_top]() MNL_INLINE{ frm = saved_frm, top = saved_top; }};
+      }
    } vstack;
 
 
