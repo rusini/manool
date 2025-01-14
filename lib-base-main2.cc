@@ -459,9 +459,8 @@ namespace aux { namespace {
       stk_check();
       if (MNL_UNLIKELY(argc != dat.arg_count))
          return default_apply(std::forward<Self>(self), argc, argv);
-      int index = 0;
-      return tstack.frame_guard(), tstack.scope_guard(index), [&] MNL_INLINE(decltype(tstack) &MNL_RESTRICT tstack = tstack)
-         { MNL_UNROLL(10) for (; index < argc; ++index) tstack.push(std::move(argv[index])); }(),
+      return vstack.frame_guard(), vstack.scope_guard(), [&] MNL_INLINE(decltype(vstack) &MNL_RESTRICT vstack = vstack)
+         { MNL_UNROLL(10) for (int ix = 0; ix < argc;) vstack.push(std::move(argv[ix++])); }(),
          dat.body.execute();
    }
    template<typename Arg_count> template<typename Self>
