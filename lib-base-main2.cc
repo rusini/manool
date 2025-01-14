@@ -436,30 +436,31 @@ namespace aux { namespace {
 
    template<typename Arg_count> template<typename Self, typename Arg0>
    MNL_INLINE val box<_expr_proc<Arg_count>>::apply(Self &&self, Arg0 &&arg0) {
-      stk_check();
+      stk_check(sizeof(vstack::cell[1]));
       if (MNL_UNLIKELY(1 != dat.arg_count))
          return default_apply(std::forward<Self>(self), std::forward<Arg0>(arg0));
-      int index = 0;
-      return tstack.frame_guard(), tstack.scope_guard(index), [&] MNL_INLINE(decltype(tstack) &MNL_RESTRICT tstack = tstack)
-         { tstack.push(std::forward<Arg0>(arg0)), ++index; }(),
+      vstack::cell frame[1];
+      return vstack.frame_guard(frame), vstack.scope_guard(), [&] MNL_INLINE(decltype(vstack) &MNL_RESTRICT vstack = vstack)
+         { vstack.push(std::forward<Arg0>(arg0)); }(),
          dat.body.execute();
    }
    template<typename Arg_count> template<typename Self, typename Arg0, typename Arg1>
    MNL_INLINE val box<_expr_proc<Arg_count>>::apply(Self &&self, Arg0 &&arg0, Arg1 &&arg1) {
-      stk_check();
+      stk_check(sizeof(vstack::cell[2]));
       if (MNL_UNLIKELY(2 != dat.arg_count))
          return default_apply(std::forward<Self>(self), std::forward<Key0>(arg0), std::forward<Arg1>(arg1));
-      int index = 0;
-      return tstack.frame_guard(), tstack.scope_guard(index), [&] MNL_INLINE(decltype(tstack) &MNL_RESTRICT tstack = tstack)
-         { tstack.push(std::forward<Arg0>(arg0)), ++index; tstack.push(std::forward<Arg1>(arg1)), ++index; }(),
+      vstack::cell frame[2];
+      return vstack.frame_guard(frame), vstack.scope_guard(), [&] MNL_INLINE(decltype(vstack) &MNL_RESTRICT vstack = vstack)
+         { vstack.push(std::forward<Arg0>(arg0)); vstack.push(std::forward<Arg1>(arg1)); }(),
          dat.body.execute();
    }
    template<typename Arg_count> template<typename Self>
    MNL_INLINE val box<_expr_proc<Arg_count>>::apply(Self &&self, int argc, val argv[]) {
-      stk_check();
+      stk_check(sizeof(vstack::cell[dat.var_count]));
       if (MNL_UNLIKELY(argc != dat.arg_count))
          return default_apply(std::forward<Self>(self), argc, argv);
-      return vstack.frame_guard(), vstack.scope_guard(), [&] MNL_INLINE(decltype(vstack) &MNL_RESTRICT vstack = vstack)
+      vstack::cell frame[dat.var_count];
+      return vstack.frame_guard(frame), vstack.scope_guard(), [&] MNL_INLINE(decltype(vstack) &MNL_RESTRICT vstack = vstack)
          { MNL_UNROLL(10) for (int ix = 0; ix < argc;) vstack.push(std::move(argv[ix++])); }(),
          dat.body.execute();
    }
