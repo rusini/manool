@@ -627,20 +627,20 @@ namespace aux { namespace {
                public:
                   template<bool fast_sig, bool nores> MNL_INLINE val execute() const {
                      int count = var_count;
-                     return tstack.scope_guard(), [&] MNL_INLINE(decltype(tstack) &MNL_RESTRICT tstack = tstack)
-                        { MNL_UNROLL(10) for (int index = 0; index < count; ++index) tstack.push(); }(),
+                     return vstack.scope_guard(), [&] MNL_INLINE(decltype(vstack) &MNL_RESTRICT vstack = vstack)
+                        { MNL_UNROLL(10) for (int index = 0; index < count; ++index) vstack.push(); }(),
                         body.execute<fast_sig, nores>();
                   }
                   template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
-                     int index; int count = var_count;
-                     return tstack.scope_guard(index), [&] MNL_INLINE(decltype(tstack) &MNL_RESTRICT tstack = tstack)
-                        { MNL_UNROLL(10) for (index = 0; index < count; ++index) tstack.push(); }(),
+                     int count = var_count;
+                     return vstack.scope_guard(), [&] MNL_INLINE(decltype(vstack) &MNL_RESTRICT vstack = vstack)
+                        { MNL_UNROLL(10) for (int index = 0; index < count; ++index) vstack.push(); }(),
                         body.exec_in(std::forward<Val>(value));
                   }
                   MNL_INLINE val exec_out() const {
-                     int index; int count = var_count;
-                     return tstack.scope_guard(index), [&] MNL_INLINE(decltype(tstack) &MNL_RESTRICT tstack = tstack)
-                        { MNL_UNROLL(10) for (index = 0; index < count; ++index) tstack.push(); }(),
+                     int count = var_count;
+                     return vstack.scope_guard(), [&] MNL_INLINE(decltype(vstack) &MNL_RESTRICT vstack = vstack)
+                        { MNL_UNROLL(10) for (int index = 0; index < count; ++index) vstack.push(); }(),
                         body.exec_out();
                   }
                public:
@@ -691,21 +691,21 @@ namespace aux { namespace {
                   std::remove_reference_t<decltype(_init)> init; code body;
                public:
                   template<bool fast_sig, bool nores> MNL_INLINE val execute() const {
-                     int index; int count = init.size(); const code *init = this->init.data();
-                     return tstack.scope_guard(index), [&] MNL_INLINE()
-                        { MNL_UNROLL(10) for (index = 0; index < count; ++index) tstack.push(init[index].execute()); }(),
+                     int count = init.size(); const code *init = this->init.data();
+                     return vstack.scope_guard(), [&] MNL_INLINE()
+                        { MNL_UNROLL(10) for (int ix = 0; ix < count;) vstack.push(init[ix++].execute()); }(),
                         body.execute<fast_sig, nores>();
                   }
                   template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
-                     int index; int count = init.size(); const code *init = this->init.data();
-                     return tstack.scope_guard(index), [&] MNL_INLINE()
-                        { MNL_UNROLL(10) for (index = 0; index < count; ++index) tstack.push(init[index].execute()); }(),
+                     int count = init.size(); const code *init = this->init.data();
+                     return vstack.scope_guard(), [&] MNL_INLINE()
+                        { MNL_UNROLL(10) for (int ix = 0; ix < count;) vstack.push(init[ix++].execute()); }(),
                         body.exec_in(std::forward<Val>(value));
                   }
                   MNL_INLINE val exec_out() const {
-                     int index; int count = init.size(); const code *init = this->init.data();
-                     return tstack.scope_guard(index), [&] MNL_INLINE()
-                        { MNL_UNROLL(10) for (index = 0; index < count; ++index) tstack.push(init[index].execute()); }(),
+                     int count = init.size(); const code *init = this->init.data();
+                     return vstack.scope_guard(), [&] MNL_INLINE()
+                        { MNL_UNROLL(10) for (int ix = 0; ix < count;) vstack.push(init[ix++].execute()); }(),
                         body.exec_out();
                   }
                public:
