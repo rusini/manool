@@ -699,6 +699,13 @@ namespace aux { namespace {
                   std::remove_reference_t<decltype(_init)> init; code body;
                public:
                   template<bool fast_sig, bool nores> MNL_INLINE val execute() const {
+                     int count = init.size(); const code *init = this->init.data();
+                     [&] MNL_INLINE() { MNL_UNROLL(10) for (int ix = 0; ix < count; ++ix) tstack.push(init[ix].execute()); }()
+                     return tstack.scope_guard(index),
+                        body.execute<fast_sig, nores>();
+
+
+
                      int index = 0;
                      int count = init.size(); const code *init = this->init.data();
                      return tstack.scope_guard(index), [&] MNL_INLINE()
