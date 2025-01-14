@@ -110,17 +110,13 @@ namespace aux { namespace pub {
    private:
       MNL_INLINE void pop() noexcept { --limit->_.~val(); }
    public:
-      MNL_INLINE auto scope_guard() noexcept {
-         auto saved_limit = limit;
-         return finally{[this, saved_limit]() MNL_INLINE{ MNL_UNROLL(10) while (limit != saved_limit) pop(); }};
-      }
-      MNL_INLINE auto scope_guard(int count) noexcept {
-         MNL_UNROLL(10) for (; count; --count) push();
-         return scope_guard();
-      }
       MNL_INLINE auto frame_guard(mem mem[]) noexcept {
          auto saved_frame = frame, saved_limit = limit; limit = frame = mem;
          return finally{[this, saved_frame, saved_limit]() MNL_INLINE{ frame = saved_frame, limit = saved_limit; }};
+      }
+      MNL_INLINE auto scope_guard() noexcept {
+         auto saved_limit = limit;
+         return finally{[this, saved_limit]() MNL_INLINE{ MNL_UNROLL(10) while (limit != saved_limit) pop(); }};
       }
    } vstack;
 
