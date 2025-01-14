@@ -103,19 +103,19 @@ namespace aux { namespace pub {
          ~mem() = default;
       } *frame, *limit;
    public:
-      MNL_INLINE void push(decltype(nullptr) = {}) noexcept             { push(nullptr); }
-      template<typename Dat> MNL_INLINE void push(Dat &&value) noexcept { new(&frame++->_) val(std::forward<Dat>(value)); }
-      MNL_INLINE const val &operator[](int index) const noexcept        { return frame[index]; }
-      MNL_INLINE       val &operator[](int index)       noexcept        { return frame[index]; }
+      MNL_INLINE void push(decltype(nullptr) = {}) noexcept                               { push(nullptr); }
+      template<typename Dat> MNL_INLINE void push(Dat &&dat) noexcept(noexcept(val(dat))) { new(&limit++->_) val(std::forward<Dat>(dat)); }
+      MNL_INLINE const val &operator[](int index) const noexcept { return frame[index]; }
+      MNL_INLINE       val &operator[](int index)       noexcept { return frame[index]; }
    private:
-      MNL_INLINE void pop() noexcept { --top->_.~val(); }
+      MNL_INLINE void pop() noexcept { --limit->_.~val(); }
    public:
       MNL_INLINE auto scope_guard(int count) noexcept {
          return finally{[count]() MNL_INLINE{ MNL_UNROLL(10) for (; count; --count) pop(); }};
       }
-      MNL_INLINE auto frame_guard(frame frame[]) noexcept {
-         auto saved_frm = frm, saved_top = top; top = frm = reinterpret_cast<val *>(frame);
-         return finally{[saved_frm, saved_top]() MNL_INLINE{ frm = saved_frm, top = saved_top; }};
+      MNL_INLINE auto frame_guard(mem mem[]) noexcept {
+         auto saved_frame = frame, saved_limit = limit; limit = frame = mem;
+         return finally{[saved_frame, saved_limit]() MNL_INLINE{ frame = saved_frame, limit = saved_limit; }};
       }
    } vstack;
 
