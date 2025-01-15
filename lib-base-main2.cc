@@ -675,21 +675,21 @@ namespace aux { namespace {
                   std::remove_reference_t<decltype(_init)> init; code body;
                public:
                   template<bool fast_sig, bool nores> MNL_INLINE val execute() const {
-                     int count = init.size(); const code *init = this->init.data();
+                     const code *init = this->init.data();
                      return vstack.scope_guard(), [&] MNL_INLINE()
-                        { MNL_UNROLL(10) for (int ix = 0; ix < count;) vstack.push(init[ix++].execute()); }(),
+                        { MNL_UNROLL(10) for (int count = init.size(); count;) --count, vstack.push(init++->execute()); }(),
                         body.execute<fast_sig, nores>();
                   }
                   template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
-                     int count = init.size(); const code *init = this->init.data();
+                     const code *init = this->init.data();
                      return vstack.scope_guard(), [&] MNL_INLINE()
-                        { MNL_UNROLL(10) for (int ix = 0; ix < count;) vstack.push(init[ix++].execute()); }(),
+                        { MNL_UNROLL(10) for (int count = init.size(); count;) --count, vstack.push(init++->execute()); }(),
                         body.exec_in(std::forward<Val>(value));
                   }
                   MNL_INLINE val exec_out() const {
-                     int count = init.size(); const code *init = this->init.data();
+                     const code *init = this->init.data();
                      return vstack.scope_guard(), [&] MNL_INLINE()
-                        { MNL_UNROLL(10) for (int ix = 0; ix < count;) vstack.push(init[ix++].execute()); }(),
+                        { MNL_UNROLL(10) for (int count = init.size(); count;) --count, vstack.push(init++->execute()); }(),
                         body.exec_out();
                   }
                public:
