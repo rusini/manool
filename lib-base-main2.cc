@@ -677,19 +677,19 @@ namespace aux { namespace {
                   template<bool fast_sig, bool nores> MNL_INLINE val execute() const {
                      const code *init = this->init.data();
                      return vstack.scope_guard(), [&] MNL_INLINE()
-                        { MNL_UNROLL(10) for (int count = this->init.size(); count;) --count, vstack.push(init++->execute()); }(),
+                        { MNL_UNROLL(10) for (int count = this->init.size(); count--;) vstack.push(init++->execute()); }(),
                         body.execute<fast_sig, nores>();
                   }
                   template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
                      const code *init = this->init.data();
                      return vstack.scope_guard(), [&] MNL_INLINE()
-                        { MNL_UNROLL(10) for (int count = this->init.size(); count;) --count, vstack.push(init++->execute()); }(),
+                        { MNL_UNROLL(10) for (int count = this->init.size(); count--;) vstack.push(init++->execute()); }(),
                         body.exec_in(std::forward<Val>(value));
                   }
                   MNL_INLINE val exec_out() const {
                      const code *init = this->init.data();
                      return vstack.scope_guard(), [&] MNL_INLINE()
-                        { MNL_UNROLL(10) for (int count = this->init.size(); count;) --count, vstack.push(init++->execute()); }(),
+                        { MNL_UNROLL(10) for (int count = this->init.size(); count--;) vstack.push(init++->execute()); }(),
                         body.exec_out();
                   }
                public:
