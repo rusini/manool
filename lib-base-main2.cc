@@ -453,10 +453,8 @@ namespace aux { namespace {
    }
    template<typename Arg_count> template<typename Self>
    MNL_INLINE val box<_expr_proc<Arg_count>>::apply(Self &&self, int argc, val argv[]) {
-      stk_check(sizeof(vstack::cell[dat.var_count]));
-      if (MNL_UNLIKELY(argc != dat.arg_count))
-         return default_apply(std::forward<Self>(self), argc, argv);
-      vstack::cell frame[dat.var_count];
+      if (MNL_UNLIKELY(argc != dat.arg_count)) return default_apply(std::forward<Self>(self), argc, argv);
+      stk_check(sizeof(vstack::storage_elem[dat.var_count])); asm("" : "+rm" (dat.var_count)); vstack::storage_elem frame[dat.var_count];
       return vstack.frame_guard(frame), vstack.scope_guard(), [&] MNL_INLINE(decltype(vstack) &MNL_RESTRICT vstack = vstack)
          { MNL_UNROLL(10) for (int ix = 0; ix < argc;) vstack.push(std::move(argv[ix++])); }(),
          dat.body.execute();
@@ -465,7 +463,7 @@ namespace aux { namespace {
    MNL_INLINE val box<_expr_proc<Arg_count>>::invoke(Self &&self, const sym &op, int argc, val argv[], val *) {
       if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
       if (MNL_UNLIKELY(argc != dat.arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
-      stk_check(sizeof(vstack::storage[dat.var_count])); vstack::storage frame[dat.var_count];
+      stk_check(sizeof(vstack::storage_elem[dat.var_count])); asm("" : "+rm" (dat.var_count)); vstack::storage_elem frame[dat.var_count];
       return vstack.frame_guard(frame), vstack.scope_guard(), [&] MNL_INLINE(decltype(vstack) &MNL_RESTRICT vstack = vstack)
          { MNL_UNROLL(10) for (int ix = 0; ix < argc;) vstack.push(std::move(argv[ix++])); }(),
          dat.body.execute();
