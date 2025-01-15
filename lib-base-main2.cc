@@ -456,7 +456,7 @@ namespace aux { namespace {
       if (MNL_UNLIKELY(argc != dat.arg_count)) return default_apply(std::forward<Self>(self), argc, argv);
       stk_check(sizeof(vstack::storage_elem [dat.var_count])); asm("" : "+rm" (dat.var_count)); vstack::storage_elem frame[dat.var_count];
       return vstack.frame_guard(frame), vstack.scope_guard(), [&] MNL_INLINE(decltype(vstack) &MNL_RESTRICT vstack = vstack)
-         { MNL_UNROLL(10) for (int ix = 0; ix < argc;) vstack.push(std::move(argv[ix++])); }(),
+         { MNL_UNROLL(10) while (argc--) vstack.push(std::move(*argv++)); }(),
          dat.body.execute();
    }
    template<typename Arg_count> template<typename Self>
@@ -465,7 +465,7 @@ namespace aux { namespace {
       if (MNL_UNLIKELY(argc != dat.arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
       stk_check(sizeof(vstack::storage_elem [dat.var_count])); asm("" : "+rm" (dat.var_count)); vstack::storage_elem frame[dat.var_count];
       return vstack.frame_guard(frame), vstack.scope_guard(), [&] MNL_INLINE(decltype(vstack) &MNL_RESTRICT vstack = vstack)
-         { MNL_UNROLL(10) for (int ix = 0; ix < argc;) vstack.push(std::move(argv[ix++])); }(),
+         { MNL_UNROLL(10) while (argc--) vstack.push(std::move(*argv++)); }(),
          dat.body.execute();
    }
 
