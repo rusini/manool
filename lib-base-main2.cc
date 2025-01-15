@@ -614,17 +614,17 @@ namespace aux { namespace {
                public:
                   template<bool fast_sig, bool nores> MNL_INLINE val execute() const {
                      return vstack.scope_guard(), [&] MNL_INLINE(decltype(vstack) &MNL_RESTRICT vstack = vstack)
-                        { MNL_UNROLL(10) for (int count = var_count; count; --count) vstack.push(); }(),
+                        { MNL_UNROLL(10) for (int count = var_count; count;) --count, vstack.push(); }(),
                         body.execute<fast_sig, nores>();
                   }
                   template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
                      return vstack.scope_guard(), [&] MNL_INLINE(decltype(vstack) &MNL_RESTRICT vstack = vstack)
-                        { MNL_UNROLL(10) for (int count = var_count; count; --count) vstack.push(); }(),
+                        { MNL_UNROLL(10) for (int count = var_count; count;) --count, vstack.push(); }(),
                         body.exec_in(std::forward<Val>(value));
                   }
                   MNL_INLINE val exec_out() const {
                      return vstack.scope_guard(), [&] MNL_INLINE(decltype(vstack) &MNL_RESTRICT vstack = vstack)
-                        { MNL_UNROLL(10) for (int count = var_count; count; --count) vstack.push(); }(),
+                        { MNL_UNROLL(10) for (int count = var_count; count;) --count, vstack.push(); }(),
                         body.exec_out();
                   }
                public:
