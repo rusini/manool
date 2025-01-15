@@ -439,7 +439,7 @@ namespace aux { namespace {
    MNL_INLINE val box<_expr_proc<Arg_count>>::apply(Self &&self, Arg0 &&arg0) {
       if (MNL_UNLIKELY(1 != dat.arg_count))
          return default_apply(std::forward<Self>(self), std::forward<Arg0>(arg0));
-      stk_check(sizeof(vstack::storage[dat.var_count])); vstack::storage frame[dat.var_count]; // TODO: stack checking should contain reordering barrier
+      stk_check(sizeof(vstack::storage_elem[dat.var_count])); vstack::storage_elem frame[dat.var_count]; // TODO: stack checking should contain reordering barrier
       return vstack.frame_guard(frame), vstack.scope_guard(), [&] MNL_INLINE(decltype(vstack) &MNL_RESTRICT vstack = vstack)
          { vstack.push(std::forward<Arg0>(arg0)); }(),
          dat.body.execute();
