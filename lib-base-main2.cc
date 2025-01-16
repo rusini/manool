@@ -435,6 +435,13 @@ namespace aux { namespace {
    template<typename Arg_count> struct _expr_proc { [[no_unique_address]] Arg_count argc; int varc; code body; };
    template<typename Arg_count> _expr_proc(Arg_count, code)->_expr_proc<Arg_count>;
 
+   template<typename Arg_count> template<typename Self>
+   MNL_INLINE val box<_expr_proc<Arg_count>>::apply(Self &&self) {
+      if (MNL_UNLIKELY(0 != dat.arg_count)) return default_apply(std::forward<Self>(self), std::forward<Arg0>(arg0));
+      stack_check();
+      return vstack.frame_guard(frame), vstack.scope_guard(),
+         dat.body.execute();
+   }
    template<typename Arg_count> template<typename Self, typename Arg0>
    MNL_INLINE val box<_expr_proc<Arg_count>>::apply(Self &&self, Arg0 &&arg0) {
       if (MNL_UNLIKELY(1 != dat.arg_count)) return default_apply(std::forward<Self>(self), std::forward<Arg0>(arg0));
