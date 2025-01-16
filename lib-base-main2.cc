@@ -613,17 +613,17 @@ namespace aux { namespace {
                   [[no_unique_address]] decltype(_var_count) var_count; code body;
                public:
                   template<bool fast_sig, bool nores> MNL_INLINE val execute() const {
-                     return vstack.scope_guard(), [&] MNL_INLINE(decltype(vstack) &MNL_RESTRICT vstack = vstack)
+                     return vstack.scope_guard(), [&] MNL_INLINE(class vstack &MNL_RESTRICT vstack = vstack)
                         { MNL_UNROLL(10) for (int count = var_count; count--;) vstack.push(); }(),
                         body.execute<fast_sig, nores>();
                   }
                   template<typename Val> MNL_INLINE void exec_in(Val &&value) const {
-                     return vstack.scope_guard(), [&] MNL_INLINE(decltype(vstack) &MNL_RESTRICT vstack = vstack)
+                     return vstack.scope_guard(), [&] MNL_INLINE(class vstack &MNL_RESTRICT vstack = vstack)
                         { MNL_UNROLL(10) for (int count = var_count; count--;) vstack.push(); }(),
                         body.exec_in(std::forward<Val>(value));
                   }
                   MNL_INLINE val exec_out() const {
-                     return vstack.scope_guard(), [&] MNL_INLINE(decltype(vstack) &MNL_RESTRICT vstack = vstack)
+                     return vstack.scope_guard(), [&] MNL_INLINE(class vstack &MNL_RESTRICT vstack = vstack)
                         { MNL_UNROLL(10) for (int count = var_count; count--;) vstack.push(); }(),
                         body.exec_out();
                   }
@@ -632,7 +632,7 @@ namespace aux { namespace {
                };
                return expr{_var_count, std::move(body)};
             };
-            switch (form[1].size()) {
+            switch ((int)form[1].size()) {
             default: return compile((int)form[1].size());
             case 0:  return body; // automatic move
             case 1:  return compile(std::integral_constant<int, 1>{});
@@ -697,7 +697,7 @@ namespace aux { namespace {
                };
                return expr{std::move(_init), std::move(body)};
             };
-            switch (form[1].size()) {
+            switch ((int)form[1].size()) {
             default: return compile(
                std::move(init) );
             case 1:  return compile(
