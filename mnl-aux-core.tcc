@@ -307,16 +307,16 @@ namespace aux { namespace pub {
       MNL_INLINE val &operator=(val &&rhs) noexcept { unhold(), rep = rhs.rep, rhs.rep = {0xFFF8 + 0b000}; return *this; }
       MNL_INLINE void swap(val &rhs) noexcept { using std::swap; swap(rep, rhs.rep); }
       MNL_INLINE explicit operator bool() const noexcept { return *this != nullptr; }
-   public: // Construction -- Implicit conversion (to) -- implicit conversion disabled for `dat`
+   public: // Construction -- Implicit conversion (to)
       MNL_INLINE val(long long dat) noexcept: rep{0xFFF8 + 0b001, dat} {} // min_i48 .. max_i48
       MNL_INLINE val(int dat) noexcept:       val((long long)dat) {}
-      MNL_INLINE val(double dat) noexcept: rep(dat) { if (rep.tag() >= 0xFFF8 + 0b000) __builtin_unreachable(); } // excl. inf and nan
+      MNL_INLINE val(double dat) noexcept: rep(dat) { if (rep.tag() >= 0xFFF8) __builtin_unreachable(); } // excl. inf and nan
       MNL_INLINE val(float dat) noexcept: rep{0xFFF8 + 0b010, dat} {} // ditto
       MNL_INLINE val(const sym &dat) noexcept: rep{0xFFF8 + 0b110, dat} {}
       MNL_INLINE val(bool dat) noexcept: rep{dat | 0xFFF8 + 0b100} {}
       MNL_INLINE val(unsigned dat) noexcept: rep{0xFFF8 + 0b010, dat} {}
       MNL_INLINE val(char dat) noexcept:     val((unsigned)(unsigned char)dat) {}
-      template<typename Dat> val(Dat dat): rep{0xFFF8 + 0b111, (void *)(root *)new box<Dat>{std::move(dat)}} {}
+      template<typename Dat> val(Dat dat): rep{0xFFF8 + 0b111, (void *)(root *)new box<Dat>{std::move(dat)}} {} // inhibits implicit conv. for `dat`
       struct boxable {};
       template<auto = nullptr> MNL_NOINLINE val(const char *dat): val((std::string)dat) {}
       template<auto = nullptr> MNL_INLINE val(char *dat): val((const char *)dat) {}
