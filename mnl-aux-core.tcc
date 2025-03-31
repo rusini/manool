@@ -299,7 +299,7 @@ namespace aux { namespace pub {
 
    class val/*ue*/ {
    public: // Standard operations
-      MNL_INLINE val(decltype(nullptr) = {}) noexcept: rep{0xFFF8 + 0b000} {}
+      MNL_INLINE val(decltype(nullptr) = {}) noexcept: rep{0xFFF8 + 0b000} {} // {} inhibited due to overloading
       MNL_INLINE val(const val &rhs) noexcept: rep(rhs.rep) { hold(); }
       MNL_INLINE val(val &&rhs) noexcept: rep(rhs.rep) { rhs.rep = {0xFFF8 + 0b000}; }
       MNL_INLINE ~val() { unhold(); }
@@ -316,14 +316,14 @@ namespace aux { namespace pub {
       MNL_INLINE val(bool dat) noexcept: rep{dat | 0xFFF8 + 0b100} {}
       MNL_INLINE val(unsigned dat) noexcept: rep{0xFFF8 + 0b010, dat} {}
       MNL_INLINE val(char dat) noexcept:     val((unsigned)(unsigned char)dat) {}
-      template<typename Dat> val(Dat dat): rep{0xFFF8 + 0b111, (void *)(root *)new box<Dat>{std::move(dat)}} {} // inhibits implicit conv. for `dat`
-      struct boxable {};
-      template<auto = nullptr> MNL_NOINLINE val(const char *dat): val((std::string)dat) {}
+      template<typename Dat> val(Dat dat): rep{0xFFF8 + 0b111, (void *)(root *)new box<Dat>{std::move(dat)}} {} // inhibits conv./prom. for `dat`
+      class autoboxable {};
+      template<auto = nullptr> MNL_NOINLINE val(const char *dat): val((std::string)dat) {} // TODO: in TUs?
       template<auto = nullptr> MNL_INLINE val(char *dat): val((const char *)dat) {}
    public: // Extraction
-      template<typename Dat = decltype(nullptr) MNL_REQ(std::std::is_convertible_v<std::decay_t<Dat>, Dat>)>
+      template<typename Dat = decltype(nullptr) MNL_REQ(std::is_convertible_v<std::decay_t<Dat>, Dat>)>
          MNL_INLINE friend bool is(const val &arg) noexcept { return arg.is<Dat>(); }
-      template<typename Dat = decltype(nullptr) MNL_REQ(std::std::is_convertible_v<std::decay_t<Dat>, Dat>)>
+      template<typename Dat = decltype(nullptr) MNL_REQ(std::is_convertible_v<std::decay_t<Dat>, Dat>)>
          MNL_INLINE friend Dat  as(const val &arg) noexcept(std::is_nothrow_copy_constructible_v<Dat>) { return arg.as<Dat>(); }
    public: // Misc essentials
       val default_invoke(const sym &op, int argc, val argv[]);
