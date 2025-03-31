@@ -569,10 +569,10 @@ namespace aux { namespace pub {
 
 // Forward-declared as members of class sym ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
+   template<class Val MNL_REQ(std::is_same_v<Val, val>)>
    MNL_INLINE inline val sym::operator()(const val &self, int argc, Val argv[], val *argv_out) const
       { return val::_invoke(self, *this, argc, argv, argv_out); }
-   template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
+   template<class Val MNL_REQ(std::is_same_v<Val, val>)>
    MNL_INLINE inline val sym::operator()(val &&self, int argc, Val argv[], val *argv_out) const
       { return val::_invoke(std::move(self), *this, argc, argv, argv_out); }
 
@@ -585,7 +585,7 @@ namespace aux { namespace pub {
    MNL_INLINE inline val sym::operator()(val &&arg0, const val &arg1) const { return (*this)(std::move(arg0), (val)arg1); }
    MNL_INLINE inline val sym::operator()(val &&arg0, val &&arg1) const { return (*this)(std::move(arg0), 1, &arg1); }
    // For multiple arguments
-   template<class Val, std::enable_if_t<std::is_same_v<Val, val>, decltype(nullptr)> = decltype(nullptr){}>
+   template<class Val MNL_REQ(std::is_same_v<Val, val>)>
    MNL_INLINE inline val sym::operator()(int argc, Val argv[], val *argv_out) const {
       if (MNL_UNLIKELY(!argc)) err_InvalidInvocation(); // argc != 0 check may be eliminated due to inlining
       return (*this)(std::move(*argv), --argc, argc ? ++argv : nullptr, argv_out + !!argv_out); // relies on C++17 eval order
