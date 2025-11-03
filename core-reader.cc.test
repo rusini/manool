@@ -1,0 +1,411 @@
+// core-reader.cc -- scanner and parser
+
+/*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
+
+   This file is part of MANOOL.
+
+   MANOOL is free software: you can redistribute it and/or modify it under the terms of the version 3 of the GNU General Public License
+   as published by the Free Software Foundation (and only version 3).
+
+   MANOOL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <https://www.gnu.org/licenses/>.  */
+
+
+# include "config.tcc"
+# include "mnl-aux-core.tcc"
+
+# include <cctype> // isalpha, isdigit, isalnum
+
+namespace MNL_AUX_UUID { using namespace aux;
+   namespace aux {
+      using std::strtoll; // <cstdlib>
+      using std::isalpha; using std::isdigit; using std::isalnum; // <cctype>
+      using std::make_shared; // <memory>
+   }
+
+namespace aux { namespace {
+   enum typ {
+      tk_end,
+      tk_lit,
+      tk_lpar,
+      tk_rpar,
+      tk_period,
+      tk_colon,
+      tk_semicolon,
+      tk_lbrack,
+      tk_rbrack,
+      tk_lbrace,
+      tk_rbrace,
+      tk_add,
+      tk_mul,
+      tk_rel,
+      tk_equ,
+      tk_pref,
+      tk_post,
+   };
+   struct ctx {
+      const char          *pc;
+      enum typ            curr_typ;
+      ast                 curr_ast;
+      loc                 curr_loc;
+      enum typ            prev_typ;
+      std::pair<int, int> prev_loc_final;
+   };
+
+   void scan_startup(ctx &, const string &, string &&), scan_cleanup() noexcept;
+   void scan(ctx &); // precond: C's locale is "C"
+}} // namespace aux::<unnamed>
+
+// Parser //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+namespace aux { namespace {
+
+   MNL_INLINE inline void err_compile(ctx &ctx, const char *msg) { err_compile(msg, ctx.curr_loc); }
+
+   MNL_INLINE inline void err_syntax_error(ctx &ctx) {
+      err_compile(ctx, "syntax error (unexpected token)");
+   }
+   MNL_INLINE inline ast parse(ctx &ctx, enum typ typ) {
+      if (ctx.curr_typ != typ) err_syntax_error(ctx);
+      auto res = move(ctx.curr_ast);
+      ctx.prev_loc_final = ctx.curr_loc._final;
+      ctx.prev_typ = ctx.curr_typ, scan(ctx);
+      return res;
+   }
+   MNL_INLINE inline ast parse(ctx &ctx) {
+      return parse(ctx, ctx.curr_typ);
+   }
+
+   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+   ast parse_datum(ctx &), parse_datum0(ctx &), parse_simple(ctx &), parse_term(ctx &), parse_factor(ctx &), parse_prim(ctx &), parse_prim0(ctx &);
+   vector<ast> parse_args(ctx &, vector<ast> = {}), parse_list(ctx &), parse_list0(ctx &);
+
+   ast parse_datum(ctx &ctx) { // datum: datum0 | datum0 "<equ-op>" datum0
+      auto start = ctx.curr_loc._start; auto lhs = parse_datum0(ctx);
+      if (ctx.curr_typ == tk_equ) lhs = {{parse(ctx), move(lhs), parse_datum0(ctx)}, {ctx.curr_loc.origin, start, ctx.prev_loc_final}};
+      return lhs;
+   }
+   ast parse_datum0(ctx &ctx) { // datum0: simple | simple "<rel-op>" simple
+      auto start = ctx.curr_loc._start; auto lhs = parse_simple(ctx);
+      if (ctx.curr_typ == tk_rel) lhs = {{parse(ctx), move(lhs), parse_simple(ctx)}, {ctx.curr_loc.origin, start, ctx.prev_loc_final}};
+      return lhs;
+   }
+   ast parse_simple(ctx &ctx) { // simple: term | simple "<add-op>" term
+      auto start = ctx.curr_loc._start; auto lhs = parse_term(ctx);
+      while (ctx.curr_typ == tk_add) lhs = {{parse(ctx), move(lhs), parse_term(ctx)}, {ctx.curr_loc.origin, start, ctx.prev_loc_final}};
+      return lhs;
+   }
+   ast parse_term(ctx &ctx) { // term: factor | term "<mul-op>" factor
+      auto start = ctx.curr_loc._start; auto lhs = parse_factor(ctx);
+      while (ctx.curr_typ == tk_mul) lhs = {{parse(ctx), move(lhs), parse_factor(ctx)}, {ctx.curr_loc.origin, start, ctx.prev_loc_final}};
+      return lhs;
+   }
+   ast parse_factor(ctx &ctx) { // NEARLY factor: prim | "<pref-op>" factor
+      if (ctx.curr_typ != tk_pref) return parse_prim(ctx);
+      auto start = ctx.curr_loc._start;
+      if (ctx.prev_typ != tk_lpar) return {{parse(ctx), parse_factor(ctx)}, {ctx.curr_loc.origin, start, ctx.prev_loc_final}};
+      return [&]()->ast{ auto res = parse(ctx);
+         if (ctx.curr_typ == tk_rpar) return res;
+         res = {{move(res), parse_factor(ctx)}, {ctx.curr_loc.origin, start, ctx.prev_loc_final}}; return res; }();
+   }
+   ast parse_prim(ctx &ctx) { // prim: prim0 | prim "[" args "]" | prim "." prim0 "[" args "]" | prim "<post-op>"
+      auto start = ctx.curr_loc._start; auto lhs = parse_prim0(ctx);
+      for (;;) switch (ctx.curr_typ) {
+      default:
+         return lhs;
+      case tk_lbrack:
+         lhs = {parse_args(ctx, {(parse(ctx), move(lhs))}), {ctx.curr_loc.origin, start, (parse(ctx, tk_rbrack), ctx.prev_loc_final)}};
+         continue;
+      case tk_period:
+         lhs = {parse_args(ctx, {(parse(ctx), parse_prim0(ctx)), (parse(ctx, tk_lbrack), move(lhs))}), {ctx.curr_loc.origin, start, (parse(ctx, tk_rbrack), ctx.prev_loc_final)}};
+         continue;
+      case tk_post:
+         lhs = {{parse(ctx), move(lhs)}, {ctx.curr_loc.origin, start, ctx.prev_loc_final}};
+         continue;
+      }
+   }
+   ast parse_prim0(ctx &ctx) {
+      // NEARLY prim0: "<lit>" | "(" op ")" | "{" list "}" | "(" datum ")"
+      // op: "<equ-op>" | "<rel-op>" | "<add-op>" | "<mul-op>" | "<pref-op>" | "<post-op>"
+      switch (ctx.curr_typ) {
+      case tk_lit:
+         return parse(ctx);
+      case tk_lbrace:
+         {  auto start = ctx.curr_loc._start;
+            return {(parse(ctx), parse_list(ctx)), {ctx.curr_loc.origin, start, (parse(ctx, tk_rbrace), ctx.prev_loc_final)}};
+         }
+      case tk_lpar:
+         switch (parse(ctx), ctx.curr_typ) case tk_equ: case tk_rel: case tk_add: case tk_mul: case tk_post:
+            return [&ctx]()->ast{ auto res = parse(ctx); parse(ctx, tk_rpar); return res; }();
+         return [&ctx]()->ast{ auto res = parse_datum(ctx); parse(ctx, tk_rpar); return res; }();
+      }
+      err_syntax_error(ctx); // WARNING: control reaches end of non-void function
+   }
+   vector<ast> parse_args(ctx &ctx, vector<ast> lhs) {
+      // args: args0 | /*epsilon*/
+      // args0: datum args | datum ";" args0
+      if (ctx.curr_typ == tk_rbrack) return lhs;
+      for (;;) {
+         lhs.push_back(parse_datum(ctx));
+         switch (ctx.curr_typ) {
+         case tk_rbrack: return lhs;
+         case tk_semicolon: parse(ctx);
+         }
+      }
+   }
+   vector<ast> parse_list(ctx &ctx) { // list: list0 | /*epsilon*/
+      if (ctx.curr_typ == tk_rbrace) return {};
+      return parse_list0(ctx);
+   }
+   vector<ast> parse_list0(ctx &ctx) { // list0: datum list | datum ";" list0 | datum ":" list0
+      vector<ast> lhs;
+      for (;;) {
+         lhs.push_back(parse_datum(ctx));
+         switch (ctx.curr_typ) {
+         case tk_rbrace:
+            return lhs;
+         case tk_colon:
+            {  auto start = ctx.curr_loc._start;
+               lhs.push_back({(parse(ctx), parse_list0(ctx)), {ctx.curr_loc.origin, start, ctx.curr_loc._final}}); return lhs;
+            }
+         case tk_semicolon:
+            parse(ctx);
+         }
+      }
+   }
+
+}} // namespace aux::<unnamed>
+
+namespace aux { namespace pub {
+   ast parse(const string &source, string origin) {
+      ctx ctx;
+      scan_startup(ctx, source, move(origin));
+      auto res = parse_datum(ctx); parse(ctx, tk_end);
+      return res;
+   }
+}} // namespace aux::pub
+
+// Scanner /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+namespace aux { namespace {
+
+   void scan_startup(ctx &ctx, const string &source, string &&origin) {
+      ctx.pc = source.c_str();
+      ctx.curr_loc.origin = make_shared<string>(move(origin)), ctx.curr_loc._final = {1, 1};
+      ctx.prev_typ = tk_end, scan(ctx);
+   }
+
+   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+   void scan(ctx &ctx) {
+      for (;;) switch (*ctx.pc) {
+      case ' ': case '\t': case '\f': case '\v':
+         ++ctx.curr_loc._final.second, ++ctx.pc;
+         continue;
+      case '\n':
+         ++ctx.curr_loc._final.first, ctx.curr_loc._final.second = 1, ++ctx.pc;
+         continue;
+      case 0:
+         ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second;
+         ctx.curr_typ = tk_end, ctx.curr_ast = {};
+         return;
+      case '-':
+         if (*(++ctx.curr_loc._final.second, ++ctx.pc) != '-') {
+            ctx.curr_loc._start = {ctx.curr_loc._final.first, ctx.curr_loc._final.second - 1};
+            ctx.curr_typ = tk_add, ctx.curr_ast = MNL_SYM("-");
+            return;
+         }
+         do ++ctx.curr_loc._final.second, ++ctx.pc; while (*ctx.pc != '\n' && *ctx.pc);
+         continue;
+      case '/':
+         if (*(++ctx.curr_loc._final.second, ++ctx.pc) != '*') {
+            ctx.curr_loc._start = {ctx.curr_loc._final.first, ctx.curr_loc._final.second - 1};
+            ctx.curr_typ = tk_mul, ctx.curr_ast = MNL_SYM("/");
+            return;
+         }
+         ++ctx.curr_loc._final.second, ++ctx.pc;
+         for (int depth = 1;;) {
+            switch (*ctx.pc) {
+            case '/':
+               if (*(++ctx.curr_loc._final.second, ++ctx.pc) != '*') continue;
+               ++depth;
+               //[[fallthrough]];
+            default:
+               ++ctx.curr_loc._final.second, ++ctx.pc;
+               continue;
+            case '\n':
+               ++ctx.curr_loc._final.first, ctx.curr_loc._final.second = 1, ++ctx.pc;
+               continue;
+            case 0:
+               ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second;
+               err_compile(ctx, "unexpected end of input");
+            case '-':
+               if (*(++ctx.curr_loc._final.second, ++ctx.pc) == '-') do ++ctx.curr_loc._final.second, ++ctx.pc; while (*ctx.pc != '\n' && *ctx.pc);
+               continue;
+            case '"':
+               do if (*(++ctx.curr_loc._final.second, ++ctx.pc) == '"') { ++ctx.curr_loc._final.second, ++ctx.pc; break; } while (*ctx.pc != '\n' && *ctx.pc);
+               continue;
+            case '\\':
+               if (*(++ctx.curr_loc._final.second, ++ctx.pc) == '}') for (;;) {
+                  switch (*(++ctx.curr_loc._final.second, ++ctx.pc))
+                  case '\\': if (*(++ctx.curr_loc._final.second, ++ctx.pc) != '{') default: continue; else case 0: ; // hacky :-)
+                  break;
+               }
+               continue;
+            case '*':
+               if (*(++ctx.curr_loc._final.second, ++ctx.pc) != '/') continue;
+               if (*(++ctx.curr_loc._final.second, ++ctx.pc) == '*') { ++ctx.curr_loc._final.second, ++ctx.pc; ++depth; continue; }
+               if (--depth) continue;
+               //break;
+            }
+            break;
+         }
+         continue;
+      case '(':  ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second, ++ctx.pc; ctx.curr_typ = tk_lpar,      ctx.curr_ast = {}; return;
+      case ')':  ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second, ++ctx.pc; ctx.curr_typ = tk_rpar,      ctx.curr_ast = {}; return;
+      case '.':  ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second, ++ctx.pc; ctx.curr_typ = tk_period,    ctx.curr_ast = {}; return;
+      case ':':  ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second, ++ctx.pc; ctx.curr_typ = tk_colon,     ctx.curr_ast = {}; return;
+      case ';':  ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second, ++ctx.pc; ctx.curr_typ = tk_semicolon, ctx.curr_ast = {}; return;
+      case '[':  ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second, ++ctx.pc; ctx.curr_typ = tk_lbrack,    ctx.curr_ast = {}; return;
+      case ']':  ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second, ++ctx.pc; ctx.curr_typ = tk_rbrack,    ctx.curr_ast = {}; return;
+      case '{':  ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second, ++ctx.pc; ctx.curr_typ = tk_lbrace,    ctx.curr_ast = {}; return;
+      case '}':  ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second, ++ctx.pc; ctx.curr_typ = tk_rbrace,    ctx.curr_ast = {}; return;
+      case '+':  ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second, ++ctx.pc; ctx.curr_typ = tk_add,       ctx.curr_ast = MNL_SYM("+"); return;
+      case '|':  ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second, ++ctx.pc; ctx.curr_typ = tk_add,       ctx.curr_ast = MNL_SYM("|"); return;
+      case '*':  ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second, ++ctx.pc; ctx.curr_typ = tk_mul,       ctx.curr_ast = MNL_SYM("*"); return;
+      case '&':  ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second, ++ctx.pc; ctx.curr_typ = tk_mul,       ctx.curr_ast = MNL_SYM("&"); return;
+      case '~':  ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second, ++ctx.pc; ctx.curr_typ = tk_pref,      ctx.curr_ast = MNL_SYM("~"); return;
+      case '!':  ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second, ++ctx.pc; ctx.curr_typ = tk_post,      ctx.curr_ast = MNL_SYM("!"); return;
+      case '#':  ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second, ++ctx.pc; ctx.curr_typ = tk_post,      ctx.curr_ast = MNL_SYM("#"); return;
+      case '$':  ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second, ++ctx.pc; ctx.curr_typ = tk_post,      ctx.curr_ast = MNL_SYM("$"); return;
+      case '%':  ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second, ++ctx.pc; ctx.curr_typ = tk_post,      ctx.curr_ast = MNL_SYM("%"); return;
+      case '\'': ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second, ++ctx.pc; ctx.curr_typ = tk_post,      ctx.curr_ast = MNL_SYM("'"); return;
+      case '?':  ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second, ++ctx.pc; ctx.curr_typ = tk_post,      ctx.curr_ast = MNL_SYM("?"); return;
+      case '@':  ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second, ++ctx.pc; ctx.curr_typ = tk_post,      ctx.curr_ast = MNL_SYM("@"); return;
+      case '^':  ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second, ++ctx.pc; ctx.curr_typ = tk_post,      ctx.curr_ast = MNL_SYM("^"); return;
+      ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      case '=':
+         ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second;
+         switch (*++ctx.pc) {
+         case '=': ++ctx.curr_loc._final.second, ++ctx.pc; ctx.curr_typ = tk_rel, ctx.curr_ast = MNL_SYM("=="); return;
+         }
+         ctx.curr_typ = tk_equ, ctx.curr_ast = MNL_SYM("=");
+         return;
+      case '<':
+         ctx.curr_typ = tk_rel;
+         ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second;
+         switch (*++ctx.pc) {
+         case '=': ++ctx.curr_loc._final.second, ++ctx.pc; ctx.curr_ast = MNL_SYM("<="); return;
+         case '>': ++ctx.curr_loc._final.second, ++ctx.pc; ctx.curr_ast = MNL_SYM("<>"); return;
+         }
+         ctx.curr_ast = MNL_SYM("<");
+         return;
+      case '>':
+         ctx.curr_typ = tk_rel;
+         ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second;
+         switch (*++ctx.pc) {
+         case '=': ++ctx.curr_loc._final.second, ++ctx.pc; ctx.curr_ast = MNL_SYM(">="); return;
+         }
+         ctx.curr_ast = MNL_SYM(">");
+         return;
+      case '"':
+         ctx.curr_loc._start = ctx.curr_loc._final;
+         for (;;) switch (*(++ctx.curr_loc._final.second, ++ctx.pc)) {
+         case '"':
+            ctx.curr_typ = tk_lit, ctx.curr_ast = string(ctx.pc - (ctx.curr_loc._final.second - ctx.curr_loc._start.second) + 1, ctx.pc);
+            ++ctx.curr_loc._final.second, ++ctx.pc;
+            return;
+         case '\n':
+            ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second;
+            err_compile(ctx, "unexpected line break");
+         case 0:
+            ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second;
+            err_compile(ctx, "unexpected end of input");
+         }
+      case '\\':
+         ctx.curr_loc._start = ctx.curr_loc._final;
+         if (*(++ctx.curr_loc._final.second, ++ctx.pc) == '}')
+         for (auto start = ++ctx.pc;;) switch (*(++ctx.curr_loc._final.second, ++ctx.pc)) {
+         case '\\':
+            if (*(++ctx.curr_loc._final.second, ++ctx.pc) != '{') continue;
+            ctx.curr_typ = tk_lit, ctx.curr_ast = string(start, ctx.pc - 1);
+            ++ctx.curr_loc._final.second, ++ctx.pc;
+            return;
+         case 0:
+            ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second;
+            err_compile(ctx, "unexpected end of input");
+         }
+         ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second;
+         err_compile(ctx, "unexpected character");
+      default:
+         if (isalpha(*ctx.pc) || *ctx.pc == '_') {
+            ctx.curr_loc._start = ctx.curr_loc._final;
+            do ++ctx.curr_loc._final.second, ++ctx.pc; while (isalnum(*ctx.pc) || *ctx.pc == '_');
+            ctx.curr_typ = tk_lit, ctx.curr_ast = (sym)string(ctx.pc - (ctx.curr_loc._final.second - ctx.curr_loc._start.second), ctx.pc);
+            if (cast<const sym &>(ctx.curr_ast) == MNL_SYM("_")) ctx.curr_ast = (sym)nullptr;
+            return;
+         }
+         if (isdigit(*ctx.pc)) {
+            ctx.curr_loc._start = ctx.curr_loc._final;
+            do ++ctx.curr_loc._final.second, ++ctx.pc; while (isdigit(*ctx.pc));
+            if (isalpha(*ctx.pc) || *ctx.pc == '_') {
+               ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second;
+               err_compile(ctx, "unexpected alphabetic character");
+            }
+            auto res = strtoll(ctx.pc - (ctx.curr_loc._final.second - ctx.curr_loc._start.second), {}, 10);
+            if (res > max_i48) err_compile(ctx, "value too large");
+            ctx.curr_typ = tk_lit, ctx.curr_ast = res;
+            return;
+         }
+         ctx.curr_loc._start = ctx.curr_loc._final, ++ctx.curr_loc._final.second;
+         err_compile(ctx, "unexpected character");
+      }
+   } // void scan()
+
+}} // namespace aux::<unnamed>
+
+} // namespace MNL_AUX_UUID
+
+/* Grammar:
+
+start: datum
+datum: datum0
+datum: datum0 "<equ-op>" datum0
+
+datum0: simple
+datum0: simple "<rel-op>" simple
+
+simple: term
+simple: simple "<add-op>" term
+
+term: factor
+term: term "<mul-op>" factor
+
+factor: prim
+factor: "<pref-op>" factor
+
+prim: prim0
+prim: prim "[" args "]"
+prim: prim "." prim0 "[" args "]"
+prim: prim "<post-op>"
+
+prim0: "<lit>" | "(" op ")"
+prim0: "{" list "}" | "(" datum ")"
+
+op: "<equ-op>" | "<rel-op>" | "<add-op>" | "<mul-op>" | "<pref-op>" | "<post-op>"
+
+args: args0 |
+
+args0: datum args
+args0: datum ";" args0
+
+list: list0 |
+
+list0: datum list
+list0: datum ";" list0
+list0: datum ":" list0
+
+*/

@@ -1,5 +1,5 @@
-params=(GCC='nice gcc' GXX='nice g++' MARCH=)
-#params=(GCC='nice gcc -specs=/usr/lib/x86_64-linux-musl/musl-gcc.specs' GXX='nice g++ -specs=/usr/lib/x86_64-linux-musl/musl-gcc.specs' MARCH=)
-#params=(GCC='nice x86_64-linux-gnux32-gcc' GXX='nice x86_64-linux-gnux32-g++' MARCH=)
-#params=(GCC='nice sh4-linux-gnu-gcc' GXX='nice sh4-linux-gnu-g++' MARCH=)
-host=devbox dir=manool
+dir=manool
+params=(GCC='clang' GXX='clang++' MARCH=)
+params=(GCC='gcc' GXX='g++' MARCH=)
+host=devbox
+#host=linux-tv.local port=222

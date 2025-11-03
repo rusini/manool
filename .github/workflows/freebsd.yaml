@@ -1,4 +1,4 @@
-# .github/workflows/cross.yaml
+# .github/workflows/freebsd.yaml
 
 name: Build on a FreeBSD VM
 
@@ -38,12 +38,10 @@ jobs:
         usesh: true
         prepare: |
           set -x
-          sysctl hw.physmem; df -h .
-          date; uname -a; freebsd-version
+          sysctl hw.physmem; df -h .; uname -a
           pkg install -y gmake
           gmake --version
           clang++ --version
-          id
         run: |
           set -x
           tty || :; id; printf %s\\n "$SHELL"; printf %s\\n "$PATH"; pwd

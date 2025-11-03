@@ -550,6 +550,30 @@ namespace aux { namespace {
                std::vector<unsigned char> mode; code body;
             public:
                template<typename Self> MNL_INLINE val invoke(Self &&self, const sym &op, int argc, val argv[], val *argv_out) {
+                  if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);
+                  if (MNL_UNLIKELY(argc != dat.arg_count)) MNL_ERR(MNL_SYM("InvalidInvocation"));
+                  vstack::storage_elem frame[stack_check<vstack::storage_elem>(dat.var_count)];
+
+
+
+                  stack_check(sizeof(vstack::storage_elem [dat.var_count])); asm("" : "+rm" (dat.var_count)); vstack::storage_elem frame[dat.var_count];
+                  return vstack.frame_guard(frame), vstack.scope_guard(),
+                     [&] MNL_INLINE(class vstack &MNL_RESTRICT vstack = vstack) {
+                        MNL_UNROLL(10) while (argc--) vstack.push(std::move(*argv++));
+                     }(),
+                     dat.body.execute(),
+                     [&] MNL_INLINE(){
+                        if (MNL_LIKELY(argv_out))
+                        MNL_UNROLL(10) for (int ix = dat.arg_count; ix; vstack.pop())
+                        if (MNL_UNLIKELY(mode[--ix])) {
+                           if (is<>(argv_out[ix])); else __builtin_unreachable();
+                           assume$(is<>(argv_out[ix]))
+                           argv_out[ix] = std::move(vstack.top());
+                        }
+                     }();
+
+
+
                   stk_check();
                   int arg_count = (int)mode.size(); const unsigned char *mode = this->mode.data();
                   if (MNL_UNLIKELY(op != MNL_SYM("Apply"))) return self.default_invoke(op, argc, argv);

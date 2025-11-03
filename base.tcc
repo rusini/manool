@@ -19,6 +19,21 @@ namespace MNL_AUX_UUID {
 
 namespace aux { // TODO: think about expr_seq optimization
 
+   template<typename Val = val> struct expr_imm: code::rvalue { // *imm*ediate
+      Val value;
+      template<bool = bool{}, bool = bool{}> MNL_INLINE const auto &execute() const noexcept { return value; } // sometimes stored as T &&
+   };
+   template<typename Val = decltype(nullptr)> expr_imm(code::rvalue, Val)->expr_imm<Val>;
+
+   template<auto &Value> struct expr_lit: code::rvalue { // *lit*eral
+      template<bool = bool{}, bool = bool{}> MNL_INLINE const auto &execute() const noexcept { return Value; } // sometimes stored as T &&
+   };
+
+   // expr_imm{123}
+   // expr_lit<MNL_SYM("+")>{}
+
+
+
    template<typename Val = val> struct expr_lit: code::rvalue { // *lit*eral (immediate)
       [[no_unique_address]] Val value;
       template<bool = bool{}, bool = bool{}> MNL_INLINE const Val &execute() const noexcept { return value; } // sometimes stored as T &&

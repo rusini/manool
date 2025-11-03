@@ -42,23 +42,30 @@ namespace MNL_AUX_UUID { using namespace aux;
 
 // Primitive Operations ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-namespace aux {
+namespace MNL_NS::aux {
 
    using std::isnan, std::isfinite;
 
-   constexpr auto err_Undefined             = []() MNL_INLINE { MNL_ERR(MNL_SYM("Undefined")); }; // to enable basic block merging (esp. in hot section)
-   constexpr auto err_PreconditionViolation = []() MNL_INLINE { MNL_ERR(MNL_SYM("PreconditionViolation")); }; // ditto
+   constexpr auto err_Undefined             = []MNL_INLINE (){ MNL_ERR(MNL_SYM("Undefined")); };             // to enable tail BB merging (in hot paths)
+   constexpr auto err_PreconditionViolation = []MNL_INLINE (){ MNL_ERR(MNL_SYM("PreconditionViolation")); }; // ditto
 
-   constexpr auto err_DivisionByZero_Undefined = [](long long lhs) MNL_INLINE // ditto
+   MNL_INLINE static inline void err_Undefined()             { MNL_ERR(MNL_SYM("Undefined")); }
+   MNL_INLINE static inline void err_PreconditionViolation() { MNL_ERR(MNL_SYM("PreconditionViolation")); }
+
+   constexpr auto err_DivisionByZero_Undefined = [] MNL_INLINE(long long lhs) // ditto
+      { MNL_ERR(lhs ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), lhs);  };
+
+   MNL_INLINE static inline void err_DivisionByZero_Undefined(long long lhs)
       { MNL_ERR(lhs ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), lhs);  };
 
    // I48 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    template<typename Dat> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat>
    _div(Dat lhs, Dat rhs) { // integer division (truncating, i.e. rounding toward zero)
-      if (MNL_UNLIKELY(!rhs)) err_DivisionByZero_Undefined(lhs);
+      if (MNL_UNLIKELY(!rhs)) aux::err_DivisionByZero_Undefined(lhs);
       return
       # if !__x86_64__ && !__aarch64__ // MAYBE using a 32-bit integer ALU
-         MNL_LIKELY(lhs > lim<int>::min()) && MNL_LIKELY(lhs <= lim<int>::max()) && MNL_LIKELY(rhs >= lim<int>::min()) && MNL_LIKELY(rhs <= lim<int>::max()) ?
+         MNL_LIKELY(lhs >  aux::lim<int>::min()) && MNL_LIKELY(lhs <= aux::lim<int>::max()) &&
+         MNL_LIKELY(rhs >= aux::lim<int>::min()) && MNL_LIKELY(rhs <= aux::lim<int>::max()) ?
          (int)lhs / (int)rhs :
       # endif
       # if __i386__ && __SIZEOF_LONG_DOUBLE__ == 12 // according to testing (on certain low-end x86-32 CPUs),
@@ -69,30 +76,33 @@ namespace aux {
    }
    template<typename Dat> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat>
    _rem(Dat lhs, Dat rhs) { // remainder after `/`
-      if (MNL_UNLIKELY(!rhs)) err_Undefined();
+      if (MNL_UNLIKELY(!rhs)) aux::err_Undefined();
       return
       # if !__x86_64__ && !__aarch64__ // MAYBE using a 32-bit integer ALU
-         MNL_LIKELY(lhs > lim<int>::min()) && MNL_LIKELY(lhs <= lim<int>::max()) && MNL_LIKELY(rhs >= lim<int>::min()) && MNL_LIKELY(rhs <= lim<int>::max()) ?
+         MNL_LIKELY(lhs >  aux::lim<int>::min()) && MNL_LIKELY(lhs <= aux::lim<int>::max()) &&
+         MNL_LIKELY(rhs >= aux::lim<int>::min()) && MNL_LIKELY(rhs <= aux::lim<int>::max()) ?
          (int)lhs % (int)rhs :
       # endif
          lhs % rhs;
    }
    template<typename Dat> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat>
    div2(Dat lhs, Dat rhs) { // flooring division (rounding toward -infinity)
-      if (MNL_UNLIKELY(!rhs)) MNL_ERR(lhs ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), lhs);
+      if (MNL_UNLIKELY(!rhs)) aux::err_DivisionByZero_Undefined(lhs);
       return
       # if !__x86_64__ && !__aarch64__ // MAYBE using a 32-bit integer ALU
-         MNL_LIKELY(lhs > lim<int>::min()) && MNL_LIKELY(lhs <= lim<int>::max()) && MNL_LIKELY(rhs >= lim<int>::min()) && MNL_LIKELY(rhs <= lim<int>::max()) ?
+         MNL_LIKELY(lhs >  aux::lim<int>::min()) && MNL_LIKELY(lhs <= aux::lim<int>::max()) &&
+         MNL_LIKELY(rhs >= aux::lim<int>::min()) && MNL_LIKELY(rhs <= aux::lim<int>::max()) ?
          (MNL_UNLIKELY((int)lhs < 0 ^ (int)rhs < 0) && MNL_LIKELY((int)lhs % (int)rhs) ? (int)lhs / (int)rhs - 1 : (int)lhs / (int)rhs) :
       # endif
          (MNL_UNLIKELY(lhs < 0 ^ rhs < 0) && MNL_LIKELY(lhs % rhs) ? lhs / rhs - 1 : lhs / rhs);
    }
    template<typename Dat> MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, long long>, Dat>
    _mod(Dat lhs, Dat rhs) { // modulo (remainder after `Div`)
-      if (MNL_UNLIKELY(!rhs)) err_Undefined();
+      if (MNL_UNLIKELY(!rhs)) aux::err_Undefined();
       return
       # if !__x86_64__ && !__aarch64__ // MAYBE using a 32-bit integer ALU
-         MNL_LIKELY(lhs > lim<int>::min()) && MNL_LIKELY(lhs <= lim<int>::max()) && MNL_LIKELY(rhs >= lim<int>::min()) && MNL_LIKELY(rhs <= lim<int>::max()) ?
+         MNL_LIKELY(lhs >  aux::lim<int>::min()) && MNL_LIKELY(lhs <= aux::lim<int>::max()) &&
+         MNL_LIKELY(rhs >= aux::lim<int>::min()) && MNL_LIKELY(rhs <= aux::lim<int>::max()) ?
          (MNL_UNLIKELY((int)lhs < 0 ^ (int)rhs < 0) ? MNL_LIKELY((int)lhs % (int)rhs) ? (int)lhs % (int)rhs + (int)rhs : 0 : (int)lhs % (int)rhs) :
       # endif
          (MNL_UNLIKELY(lhs < 0 ^ rhs < 0) ? MNL_LIKELY(lhs % rhs) ? lhs % rhs + rhs : 0 : lhs % rhs);
@@ -100,7 +110,7 @@ namespace aux {
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, long long>, std::string>
    _str(Dat arg) {
-      char res[sizeof "+140737488355327"];
+      char res[sizeof "+140737488355328"];
       return std::sprintf(res, "%lld", arg), res;
    }
    template<typename Dat>
@@ -167,8 +177,8 @@ namespace aux {
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _exp(Dat arg) { // C99/POSIX/IEEE754
-      using std::exp; auto res = exp(arg);
-      if (MNL_LIKELY(!isinf(res))) return res;
+      auto res = std::exp(arg);
+      if (MNL_LIKELY(!std::isinf(res))) return res;
       MNL_ERR(MNL_SYM("Overflow")); // for regular paths
    }
    template<typename Dat>
@@ -181,19 +191,19 @@ namespace aux {
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _log(Dat arg) { // C99/POSIX/IEEE754
-      using std::log; auto res = log(arg);
-      if (MNL_LIKELY(isfinite(res))) return res;
-      MNL_ERR(!isnan(res) ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res); // for regular paths
+      auto res = std::log(arg);
+      if (MNL_LIKELY(std::isfinite(res))) return res;
+      MNL_ERR(!std::isnan(res) ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res); // for regular paths
       // as per IEEE 754 `log` never results in overflow
    }
-   template<typename Dat>
-   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
-   _log(Dat base, Dat arg) { // arbitrary-base `log` with "proper" error reporting (useful outside of numerical modeling)
-      using std::log2;
-      if (MNL_UNLIKELY(base == 0)) (err_Undefined)();
-      auto res = log2(arg) / log2(base);
-      if (MNL_LIKELY(isfinite(res))) return res; // Undefined signaled for 0/1 bases (not DivisionByZero)
-      MNL_ERR(!isnan(res) && base != 1 ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res, base);
+   template<typename Dat MNL_REQ(std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float)>
+   MNL_INLINE static inline Dat _log(Dat base, Dat arg) { // arbitrary-base `log` with "proper" error reporting (useful outside of numerical modeling)
+      using std::log;
+      if (MNL_UNLIKELY(base == 0)) MNL_ERR(MNL_SYM("Undefined")); // for regular paths
+      auto res = (log)(arg) / (log)(base); // `log2` buys no prformance gains on modern platforms and the natural `log` is used for ultimate consistency or result
+      if (MNL_LIKELY(std::isfinite(res))) return res;
+      MNL_ERR(!std::isnan(res) && base != 1 ? MNL_SYM("DivisionByZero") : MNL_SYM("Undefined"), res, base); // for regular paths
+      // `Undefined` signaled for 0/1 bases (not `DivisionByZero`)
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
@@ -227,7 +237,7 @@ namespace aux {
    _sqrt(Dat arg) { // C99/POSIX/IEEE754
       using std::sqrt; auto res = sqrt(arg);
       if (MNL_LIKELY(!isnan(res))) return res;
-      err_Undefined(); // for hot paths
+      aux::err_Undefined(); // for hot paths
    }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
@@ -247,10 +257,9 @@ namespace aux {
       if (MNL_LIKELY(isfinite(res))) return res;
       MNL_ERR(!isnan(res) ? base == 0 ? MNL_SYM("DivisionByZero") : MNL_SYM("Overflow") : MNL_SYM("Undefined"), res, base); // for regular paths
    }
-   template<typename Dat>
-   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
-   _sin(Dat arg) // C99/POSIX/IEEE754
-      { using std::sin; return sin(arg); }
+   template<typename Dat MNL_REQ(std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float)>
+   MNL_INLINE static inline Dat _sin(Dat arg) // C99/POSIX/IEEE754
+      { return std::sin(arg); }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _cos(Dat arg) // C99/POSIX/IEEE754
@@ -259,11 +268,10 @@ namespace aux {
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _tan(Dat arg) // C99/POSIX/IEEE754
       { using std::tan; return tan(arg); } // as per IEEE 754 tan never results in overflow (neither in division by zero)
-   template<typename Dat>
-   MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
-   _asin(Dat arg) { // C99/POSIX/IEEE754
-      using std::asin; auto res = asin(arg);
-      if (MNL_LIKELY(!isnan(res))) return res;
+   template<typename Dat MNL_REQ(std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float)>
+   MNL_INLINE static inline Dat _asin(Dat arg) { // C99/POSIX/IEEE754
+      auto res = std::asin(arg);
+      if (MNL_LIKELY(!std::isnan(res))) return res;
       MNL_ERR(MNL_SYM("Undefined")); // for regular paths
    }
    template<typename Dat>
@@ -276,7 +284,7 @@ namespace aux {
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _atan(Dat arg) // C99/POSIX/IEEE754
-      { using std::atan; return atan(rhs); }
+      { using std::atan; return atan(arg); }
    template<typename Dat>
    MNL_INLINE static inline std::enable_if_t<std::is_same_v<Dat, double> | std::is_same_v<Dat, float>, Dat>
    _atan(Dat y, Dat x) // C99/POSIX/IEEE754 `atan2`
@@ -533,7 +541,7 @@ namespace aux {
                   return (_sign)(self);
                case sym::id("Sqr"):
                   if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
-                  return (_sqr)(self);
+                  return aux::_mul(self, self); // return (_sqr)(self);
                case sym::id("Sqrt"):
                   if (MNL_UNLIKELY(argc != 0)) err_InvalidInvocation();
                   return (_sqrt)(self);
@@ -714,7 +722,7 @@ namespace aux {
          }();
       case 0xFFF8 + 0b001: ////////////////////////////////////////////////////////////////////////////////////////////////////////// I48 //
          switch (op) MNL_NOTE(jumptable) {
-         case sym::id("+"):
+         case MNL_SYM("+"):
             if (MNL_UNLIKELY(argc != 1)) err_InvalidInvocation();
             if (MNL_UNLIKELY(!is<long long>(argv[0]))) err_TypeMismatch();
             return (_add)(as<long long>(self), as<long long>(argv[0]));
