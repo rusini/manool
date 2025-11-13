@@ -1,3 +1,6 @@
+// src/config.tcc
+// include/manool.org/_detail/core/dialect.hh
+
 // mnl-aux-mnl0.hh -- minimal infrastructure (mnl:: Namespaces + Host Compiler Idiosyncrasies) for otherwise self-sufficient modules
 
 /*    Copyright (C) 2018, 2019, 2020 Alexey Protasov (AKA Alex or rusini)
@@ -13,19 +16,191 @@
    You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <https://www.gnu.org/licenses/>.  */
 
 
-# ifndef MNL_INCLUDED_MNL0
+# ifndef MNL_DETAIL_INCLUDED_DETAIL_CORE_DIALECT
 # define MNL_INCLUDED_MNL0
 
 // Toolchain Checks ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 # ifndef MNL_C_SOURCE
-   # if __cplusplus < 201103/*C++11*/ || !__STDC_HOSTED__ || !__GNUC__/*g++/clang++/icpc...*/ || !__STRICT_ANSI__/*-std=c++NN*/
+
+# if __cplusplus
+   # if __cplusplus < 201703/*C++17*/ || !__STDC_HOSTED__ || !__GNUC__/*g++/clang++/icpx...*/ || !__STRICT_ANSI__/*-std=c++NN*/
       # error "Unsupported C++ compiler or compiler mode"
    # endif
 # else
-   # if __STDC_VERSION__ < 199901/*C99*/ || !__STDC_HOSTED__ || !__GNUC__/*gcc/clang/icc...*/ || !__STRICT_ANSI__/*-std=cNN*/
+   # if __STDC_VERSION__ < 201112/*C11*/ || !__STDC_HOSTED__ || !__GNUC__/*gcc/clang/icx...*/ || !__STRICT_ANSI__/*-std=cNN*/
       # error "Unsupported C compiler or compiler mode"
    # endif
 # endif
+
+# if __cplusplus
+   # if __cplusplus > 201703
+      # warning "The C++ toolchain supports a newer C++ specification"
+   # endif
+# else
+   # if __STDC_VERSION__ > 201112
+      # warning "The C toolchain supports a newer C specification"
+   # endif
+# endif
+
+# if !__linux__ && !__FreeBSD__
+   # error "Unsupported target OS environment"
+# endif
+
+// official for glibc as per the features.h comments
+// __GLIBC__ 2
+// __GLIBC_MINOR__ 35
+// still it might work with a non-Linux kernel (exposing different features)
+// kernel (from gcc/clang driver):
+//#define __gnu_linux__ 1
+//#define __linux__ 1
+
+# if __linux__
+   # include <features.h>
+   # if !__GLIBC__
+      # warning "The target libc for Linux does not state its conformance to glibc interfaces"
+   # endif
+# endif
+
+# if __FreeBSD__ && __GLIBC__
+   # error "glibc conformance on FreeBSD suggests an obsolete/unsupported environment"
+# endif
+
+
+# if __cplusplus
+   # include <climits> // LONG_MAX...
+   # include <cstdint> // INTPTR_MAX...
+# else
+   # include <limits.h>
+   # include <stdint.h>
+# endif
+
+# if !(LONG_MAX == 0x7FFF'FFFF'FFFF'FFFF | LONG_MAX == 0x7FFF'FFFF) || LONG_MAX != INTPTR_MAX
+   # error "Unsupported target platform data model"
+# endif
+
+
+# if __cplusplus
+   # include <cfloat>
+# else
+   # include <float.h>
+# endif
+
+# if !__STDC_IEC_559__ || DBL_HAS_SUBNORM != 1 || FLT_HAS_SUBNORM != 1 || FLT_EVAL_METHOD != 0 || __GCC_IEC_559 < 2
+   # error "Unsupported FP semantics"
+# endif
+
+
+// model representation (decomposition)
+// binary representation
+// numeric properties (ranges)
+// storage size
+// special values, incl. subnormals
+// (unsafe) reassociation
+// intermediate result precision and contraction
+// environment
+
+
+# pragma STDC FENV_ACCESS OFF
+# pragma STDC FP_CONTRACT OFF
+
+
+
+# if __cplusplus
+   # include <cfloat>
+# else
+   # include <float.h>
+# endif
+
+static_assert(
+   sizeof(double)  ==     8 &&
+   FLT_RADIX       ==     2 &&
+   DBL_MANT_DIG    ==    53 &&
+   DBL_MAX_EXP     == +1024 &&
+   DBL_MIN_EXP     == -1021 &&
+   DBL_HAS_SUBNORM == 1,
+   "The `double` type shall have IEEE754 format"
+); // highly likely IEEE754 binary64 format --- assume it
+
+
+static_assert(
+   FLT_EVAL_METHOD == 0,
+   "FLT_EVAL_METHOD == 0"
+); // no extra precision for intermediate results
+
+
+# if __cplusplus
+   # include <cfloat>
+   # include <limits>
+   static_assert(
+      FLT_EVAL_METHOD == 0
+   ); // no extra precision for intermediate results
+   static_assert(
+      sizeof(double)                            ==     8 &&
+      std::numeric_limits<double>::is_iec559    == true &&
+      std::numeric_limits<double>::has_denorm   == std::denorm_present &&
+      // FTZ option may still depend on the exact CPU model and thus be opaque to the toolchain; otherwise, I'd have to severily restrict the target ISAs
+      std::numeric_limits<double>::radix        ==     2 &&
+      std::numeric_limits<double>::digits       ==    53 &&
+      std::numeric_limits<double>::max_exponent == +1024 &&
+      std::numeric_limits<double>::min_exponent == -1021 &&
+      std::numeric_limits<double>::round_style  == std::round_to_nearest,
+      "The `double` type shall have IEEE754 format"
+   ); // highly likely IEEE754 binary64 format --- assuming it
+   static_assert(
+      sizeof(float)                             ==     8 &&
+      std::numeric_limits<float>::is_iec559     == true &&
+      std::numeric_limits<float>::has_denorm    == std::denorm_present &&
+      // FTZ option may still depend on the exact CPU model and thus be opaque to the toolchain; otherwise, I'd have to severily restrict the target ISAs
+      std::numeric_limits<float>::radix         ==     2 &&
+      std::numeric_limits<float>::digits        ==    24 &&
+      std::numeric_limits<float>::max_exponent  ==  +128 &&
+      std::numeric_limits<float>::min_exponent  ==  -125 &&
+      std::numeric_limits<float>::round_style   == std::round_to_nearest,
+      "The `float` type shall have IEEE754 format"
+   ); // highly likely IEEE754 binary32 format --- assuming it
+# else
+   # include <float.h>
+   static_assert(
+      FLT_EVAL_METHOD == 0, "FLT_EVAL_METHOD == 0"
+   ); // no extra precision for intermediate results
+   static_assert(
+      sizeof(double)  ==     8 &&
+      FLT_RADIX       ==     2 &&
+      DBL_MANT_DIG    ==    53 &&
+      DBL_MAX_EXP     == +1024 &&
+      DBL_MIN_EXP     == -1021 &&
+      DBL_HAS_SUBNORM == 1,
+      "The `double` type shall have IEEE754 format"
+   ); // highly likely IEEE754 binary64 format --- assuming it
+   static_assert(
+      sizeof(float)   ==     4 &&
+      FLT_RADIX       ==     2 &&
+      FLT_MANT_DIG    ==    24 &&
+      FLT_MAX_EXP     ==  +128 &&
+      FLT_MIN_EXP     ==  -128 &&
+      FLT_HAS_SUBNORM == 1,
+      "The `float` type shall have IEEE754 format"
+   ); // highly likely IEEE754 binary64 format --- assuming it
+# endif
+
+
+
+# if __GLIBC__ || __unix__
+
+
+
+   # include <assert.h>
+
+
+
+static_assert(sizeof(long) == 8 | sizeof(long) == 4, "sizeof(long) == 8 | sizeof(long) == 4");
+static_assert(sizeof(long) == sizeof(void *), "sizeof(long) == sizeof(void *)");
+
+
+
+   static_assert(sizeof(long) == sizeof(void *), "sizeof(long) == sizeof(void *)");
+
+
 # if !(__i386__ && __SSE2_MATH__ || __x86_64__ || __AARCH64EL__ || __ARMEL__ && __VFP_FP__) || __SIZEOF_LONG__ != __SIZEOF_POINTER__
    //# error "Unsupported or not tested target ISA or ABI"
 # endif
@@ -51,22 +226,22 @@
 # endif
 
 // Compiler Idiosyncrasies /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-# define MNL_PACK          __attribute__((__packed__))
-# define MNL_ALIGN(ALIGN)  __attribute__((__aligned__(ALIGN)))
-# define MNL_PRIORITY(PRI) __attribute__((__init_priority__(PRI)))
+# define MNL_PACK          [[__gnu__::__packed__]]
+//# define MNL_ALIGN(ALIGN)  __attribute__((__aligned__(ALIGN)))
+# define MNL_PRIORITY(PRI) [[__gnu__::__init_priority__(PRI)]]
 # // the "proper" way to advise about violations of Strict Aliasing Rules:
 # define MNL_BARRIER() __extension__({ __asm volatile ("" : : : "memory"); }) // used by libdecnumber patch
 #
 # if MNL_USE_EXPECT
-   # define MNL_LIKELY(...)   (!__builtin_expect(!(__VA_ARGS__), 0))
-   # define MNL_UNLIKELY(...) (!__builtin_expect(!(__VA_ARGS__), 1))
+   # define MNL_LIKELY(...)   ((bool)__builtin_expect((__VA_ARGS__) ? true : false, true))
+   # define MNL_UNLIKELY(...) ((bool)__builtin_expect((__VA_ARGS__) ? true : false, false))
 # else
    # define MNL_LIKELY(...)   (__VA_ARGS__)
    # define MNL_UNLIKELY(...) (__VA_ARGS__)
 # endif
 # if MNL_USE_INLINE
-   # define MNL_INLINE   __attribute__((__always_inline__))
-   # define MNL_NOINLINE __attribute__((__noinline__, __noclone__))
+   # define MNL_INLINE   [[__gnu__::__always_inline__]]
+   # define MNL_NOINLINE [[__gnu__::__noinline__, __gnu__::__noclone__]]
 # else
    # define MNL_INLINE
    # define MNL_NOINLINE
