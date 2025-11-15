@@ -34,12 +34,123 @@
 
 # if __cplusplus
    # if __cplusplus > 201703
-      # warning "The C++ toolchain supports a newer C++ specification"
+      # warning "C++ compiler mode enabling a more recent spec may be backward-incompatible"
    # endif
 # else
    # if __STDC_VERSION__ > 201112
-      # warning "The C toolchain supports a newer C specification"
+      # warning "C compiler mode enabling a more recent spec may be backward-incompatible"
    # endif
+# endif
+
+# if __cplusplus
+   # include <limits>
+   # include <cstdint>
+# else
+   # include <limits.h>
+   # include <stdint.h>
+# endif
+
+// These tests are deliberately redundant but incomplete!
+// These tests are deliberately redundant, for clarity, but unavoidably incomplete!
+
+# if __cplusplus
+   static_assert(
+      std::numeric_limits<unsigned char>::digits == 8,
+      "The target ISA shall be octet-addressable"
+   );
+
+   static_assert(
+      sizeof(int) == 4 &&
+      std::numeric_limits<int>::max()     == +0x7FFF'FFFFl &&
+      std::numeric_limits<int>::min() + 1 == -0x7FFF'FFFFl,
+      "Unsupported `int` properties for the target ABI"
+   ); // provably 32-bit 2's complement representation
+   static_assert(
+      sizeof(long) == 8 | sizeof(long) == 4 &&
+      std::numeric_limits<long>::max()     == +(sizeof(long) == 8 ? 0x7FFF'FFFF'FFFF'FFFFll : 0x7FFF'FFFFll) &&
+      std::numeric_limits<long>::min() + 1 == -(sizeof(long) == 8 ? 0x7FFF'FFFF'FFFF'FFFFll : 0x7FFF'FFFFll),
+      "Unsupported `long` properties for the target ABI"
+   ); // provably 64- or 32-bit 2's complement representation
+   static_assert(
+      sizeof(long long int) == 8 &&
+      std::numeric_limits<long long int>::max()     == +0x7FFF'FFFF'FFFF'FFFFll &&
+      std::numeric_limits<long long int>::min() + 1 == -0x7FFF'FFFF'FFFF'FFFFll,
+      "Unsupported `long long` properties for the target ABI"
+   ); // provably 64-bit 2's complement representation
+
+   static_assert(
+      sizeof(unsigned) == 4 &&
+      std::numeric_limits<unsigned>::digits == 32,
+      "Unsupported `unsigned` properties for the target ABI"
+   );
+   static_assert(
+      sizeof(unsigned long) == 8 | sizeof(unsigned long) == 4 &&
+      std::numeric_limits<unsigned long>::digits == 64 | std::numeric_limits<unsigned long>::digits == 32,
+      "Unsupported `unsigned long` properties for the target ABI"
+   );
+   static_assert(
+      sizeof(unsigned long long) == 4 &&
+      std::numeric_limits<unsigned long long>::digits == 64,
+      "Unsupported `unsigned long long` properties for the target ABI"
+   );
+
+   static_assert(
+      sizeof(long) == sizeof(std::intptr_t) &&
+      std::numeric_limits<long>::max() == std::numeric_limits<std::intptr_t>::max() &&
+      std::numeric_limits<long>::min() == std::numeric_limits<std::intptr_t>::min() &&
+      sizeof(unsigned long) == sizeof(std::uintptr_t) &&
+      std::numeric_limits<unsigned long>::digits == std::numeric_limits<std::uintptr_t>::digits,
+      "The target platform shall use either LP64 or ILP32 data model"
+   );
+# else
+   static_assert(
+      CHAR_BIT == 8,
+      "The target ISA shall be octet-addressable"
+   );
+
+   static_assert(
+      sizeof(int) == 4 &&
+      INT_MAX     == +0x7FFF'FFFFl &&
+      INT_MIN + 1 == -0x7FFF'FFFFl,
+      "Unsupported `int` properties for the target ABI"
+   );
+   static_assert(
+      sizeof(long) == 8 | sizeof(long) == 4 &&
+      LONG_MAX     == +(sizeof(long) == 8 ? 0x7FFF'FFFF'FFFF'FFFFll : 0x7FFF'FFFFll) &&
+      LONG_MIN + 1 == -(sizeof(long) == 8 ? 0x7FFF'FFFF'FFFF'FFFFll : 0x7FFF'FFFFll),
+      "Unsupported `long` properties for the target ABI"
+   );
+   static_assert(
+      sizeof(long long) == 4 &&
+      LLONG_MAX     == +0x7FFF'FFFF'FFFF'FFFFll &&
+      LLONG_MIN + 1 == -0x7FFF'FFFF'FFFF'FFFFll,
+      "Unsupported `long long` properties for the target ABI"
+   );
+
+   static_assert(
+      sizeof(unsigned) == 4 &&
+      UINT_MAX == 0x7FFF'FFFF,
+      "Unsupported `unsigned` properties for the target ABI"
+   );
+   static_assert(
+      sizeof(unsigned long) == 8 | sizeof(unsigned long) == 4 &&
+      ULONG_MAX == 0x7FFF'FFFF'FFFF'FFFF | ULONG_MAX == 0x7FFF'FFFF,
+      "Unsupported `unsigned long` properties for the target ABI"
+   );
+   static_assert(
+      sizeof(unsigned long long) == 8 &&
+      ULONG_MAX == 0x7FFF'FFFF'FFFF'FFFF,
+      "Unsupported `unsigned long long` properties for the target ABI"
+   );
+
+   static_assert(
+      sizeof(long) == sizeof(std::intptr_t) &&
+      LONG_MAX == INTPTR_MAX &&
+      LONG_MIN == INTPTR_MIN &&
+      sizeof(unsigned long) == sizeof(std::uintptr_t) &&
+      ULONG_MAX == UINTPTR_MAX,
+      "The target platform shall use either LP64 or ILP32 data model"
+   );
 # endif
 
 # if !__linux__ && !__FreeBSD__
@@ -54,6 +165,28 @@
 //#define __gnu_linux__ 1
 //#define __linux__ 1
 
+# if __linux__ || __FreeBSD__
+# elif __has_include(<features.h>)
+   # include <features.h>
+   # if !(__GLIBC__ > 2 || __GLIBC__ == 2 && __GLIBC_MINOR__ >= 25)
+      static_assert(false, "Unsupported target libc (C runtime)");
+   # endif
+# else
+   static_assert(false, "Unsupported target libc (C runtime)");
+# endif
+
+
+# if !__linux__ && !__FreeBSD__
+   # if __has_include(<features.h>)
+      # include <features.h>
+   # endif
+   # if !(__GLIBC__ > 2 || __GLIBC__ == 2 && __GLIBC_MINOR__ >= 25)
+      static_assert(false, "Unsupported target libc (C runtime)");
+   # endif
+# endif
+
+
+
 # if __linux__
    # include <features.h>
    # if !__GLIBC__
@@ -65,14 +198,6 @@
    # error "glibc conformance on FreeBSD suggests an obsolete/unsupported environment"
 # endif
 
-
-# if __cplusplus
-   # include <climits> // LONG_MAX...
-   # include <cstdint> // INTPTR_MAX...
-# else
-   # include <limits.h>
-   # include <stdint.h>
-# endif
 
 # if !(LONG_MAX == 0x7FFF'FFFF'FFFF'FFFF | LONG_MAX == 0x7FFF'FFFF) || LONG_MAX != INTPTR_MAX
    # error "Unsupported target platform data model"
