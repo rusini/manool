@@ -154,54 +154,14 @@
 # endif
 
 # if !__linux__ && !__FreeBSD__
-   # error "Unsupported target OS environment"
-# endif
-
-// official for glibc as per the features.h comments
-// __GLIBC__ 2
-// __GLIBC_MINOR__ 35
-// still it might work with a non-Linux kernel (exposing different features)
-// kernel (from gcc/clang driver):
-//#define __gnu_linux__ 1
-//#define __linux__ 1
-
-# if __linux__ || __FreeBSD__
-# elif __has_include(<features.h>)
-   # include <features.h>
-   # if !(__GLIBC__ > 2 || __GLIBC__ == 2 && __GLIBC_MINOR__ >= 25)
-      static_assert(false, "Unsupported target libc (C runtime)");
-   # endif
-# else
-   static_assert(false, "Unsupported target libc (C runtime)");
-# endif
-
-
-# if !__linux__ && !__FreeBSD__
    # if __has_include(<features.h>)
       # include <features.h>
    # endif
    # if !(__GLIBC__ > 2 || __GLIBC__ == 2 && __GLIBC_MINOR__ >= 25)
-      static_assert(false, "Unsupported target libc (C runtime)");
+      static_assert(false, "Unsupported target libc (AKA C runtime)");
    # endif
 # endif
 
-
-
-# if __linux__
-   # include <features.h>
-   # if !__GLIBC__
-      # warning "The target libc for Linux does not state its conformance to glibc interfaces"
-   # endif
-# endif
-
-# if __FreeBSD__ && __GLIBC__
-   # error "glibc conformance on FreeBSD suggests an obsolete/unsupported environment"
-# endif
-
-
-# if !(LONG_MAX == 0x7FFF'FFFF'FFFF'FFFF | LONG_MAX == 0x7FFF'FFFF) || LONG_MAX != INTPTR_MAX
-   # error "Unsupported target platform data model"
-# endif
 
 
 # if __cplusplus
