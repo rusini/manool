@@ -27,6 +27,7 @@
 # include <stdbool.h>
 
 # include <limits.h>
+# include <float.h>
 # include <stdint.h>
 
 static_assert(
@@ -96,27 +97,32 @@ static_assert(
 
 // __STDC_IEC_559__ is unreliable on gcc/clang
 
-   # include <float.h>
-   static_assert(
-      FLT_EVAL_METHOD == 0, "FLT_EVAL_METHOD == 0"
-   ); // no extra precision for intermediate results
-   static_assert(
-      sizeof(double)  ==     8 &&
-      FLT_RADIX       ==     2 &&
-      DBL_MANT_DIG    ==    53 &&
-      DBL_MAX_EXP     == +1024 &&
-      DBL_MIN_EXP     == -1021 &&
-      DBL_HAS_SUBNORM == 1,
-      "The `double` type shall have IEEE754 format"
-   ); // highly likely IEEE754 binary64 format --- assuming it
-   static_assert(
-      sizeof(float)   ==     4 &&
-      FLT_RADIX       ==     2 &&
-      FLT_MANT_DIG    ==    24 &&
-      FLT_MAX_EXP     ==  +128 &&
-      FLT_MIN_EXP     ==  -128 &&
-      FLT_HAS_SUBNORM == 1,
-      "The `float` type shall have IEEE754 format"
-   ); // highly likely IEEE754 binary64 format --- assuming it
+# if __FAST_MATH__ || __FINITE_MATH_ONLY__
+   static_assert(false, "Noncompliant math mode");
 # endif
+
+# pragma STDC FENV_ACCESS OFF // provided for completeness and might be unimplemented
+# pragma STDC FP_CONTRACT OFF // ditto
+
+static_assert(
+   FLT_EVAL_METHOD == 0, "FLT_EVAL_METHOD == 0"
+); // no extra precision for intermediate results
+static_assert(
+   sizeof(double)  ==     8 &&
+   FLT_RADIX       ==     2 &&
+   DBL_MANT_DIG    ==    53 &&
+   DBL_MAX_EXP     == +1024 &&
+   DBL_MIN_EXP     == -1021 &&
+   DBL_HAS_SUBNORM == 1,
+   "The `double` type shall have IEEE754 format"
+); // highly likely IEEE754 binary64 format --- assuming it
+static_assert(
+   sizeof(float)   ==     4 &&
+   FLT_RADIX       ==     2 &&
+   FLT_MANT_DIG    ==    24 &&
+   FLT_MAX_EXP     ==  +128 &&
+   FLT_MIN_EXP     ==  -128 &&
+   FLT_HAS_SUBNORM == 1,
+   "The `float` type shall have IEEE754 format"
+); // highly likely IEEE754 binary64 format --- assuming it
 

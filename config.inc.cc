@@ -25,9 +25,9 @@
    # define _GNU_SOURCE // just ignored on many platforms not using glibc
 # endif
 
-# include <limits>  // std::numeric_limits
-# include <cstdint> // std::intptr_t, std::uintptr_t
-# include <cfloat>  // FLT_EVAL_METHOD
+# include <cfloat> // FLT_EVAL_METHOD
+# include <cstdint>
+# include <limits>
 
 // Integer properties --- these checks are both complete and nonredundant
 
@@ -44,7 +44,7 @@ static_assert(
    __FLOAT_WORD_ORDER__ == __BYTE_ORDER__,
    "The target shall use a FP endianness consistent with the rest of the ISA"
 );
-# endif
+        # endif
 static_assert(
    std::numeric_limits<signed char>::min() == -0x80,
    "Unsupported `signed char` properties for the target ABI"
