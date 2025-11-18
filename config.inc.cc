@@ -39,7 +39,7 @@ static_assert(
    __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ | __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__,
    "The target ISA shall use a consistent endianness (EL or EB)"
 );
-# if !__clang__
+# if __FLOAT_WORD_ORDER__
 static_assert(
    __FLOAT_WORD_ORDER__ == __BYTE_ORDER__,
    "The target shall use a FP endianness consistent with the rest of the ISA"
@@ -48,7 +48,7 @@ static_assert(
 static_assert(
    std::numeric_limits<signed char>::min() == -0x80,
    "Unsupported `signed char` properties for the target ABI"
-); // provably 8-bit 2's complement representation
+); // provably 8-bit 2's-complement representation
 
 static_assert(
    sizeof(int) == 4 &&
@@ -61,13 +61,13 @@ static_assert(
    std::numeric_limits<long>::max()     == +(sizeof(long) == 8 ? 0x7FFF'FFFF'FFFF'FFFFll : 0x7FFF'FFFFll) &&
    std::numeric_limits<long>::min() + 1 == -(sizeof(long) == 8 ? 0x7FFF'FFFF'FFFF'FFFFll : 0x7FFF'FFFFll),
    "Unsupported `long` properties for the target ABI"
-); // provably 64- or 32-bit 2's complement representation
+); // provably 64- or 32-bit 2's-complement representation
 static_assert(
    sizeof(long long) == 8 &&
    std::numeric_limits<long long>::max()     == +0x7FFF'FFFF'FFFF'FFFFll &&
    std::numeric_limits<long long>::min() + 1 == -0x7FFF'FFFF'FFFF'FFFFll,
    "Unsupported `long long` properties for the target ABI"
-); // provably 64-bit 2's complement representation
+); // provably 64-bit 2's-complement representation
 
 static_assert(
    sizeof(unsigned) == 4 &&
@@ -121,7 +121,7 @@ static_assert(
    "The `double` type shall have IEEE754 format"
 ); // highly likely IEEE754 binary64 format --- assuming it
 static_assert(
-   sizeof(float)                             ==     8 &&
+   sizeof(float)                             ==     4 &&
    std::numeric_limits<float>::is_iec559     == true &&
    std::numeric_limits<float>::has_denorm    == std::denorm_present &&
    // FTZ option may still depend on the exact CPU model and thus be opaque to the toolchain; otherwise, I'd have to severily restrict the target ISAs
