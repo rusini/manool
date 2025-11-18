@@ -1,4 +1,4 @@
-// src/config.inc.cc --- to be included first with -include
+// src/config.inc.cc --- stuff to appear at the *top* of each TU in C++
 
 /*    Copyright (C) 2018-2025 Alexey Protasov (AKA Alex or rusini)
 
@@ -20,18 +20,35 @@
    # warning "C++ compiler mode enabling a more recent spec may be backward-incompatible"
 # endif
 
-// Feature-Test Macros (think about ABI-breaking, especially _FILE_OFFSET_BITS if needed)
-# ifndef _GNU_SOURCE // may be pre-defined anyway by the compiler for libstdc++
+// Feature-Test Macros (think about ABI-breaking; include things like _FILE_OFFSET_BITS consistently, if needed)
+# ifndef _GNU_SOURCE // may be pre-defined anyway by the compiler for libstdc++ purposes
    # define _GNU_SOURCE // just ignored on many platforms not using glibc
 # endif
 
-# include <limits>
-# include <cstdint>
+# include <limits>  // std::numeric_limits
+# include <cstdint> // std::intptr_t, std::uintptr_t
+# include <cfloat>  // FLT_EVAL_METHOD
+
+// Integer properties --- these checks are both complete and nonredundant
 
 static_assert(
    std::numeric_limits<unsigned char>::digits == 8,
    "The target ISA shall be octet-addressable"
 );
+static_assert(
+   __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ | __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__,
+   "The target ISA shall use a consistent endianness (EL or EB)"
+);
+# if !__clang__
+static_assert(
+   __FLOAT_WORD_ORDER__ == __BYTE_ORDER__,
+   "The target shall use a FP endianness consistent with the rest of the ISA"
+);
+# endif
+static_assert(
+   std::numeric_limits<signed char>::min() == -0x80,
+   "Unsupported `signed char` properties for the target ABI"
+); // provably 8-bit 2's complement representation
 
 static_assert(
    sizeof(int) == 4 &&
@@ -77,4 +94,42 @@ static_assert(
    "The target platform shall use either LP64 or ILP32 data model"
 );
 
+// FP properties --- these checks are nonredundant but cannot be made 100% complete
+
+// __STDC_IEC_559__ is unreliable on gcc/clang
+
+# if __FAST_MATH__ || __FINITE_MATH_ONLY__
+   static_assert(false, "Noncompliant math mode");
+# endif
+
+# pragma STDC FENV_ACCESS OFF // provided for completeness and might be unimplemented
+# pragma STDC FP_CONTRACT OFF // ditto
+
+static_assert(
+   FLT_EVAL_METHOD == 0
+); // no extra precision for intermediate results
+static_assert(
+   sizeof(double)                            ==     8 &&
+   std::numeric_limits<double>::is_iec559    == true &&
+   std::numeric_limits<double>::has_denorm   == std::denorm_present &&
+   // FTZ option may still depend on the exact CPU model and thus be opaque to the toolchain; otherwise, I'd have to severily restrict the target ISAs
+   std::numeric_limits<double>::radix        ==     2 &&
+   std::numeric_limits<double>::digits       ==    53 &&
+   std::numeric_limits<double>::max_exponent == +1024 &&
+   std::numeric_limits<double>::min_exponent == -1021 &&
+   std::numeric_limits<double>::round_style  == std::round_to_nearest,
+   "The `double` type shall have IEEE754 format"
+); // highly likely IEEE754 binary64 format --- assuming it
+static_assert(
+   sizeof(float)                             ==     8 &&
+   std::numeric_limits<float>::is_iec559     == true &&
+   std::numeric_limits<float>::has_denorm    == std::denorm_present &&
+   // FTZ option may still depend on the exact CPU model and thus be opaque to the toolchain; otherwise, I'd have to severily restrict the target ISAs
+   std::numeric_limits<float>::radix         ==     2 &&
+   std::numeric_limits<float>::digits        ==    24 &&
+   std::numeric_limits<float>::max_exponent  ==  +128 &&
+   std::numeric_limits<float>::min_exponent  ==  -125 &&
+   std::numeric_limits<float>::round_style   == std::round_to_nearest,
+   "The `float` type shall have IEEE754 format"
+); // highly likely IEEE754 binary32 format --- assuming it
 
