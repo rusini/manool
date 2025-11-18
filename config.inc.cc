@@ -44,7 +44,7 @@ static_assert(
    __FLOAT_WORD_ORDER__ == __BYTE_ORDER__,
    "The target shall use a FP endianness consistent with the rest of the ISA"
 );
-        # endif
+# endif
 static_assert(
    std::numeric_limits<signed char>::min() == -0x80,
    "Unsupported `signed char` properties for the target ABI"
@@ -63,9 +63,9 @@ static_assert(
    "Unsupported `long` properties for the target ABI"
 ); // provably 64- or 32-bit 2's complement representation
 static_assert(
-   sizeof(long long int) == 8 &&
-   std::numeric_limits<long long int>::max()     == +0x7FFF'FFFF'FFFF'FFFFll &&
-   std::numeric_limits<long long int>::min() + 1 == -0x7FFF'FFFF'FFFF'FFFFll,
+   sizeof(long long) == 8 &&
+   std::numeric_limits<long long>::max()     == +0x7FFF'FFFF'FFFF'FFFFll &&
+   std::numeric_limits<long long>::min() + 1 == -0x7FFF'FFFF'FFFF'FFFFll,
    "Unsupported `long long` properties for the target ABI"
 ); // provably 64-bit 2's complement representation
 
@@ -80,7 +80,7 @@ static_assert(
    "Unsupported `unsigned long` properties for the target ABI"
 );
 static_assert(
-   sizeof(unsigned long long) == 4 &&
+   sizeof(unsigned long long) == 8 &&
    std::numeric_limits<unsigned long long>::digits == 64,
    "Unsupported `unsigned long long` properties for the target ABI"
 );
