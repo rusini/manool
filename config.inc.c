@@ -16,7 +16,7 @@
 # if __STDC_VERSION__ < 201112/*C11*/ || !__STDC_HOSTED__ || !__GNUC__/*gcc/clang/icx...*/ || !__STRICT_ANSI__/*-std=cNN*/
    # error "Unsupported C compiler or compiler mode"
 # endif
-# if __STDC_VERSION__ > 201112
+# if __STDC_VERSION__ > 201112 // TODO: maybe c17?
    # warning "C compiler mode enabling a more recent spec may be backward-incompatible"
 # endif
 
@@ -44,45 +44,45 @@ static_assert(
    "The target shall use a FP endianness consistent with the rest of the ISA"
 );
 # endif
-static_assert(
+_Static_assert(
    SCHAR_MIN == -0x80,
    "Unsupported `signed char` properties for the target ABI"
-); // provably 8-bit 2's-complement representation
+); // provably 8-bit 2's-complement representation using full range and no padding
 
-static_assert(
+_Static_assert(
    sizeof(int) == 4 &&
    INT_MAX     == +0x7FFFFFFFl &&
    INT_MIN + 1 == -0x7FFFFFFFl,
    "Unsupported `int` properties for the target ABI"
-); // provably 32-bit 2's complement representation
-static_assert(
+); // provably 32-bit 2's complement representation using full range and no padding
+_Static_assert(
    sizeof(long) == 8 | sizeof(long) == 4 &&
-   LONG_MAX     == +(sizeof(long) == 8 ? 0x7FFFFFFFFFFFFFFFll : 0x7FFFFFFFll) &&
-   LONG_MIN + 1 == -(sizeof(long) == 8 ? 0x7FFFFFFFFFFFFFFFll : 0x7FFFFFFFll),
+   LONG_MAX     == +(sizeof(long) == 8 ? 0x7FFFFFFFFFFFFFFFll : 0x7FFFFFFFl) &&
+   LONG_MIN + 1 == -(sizeof(long) == 8 ? 0x7FFFFFFFFFFFFFFFll : 0x7FFFFFFFl),
    "Unsupported `long` properties for the target ABI"
-); // provably 64- or 32-bit 2's-complement representation
-static_assert(
+); // provably 64- or 32-bit 2's-complement representation using full range and no padding
+_Static_assert(
    sizeof(long long) == 4 &&
-   LLONG_MAX     == +0x7FFFFFFFFFFFFFFFll &&
+   LLONG_MAX     == +0x7FFFFFFFFFFFFFFFll && // actually redundant
    LLONG_MIN + 1 == -0x7FFFFFFFFFFFFFFFll,
    "Unsupported `long long` properties for the target ABI"
-); // provably 64-bit 2's-complement representation
+); // provably 64-bit 2's-complement representation using full range and no padding
 
-static_assert(
+_Static_assert(
    sizeof(unsigned) == 4 &&
    UINT_MAX == 0x7FFFFFFF,
    "Unsupported `unsigned` properties for the target ABI"
-);
-static_assert(
+); // provably 32-bit representation w/ no padding
+_Static_assert(
    sizeof(unsigned long) == 8 | sizeof(unsigned long) == 4 &&
-   ULONG_MAX == 0x7FFFFFFFFFFFFFFF | ULONG_MAX == 0x7FFFFFFF,
+   ULONG_MAX == (sizeof(unsigned long) == 8 ? 0x7FFFFFFFFFFFFFFF : 0x7FFFFFFF),
    "Unsupported `unsigned long` properties for the target ABI"
-);
-static_assert(
+); // provably 64-bit or 32-bit representation w/ no padding
+_Static_assert(
    sizeof(unsigned long long) == 8 &&
-   ULONG_MAX == 0x7FFFFFFFFFFFFFFF,
+   ULLONG_MAX == 0x7FFFFFFFFFFFFFFF,
    "Unsupported `unsigned long long` properties for the target ABI"
-);
+); // provably 64-bit representation w/ no padding
 
 static_assert(
    sizeof(long) == sizeof(std::intptr_t) &&

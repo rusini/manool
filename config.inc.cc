@@ -48,26 +48,26 @@ static_assert(
 static_assert(
    std::numeric_limits<signed char>::min() == -0x80,
    "Unsupported `signed char` properties for the target ABI"
-); // provably 8-bit 2's-complement representation
+); // provably 8-bit 2's-complement representation using full range and no padding
 
 static_assert(
    sizeof(int) == 4 &&
    std::numeric_limits<int>::max()     == +0x7FFF'FFFFl &&
    std::numeric_limits<int>::min() + 1 == -0x7FFF'FFFFl,
    "Unsupported `int` properties for the target ABI"
-); // provably 32-bit 2's complement representation
+); // provably 32-bit 2's complement representation using full range and no padding
 static_assert(
    sizeof(long) == 8 | sizeof(long) == 4 &&
-   std::numeric_limits<long>::max()     == +(sizeof(long) == 8 ? 0x7FFF'FFFF'FFFF'FFFFll : 0x7FFF'FFFFll) &&
-   std::numeric_limits<long>::min() + 1 == -(sizeof(long) == 8 ? 0x7FFF'FFFF'FFFF'FFFFll : 0x7FFF'FFFFll),
+   std::numeric_limits<long>::max()     == +(sizeof(long) == 8 ? 0x7FFF'FFFF'FFFF'FFFFll : 0x7FFF'FFFFl) &&
+   std::numeric_limits<long>::min() + 1 == -(sizeof(long) == 8 ? 0x7FFF'FFFF'FFFF'FFFFll : 0x7FFF'FFFFl),
    "Unsupported `long` properties for the target ABI"
-); // provably 64- or 32-bit 2's-complement representation
+); // provably 64- or 32-bit 2's-complement representation using full range and no padding
 static_assert(
    sizeof(long long) == 8 &&
-   std::numeric_limits<long long>::max()     == +0x7FFF'FFFF'FFFF'FFFFll &&
+   std::numeric_limits<long long>::max()     == +0x7FFF'FFFF'FFFF'FFFFll && // actually redundant
    std::numeric_limits<long long>::min() + 1 == -0x7FFF'FFFF'FFFF'FFFFll,
    "Unsupported `long long` properties for the target ABI"
-); // provably 64-bit 2's-complement representation
+); // provably 64-bit 2's-complement representation using full range and no padding
 
 static_assert(
    sizeof(unsigned) == 4 &&
@@ -76,7 +76,7 @@ static_assert(
 );
 static_assert(
    sizeof(unsigned long) == 8 | sizeof(unsigned long) == 4 &&
-   std::numeric_limits<unsigned long>::digits == 64 | std::numeric_limits<unsigned long>::digits == 32,
+   std::numeric_limits<unsigned long>::digits == (sizeof(unsigned long) == 8 ? 64 : 32),
    "Unsupported `unsigned long` properties for the target ABI"
 );
 static_assert(
