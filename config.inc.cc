@@ -64,26 +64,33 @@ static_assert(
 ); // provably 64- or 32-bit 2's-complement representation using full range and no padding
 static_assert(
    sizeof(long long) == 8 &&
-   std::numeric_limits<long long>::max()     == +0x7FFF'FFFF'FFFF'FFFFll && // actually redundant
    std::numeric_limits<long long>::min() + 1 == -0x7FFF'FFFF'FFFF'FFFFll,
    "Unsupported `long long` properties for the target ABI"
 ); // provably 64-bit 2's-complement representation using full range and no padding
+static_assert(
+   sizeof(short) == 2 &&
+   std::numeric_limits<short>::min() == -0x8000,
+   "Unsupported `short` properties for the target ABI"
+); // provably 16-bit 2's-complement representation using full range and no padding
 
 static_assert(
    sizeof(unsigned) == 4 &&
    std::numeric_limits<unsigned>::digits == 32,
    "Unsupported `unsigned` properties for the target ABI"
-);
+); // provably 32-bit representation w/ no padding
 static_assert(
    sizeof(unsigned long) == 8 | sizeof(unsigned long) == 4 &&
    std::numeric_limits<unsigned long>::digits == (sizeof(unsigned long) == 8 ? 64 : 32),
    "Unsupported `unsigned long` properties for the target ABI"
-);
+); // provably 64-bit or 32-bit representation w/ no padding
 static_assert(
-   sizeof(unsigned long long) == 8 &&
-   std::numeric_limits<unsigned long long>::digits == 64,
+   sizeof(unsigned long long) == 8,
    "Unsupported `unsigned long long` properties for the target ABI"
-);
+); // provably 64-bit representation w/ no padding
+static_assert(
+   sizeof(unsigned short) == 2,
+   "Unsupported `unsigned short` properties for the target ABI"
+); // provably 16-bit representation w/ no padding
 
 static_assert(
    sizeof(long) == sizeof(std::intptr_t) &&

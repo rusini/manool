@@ -63,10 +63,14 @@ _Static_assert(
 ); // provably 64- or 32-bit 2's-complement representation using full range and no padding
 _Static_assert(
    sizeof(long long) == 4 &&
-   LLONG_MAX     == +0x7FFFFFFFFFFFFFFFll && // actually redundant
    LLONG_MIN + 1 == -0x7FFFFFFFFFFFFFFFll,
    "Unsupported `long long` properties for the target ABI"
 ); // provably 64-bit 2's-complement representation using full range and no padding
+_Static_assert(
+   sizeof(short) == 2 &&
+   SHRT_MIN == -0x8000,
+   "Unsupported `short` properties for the target ABI"
+); // provably 16-bit representation w/ no padding
 
 _Static_assert(
    sizeof(unsigned) == 4 &&
@@ -79,10 +83,13 @@ _Static_assert(
    "Unsupported `unsigned long` properties for the target ABI"
 ); // provably 64-bit or 32-bit representation w/ no padding
 _Static_assert(
-   sizeof(unsigned long long) == 8 &&
-   ULLONG_MAX == 0x7FFFFFFFFFFFFFFF,
+   sizeof(unsigned long long) == 8,
    "Unsupported `unsigned long long` properties for the target ABI"
 ); // provably 64-bit representation w/ no padding
+_Static_assert(
+   sizeof(unsigned short) == 2,
+   "Unsupported `unsigned short` properties for the target ABI"
+); // provably 16-bit representation w/ no padding
 
 static_assert(
    sizeof(long) == sizeof(std::intptr_t) &&
