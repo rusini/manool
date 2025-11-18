@@ -30,15 +30,15 @@
 # include <float.h>
 # include <stdint.h>
 
-static_assert(
+_Static_assert(
    CHAR_BIT == 8,
    "The target ISA shall be octet-addressable"
 );
-static_assert(
+_Static_assert(
    __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ | __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__,
    "The target ISA shall use a consistent endianness (EL or EB)"
 );
-# if __FLOAT_WORD_ORDER__
+# ifdef __FLOAT_WORD_ORDER__
 static_assert(
    __FLOAT_WORD_ORDER__ == __BYTE_ORDER__,
    "The target shall use a FP endianness consistent with the rest of the ISA"
@@ -68,9 +68,9 @@ _Static_assert(
 ); // provably 64-bit 2's-complement representation using full range and no padding
 _Static_assert(
    sizeof(short) == 2 &&
-   SHRT_MIN == -0x8000,
+   SHRT_MIN + 1 == -0x7FFF,
    "Unsupported `short` properties for the target ABI"
-); // provably 16-bit representation w/ no padding
+); // provably 16-bit 2's-complement representation using full range and no padding
 
 _Static_assert(
    sizeof(unsigned) == 4 &&
