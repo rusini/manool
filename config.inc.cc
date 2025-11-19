@@ -19,39 +19,16 @@
 # if __cplusplus > 201703
    # warning "C++ compiler mode enabling a more recent spec may be backward-incompatible"
 # endif
+// in practice: g++ 9.3, clang++ 13.0.0, icpx 2021.3.0 = clang++ 13.0.0
 
-
-   static_assert(__has_cpp_attribute(no_unique_address) && __has_cpp_attribute(likely) && __has_cpp_attribute(unlikely),
-      "Obsolete C++17 compiler"); // of course ensures that stmt-level attributes are recognized
-
-# if !(__clang_major__ >= 13/*icx 2021.3.0*/ || __GNUC__ > 9 || __GNUC__ == 9 && __GNUC_MINOR__ >= 3)
-   static_assert(([][[__gnu__::__noinline__]](){}, true));
-# endif
-
-
-// TODO: test for C++20/23 extensions and no GNU pedantic mode (for VLA etc)
-// min gcc for attrs: gcc 9.3, clang 13.0.0, icx 2021.3.0 (= clang 13.0.0)
-
-
-
-# if defined(__has_cpp_attribute)
-   // From C++20
-   static_assert(__has_cpp_attribute(no_unique_address));
-   static_assert(__has_cpp_attribute(likely));
-   static_assert(__has_cpp_attribute(unlikely));
-   // GCC extensions
-   static_assert(__has_cpp_attribute(__gnu__::__always_inline__));
-   static_assert(__has_cpp_attribute(__gnu__::__noinline__));
-# else
-   static_assert(false, "__has_cpp_attribute is unavailable");
-# endif
-
+static_assert(
+   __has_cpp_attribute(no_unique_address) &&
+   __has_cpp_attribute(likely) && __has_cpp_attribute(unlikely), // also ensures that statement attributes are recognized
+   "The C++ compiler shall support some C++20 features");
 
 # if !(__clang_major__ >= 13/*icx 2021.3.0*/ || __GNUC__ > 9 || __GNUC__ == 9 && __GNUC_MINOR__ >= 3)
    static_assert(([][[__gnu__::__noinline__]](){}, true));
 # endif
-
-
 
 // Feature-Test Macros (think about ABI-breaking; include things like _FILE_OFFSET_BITS consistently, if needed)
 # ifndef _GNU_SOURCE // may be pre-defined anyway by the compiler for libstdc++ purposes
