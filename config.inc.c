@@ -39,7 +39,7 @@ _Static_assert(
    "The target ISA shall use a consistent endianness (EL or EB)"
 );
 # ifdef __FLOAT_WORD_ORDER__
-static_assert(
+_Static_assert(
    __FLOAT_WORD_ORDER__ == __BYTE_ORDER__,
    "The target shall use a FP endianness consistent with the rest of the ISA"
 );
