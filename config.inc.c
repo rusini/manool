@@ -13,18 +13,15 @@
    You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <https://www.gnu.org/licenses/>.  */
 
 
-# if __STDC_VERSION__ < 201112/*C11*/ || !__STDC_HOSTED__ || !__GNUC__/*gcc/clang/icx...*/ || !__STRICT_ANSI__/*-std=cNN*/
+# if __STDC_VERSION__ < 201710/*C17*/ || !__STDC_HOSTED__ || !__GNUC__/*gcc/clang/icx...*/ || !__STRICT_ANSI__/*-std=cNN*/
    # error "Unsupported C compiler or compiler mode"
 # endif
-# if __STDC_VERSION__ > 201112 // TODO: maybe c17?
+# if __STDC_VERSION__ > 201710
    # warning "C compiler mode enabling a more recent spec may be backward-incompatible"
 # endif
 
 // Feature-Test Macros (think about ABI-breaking; include things like _FILE_OFFSET_BITS consistently, if needed)
 # define _GNU_SOURCE // just ignored on many platforms not using glibc
-
-# include <assert.h>
-# include <stdbool.h>
 
 # include <limits.h>
 # include <float.h>
@@ -105,7 +102,7 @@ static_assert(
 // __STDC_IEC_559__ is unreliable on gcc/clang
 
 # if __FAST_MATH__ || __FINITE_MATH_ONLY__
-   static_assert(false, "Noncompliant math mode");
+   _Static_assert(0, "Noncompliant math mode");
 # endif
 
 # pragma STDC FENV_ACCESS OFF // provided for completeness and might be unimplemented

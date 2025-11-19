@@ -19,16 +19,17 @@
 # if __cplusplus > 201703
    # warning "C++ compiler mode enabling a more recent spec may be backward-incompatible"
 # endif
-// in practice: g++ 9.3, clang++ 13.0.0, icpx 2021.3.0 = clang++ 13.0.0
 
 static_assert(
    __has_cpp_attribute(no_unique_address) &&
    __has_cpp_attribute(likely) && __has_cpp_attribute(unlikely), // also ensures that statement attributes are recognized
-   "The C++ compiler shall support some C++20 features");
+   "The C++ compiler shall support some C++20 attributes");
 
-# if !(__clang_major__ >= 13/*icx 2021.3.0*/ || __GNUC__ > 9 || __GNUC__ == 9 && __GNUC_MINOR__ >= 3)
+# if !(__clang_major__ >= 13/*icpx 2021.3.0*/ || __GNUC__ > 9 || __GNUC__ == 9 && __GNUC_MINOR__ >= 3)
    static_assert(([][[__gnu__::__noinline__]](){}, true));
 # endif
+
+// in practice: g++ 9.3, clang++ 13.0.0 == icpx 2021.3.0, ...
 
 // Feature-Test Macros (think about ABI-breaking; include things like _FILE_OFFSET_BITS consistently, if needed)
 # ifndef _GNU_SOURCE // may be pre-defined anyway by the compiler for libstdc++ purposes
@@ -150,6 +151,12 @@ static_assert(
    "The `float` type shall have IEEE754 format"
 ); // highly likely IEEE754 binary32 format --- assuming it
 
+# if !__linux__ && !__FreeBSD__
+   # include <features.h>
+   # if !(__GLIBC__ > 2 || __GLIBC__ == 2 && __GLIBC_MINOR__ >= 25)
+      static_assert(false, "Unsupported target libc (AKA C runtime)");
+   # endif
+# endif
 
 
 
