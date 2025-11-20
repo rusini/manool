@@ -28,7 +28,7 @@ static_assert(
    "C++ compiler does not support attributes introduced in C++20");
 
 static_assert(([][[gnu::always_inline]](){}, true));
-// syntactic test: MANOOL uses attributes on lambda’s operator()
+// syntactic test: attributes on lambda’s operator(), a retroactive C++23 DR
 // supported by genuine g++ 9.3 and clang 13.0.0 (icpx 2021.3+); other compilers must match
 
 // Feature-Test Macros (think about ABI-breaking; include things like _FILE_OFFSET_BITS consistently, if needed)
