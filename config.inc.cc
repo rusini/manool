@@ -22,7 +22,7 @@
    # warning "Compiling with a later C++ standard may break compatibility"
 # endif
 
-static_assert( // `__has_cpp_attribute` is a g++ feature backported from C++20
+static_assert( // `__has_cpp_attribute` is an extension adopted by C++20
    __has_cpp_attribute(no_unique_address) &&
    __has_cpp_attribute(likely) && __has_cpp_attribute(unlikely), // also ensures that statement attributes are recognized
    "C++ compiler does not support attributes introduced in C++20");
