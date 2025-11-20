@@ -13,7 +13,7 @@
    You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <https://www.gnu.org/licenses/>.  */
 
 
-// Standard/mode + extensions --- in practice: g++ 9.3, clang++ 13.0.0 == icpx 2021.3.0, any other compatible (hypothetical...)
+// Standard/mode + extensions
 
 # if __cplusplus < 201703/*C++17*/ || !__STDC_HOSTED__ || !__GNUC__/*g++/clang++/icpx...*/ || !__STRICT_ANSI__/*-std=c++NN*/
    # error "Unsupported C++ compiler or compiler mode"
@@ -27,9 +27,9 @@ static_assert(
    __has_cpp_attribute(likely) && __has_cpp_attribute(unlikely), // also ensures that statement attributes are recognized
    "C++ compiler does not support attributes introduced in C++20");
 
-# if !(__clang_major__ >= 13/*icpx 2021.3.0*/ || __GNUC__ > 9 || __GNUC__ == 9 && __GNUC_MINOR__ >= 3)
-   static_assert(([][[gnu::always_inline]](){}, true)); // just a syntactic test
-# endif
+static_assert(([][[gnu::always_inline]](){}, true));
+// syntactic test: MANOOL uses attributes on lambda’s operator()
+// supported by genuine g++ 9.3 and clang 13.0.0 (icpx 2021.3+); other compilers must match
 
 // Feature-Test Macros (think about ABI-breaking; include things like _FILE_OFFSET_BITS consistently, if needed)
 # ifndef _GNU_SOURCE // may be pre-defined anyway by the compiler to satisfy libstdc++ requirements
