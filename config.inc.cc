@@ -22,13 +22,12 @@
    # warning "Compiling with a later C++ standard may break compatibility"
 # endif
 
-static_assert(
+static_assert( // `__has_cpp_attribute` is a g++ feature backported from C++20
    __has_cpp_attribute(no_unique_address) &&
    __has_cpp_attribute(likely) && __has_cpp_attribute(unlikely), // also ensures that statement attributes are recognized
    "C++ compiler does not support attributes introduced in C++20");
 
-static_assert(([][[gnu::always_inline]](){}, true));
-// syntactic test: attributes on lambda’s operator(), a retroactive C++23 DR
+static_assert(([][[gnu::always_inline]](){}, true)); // syntactic test: attributes on lambda’s operator(), a retroactive C++23 DR
 // supported by genuine g++ 9.3 and clang 13.0.0 (icpx 2021.3+); other compilers must match
 
 // Feature-Test Macros (think about ABI-breaking; include things like _FILE_OFFSET_BITS consistently, if needed)
