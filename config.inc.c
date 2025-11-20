@@ -13,11 +13,13 @@
    You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <https://www.gnu.org/licenses/>.  */
 
 
+// Standard/mode + extensions
+
 # if __STDC_VERSION__ < 201710/*C17*/ || !__STDC_HOSTED__ || !__GNUC__/*gcc/clang/icx...*/ || !__STRICT_ANSI__/*-std=cNN*/
    # error "Unsupported C compiler or compiler mode"
 # endif
 # if __STDC_VERSION__ > 201710
-   # warning "C compiler mode enabling a more recent spec may be backward-incompatible"
+   # warning "Compiling with a later C standard may break compatibility"
 # endif
 
 // Feature-Test Macros (think about ABI-breaking; include things like _FILE_OFFSET_BITS consistently, if needed)

@@ -13,26 +13,26 @@
    You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <https://www.gnu.org/licenses/>.  */
 
 
+// Standard/mode + extensions --- in practice: g++ 9.3, clang++ 13.0.0 == icpx 2021.3.0, any other compatible (hypothetical...)
+
 # if __cplusplus < 201703/*C++17*/ || !__STDC_HOSTED__ || !__GNUC__/*g++/clang++/icpx...*/ || !__STRICT_ANSI__/*-std=c++NN*/
    # error "Unsupported C++ compiler or compiler mode"
 # endif
 # if __cplusplus > 201703
-   # warning "C++ compiler mode enabling a more recent spec may be backward-incompatible"
+   # warning "Compiling with a later C++ standard may break compatibility"
 # endif
 
 static_assert(
    __has_cpp_attribute(no_unique_address) &&
    __has_cpp_attribute(likely) && __has_cpp_attribute(unlikely), // also ensures that statement attributes are recognized
-   "The C++ compiler shall support some C++20 attributes");
+   "C++ compiler does not support attributes introduced in C++20");
 
 # if !(__clang_major__ >= 13/*icpx 2021.3.0*/ || __GNUC__ > 9 || __GNUC__ == 9 && __GNUC_MINOR__ >= 3)
-   static_assert(([][[__gnu__::__noinline__]](){}, true));
+   static_assert(([][[gnu::always_inline]](){}, true)); // just a syntactic test
 # endif
 
-// in practice: g++ 9.3, clang++ 13.0.0 == icpx 2021.3.0, ...
-
 // Feature-Test Macros (think about ABI-breaking; include things like _FILE_OFFSET_BITS consistently, if needed)
-# ifndef _GNU_SOURCE // may be pre-defined anyway by the compiler for libstdc++ purposes
+# ifndef _GNU_SOURCE // may be pre-defined anyway by the compiler to satisfy libstdc++ requirements
    # define _GNU_SOURCE // just ignored on many platforms not using glibc
 # endif
 
