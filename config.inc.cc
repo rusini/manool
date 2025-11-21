@@ -107,19 +107,11 @@ static_assert(
    "The target platform shall use either LP64 or ILP32 data model"
 );
 # ifndef __INTPTR_TYPE__
-   static_assert(false, "Roundtrip conversion unavailable between ptr and `long`");
+   static_assert(false, "Roundtrip conversion between `void *` and `long` is unavailable on the target");
 # endif
 # ifndef __UINTPTR_TYPE__
-   static_assert(false, "Roundtrip conversion unavailable between ptr and `unsigned long`");
+   static_assert(false, "Roundtrip conversion between `void *` and `unsigned long` is unavailable on the target");
 # endif
-static_assert(
-   sizeof(long) == sizeof(std::intptr_t) &&
-   std::numeric_limits<long>::max() == std::numeric_limits<std::intptr_t>::max() &&
-   std::numeric_limits<long>::min() == std::numeric_limits<std::intptr_t>::min() &&
-   sizeof(unsigned long) == sizeof(std::uintptr_t) &&
-   std::numeric_limits<unsigned long>::digits == std::numeric_limits<std::uintptr_t>::digits,
-   "The target platform shall use either LP64 or ILP32 data model"
-);
 
 // FP properties --- these checks are nonredundant but cannot be made 100% complete
 
