@@ -103,6 +103,16 @@ static_assert(
 ); // provably 16-bit representation w/ no padding
 
 static_assert(
+   sizeof(long) == sizeof(void *),
+   "The target platform shall use either LP64 or ILP32 data model"
+);
+# ifndef __INTPTR_TYPE__
+   static_assert(false, "Roundtrip conversion unavailable between ptr and `long`");
+# endif
+# ifndef __UINTPTR_TYPE__
+   static_assert(false, "Roundtrip conversion unavailable between ptr and `unsigned long`");
+# endif
+static_assert(
    sizeof(long) == sizeof(std::intptr_t) &&
    std::numeric_limits<long>::max() == std::numeric_limits<std::intptr_t>::max() &&
    std::numeric_limits<long>::min() == std::numeric_limits<std::intptr_t>::min() &&
@@ -149,6 +159,8 @@ static_assert(
    std::numeric_limits<float>::round_style   == std::round_to_nearest,
    "The `float` type shall have IEEE754 format"
 ); // highly likely IEEE754 binary32 format --- assuming it
+
+// OS/libc personality
 
 # if !__linux__ && !__FreeBSD__
    # include <features.h>
