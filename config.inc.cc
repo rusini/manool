@@ -22,7 +22,7 @@
    # warning "Compiling with a later C++ standard may break compatibility"
 # endif
 
-// defaults on modern Ubuntu
+// (undesirable) defaults on modern Ubuntu
 # if __SSP__
    #warning "Please recompile with -fno-stack-protector"
 # endif
