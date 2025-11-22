@@ -23,7 +23,7 @@
 # endif
 
 // (undesirable) defaults on modern Ubuntu
-# if __SSP__
+# if __SSP__ || __SSP_ALL__ || __SSP_STRONG__
    #warning "Please recompile with -fno-stack-protector"
 # endif
 # if __CET__

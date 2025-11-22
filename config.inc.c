@@ -26,7 +26,7 @@
 # define _GNU_SOURCE // just ignored on many platforms not using glibc
 
 # include <limits.h>
-# include <float.h> // FLT_EVAL_METHOD
+# include <float.h>
 
 // Integer/Pointer properties --- these checks are both complete and nonredundant
 
