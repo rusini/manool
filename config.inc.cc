@@ -22,12 +22,22 @@
    # warning "Compiling with a later C++ standard may break compatibility"
 # endif
 
+// defaults on modern Ubuntu
+# if __SSP__
+   #warning "Please recompile with -fno-stack-protector"
+# endif
+# if __CET__
+   #warning "Please recompile with -fcf-protection=none"
+# endif
+# ifdef _FORTIFY_SOURCE
+   #warning "Please recompile with -U_FORTIFY_SOURCE"
+# endif
+
 static_assert( // `__has_cpp_attribute` is an extension adopted by C++20
    __has_cpp_attribute(no_unique_address) &&
    __has_cpp_attribute(likely) && __has_cpp_attribute(unlikely), // also ensures that statement attributes are recognized
    "C++ compiler does not support attributes introduced in C++20" );
-
-static_assert(([][[gnu::always_inline]](){}, true)); // syntactic test: attributes on lambda’s operator(), a retroactive C++23 DR
+static_assert(([][[gnu::always_inline]](){}, true)); // syntactic test: attributes on lambda's operator(), a retroactive C++23 DR
 // supported by genuine g++ 9.3 and clang 13.0.0 (icpx 2021.3+); other compilers must match
 
 // Feature-Test Macros
@@ -44,7 +54,7 @@ static_assert(([][[gnu::always_inline]](){}, true)); // syntactic test: attribut
 static_assert(
    std::numeric_limits<unsigned char>::digits == 8,
    "The target ISA shall be octet-addressable" );
-static_assert(
+static_assert( // some libcs also report that, often in incompatible ways
    __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ | __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__,
    "The target ISA shall use a consistent endianness (LE or BE)" );
 static_assert(
@@ -150,7 +160,7 @@ static_assert(
    "The `float` type shall have IEEE754 format"
 ); // highly likely IEEE754 binary32 format --- assuming it
 
-// OS/libc Personality
+// OS/libc Personality --- relies on some assumptions
 
 # if !__linux__ && !__FreeBSD__
    # include <features.h>
