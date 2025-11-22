@@ -25,7 +25,7 @@
 static_assert( // `__has_cpp_attribute` is an extension adopted by C++20
    __has_cpp_attribute(no_unique_address) &&
    __has_cpp_attribute(likely) && __has_cpp_attribute(unlikely), // also ensures that statement attributes are recognized
-   "C++ compiler does not support attributes introduced in C++20");
+   "C++ compiler does not support attributes introduced in C++20" );
 
 static_assert(([][[gnu::always_inline]](){}, true)); // syntactic test: attributes on lambda’s operator(), a retroactive C++23 DR
 // supported by genuine g++ 9.3 and clang 13.0.0 (icpx 2021.3+); other compilers must match
@@ -42,12 +42,10 @@ static_assert(([][[gnu::always_inline]](){}, true)); // syntactic test: attribut
 
 static_assert(
    std::numeric_limits<unsigned char>::digits == 8,
-   "The target ISA shall be octet-addressable"
-);
+   "The target ISA shall be octet-addressable" );
 static_assert(
    __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ | __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__,
-   "The target ISA shall use a consistent endianness (LE or BE)"
-);
+   "The target ISA shall use a consistent endianness (LE or BE)" );
 static_assert(
    std::numeric_limits<signed char>::min() == -0x80,
    "Unsupported `signed char` properties for the target ABI"
@@ -94,15 +92,13 @@ static_assert(
    sizeof(unsigned short) == 2,
    "Unsupported `unsigned short` properties for the target ABI"
 ); // provably 16-bit representation w/ no padding
-
 static_assert(
    sizeof(void *) == 8 | sizeof(void *) == 4,
-   "Unsupported object pointer size for the target ABI"
-);
+   "Unsupported object pointer size for the target ABI" );
+
 static_assert(
    sizeof(long) == sizeof(void *),
-   "The target platform shall use either LP64 or ILP32 data model"
-);
+   "The target platform shall use the LP64 or ILP32 data model" );
 # ifndef __INTPTR_TYPE__
    static_assert(false, "Roundtrip conversion between `void *` and `long` is unavailable on the target");
 # endif
@@ -117,8 +113,7 @@ static_assert(
 # ifdef __FLOAT_WORD_ORDER__
 static_assert(
    __FLOAT_WORD_ORDER__ == __BYTE_ORDER__,
-   "The target shall use a FP endianness consistent with the rest of the ISA"
-);
+   "The target shall use a FP endianness consistent with the rest of the ISA" );
 # endif
 
 # if __FAST_MATH__ || __FINITE_MATH_ONLY__
@@ -164,9 +159,4 @@ static_assert(
       static_assert(false, "Unsupported target libc (AKA C runtime)");
    # endif
 # endif
-
-
-
-
-
 
