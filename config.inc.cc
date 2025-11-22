@@ -130,8 +130,7 @@ static_assert(
 static_assert(
    sizeof(double)                            ==     8 &&
    std::numeric_limits<double>::is_iec559    == true &&
-   std::numeric_limits<double>::has_denorm   == std::denorm_present &&
-   // FTZ option may still depend on the exact CPU model and thus be opaque to the toolchain; otherwise, I'd have to severely restrict the target ISAs
+   std::numeric_limits<double>::has_denorm   == std::denorm_present && // FTZ behavior may depend on external factors!
    std::numeric_limits<double>::radix        ==     2 &&
    std::numeric_limits<double>::digits       ==    53 &&
    std::numeric_limits<double>::max_exponent == +1024 &&
@@ -142,8 +141,7 @@ static_assert(
 static_assert(
    sizeof(float)                             ==     4 &&
    std::numeric_limits<float>::is_iec559     == true &&
-   std::numeric_limits<float>::has_denorm    == std::denorm_present &&
-   // FTZ option may still depend on the exact CPU model and thus be opaque to the toolchain; otherwise, I'd have to severely restrict the target ISAs
+   std::numeric_limits<float>::has_denorm    == std::denorm_present && // FTZ behavior may depend on external factors!
    std::numeric_limits<float>::radix         ==     2 &&
    std::numeric_limits<float>::digits        ==    24 &&
    std::numeric_limits<float>::max_exponent  ==  +128 &&
