@@ -13,7 +13,7 @@
    You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <https://www.gnu.org/licenses/>.  */
 
 
-// Standard/mode + extensions
+// Standard/Mode + Extensions
 
 # if __cplusplus < 201703/*C++17*/ || !__STDC_HOSTED__ || !__GNUC__/*g++/clang++/icpx...*/ || !__STRICT_ANSI__/*-std=c++NN*/
    # error "Unsupported C++ compiler or compiler mode"
@@ -30,15 +30,15 @@ static_assert( // `__has_cpp_attribute` is an extension adopted by C++20
 static_assert(([][[gnu::always_inline]](){}, true)); // syntactic test: attributes on lambda’s operator(), a retroactive C++23 DR
 // supported by genuine g++ 9.3 and clang 13.0.0 (icpx 2021.3+); other compilers must match
 
-// Feature-Test Macros (think about ABI-breaking; include things like _FILE_OFFSET_BITS consistently, if needed)
-# ifndef _GNU_SOURCE // may be pre-defined anyway by the compiler to satisfy libstdc++ requirements
+// Feature-Test Macros (ABI-breaking risk --- include things like _FILE_OFFSET_BITS consistently, if needed)
+# ifndef _GNU_SOURCE // may already be defined by the compiler to satisfy libstdc++ requirements
    # define _GNU_SOURCE // just ignored on many platforms not using glibc
 # endif
 
 # include <cfloat> // FLT_EVAL_METHOD
 # include <limits>
 
-// Integer/Pointer properties --- these checks are both complete and nonredundant
+// Integer/Pointer Properties --- these checks are both complete and nonredundant
 
 static_assert(
    std::numeric_limits<unsigned char>::digits == 8,
@@ -106,9 +106,9 @@ static_assert(
    static_assert(false, "Roundtrip conversion between `void *` and `unsigned long` is unavailable on the target");
 # endif
 
-// FP properties --- these checks are nonredundant but cannot be made 100% complete
+// FP Properties --- these checks are nonredundant but cannot be made 100% complete
 
-// __STDC_IEC_559__ is unreliable on gcc/clang
+// __STDC_IEC_559__ is unreliable on gcc/clang!
 
 # ifdef __FLOAT_WORD_ORDER__
 static_assert(
@@ -122,10 +122,10 @@ static_assert(
 
 # pragma STDC FENV_ACCESS OFF // provided for completeness and might be unimplemented
 # pragma STDC FP_CONTRACT OFF // ditto
-
 static_assert(
-   FLT_EVAL_METHOD == 0
-); // no extra precision for intermediate results
+   FLT_EVAL_METHOD == 0,
+   "Intermediate FP results shall not use extra precision" );
+
 static_assert(
    sizeof(double)                            ==     8 &&
    std::numeric_limits<double>::is_iec559    == true &&
@@ -151,7 +151,7 @@ static_assert(
    "The `float` type shall have IEEE754 format"
 ); // highly likely IEEE754 binary32 format --- assuming it
 
-// OS/libc personality
+// OS/libc Personality
 
 # if !__linux__ && !__FreeBSD__
    # include <features.h>
