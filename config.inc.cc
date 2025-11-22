@@ -1,4 +1,4 @@
-// src/config.inc.cc --- stuff to appear at the *top* of each TU in C++
+// -include config.inc.cc --- stuff to appear at the *top* of each TU in C++
 
 /*    Copyright (C) 2018-2025 Alexey Protasov (AKA Alex or rusini)
 
@@ -30,10 +30,11 @@ static_assert( // `__has_cpp_attribute` is an extension adopted by C++20
 static_assert(([][[gnu::always_inline]](){}, true)); // syntactic test: attributes on lambda’s operator(), a retroactive C++23 DR
 // supported by genuine g++ 9.3 and clang 13.0.0 (icpx 2021.3+); other compilers must match
 
-// Feature-Test Macros (ABI-breaking risk --- include things like _FILE_OFFSET_BITS consistently, if needed)
+// Feature-Test Macros
 # ifndef _GNU_SOURCE // may already be defined by the compiler to satisfy libstdc++ requirements
    # define _GNU_SOURCE // just ignored on many platforms not using glibc
 # endif
+//# define _FILE_OFFSET_BITS 64 // ABI-breaking risk --- include things like _FILE_OFFSET_BITS consistently, if needed
 
 # include <cfloat> // FLT_EVAL_METHOD
 # include <limits>
@@ -130,7 +131,7 @@ static_assert(
    sizeof(double)                            ==     8 &&
    std::numeric_limits<double>::is_iec559    == true &&
    std::numeric_limits<double>::has_denorm   == std::denorm_present &&
-   // FTZ option may still depend on the exact CPU model and thus be opaque to the toolchain; otherwise, I'd have to severily restrict the target ISAs
+   // FTZ option may still depend on the exact CPU model and thus be opaque to the toolchain; otherwise, I'd have to severely restrict the target ISAs
    std::numeric_limits<double>::radix        ==     2 &&
    std::numeric_limits<double>::digits       ==    53 &&
    std::numeric_limits<double>::max_exponent == +1024 &&
@@ -142,7 +143,7 @@ static_assert(
    sizeof(float)                             ==     4 &&
    std::numeric_limits<float>::is_iec559     == true &&
    std::numeric_limits<float>::has_denorm    == std::denorm_present &&
-   // FTZ option may still depend on the exact CPU model and thus be opaque to the toolchain; otherwise, I'd have to severily restrict the target ISAs
+   // FTZ option may still depend on the exact CPU model and thus be opaque to the toolchain; otherwise, I'd have to severely restrict the target ISAs
    std::numeric_limits<float>::radix         ==     2 &&
    std::numeric_limits<float>::digits        ==    24 &&
    std::numeric_limits<float>::max_exponent  ==  +128 &&
@@ -156,7 +157,10 @@ static_assert(
 # if !__linux__ && !__FreeBSD__
    # include <features.h>
    # if !(__GLIBC__ > 2 || __GLIBC__ == 2 && __GLIBC_MINOR__ >= 25)
-      static_assert(false, "Unsupported target libc (AKA C runtime)");
+      static_assert(false, "Unsupported target libc detected (AKA C runtime)");
    # endif
 # endif
 
+#if !__ELF__
+  static_assert(false, "Only ELF-based targets are supported for C++ plugin functionality");
+#endif

@@ -1,4 +1,4 @@
-// src/config.inc.c --- stuff to appear at the *top* of each TU in C
+// -include config.inc.c --- stuff to appear at the *top* of each TU in C
 
 /*    Copyright (C) 2018-2025 Alexey Protasov (AKA Alex or rusini)
 
