@@ -36,10 +36,9 @@ static_assert(([][[gnu::always_inline]](){}, true)); // syntactic test: attribut
 # endif
 
 # include <cfloat> // FLT_EVAL_METHOD
-# include <cstdint>
 # include <limits>
 
-// Integer properties --- these checks are both complete and nonredundant
+// Integer/Pointer properties --- these checks are both complete and nonredundant
 
 static_assert(
    std::numeric_limits<unsigned char>::digits == 8,
@@ -47,14 +46,8 @@ static_assert(
 );
 static_assert(
    __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ | __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__,
-   "The target ISA shall use a consistent endianness (EL or EB)"
+   "The target ISA shall use a consistent endianness (LE or BE)"
 );
-# ifdef __FLOAT_WORD_ORDER__
-static_assert(
-   __FLOAT_WORD_ORDER__ == __BYTE_ORDER__,
-   "The target shall use a FP endianness consistent with the rest of the ISA"
-);
-# endif
 static_assert(
    std::numeric_limits<signed char>::min() == -0x80,
    "Unsupported `signed char` properties for the target ABI"
@@ -103,6 +96,10 @@ static_assert(
 ); // provably 16-bit representation w/ no padding
 
 static_assert(
+   sizeof(void *) == 8 | sizeof(void *) == 4,
+   "Unsupported object pointer size for the target ABI"
+);
+static_assert(
    sizeof(long) == sizeof(void *),
    "The target platform shall use either LP64 or ILP32 data model"
 );
@@ -116,6 +113,13 @@ static_assert(
 // FP properties --- these checks are nonredundant but cannot be made 100% complete
 
 // __STDC_IEC_559__ is unreliable on gcc/clang
+
+# ifdef __FLOAT_WORD_ORDER__
+static_assert(
+   __FLOAT_WORD_ORDER__ == __BYTE_ORDER__,
+   "The target shall use a FP endianness consistent with the rest of the ISA"
+);
+# endif
 
 # if __FAST_MATH__ || __FINITE_MATH_ONLY__
    static_assert(false, "Noncompliant math mode");

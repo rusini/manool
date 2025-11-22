@@ -26,8 +26,9 @@
 # define _GNU_SOURCE // just ignored on many platforms not using glibc
 
 # include <limits.h>
-# include <float.h>
-# include <stdint.h>
+# include <float.h> // FLT_EVAL_METHOD
+
+// Integer/Pointer properties --- these checks are both complete and nonredundant
 
 _Static_assert(
    CHAR_BIT == 8,
@@ -35,14 +36,8 @@ _Static_assert(
 );
 _Static_assert(
    __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ | __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__,
-   "The target ISA shall use a consistent endianness (EL or EB)"
+   "The target ISA shall use a consistent endianness (LE or BE)"
 );
-# ifdef __FLOAT_WORD_ORDER__
-_Static_assert(
-   __FLOAT_WORD_ORDER__ == __BYTE_ORDER__,
-   "The target shall use a FP endianness consistent with the rest of the ISA"
-);
-# endif
 _Static_assert(
    SCHAR_MIN == -0x80,
    "Unsupported `signed char` properties for the target ABI"
@@ -90,18 +85,27 @@ _Static_assert(
    "Unsupported `unsigned short` properties for the target ABI"
 ); // provably 16-bit representation w/ no padding
 
-static_assert(
-   sizeof(long) == sizeof(std::intptr_t) &&
-   LONG_MAX == INTPTR_MAX &&
-   LONG_MIN == INTPTR_MIN &&
-   sizeof(unsigned long) == sizeof(std::uintptr_t) &&
-   ULONG_MAX == UINTPTR_MAX,
+_Static_assert(
+   sizeof(long) == sizeof(void *),
    "The target platform shall use either LP64 or ILP32 data model"
 );
+# ifndef __INTPTR_TYPE__
+   _Static_assert(false, "Roundtrip conversion between `void *` and `long` is unavailable on the target");
+# endif
+# ifndef __UINTPTR_TYPE__
+   _Static_assert(false, "Roundtrip conversion between `void *` and `unsigned long` is unavailable on the target");
+# endif
 
 // FP properties --- these checks are nonredundant but cannot be made 100% complete
 
 // __STDC_IEC_559__ is unreliable on gcc/clang
+
+# ifdef __FLOAT_WORD_ORDER__
+_Static_assert(
+   __FLOAT_WORD_ORDER__ == __BYTE_ORDER__,
+   "The target shall use a FP endianness consistent with the rest of the ISA"
+);
+# endif
 
 # if __FAST_MATH__ || __FINITE_MATH_ONLY__
    _Static_assert(0, "Noncompliant math mode");
