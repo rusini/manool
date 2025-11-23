@@ -13,7 +13,7 @@
    You should have received a copy of the GNU General Public License along with MANOOL.  If not, see <https://www.gnu.org/licenses/>.  */
 
 
-// Standard/mode + extensions
+// Standard/Mode + Extensions
 
 # if __STDC_VERSION__ < 201710/*C17*/ || !__STDC_HOSTED__ || !__GNUC__/*gcc/clang/icx...*/ || !__STRICT_ANSI__/*-std=cNN*/
    # error "Unsupported C compiler or compiler mode"
@@ -22,22 +22,32 @@
    # warning "Compiling with a later C standard may break compatibility"
 # endif
 
-// Feature-Test Macros (think about ABI-breaking; include things like _FILE_OFFSET_BITS consistently, if needed)
+// (undesirable) defaults on modern Ubuntu
+# if __SSP__ || __SSP_ALL__ || __SSP_STRONG__
+   #warning "Please recompile with -fno-stack-protector"
+# endif
+# if __CET__
+   #warning "Please recompile with -fcf-protection=none"
+# endif
+# ifdef _FORTIFY_SOURCE
+   #warning "Please recompile with -U_FORTIFY_SOURCE"
+# endif
+
+// Feature-Test Macros
 # define _GNU_SOURCE // just ignored on many platforms not using glibc
+//# define _FILE_OFFSET_BITS 64 // ABI-breaking risk --- include things like _FILE_OFFSET_BITS consistently, if needed
 
 # include <limits.h>
 # include <float.h>
 
-// Integer/Pointer properties --- these checks are both complete and nonredundant
+// Integer/Pointer Properties --- these checks are both complete and nonredundant
 
 _Static_assert(
    CHAR_BIT == 8,
-   "The target ISA shall be octet-addressable"
-);
+   "The target ISA shall be octet-addressable" );
 _Static_assert(
    __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ | __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__,
-   "The target ISA shall use a consistent endianness (LE or BE)"
-);
+   "The target ISA shall use a consistent endianness (LE or BE)" );
 _Static_assert(
    SCHAR_MIN == -0x80,
    "Unsupported `signed char` properties for the target ABI"
@@ -84,21 +94,24 @@ _Static_assert(
    sizeof(unsigned short) == 2,
    "Unsupported `unsigned short` properties for the target ABI"
 ); // provably 16-bit representation w/ no padding
+_Static_assert(
+   sizeof(void *) == 8 | sizeof(void *) == 4,
+   "Unsupported object pointer size for the target ABI" );
 
 _Static_assert(
    sizeof(long) == sizeof(void *),
-   "The target platform shall use either LP64 or ILP32 data model"
-);
+   "The target platform shall use the LP64 or ILP32 data model" );
 # ifndef __INTPTR_TYPE__
    _Static_assert(false, "Roundtrip conversion between `void *` and `long` is unavailable on the target");
 # endif
 # ifndef __UINTPTR_TYPE__
    _Static_assert(false, "Roundtrip conversion between `void *` and `unsigned long` is unavailable on the target");
 # endif
+// TODO: atomics!!!
 
-// FP properties --- these checks are nonredundant but cannot be made 100% complete
+// FP Properties --- these checks are nonredundant but cannot be made 100% complete
 
-// __STDC_IEC_559__ is unreliable on gcc/clang
+// __STDC_IEC_559__ is unreliable on gcc/clang!
 
 # ifdef __FLOAT_WORD_ORDER__
 _Static_assert(
@@ -113,20 +126,25 @@ _Static_assert(
 
 # pragma STDC FENV_ACCESS OFF // provided for completeness and might be unimplemented
 # pragma STDC FP_CONTRACT OFF // ditto
+_Static_assert(
+   FLT_EVAL_METHOD == 0,
+   "Intermediate FP results shall not use extra precision" );
 
-static_assert(
-   FLT_EVAL_METHOD == 0, "FLT_EVAL_METHOD == 0"
-); // no extra precision for intermediate results
-static_assert(
-   sizeof(double)  ==     8 &&
-   FLT_RADIX       ==     2 &&
-   DBL_MANT_DIG    ==    53 &&
-   DBL_MAX_EXP     == +1024 &&
-   DBL_MIN_EXP     == -1021 &&
-   DBL_HAS_SUBNORM == 1,
-   "The `double` type shall have IEEE754 format"
-); // highly likely IEEE754 binary64 format --- assuming it
-static_assert(
+# if __DBL_HAS_INFINITY__ && __DBL_HAS_QUIET_NAN__
+   _Static_assert(
+      sizeof(double)  ==     8 &&
+      FLT_RADIX       ==     2 &&
+      DBL_MANT_DIG    ==    53 &&
+      DBL_MAX_EXP     == +1024 &&
+      DBL_MIN_EXP     == -1021 &&
+      DBL_HAS_SUBNORM == 1 &&
+      __DBL_HAS_INFINITY__ && __DBL_HAS_QUIET_NAN_,
+      "The `double` type shall have IEEE754 format"
+   ); // highly likely IEEE754 binary64 format --- assuming it
+# else
+   _Static_assert(0, "The `double` type shall have IEEE754 format");
+# endif
+_Static_assert(
    sizeof(float)   ==     4 &&
    FLT_RADIX       ==     2 &&
    FLT_MANT_DIG    ==    24 &&
@@ -136,3 +154,11 @@ static_assert(
    "The `float` type shall have IEEE754 format"
 ); // highly likely IEEE754 binary64 format --- assuming it
 
+// OS/libc Personality --- relies on some assumptions
+
+# if !__linux__ && !__FreeBSD__
+   # include <features.h>
+   # if !(__GLIBC__ > 2 || __GLIBC__ == 2 && __GLIBC_MINOR__ >= 25)
+      _Static_assert(false, "Unsupported target libc detected (AKA C runtime)");
+   # endif
+# endif
