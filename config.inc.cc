@@ -33,6 +33,19 @@
    #warning "Please recompile with -U_FORTIFY_SOURCE"
 # endif
 
+# if !__EXCEPTIONS
+   # error "Please do not use -fno-exceptions"
+# endif
+# if !__GXX_RTTI
+   # error "Please do not use -fno-rtti"
+# endif
+# if !__GXX_WEAK__
+   # error "!__GXX_WEAK__"
+# endif
+# if !__NO_MATH_ERRNO__
+   # warning "Please recompile with -fno-math-errno"
+# endif
+
 static_assert( // `__has_cpp_attribute` is an extension adopted by C++20
    __has_cpp_attribute(no_unique_address) &&
    __has_cpp_attribute(likely) && __has_cpp_attribute(unlikely), // also ensures that statement attributes are recognized
