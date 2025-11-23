@@ -135,9 +135,8 @@ static_assert(
 // __STDC_IEC_559__ is unreliable on gcc/clang!
 
 # ifdef __FLOAT_WORD_ORDER__
-static_assert(
-   __FLOAT_WORD_ORDER__ == __BYTE_ORDER__,
-   "The target shall use a FP endianness consistent with the rest of the ISA" );
+   static_assert( __FLOAT_WORD_ORDER__ == __BYTE_ORDER__,
+      "The target shall use a FP endianness consistent with the rest of the ISA" );
 # endif
 
 # if __FAST_MATH__ || __FINITE_MATH_ONLY__
