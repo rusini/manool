@@ -130,27 +130,24 @@ _Static_assert(
    FLT_EVAL_METHOD == 0,
    "Intermediate FP results shall not use extra precision" );
 
-# if __DBL_HAS_INFINITY__ && __DBL_HAS_QUIET_NAN__
-   _Static_assert(
-      sizeof(double)  ==     8 &&
-      FLT_RADIX       ==     2 &&
-      DBL_MANT_DIG    ==    53 &&
-      DBL_MAX_EXP     == +1024 &&
-      DBL_MIN_EXP     == -1021 &&
-      DBL_HAS_SUBNORM == 1 &&
-      __DBL_HAS_INFINITY__ && __DBL_HAS_QUIET_NAN_,
-      "The `double` type shall have IEEE754 format"
-   ); // highly likely IEEE754 binary64 format --- assuming it
-# else
-   _Static_assert(0, "The `double` type shall have IEEE754 format");
-# endif
+_Static_assert(
+   sizeof(double)  ==     8 &&
+   FLT_RADIX       ==     2 &&
+   DBL_MANT_DIG    ==    53 &&
+   DBL_MAX_EXP     == +1024 &&
+   DBL_MIN_EXP     == -1021 &&
+   DBL_HAS_SUBNORM == 1     &&
+   __DBL_HAS_INFINITY__ && __DBL_HAS_QUIET_NAN_,
+   "The `double` type shall have IEEE754 format"
+); // highly likely IEEE754 binary64 format --- assuming it
 _Static_assert(
    sizeof(float)   ==     4 &&
    FLT_RADIX       ==     2 &&
    FLT_MANT_DIG    ==    24 &&
    FLT_MAX_EXP     ==  +128 &&
    FLT_MIN_EXP     ==  -128 &&
-   FLT_HAS_SUBNORM == 1,
+   FLT_HAS_SUBNORM == 1     &&
+   __FLT_HAS_INFINITY__ && __FLT_HAS_QUIET_NAN_,
    "The `float` type shall have IEEE754 format"
 ); // highly likely IEEE754 binary64 format --- assuming it
 
