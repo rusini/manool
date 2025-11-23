@@ -24,13 +24,13 @@
 
 // (undesirable) defaults on modern Ubuntu
 # if __SSP__ || __SSP_ALL__ || __SSP_STRONG__
-   #warning "Please recompile with -fno-stack-protector"
+   # warning "Please recompile with -fno-stack-protector"
 # endif
 # if __CET__
-   #warning "Please recompile with -fcf-protection=none"
+   # warning "Please recompile with -fcf-protection=none"
 # endif
 # ifdef _FORTIFY_SOURCE
-   #warning "Please recompile with -U_FORTIFY_SOURCE"
+   # warning "Please recompile with -U_FORTIFY_SOURCE"
 # endif
 
 # if !__GXX_WEAK__
