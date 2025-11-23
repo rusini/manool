@@ -51,7 +51,7 @@ static_assert( // `__has_cpp_attribute` is an extension adopted by C++20
    __has_cpp_attribute(likely) && __has_cpp_attribute(unlikely), // also ensures that statement attributes are recognized
    "C++ compiler does not support attributes introduced in C++20" );
 static_assert(([][[gnu::always_inline]](){}, true)); // syntactic test: attributes on lambda's operator(), a retroactive C++23 DR
-// supported by genuine g++ 9.3 and clang 13.0.0 (icpx 2021.3+); other compilers must match
+// supported by genuine g++ 9.3+ and clang 13.0.0+ (icpx 2021.3+); other compilers must match
 
 // Feature-Test Macros
 # ifndef _GNU_SOURCE // may already be defined by the compiler to satisfy libstdc++ requirements
