@@ -158,6 +158,16 @@ _Static_assert(
    "The `float` type shall have IEEE754 format"
 ); // highly likely IEEE754 binary64 format --- assuming it
 
+// Lock-Free Atomic Operations (using gcc builtins)
+
+static_assert(
+   __GCC_ATOMIC_LONG_LOCK_FREE &&    // typically needed for refcounting using "machine words"
+   __GCC_ATOMIC_INT_LOCK_FREE &&     // general counting using the "default" type
+   __GCC_ATOMIC_POINTER_LOCK_FREE && // similar to `long`
+   __GCC_ATOMIC_BOOL_LOCK_FREE &&    // for flags
+   __GCC_ATOMIC_CHAR_LOCK_FREE,      // minimal addressable unit
+   "The target lacks support for core lock-free atomic operations" );
+
 // OS/libc Personality --- relies on some assumptions
 
 # if !__linux__ && !__FreeBSD__

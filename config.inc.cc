@@ -173,7 +173,7 @@ static_assert(
    "The `float` type shall have IEEE754 format"
 ); // highly likely IEEE754 binary32 format --- assuming it
 
-// Lock-Free Atomic Operations
+// Lock-Free Atomic Operations (using gcc builtins)
 
 static_assert(
    __GCC_ATOMIC_LONG_LOCK_FREE &&    // typically needed for refcounting using "machine words"
