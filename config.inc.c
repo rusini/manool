@@ -159,9 +159,9 @@ _Static_assert(
 // Lock-Free Atomic Operations (using gcc builtins)
 
 _Static_assert(
-   __GCC_ATOMIC_LONG_LOCK_FREE &&  // typically needed for refcounting using "machine words"
-   __GCC_ATOMIC_INT_LOCK_FREE &&   // general counting using the "default" type
-   __GCC_ATOMIC_POINTER_LOCK_FREE, // similar to `long`
+   __GCC_ATOMIC_LONG_LOCK_FREE    == 2 && // typically needed for refcounting using "machine words"
+   __GCC_ATOMIC_INT_LOCK_FREE     == 2 && // general counting using the "default" type
+   __GCC_ATOMIC_POINTER_LOCK_FREE == 2,   // similar to `long`
    "The target lacks support for core lock-free atomic operations" );
 
 // OS/libc Personality --- relies on some assumptions
