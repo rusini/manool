@@ -1,4 +1,4 @@
-// -include config.inc.c --- stuff to appear at the *top* of each TU in C
+// -include prelude.c --- stuff to appear at the *top* of each TU written in C
 
 /*    Copyright (C) 2018-2025 Alexey Protasov (AKA Alex or rusini)
 
