@@ -187,7 +187,7 @@ static_assert(
 # if !__linux__ && !__FreeBSD__
    # include <features.h>
    # if !(__GLIBC__ > 2 || __GLIBC__ == 2 && __GLIBC_MINOR__ >= 25)
-      static_assert(false, "Unsupported target libc detected (AKA C runtime)");
+      static_assert(false, "Unsupported target libc (AKA C runtime) detected");
    # endif
 # endif
 
