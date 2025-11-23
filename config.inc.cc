@@ -57,7 +57,8 @@ static_assert(([][[gnu::always_inline]](){}, true)); // syntactic test: attribut
 # ifndef _GNU_SOURCE // may already be defined by the compiler to satisfy libstdc++ requirements
    # define _GNU_SOURCE // just ignored on many platforms not using glibc
 # endif
-//# define _FILE_OFFSET_BITS 64 // ABI-breaking risk --- include things like _FILE_OFFSET_BITS consistently, if needed
+//# define _FILE_OFFSET_BITS 64 // shall be consistent with how third-party SOs are compiled and using -D... is more appropriate for that
+//# define _TIME_BITS 64        // ditto
 
 # include <cfloat> // FLT_EVAL_METHOD
 # include <limits>

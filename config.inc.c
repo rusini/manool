@@ -42,7 +42,8 @@
 
 // Feature-Test Macros
 # define _GNU_SOURCE // just ignored on many platforms not using glibc
-//# define _FILE_OFFSET_BITS 64 // ABI-breaking risk --- include things like _FILE_OFFSET_BITS consistently, if needed
+//# define _FILE_OFFSET_BITS 64 // shall be consistent with how third-party SOs are compiled and using -D... is more appropriate for that
+//# define _TIME_BITS 64        // ditto
 
 # include <limits.h>
 # include <float.h>
