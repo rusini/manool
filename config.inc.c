@@ -126,7 +126,7 @@ _Static_assert(
 # endif
 
 # if __FAST_MATH__ || __FINITE_MATH_ONLY__
-   _Static_assert(0, "Noncompliant math mode");
+   _Static_assert(0, "Noncompliant or unsupported math mode");
 # endif
 
 # pragma STDC FENV_ACCESS OFF // provided for completeness and might be unimplemented
