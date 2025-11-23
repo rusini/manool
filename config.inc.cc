@@ -42,7 +42,7 @@
 # if !__EXCEPTIONS
    static_assert(false, "Please do not use -fno-exceptions");
 # endif
-# if __NO_MATH_ERRNO__ // mostly useless but disabling it may cause compatibility issues with third-party libraries
+# if __NO_MATH_ERRNO__ // mostly useless but disabling it might cause compatibility issues with third-party libraries
    static_assert(false, "Please do not use -fno-math-errno");
 # endif
 
