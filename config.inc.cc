@@ -33,9 +33,6 @@
    #warning "Please recompile with -U_FORTIFY_SOURCE"
 # endif
 
-# if !__NO_MATH_ERRNO__
-   # warning "Please recompile with -fno-math-errno"
-# endif
 # if !__GXX_WEAK__
    static_assert(false, "Please do not use -fno-weak");
 # endif
@@ -44,6 +41,9 @@
 # endif
 # if !__EXCEPTIONS
    static_assert(false, "Please do not use -fno-exceptions");
+# endif
+# if __NO_MATH_ERRNO__ // mostly useless but disabling it may cause compatibility issues with third-party libraries
+   static_assert(false, "Please do not use -fno-math-errno");
 # endif
 
 static_assert( // `__has_cpp_attribute` is an extension adopted by C++20

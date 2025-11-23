@@ -33,6 +33,13 @@
    #warning "Please recompile with -U_FORTIFY_SOURCE"
 # endif
 
+# if !__GXX_WEAK__
+   _Static_assert(0, "Please do not use -fno-weak");
+# endif
+# if __NO_MATH_ERRNO__ // mostly useless but disabling it may cause compatibility issues with third-party libraries
+   _Static_assert(0, "Please do not use -fno-math-errno");
+# endif
+
 // Feature-Test Macros
 # define _GNU_SOURCE // just ignored on many platforms not using glibc
 //# define _FILE_OFFSET_BITS 64 // ABI-breaking risk --- include things like _FILE_OFFSET_BITS consistently, if needed
@@ -137,7 +144,7 @@ _Static_assert(
    DBL_MAX_EXP     == +1024 &&
    DBL_MIN_EXP     == -1021 &&
    DBL_HAS_SUBNORM == 1     &&
-   __DBL_HAS_INFINITY__ && __DBL_HAS_QUIET_NAN_,
+   __DBL_HAS_INFINITY__ && __DBL_HAS_QUIET_NAN_, // have to resort to gcc-specific macros
    "The `double` type shall have IEEE754 format"
 ); // highly likely IEEE754 binary64 format --- assuming it
 _Static_assert(
@@ -147,7 +154,7 @@ _Static_assert(
    FLT_MAX_EXP     ==  +128 &&
    FLT_MIN_EXP     ==  -128 &&
    FLT_HAS_SUBNORM == 1     &&
-   __FLT_HAS_INFINITY__ && __FLT_HAS_QUIET_NAN_,
+   __FLT_HAS_INFINITY__ && __FLT_HAS_QUIET_NAN_, // have to resort to gcc-specific macros
    "The `float` type shall have IEEE754 format"
 ); // highly likely IEEE754 binary64 format --- assuming it
 
