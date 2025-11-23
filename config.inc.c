@@ -158,7 +158,7 @@ _Static_assert(
 
 // Lock-Free Atomic Operations (using gcc builtins)
 
-static_assert(
+_Static_assert(
    __GCC_ATOMIC_LONG_LOCK_FREE &&    // typically needed for refcounting using "machine words"
    __GCC_ATOMIC_INT_LOCK_FREE &&     // general counting using the "default" type
    __GCC_ATOMIC_POINTER_LOCK_FREE && // similar to `long`
