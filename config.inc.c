@@ -107,7 +107,7 @@ _Static_assert(
 
 _Static_assert(
    sizeof(long) == sizeof(void *),
-   "The target platform shall use the LP64 or ILP32 data model" );
+   "The target platform shall use LP64 or ILP32 data model" );
 # ifndef __INTPTR_TYPE__
    _Static_assert(false, "Roundtrip conversion between `void *` and `long` is unavailable on the target");
 # endif
