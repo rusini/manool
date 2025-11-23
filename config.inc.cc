@@ -33,17 +33,17 @@
    #warning "Please recompile with -U_FORTIFY_SOURCE"
 # endif
 
-# if !__EXCEPTIONS
-   # error "Please do not use -fno-exceptions"
-# endif
-# if !__GXX_RTTI
-   # error "Please do not use -fno-rtti"
-# endif
-# if !__GXX_WEAK__
-   # error "!__GXX_WEAK__"
-# endif
 # if !__NO_MATH_ERRNO__
    # warning "Please recompile with -fno-math-errno"
+# endif
+# if !__GXX_WEAK__
+   static_assert(false, "Please do not use -fno-weak");
+# endif
+# if !__GXX_RTTI
+   static_assert(false, "Please do not use -fno-rtti");
+# endif
+# if !__EXCEPTIONS
+   static_assert(false, "Please do not use -fno-exceptions");
 # endif
 
 static_assert( // `__has_cpp_attribute` is an extension adopted by C++20
