@@ -1,4 +1,4 @@
-// -include prelude.cc --- stuff to appear at the *top* of each TU written in C++
+// -include prelude.cc --- must be injected at the *top* of each TU written in C++
 
 /*    Copyright (C) 2018-2025 Alexey Protasov (AKA Alex or rusini)
 
@@ -129,6 +129,8 @@ static_assert(
 # ifndef __UINTPTR_TYPE__
    static_assert(false, "Roundtrip conversion between `void *` and `unsigned long` is unavailable on the target");
 # endif
+
+// TODO: what about size_t, ptrdiff_t?
 
 // FP Properties --- these checks are nonredundant but cannot be made 100% complete
 
