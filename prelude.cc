@@ -130,7 +130,7 @@ static_assert(
    static_assert(false, "Roundtrip conversion between `void *` and `unsigned long` is unavailable on the target");
 # endif
 
-// TODO: what about size_t, ptrdiff_t?
+// no checks for std::size_t and std::ptrdiff_t are relevant!
 
 // FP Properties --- these checks are nonredundant but cannot be made 100% complete
 
