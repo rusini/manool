@@ -132,6 +132,16 @@ static_assert(
 
 // no checks for std::size_t and std::ptrdiff_t are relevant!
 
+// Paranoid ABI Checks
+
+static_assert(
+   sizeof(decltype(sizeof 0)) == sizeof(unsigned long) &&
+   std::numeric_limits<decltype(sizeof 0)>::digits == std::numeric_limits<unsigned long>::digits &&
+   sizeof(decltype((char *)nullptr - (char *)nullptr)) == sizeof(long) &&
+   std::numeric_limits<decltype((char *)nullptr - (char *)nullptr)>::min() == std::numeric_limits<long>::min() &&
+   std::numeric_limits<decltype((char *)nullptr - (char *)nullptr)>::max() == std::numeric_limits<long>::max(),
+   "`std::size_t`/`std::ptrdiff_t` are not consistent with `unsigned long`/`long`" );
+
 // FP Properties --- these checks are nonredundant but cannot be made 100% complete
 
 // __STDC_IEC_559__ is unreliable on gcc/clang!
