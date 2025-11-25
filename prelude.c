@@ -120,7 +120,7 @@ _Static_assert(
    SIZE_MAX == ULONG_MAX &&
    sizeof(decltype((char *)nullptr - (char *)nullptr)) == sizeof(long) &&
    PTRDIFF_MIN == LONG_MIN && PTRDIFF_MAX == LONG_MAX,
-   "`std::size_t`/`std::ptrdiff_t` are not consistent with `unsigned long`/`long`" );
+   "`std::size_t`/`std::ptrdiff_t` shall be consistent with `unsigned long`/`long`" );
 
 // FP Properties --- these checks are nonredundant but cannot be made 100% complete
 
