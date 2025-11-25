@@ -130,10 +130,6 @@ static_assert(
    static_assert(false, "Roundtrip conversion between `void *` and `unsigned long` is unavailable on the target");
 # endif
 
-// no checks for std::size_t and std::ptrdiff_t are relevant!
-
-// Paranoid ABI Checks
-
 static_assert(
    sizeof(decltype(sizeof 0)) == sizeof(unsigned long) &&
    std::numeric_limits<decltype(sizeof 0)>::digits == std::numeric_limits<unsigned long>::digits &&

@@ -115,7 +115,12 @@ _Static_assert(
    _Static_assert(false, "Roundtrip conversion between `void *` and `unsigned long` is unavailable on the target");
 # endif
 
-// no checks for std::size_t and std::ptrdiff_t are relevant!
+_Static_assert(
+   sizeof(decltype(sizeof 0)) == sizeof(unsigned long) &&
+   SIZE_MAX == ULONG_MAX &&
+   sizeof(decltype((char *)nullptr - (char *)nullptr)) == sizeof(long) &&
+   PTRDIFF_MIN == LONG_MIN && PTRDIFF_MAX == LONG_MAX,
+   "`std::size_t`/`std::ptrdiff_t` are not consistent with `unsigned long`/`long`" );
 
 // FP Properties --- these checks are nonredundant but cannot be made 100% complete
 
