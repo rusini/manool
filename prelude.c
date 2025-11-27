@@ -33,9 +33,6 @@
    # warning "Please recompile with -U_FORTIFY_SOURCE"
 # endif
 
-# if !__GXX_WEAK__
-   _Static_assert(0, "Please do not use -fno-weak");
-# endif
 # if __NO_MATH_ERRNO__ // mostly useless but disabling it may cause compatibility issues with third-party libraries
    _Static_assert(0, "Please do not use -fno-math-errno");
 # endif
@@ -73,7 +70,7 @@ _Static_assert(
    "Unsupported `long` properties for the target ABI"
 ); // provably 64- or 32-bit 2's-complement representation using full range and no padding
 _Static_assert(
-   sizeof(long long) == 4 &&
+   sizeof(long long) == 8 &&
    LLONG_MIN + 1 == -0x7FFFFFFFFFFFFFFFll,
    "Unsupported `long long` properties for the target ABI"
 ); // provably 64-bit 2's-complement representation using full range and no padding
@@ -85,12 +82,12 @@ _Static_assert(
 
 _Static_assert(
    sizeof(unsigned) == 4 &&
-   UINT_MAX == 0x7FFFFFFF,
+   UINT_MAX == 0xFFFFFFFF,
    "Unsupported `unsigned` properties for the target ABI"
 ); // provably 32-bit representation w/ no padding
 _Static_assert(
    sizeof(unsigned long) == 8 | sizeof(unsigned long) == 4 &&
-   ULONG_MAX == (sizeof(unsigned long) == 8 ? 0x7FFFFFFFFFFFFFFF : 0x7FFFFFFF),
+   ULONG_MAX == (sizeof(unsigned long) == 8 ? 0xFFFFFFFFFFFFFFFF : 0xFFFFFFFF),
    "Unsupported `unsigned long` properties for the target ABI"
 ); // provably 64-bit or 32-bit representation w/ no padding
 _Static_assert(
@@ -148,7 +145,7 @@ _Static_assert(
    DBL_MAX_EXP     == +1024 &&
    DBL_MIN_EXP     == -1021 &&
    DBL_HAS_SUBNORM == 1     &&
-   __DBL_HAS_INFINITY__ && __DBL_HAS_QUIET_NAN_, // have to resort to gcc-specific macros
+   __DBL_HAS_INFINITY__ && __DBL_HAS_QUIET_NAN__, // have to resort to gcc-specific macros
    "The `double` type shall have IEEE754 format"
 ); // highly likely IEEE754 binary64 format --- assuming it
 _Static_assert(
@@ -158,7 +155,7 @@ _Static_assert(
    FLT_MAX_EXP     ==  +128 &&
    FLT_MIN_EXP     ==  -128 &&
    FLT_HAS_SUBNORM == 1     &&
-   __FLT_HAS_INFINITY__ && __FLT_HAS_QUIET_NAN_, // have to resort to gcc-specific macros
+   __FLT_HAS_INFINITY__ && __FLT_HAS_QUIET_NAN__, // have to resort to gcc-specific macros
    "The `float` type shall have IEEE754 format"
 ); // highly likely IEEE754 binary64 format --- assuming it
 
