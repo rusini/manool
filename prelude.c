@@ -119,7 +119,7 @@ _Static_assert(
 # ifndef __UINTPTR_TYPE__
    _Static_assert(false, "Roundtrip conversion between `void *` and `unsigned long` is unavailable on the target");
 # else
-   static_assert(
+   _Static_assert(
       sizeof(uintptr_t) == sizeof(unsigned long) &&
       UINTPTR_MAX == ULONG_MAX,
       "`uintptr_t` shall be consistent with `unsigned long`" );
@@ -134,7 +134,7 @@ _Static_assert(
 
 // FP Properties --- these checks are nonredundant but cannot be made 100% complete
 
-// __STDC_IEC_559__ (either defined by the driver or libc) is unreliable on gcc/clang!
+// __STDC_IEC_559__ (either as defined by the driver or libc) is unreliable on gcc/clang!
 
 # ifdef __FLOAT_WORD_ORDER__
    _Static_assert( __FLOAT_WORD_ORDER__ == __BYTE_ORDER__,
@@ -148,7 +148,7 @@ _Static_assert(
 # pragma STDC FENV_ACCESS OFF // provided for completeness and might be unimplemented
 # pragma STDC FP_CONTRACT OFF // ditto
 _Static_assert(
-   FLT_EVAL_METHOD == 0 | FLT_EVAL_METHOD == 1, // relaxed for C unlike C++
+   FLT_EVAL_METHOD == 0 | FLT_EVAL_METHOD == 1, // deliberately relaxed for C (as opposed to C++)
    "Unsupported FP evaluation mode" );
 
 _Static_assert(

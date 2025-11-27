@@ -152,7 +152,7 @@ static_assert(
 
 // FP Properties --- these checks are nonredundant but cannot be made 100% complete
 
-// __STDC_IEC_559__ (either defined by the driver or libc) is unreliable on gcc/clang!
+// __STDC_IEC_559__ (either as defined by the driver or libc) is unreliable on gcc/clang!
 
 # ifdef __FLOAT_WORD_ORDER__
    static_assert( __FLOAT_WORD_ORDER__ == __BYTE_ORDER__,
