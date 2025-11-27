@@ -42,9 +42,9 @@
 // use -D_{FILE_OFFSET,TIME}_BITS=64 consistently with how third-party SOs are compiled!
 
 # include <limits.h>
-# include <float.h>
 # include <stddef.h>
 # include <stdint.h>
+# include <float.h>
 
 // Integer/Pointer Properties --- these checks are both complete and nonredundant
 
@@ -109,9 +109,20 @@ _Static_assert(
    "The target platform shall use LP64 or ILP32 data model" );
 # ifndef __INTPTR_TYPE__
    _Static_assert(false, "Roundtrip conversion between `void *` and `long` is unavailable on the target");
+# else
+   _Static_assert(
+      sizeof(intptr_t) == sizeof(long) &&
+      INTPTR_MAX == LONG_MAX &&
+      INTPTR_MIN == LONG_MIN,
+      "`intptr_t` shall be consistent with `long`" );
 # endif
 # ifndef __UINTPTR_TYPE__
    _Static_assert(false, "Roundtrip conversion between `void *` and `unsigned long` is unavailable on the target");
+# else
+   static_assert(
+      sizeof(uintptr_t) == sizeof(unsigned long) &&
+      UINTPTR_MAX == ULONG_MAX,
+      "`uintptr_t` shall be consistent with `unsigned long`" );
 # endif
 
 _Static_assert(

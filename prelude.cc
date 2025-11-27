@@ -59,8 +59,8 @@ static_assert(([][[gnu::always_inline]](){}, true)); // syntactic test: attribut
 # endif
 // use -D_{FILE_OFFSET,TIME}_BITS=64 consistently with how third-party SOs are compiled!
 
-# include <cfloat>  // FLT_EVAL_METHOD
 # include <cstdint> // std::intptr_r, std::uintptr_t
+# include <cfloat>  // FLT_EVAL_METHOD
 # include <limits>
 
 // Integer/Pointer Properties --- these checks are both complete and nonredundant
@@ -138,8 +138,7 @@ static_assert(
 # else
    static_assert(
       sizeof(std::uintptr_t) == sizeof(unsigned long) &&
-      std::numeric_limits<std::uintptr_t>::max() == std::numeric_limits<unsigned long>::max() &&
-      std::numeric_limits<std::uintptr_t>::min() == std::numeric_limits<unsigned long>::min(),
+      std::numeric_limits<std::uintptr_t>::digits == std::numeric_limits<unsigned long>::digits,
       "`std::uintptr_t` shall be consistent with `unsigned long`" );
 # endif
 
