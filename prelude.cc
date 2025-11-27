@@ -166,7 +166,7 @@ static_assert(
 # pragma STDC FENV_ACCESS OFF // provided for completeness and might be unimplemented
 # pragma STDC FP_CONTRACT OFF // ditto
 static_assert(
-   FLT_EVAL_METHOD == 0,
+   FLT_EVAL_METHOD == 0, // simpler than examining float_t
    "Intermediate FP results shall not use extra precision" );
 
 static_assert(

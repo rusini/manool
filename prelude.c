@@ -147,8 +147,8 @@ _Static_assert(
 
 # pragma STDC FENV_ACCESS OFF // provided for completeness and might be unimplemented
 # pragma STDC FP_CONTRACT OFF // ditto
-_Static_assert(
-   FLT_EVAL_METHOD == 0 | FLT_EVAL_METHOD == 1, // deliberately relaxed for C (as opposed to C++)
+_Static_assert( // deliberately relaxed for C (as opposed to C++)
+   FLT_EVAL_METHOD == 0 | FLT_EVAL_METHOD == 1, // simpler than examining float_t
    "Unsupported FP evaluation mode" );
 
 _Static_assert(
