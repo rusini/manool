@@ -59,7 +59,8 @@ static_assert(([][[gnu::always_inline]](){}, true)); // syntactic test: attribut
 # endif
 // use -D_{FILE_OFFSET,TIME}_BITS=64 consistently with how third-party SOs are compiled!
 
-# include <cfloat> // FLT_EVAL_METHOD
+# include <cfloat>  // FLT_EVAL_METHOD
+# include <cstdint> // std::intptr_r, std::uintptr_t
 # include <limits>
 
 // Integer/Pointer Properties --- these checks are both complete and nonredundant
@@ -125,9 +126,21 @@ static_assert(
    "The target platform shall use LP64 or ILP32 data model" );
 # ifndef __INTPTR_TYPE__
    static_assert(false, "Roundtrip conversion between `void *` and `long` is unavailable on the target");
+# else
+   static_assert(
+      sizeof(std::intptr_t) == sizeof(long) &&
+      std::numeric_limits<std::intptr_t>::max() == std::numeric_limits<long>::max() &&
+      std::numeric_limits<std::intptr_t>::min() == std::numeric_limits<long>::min(),
+      "`std::intptr_t` shall be consistent with `long`" );
 # endif
 # ifndef __UINTPTR_TYPE__
    static_assert(false, "Roundtrip conversion between `void *` and `unsigned long` is unavailable on the target");
+# else
+   static_assert(
+      sizeof(std::uintptr_t) == sizeof(unsigned long) &&
+      std::numeric_limits<std::uintptr_t>::max() == std::numeric_limits<unsigned long>::max() &&
+      std::numeric_limits<std::uintptr_t>::min() == std::numeric_limits<unsigned long>::min(),
+      "`std::uintptr_t` shall be consistent with `unsigned long`" );
 # endif
 
 static_assert(
@@ -140,7 +153,7 @@ static_assert(
 
 // FP Properties --- these checks are nonredundant but cannot be made 100% complete
 
-// __STDC_IEC_559__ is unreliable on gcc/clang!
+// __STDC_IEC_559__ (either defined by the driver or libc) is unreliable on gcc/clang!
 
 # ifdef __FLOAT_WORD_ORDER__
    static_assert( __FLOAT_WORD_ORDER__ == __BYTE_ORDER__,

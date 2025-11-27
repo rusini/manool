@@ -43,6 +43,8 @@
 
 # include <limits.h>
 # include <float.h>
+# include <stddef.h>
+# include <stdint.h>
 
 // Integer/Pointer Properties --- these checks are both complete and nonredundant
 
@@ -113,15 +115,15 @@ _Static_assert(
 # endif
 
 _Static_assert(
-   sizeof(decltype(sizeof 0)) == sizeof(unsigned long) &&
+   sizeof(size_t) == sizeof(unsigned long) &&
    SIZE_MAX == ULONG_MAX &&
-   sizeof(decltype((char *)nullptr - (char *)nullptr)) == sizeof(long) &&
+   sizeof(ptrdiff_t) == sizeof(long) &&
    PTRDIFF_MIN == LONG_MIN && PTRDIFF_MAX == LONG_MAX,
-   "`std::size_t`/`std::ptrdiff_t` shall be consistent with `unsigned long`/`long`" );
+   "`size_t`/`ptrdiff_t` shall be consistent with `unsigned long`/`long`" );
 
 // FP Properties --- these checks are nonredundant but cannot be made 100% complete
 
-// __STDC_IEC_559__ is unreliable on gcc/clang!
+// __STDC_IEC_559__ (either defined by the driver or libc) is unreliable on gcc/clang!
 
 # ifdef __FLOAT_WORD_ORDER__
    _Static_assert( __FLOAT_WORD_ORDER__ == __BYTE_ORDER__,
@@ -135,8 +137,8 @@ _Static_assert(
 # pragma STDC FENV_ACCESS OFF // provided for completeness and might be unimplemented
 # pragma STDC FP_CONTRACT OFF // ditto
 _Static_assert(
-   FLT_EVAL_METHOD == 0,
-   "Intermediate FP results shall not use extra precision" );
+   FLT_EVAL_METHOD == 0 | FLT_EVAL_METHOD == 1, // relaxed for C unlike C++
+   "Unsupported FP evaluation mode" );
 
 _Static_assert(
    sizeof(double)  ==     8 &&
@@ -153,7 +155,7 @@ _Static_assert(
    FLT_RADIX       ==     2 &&
    FLT_MANT_DIG    ==    24 &&
    FLT_MAX_EXP     ==  +128 &&
-   FLT_MIN_EXP     ==  -128 &&
+   FLT_MIN_EXP     ==  -125 &&
    FLT_HAS_SUBNORM == 1     &&
    __FLT_HAS_INFINITY__ && __FLT_HAS_QUIET_NAN__, // have to resort to gcc-specific macros
    "The `float` type shall have IEEE754 format"
