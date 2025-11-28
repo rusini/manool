@@ -46,7 +46,7 @@
 # include <stdint.h> // intptr_r, uintptr_t
 # include <float.h>
 
-// Integer/Pointer Properties --- these checks are both complete and nonredundant
+// Core Integer Properties --- these checks are both complete and nonredundant
 
 _Static_assert(
    CHAR_BIT == 8,

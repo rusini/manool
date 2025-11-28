@@ -63,7 +63,7 @@ static_assert(([][[gnu::always_inline]](){}, true)); // syntactic test: attribut
 # include <cfloat>  // FLT_EVAL_METHOD
 # include <limits>
 
-// Integer/Pointer Properties --- these checks are both complete and nonredundant
+// Core Integer Properties --- these checks are both complete and nonredundant
 
 static_assert(
    std::numeric_limits<unsigned char>::digits == 8,
