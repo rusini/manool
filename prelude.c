@@ -15,14 +15,14 @@
 
 // Standard/Mode + Extensions
 
-# if __STDC_VERSION__ < 201710/*C17*/ || !__STDC_HOSTED__ || !__GNUC__/*gcc/clang/icx...*/ || !__STRICT_ANSI__/*-std=cNN*/
+# if __STDC_VERSION__ < 201710/*C17*/ || !__STDC_HOSTED__ || !__GNUC__/*gcc/clang/icx/...*/ || !__STRICT_ANSI__/*-std=cNN*/
    # error "Unsupported C compiler or compiler mode"
 # endif
 # if __STDC_VERSION__ > 201710
-   # warning "Compiling with a later C standard may break compatibility"
+   # warning "Compiler mode enabling a more recent spec may cause backward-compatibility issues"
 # endif
 
-// (undesirable) defaults on modern Ubuntu
+// (undesirable) detectable defaults on modern Ubuntu
 # if __SSP__ || __SSP_ALL__ || __SSP_STRONG__
    # warning "Please recompile with -fno-stack-protector"
 # endif

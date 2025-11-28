@@ -1,4 +1,4 @@
-// -include prelude.cc --- must be injected at the *top* of each TU written in C++
+// -include prelude.cc --- stuff to appear at the *top* of each TU written in C++
 
 /*    Copyright (C) 2018-2025 Alexey Protasov (AKA Alex or rusini)
 
@@ -15,14 +15,14 @@
 
 // Standard/Mode + Extensions
 
-# if __cplusplus < 201703/*C++17*/ || !__STDC_HOSTED__ || !__GNUC__/*g++/clang++/icpx...*/ || !__STRICT_ANSI__/*-std=c++NN*/
+# if __cplusplus < 201703/*C++17*/ || !__STDC_HOSTED__ || !__GNUC__/*g++/clang++/icpx/...*/ || !__STRICT_ANSI__/*-std=c++NN*/
    # error "Unsupported C++ compiler or compiler mode"
 # endif
 # if __cplusplus > 201703
-   # warning "Compiling with a later C++ standard may break compatibility"
+   # warning "Compiler mode enabling a more recent spec may cause backward-compatibility issues"
 # endif
 
-// (undesirable) defaults on modern Ubuntu
+// (undesirable) detectable defaults on modern Ubuntu
 # if __SSP__ || __SSP_ALL__ || __SSP_STRONG__
    # warning "Please recompile with -fno-stack-protector"
 # endif
