@@ -128,29 +128,27 @@ static_assert(
    sizeof(decltype(sizeof 0)) == sizeof(unsigned long) &&
    std::numeric_limits<decltype(sizeof 0)>::digits == std::numeric_limits<unsigned long>::digits &&
    sizeof(decltype((char *)nullptr - (char *)nullptr)) == sizeof(long) &&
-   std::numeric_limits<decltype((char *)nullptr - (char *)nullptr)>::min() == std::numeric_limits<long>::min() &&
-   std::numeric_limits<decltype((char *)nullptr - (char *)nullptr)>::max() == std::numeric_limits<long>::max(),
+   std::numeric_limits<decltype((char *)nullptr - (char *)nullptr)>::max() == std::numeric_limits<long>::max() &&
+   std::numeric_limits<decltype((char *)nullptr - (char *)nullptr)>::min() == std::numeric_limits<long>::min(),
    "`std::size_t`/`std::ptrdiff_t` shall be consistent with `unsigned long`/`long`" );
 
 # ifndef __INTPTR_TYPE__
    static_assert( false,
-      "Roundtrip conversion between `void *` and `long` is unavailable on the target" );
 # else
    static_assert(
       sizeof(std::intptr_t) == sizeof(long) &&
       std::numeric_limits<std::intptr_t>::max() == std::numeric_limits<long>::max() &&
       std::numeric_limits<std::intptr_t>::min() == std::numeric_limits<long>::min(),
-      "Roundtrip conversion between `void *` and `long` is unavailable on the target" );
 # endif
+      "Roundtrip conversion between `void *` and `long` is unavailable on the target" );
 # ifndef __UINTPTR_TYPE__
    static_assert( false,
-      "Roundtrip conversion between `void *` and `unsigned long` is unavailable on the target" );
 # else
    static_assert(
       sizeof(std::uintptr_t) == sizeof(unsigned long) &&
       std::numeric_limits<std::uintptr_t>::digits == std::numeric_limits<unsigned long>::digits,
-      "Roundtrip conversion between `void *` and `unsigned long` is unavailable on the target" );
 # endif
+      "Roundtrip conversion between `void *` and `unsigned long` is unavailable on the target" );
 
 // FP Properties --- these checks are nonredundant but cannot be made 100% complete
 

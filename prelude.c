@@ -111,28 +111,26 @@ _Static_assert(
    sizeof(size_t) == sizeof(unsigned long) &&
    SIZE_MAX == ULONG_MAX &&
    sizeof(ptrdiff_t) == sizeof(long) &&
-   PTRDIFF_MIN == LONG_MIN && PTRDIFF_MAX == LONG_MAX,
+   PTRDIFF_MAX == LONG_MAX && PTRDIFF_MIN == LONG_MIN,
    "`size_t`/`ptrdiff_t` shall be consistent with `unsigned long`/`long`" );
 
 # ifndef __INTPTR_TYPE__
    _Static_assert( 0,
-      "Roundtrip conversion between `void *` and `long` is unavailable on the target" );
 # else
    _Static_assert(
       sizeof(intptr_t) == sizeof(long) &&
       INTPTR_MAX == LONG_MAX &&
       INTPTR_MIN == LONG_MIN,
-      "Roundtrip conversion between `void *` and `long` is unavailable on the target" );
 # endif
+      "Roundtrip conversion between `void *` and `long` is unavailable on the target" );
 # ifndef __UINTPTR_TYPE__
    _Static_assert( 0,
-      "Roundtrip conversion between `void *` and `unsigned long` is unavailable on the target" );
 # else
    _Static_assert(
       sizeof(uintptr_t) == sizeof(unsigned long) &&
       UINTPTR_MAX == ULONG_MAX,
-      "Roundtrip conversion between `void *` and `unsigned long` is unavailable on the target" );
 # endif
+      "Roundtrip conversion between `void *` and `unsigned long` is unavailable on the target" );
 
 // FP Properties --- these checks are nonredundant but cannot be made 100% complete
 
