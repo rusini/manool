@@ -45,6 +45,7 @@
 # include <stddef.h> // size_t, ptrdiff_t
 # include <stdint.h> // intptr_r, uintptr_t
 # include <float.h>
+// C99 macros like `bool` or `static_assert` might be brought in, but at least we do not request them explicitly!
 
 // Core Integer Properties --- these checks are both complete and nonredundant
 
