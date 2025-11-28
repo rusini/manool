@@ -128,7 +128,7 @@ static_assert(
 static_assert(
    sizeof(decltype(sizeof 0)) == sizeof(unsigned long) &&
    std::numeric_limits<decltype(sizeof 0)>::digits == std::numeric_limits<unsigned long>::digits &&
-   sizeof(decltype((char *)nullptr - (char *)nullptr)) == sizeof(long) &&
+   sizeof(decltype((int *)nullptr - (int *)nullptr)) == sizeof(long) &&
    std::numeric_limits<decltype((char *)nullptr - (char *)nullptr)>::max() == std::numeric_limits<long>::max() &&
    std::numeric_limits<decltype((char *)nullptr - (char *)nullptr)>::min() == std::numeric_limits<long>::min(),
    "`std::size_t`/`std::ptrdiff_t` shall be consistent with `unsigned long`/`long`" );
