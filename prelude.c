@@ -107,6 +107,13 @@ _Static_assert(
 _Static_assert(
    sizeof(long) == sizeof(void *),
    "The target platform shall use LP64 or ILP32 data model" );
+_Static_assert(
+   sizeof(size_t) == sizeof(unsigned long) &&
+   SIZE_MAX == ULONG_MAX &&
+   sizeof(ptrdiff_t) == sizeof(long) &&
+   PTRDIFF_MIN == LONG_MIN && PTRDIFF_MAX == LONG_MAX,
+   "`size_t`/`ptrdiff_t` shall be consistent with `unsigned long`/`long`" );
+
 # ifndef __INTPTR_TYPE__
    _Static_assert(false, "Roundtrip conversion between `void *` and `long` is unavailable on the target");
 # else
@@ -124,13 +131,6 @@ _Static_assert(
       UINTPTR_MAX == ULONG_MAX,
       "`uintptr_t` shall be consistent with `unsigned long`" );
 # endif
-
-_Static_assert(
-   sizeof(size_t) == sizeof(unsigned long) &&
-   SIZE_MAX == ULONG_MAX &&
-   sizeof(ptrdiff_t) == sizeof(long) &&
-   PTRDIFF_MIN == LONG_MIN && PTRDIFF_MAX == LONG_MAX,
-   "`size_t`/`ptrdiff_t` shall be consistent with `unsigned long`/`long`" );
 
 // FP Properties --- these checks are nonredundant but cannot be made 100% complete
 
