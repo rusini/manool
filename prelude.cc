@@ -133,21 +133,23 @@ static_assert(
    "`std::size_t`/`std::ptrdiff_t` shall be consistent with `unsigned long`/`long`" );
 
 # ifndef __INTPTR_TYPE__
-   static_assert(false, "Roundtrip conversion between `void *` and `long` is unavailable on the target");
+   static_assert( false,
+      "Roundtrip conversion between `void *` and `long` is unavailable on the target" );
 # else
    static_assert(
       sizeof(std::intptr_t) == sizeof(long) &&
       std::numeric_limits<std::intptr_t>::max() == std::numeric_limits<long>::max() &&
       std::numeric_limits<std::intptr_t>::min() == std::numeric_limits<long>::min(),
-      "`std::intptr_t` shall be consistent with `long`" );
+      "Roundtrip conversion between `void *` and `long` is unavailable on the target" );
 # endif
 # ifndef __UINTPTR_TYPE__
-   static_assert(false, "Roundtrip conversion between `void *` and `unsigned long` is unavailable on the target");
+   static_assert( false,
+      "Roundtrip conversion between `void *` and `unsigned long` is unavailable on the target" );
 # else
    static_assert(
       sizeof(std::uintptr_t) == sizeof(unsigned long) &&
       std::numeric_limits<std::uintptr_t>::digits == std::numeric_limits<unsigned long>::digits,
-      "`std::uintptr_t` shall be consistent with `unsigned long`" );
+      "Roundtrip conversion between `void *` and `unsigned long` is unavailable on the target" );
 # endif
 
 // FP Properties --- these checks are nonredundant but cannot be made 100% complete
