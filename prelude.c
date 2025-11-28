@@ -22,7 +22,7 @@
    # warning "Compiler mode enabling a more recent spec may cause backward-compatibility issues"
 # endif
 
-// (undesirable) detectable defaults on modern Ubuntu
+// undesirable (but detectable) defaults on modern Ubuntu
 # if __SSP__ || __SSP_ALL__ || __SSP_STRONG__
    # warning "Please recompile with -fno-stack-protector"
 # endif
@@ -32,6 +32,7 @@
 # ifdef _FORTIFY_SOURCE
    # warning "Please recompile with -U_FORTIFY_SOURCE"
 # endif
+// also please use: -fno-stack-clash-protection
 
 # if __NO_MATH_ERRNO__ // mostly useless but disabling it may cause compatibility issues with third-party libraries
    _Static_assert(0, "Please do not use -fno-math-errno");
@@ -114,7 +115,6 @@ _Static_assert(
    sizeof(ptrdiff_t) == sizeof(long) &&
    PTRDIFF_MAX == LONG_MAX && PTRDIFF_MIN == LONG_MIN,
    "`size_t`/`ptrdiff_t` shall be consistent with `unsigned long`/`long`" );
-
 # ifndef __INTPTR_TYPE__
    _Static_assert( 0,
 # else

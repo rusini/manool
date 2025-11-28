@@ -22,7 +22,7 @@
    # warning "Compiler mode enabling a more recent spec may cause backward-compatibility issues"
 # endif
 
-// (undesirable) detectable defaults on modern Ubuntu
+// undesirable (but detectable) defaults on modern Ubuntu
 # if __SSP__ || __SSP_ALL__ || __SSP_STRONG__
    # warning "Please recompile with -fno-stack-protector"
 # endif
@@ -32,6 +32,7 @@
 # ifdef _FORTIFY_SOURCE
    # warning "Please recompile with -U_FORTIFY_SOURCE"
 # endif
+// also please use: -fno-stack-clash-protection
 
 # if !__GXX_WEAK__
    static_assert(false, "Please do not use -fno-weak");
@@ -131,7 +132,6 @@ static_assert(
    std::numeric_limits<decltype((char *)nullptr - (char *)nullptr)>::max() == std::numeric_limits<long>::max() &&
    std::numeric_limits<decltype((char *)nullptr - (char *)nullptr)>::min() == std::numeric_limits<long>::min(),
    "`std::size_t`/`std::ptrdiff_t` shall be consistent with `unsigned long`/`long`" );
-
 # ifndef __INTPTR_TYPE__
    static_assert( false,
 # else
