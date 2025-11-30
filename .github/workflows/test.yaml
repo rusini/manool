@@ -3,7 +3,7 @@
 name: Test GitHub Actions
 
 on:
-  workflow_dispatch: nulL
+  workflow_dispatch:
   push:
     branches: [ "test" ]
 
@@ -34,3 +34,5 @@ jobs:
     - name: Test
       run: |
         ls -la
+    - name: Test
+      run: 0123
