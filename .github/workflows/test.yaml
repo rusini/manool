@@ -3,7 +3,7 @@
 name: Test GitHub Actions
 
 on:
-  workflow_dispatch: NULL
+  workflow_dispatch: nulL
   push:
     branches: [ "test" ]
 
