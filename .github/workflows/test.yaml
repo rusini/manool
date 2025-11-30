@@ -1,0 +1,29 @@
+# .github/workflows/test.yaml
+
+name: Test GitHub Actions
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "test" ]
+
+jobs:
+  test:
+    name: Build
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+
+    - name: Machine Information
+      run: |
+        lscpu; free -h; df -h .
+    - name: System Information
+      run: |
+        date; uname -a; uptime; cat /etc/os-release; ls -C /boot || :
+    - name: Context Information
+      run: |
+        tty || :; id; printf %s\\n "$SHELL"; printf %s\\n "$PATH"; pwd
