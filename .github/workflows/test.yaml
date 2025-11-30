@@ -13,7 +13,8 @@ jobs:
     runs-on: ubuntu-latest
 
     defaults:
-      run.shell: foo
+      run:
+         shell: bash
 
     steps:
 
@@ -33,3 +34,4 @@ jobs:
     - name: Test
       run: |
         ls -la
+        echo {1,2,3}a
