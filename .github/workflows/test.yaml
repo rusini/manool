@@ -14,7 +14,7 @@ jobs:
 
     defaults:
       run:
-        shell: bash
+        shell: foo
 
     steps:
 
@@ -34,5 +34,3 @@ jobs:
     - name: Test
       run: |
         ls -la
-    - name: Test
-      run: 0123
