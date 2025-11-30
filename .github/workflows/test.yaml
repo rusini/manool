@@ -14,7 +14,7 @@ jobs:
 
     defaults:
       run:
-         shell: sh
+        shell: bash
 
     steps:
 
@@ -34,4 +34,5 @@ jobs:
     - name: Test
       run: |
         ls -la
-        echo {1,2,3}a
+    - name: Test
+      run: NULL
