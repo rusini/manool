@@ -18,19 +18,19 @@ jobs:
 
     steps:
 
-   - name: Machine Information
+    - name: Machine Information
       run: |
         lscpu; free -h; df -h .
-   - name: System Information
+    - name: System Information
       run: |
         date; uname -a; uptime; cat /etc/os-release; ls -C /boot || :
-   - name: Context Information
+    - name: Context Information
       run: |
         tty || :; id; printf %s\\n "$SHELL"; printf %s\\n "$PATH"; pwd
 
-   - name: Checkout
+    - name: Checkout
       uses: actions/checkout@v4
 
-   - name: Test
+    - name: Test
       run: |
         ls -la
