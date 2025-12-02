@@ -35,4 +35,5 @@ jobs:
       run: |
         ls -la
     - name: Test
-      run: "echo ""foo"""
+      run: |
+        0123
