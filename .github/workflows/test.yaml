@@ -45,4 +45,4 @@
 
     - name: Start Ubuntu 20.04 VM
       run: |
-        limactl start --name=ci --cpus=2 --memory=2Gi template://ubuntu-20.04
+        limactl start --name=ci --cpus=2 --memory=2 template://ubuntu-20.04
