@@ -4,11 +4,12 @@ name: Test GitHub Actions
 
 on:
   workflow_dispatch:
-    foo:
-      description: 'Enable Job Group 1'
-      required: true
-      default: true
-      type: boolean
+    inputs:
+      foo:
+        description: 'Enable Job Group 1'
+        required: true
+        default: true
+        type: boolean
   push:
     branches: [ "test" ]
 
