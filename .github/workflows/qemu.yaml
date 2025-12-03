@@ -34,22 +34,22 @@ jobs:
         sudo qemu-img resize focal-server-cloudimg-amd64-disk-kvm.img 5G
 
     - name: Create cloud-init seed
-        run: |+
-          cat >user-data <<EOF
-          #cloud-config
-          password: ubuntu
-          chpasswd: { expire: False }
-          ssh_pwauth: True
-          packages:
-            - g++-10
-          EOF
+      run: |+
+        cat >user-data <<EOF
+        #cloud-config
+        password: ubuntu
+        chpasswd: { expire: False }
+        ssh_pwauth: True
+        packages:
+          - g++-10
+        EOF
 
-          cat >meta-data <<EOF
-          instance-id: focal1
-          local-hostname: focal
-          EOF
+        cat >meta-data <<EOF
+        instance-id: focal1
+        local-hostname: focal
+        EOF
 
-          cloud-localds seed.img user-data meta-data
+        cloud-localds seed.img user-data meta-data
 
     - name: Checkout
       uses: actions/checkout@v4
