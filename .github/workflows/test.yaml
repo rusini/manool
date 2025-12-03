@@ -1,42 +1,41 @@
 # .github/workflows/test.yaml
 
-name: Test GitHub Actions
+'name': 'Test GitHub Actions'
 
-on:
-  workflow_dispatch:
-   inputs:
-     foo2:
-       description: 'Enable Job Group 2'
-       required: true
-       default: true
-       type: boolean
+'on':
+  'workflow_dispatch':
+#   inputs:
+#     foo2:
+#       description: 'Enable Job Group 2'
+#       required: true
+#       default: true
+#       type: boolean
   push:
     branches: [ "test" ]
 
-jobs:
-  test:
-    name: Build
-    runs-on: ubuntu-latest
+'jobs':
+  'test':
+    'name': 'Build'
+    'runs-on': 'ubuntu-latest'
 
-    defaults:
-      run:
-        shell: bash
+    'defaults':
+      'run': { 'shell': 'bash' }
 
-    steps:
+    'steps':
 
-    - name: Machine Information
-      run: |
+    - 'name': 'Machine Information'
+      'run': |
         lscpu; free -h; df -h .
-    - name: System Information
-      run: |
+    - 'name': 'System Information'
+      'run': |
         date; uname -a; uptime; cat /etc/os-release; ls -C /boot || :
-    - name: Context Information
-      run: |
+    - 'name': 'Context Information'
+      'run': |
         tty || :; id; printf %s\\n "$SHELL"; printf %s\\n "$PATH"; pwd
 
-    - name: Checkout
-      uses: actions/checkout@v4
+    - 'name': 'Checkout'
+      'uses': 'actions/checkout@v4'
 
-    - name: Test
+    - 'name': 'Test'
       'run': |
         ls -la
