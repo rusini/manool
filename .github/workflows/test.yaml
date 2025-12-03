@@ -40,9 +40,9 @@
       'run': |
         ls -la
 
-    - 'name': 'Testing'
-      'run': |
-        set -x
-        sudo snap install multipass
-        sudo multipass launch 20.04 --name focal --memory 2G --disk 10G
-        sudo multipass exec focal -- bash -c "sudo apt update && sudo apt install g++ && g++ -version"
+    - name: Set up Lima
+      uses: lima-vm/lima-actions/setup@v1
+
+    - name: Start Ubuntu 20.04 VM
+      run: |
+        limactl start --name=ci --cpus=2 --memory=2Gi template://ubuntu-20.04
