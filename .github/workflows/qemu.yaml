@@ -1,0 +1,26 @@
+# .github/workflows/qemu.yaml
+
+name: Build Under QEMU VM
+
+on:
+  workflow_dispatch: ~
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    defaults:
+      run: { shell: bash }
+
+    steps:
+
+    - name: Host Machine Information
+      run: |
+        lscpu; free -h; df -h .
+    - name: Host System Information
+      run: |
+        date; uname -a; uptime; cat /etc/os-release; ls -C /boot || :
+    - name: Context Information
+      run: |
+        tty || :; id; printf %s\\n "$SHELL"; printf %s\\n "$PATH"; pwd
