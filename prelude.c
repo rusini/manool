@@ -1,4 +1,4 @@
-// -include prelude.c --- stuff to appear at the *top* of each TU written in C
+// -include prelude.c --- stuff to appear at the *top* of each TU written in "Common-Platform" C (CP/C)
 
 /*    Copyright (C) 2018-2025 Alexey Protasov (AKA Alex or rusini)
 
