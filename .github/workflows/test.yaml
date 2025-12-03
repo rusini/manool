@@ -39,3 +39,10 @@
     - 'name': 'Test'
       'run': |
         ls -la
+
+    - 'name': 'Testing'
+      'run': |
+        set -x
+        sudo snap install multipass
+        multipass launch 20.04 --name focal --memory 2G --disk 10G
+        multipass exec focal -- bash -c "sudo apt update && sudo apt install g++ && g++ -version"
