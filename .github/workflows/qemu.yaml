@@ -38,7 +38,7 @@ jobs:
 
         mkdir .ssh; chmod 700 .ssh
         ssh-keygen -N '' -t rsa -b 1024 -f .ssh/id_rsa
-        cloud-localds seed.img - <<END
+        cloud-localds seed.iso - <<END
         #cloud-config
         users:
         - name: root
@@ -50,7 +50,7 @@ jobs:
           -nic user,model=virtio,hostfwd=:127.0.0.1:222-:22 -daemonize -vga none -display none
         until ssh -oStrictHostKeyChecking=no -p222 root@127.0.0.1 :; do sleep 1; done
 
-        cat >>/usr/local/bin/dovm.sh <<'END'
+        cat >/usr/local/bin/dovm.sh <<'END'
         ssh -p222 root@127.0.0.1 bash --noprofile --norc -e -o pipefail <$1
         END
 
