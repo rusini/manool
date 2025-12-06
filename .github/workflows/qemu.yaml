@@ -63,6 +63,6 @@ jobs:
       shell: dovm.sh {0}
       run: |
         lscpu; free -h; df -h .
-        lspci; lsblk; dmesg
+        dmesg
         apt update
         apt install -y g++multilib
