@@ -25,7 +25,7 @@ jobs:
       run: |-
         tty || :; id; printf %s\\n "$SHELL"; printf %s\\n "$PATH"; pwd
 
-    - name: Setup
+    - name: Deploy and Start VM
       run: |-
         set -x; cd
 
@@ -56,13 +56,16 @@ jobs:
         END
         chmod +x /usr/local/bin/dovm.sh
 
-    - name: Checkout
-      uses: actions/checkout@v4
-
-    - name: Test
+    - name: Set up VM
       shell: dovm.sh {0}
-      run: |
+      run: |-
         lscpu; free -h; df -h .
         dmesg
         apt update
         apt install -y g++-multilib
+        g++ --version
+
+    - name: Checkout
+      uses: actions/checkout@v4
+
+
