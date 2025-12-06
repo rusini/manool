@@ -38,7 +38,7 @@ jobs:
 
         mkdir .ssh; chmod 700 .ssh
         ssh-keygen -N '' -t rsa -b 1024 -f .ssh/id_rsa
-        cloud-localds seed.img <<END
+        cloud-localds seed.img - <<END
         #cloud-config
         users:
         - name: root
