@@ -24,6 +24,8 @@ jobs:
     - name: Context Information
       run: |-
         tty || :; id; printf %s\\n "$SHELL"; printf %s\\n "$PATH"; pwd
+        (set -x; set)
+        (set -x; env)
 
     - name: Deploy and Start VM
       run: |-
