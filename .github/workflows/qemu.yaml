@@ -59,7 +59,6 @@ jobs:
         ssh -p222 root@127.0.0.1 bash --noprofile --norc -e -o pipefail <$1
         END
         chmod +x /usr/local/bin/dovm.sh
-        ls -ld /usr/local/bin
 
     - name: Set up VM
       shell: dovm.sh {0}
@@ -69,8 +68,15 @@ jobs:
         apt update
         apt -y install g++-multilib
         g++ --version
-        (set -x; set)
-        (set -x; env)
+
+    - name: Test
+      shell: cat {0}
+      run: |
+        ppopkpo
+        pokpkop
+
+        okopkopk
+
 
     - name: Checkout
       uses: actions/checkout@v4
