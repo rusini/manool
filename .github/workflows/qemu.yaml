@@ -48,7 +48,7 @@ jobs:
         sudo qemu-system-x86_64 -enable-kvm -cpu host -m 10G -smp 4 \
           -drive file=root.img,format=qcow2,if=virtio -cdrom seed.iso \
           -nic user,model=virtio,hostfwd=:127.0.0.1:222-:22 -daemonize -vga none -display none
-        until ssh -oStrictHostKeyChecking=no -p222 root@127.0.0.1 :; do sleep 1; done
+        until ssh -oStrictHostKeyChecking=no -p222 root@127.0.0.1 : 2>/dev/null; do sleep 1; done
 
         cat >/usr/local/bin/dovm.sh <<'END'
         #!/bin/bash
@@ -65,4 +65,4 @@ jobs:
         lscpu; free -h; df -h .
         dmesg
         apt update
-        apt install -y g++multilib
+        apt install -y g++-multilib
