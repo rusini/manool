@@ -17,16 +17,17 @@ jobs:
 
     - name: Host Machine Information
       run: |-
-        lscpu; free -h; df -h .
+        set -x
+        lscpu; free -h; df -H .
     - name: Host System Information
       run: |-
-        date; uname -a; uptime; cat /etc/os-release; ls -C /boot || :
-        sudo dmesg -e
+        date; uname -a; uptime
+        set -x
+        systemd-detect-virt
+        cat /etc/os-release; ls -C /boot || :
     - name: Context Information
       run: |-
         tty || :; id; printf %s\\n "$SHELL"; printf %s\\n "$PATH"; pwd
-        (set -x; set)
-        (set -x; env)
 
     - name: Deploy and Start VM
       run: |-
@@ -48,7 +49,7 @@ jobs:
           ssh_authorized_keys: [ '$(<.ssh/id_rsa.pub)' ]
         END
 
-        sudo qemu-system-x86_64 -enable-kvm -cpu host -m 10G -smp 4 \
+        sudo qemu-system-x86_64 -enable-kvm -cpu host -machine q35 -m 10G -smp 4 \
           -drive file=root.img,format=qcow2,if=virtio -cdrom seed.iso \
           -nic user,model=virtio,hostfwd=:127.0.0.1:222-:22 -daemonize -vga none -display none
         until ssh -oStrictHostKeyChecking=no -p222 root@127.0.0.1 : 2>/dev/null; do sleep 1; done
@@ -58,14 +59,15 @@ jobs:
         ssh -p222 root@127.0.0.1 bash --noprofile --norc -e -o pipefail <$1
         END
         chmod +x /usr/local/bin/dovm.sh
+        ls -ld /usr/local/bin
 
     - name: Set up VM
       shell: dovm.sh {0}
       run: |-
+        set -x
         lscpu; free -h; df -h .
-        dmesg
         apt update
-        apt install -y g++-multilib
+        apt -y install g++-multilib
         g++ --version
         (set -x; set)
         (set -x; env)
