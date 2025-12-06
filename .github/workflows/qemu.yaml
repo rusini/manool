@@ -51,6 +51,7 @@ jobs:
         until ssh -oStrictHostKeyChecking=no -p222 root@127.0.0.1 :; do sleep 1; done
 
         cat >/usr/local/bin/dovm.sh <<'END'
+        #!/bin/bash
         ssh -p222 root@127.0.0.1 bash --noprofile --norc -e -o pipefail <$1
         END
         chmod +x /usr/local/bin/dovm.sh
