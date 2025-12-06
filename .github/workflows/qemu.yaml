@@ -53,6 +53,7 @@ jobs:
         cat >/usr/local/bin/dovm.sh <<'END'
         ssh -p222 root@127.0.0.1 bash --noprofile --norc -e -o pipefail <$1
         END
+        chmod +x /usr/local/bin/dovm.sh
 
     - name: Checkout
       uses: actions/checkout@v4
