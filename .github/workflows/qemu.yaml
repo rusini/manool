@@ -21,6 +21,7 @@ jobs:
     - name: Host System Information
       run: |-
         date; uname -a; uptime; cat /etc/os-release; ls -C /boot || :
+        dmesg
     - name: Context Information
       run: |-
         tty || :; id; printf %s\\n "$SHELL"; printf %s\\n "$PATH"; pwd
@@ -66,6 +67,8 @@ jobs:
         apt update
         apt install -y g++-multilib
         g++ --version
+        (set -x; set)
+        (set -x; env)
 
     - name: Checkout
       uses: actions/checkout@v4
