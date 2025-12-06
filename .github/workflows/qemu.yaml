@@ -27,33 +27,39 @@ jobs:
 
     - name: Setup
       run: |-
-        set -x
+        set -x; cd
+
         sudo apt-get update
-        sudo apt-get install qemu-system-x86 cloud-image-utils
-        sudo wget -nv https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64-disk-kvm.img
-        sudo qemu-img resize focal-server-cloudimg-amd64-disk-kvm.img 5G
+        sudo apt-get install --no-install-recommends qemu-system-x86 cloud-image-utils
 
-    - name: Create cloud-init seed
-      run: |+
-        cat >user-data <<EOF
+        wget --no-show-progress -O root.img \
+          https://cloud-images.ubuntu.com/minimal/releases/focal/release/ubuntu-20.04-minimal-cloudimg-amd64.img
+        qemu-img resize root.img 5G
+
+        ssh-keygen -t rsa -b 1024 -f .ssh/id_rsa
+        cloud-localds seed.img <<END
         #cloud-config
-        password: ubuntu
-        chpasswd: { expire: False }
-        ssh_pwauth: True
-        packages:
-          - g++-10
-        EOF
+        users:
+        - name: root
+          ssh_authorized_keys: [ '$(<.ssh/id_rsa.pub)' ]
+        END
 
-        cat >meta-data <<EOF
-        instance-id: focal1
-        local-hostname: focal
-        EOF
+        sudo qemu-system-x86_64 -enable-kvm -cpu host -m 10G -smp 4 \
+          -drive file=root.img,format=qcow2,if=virtio -cdrom seed.iso \
+          -nic user,model=virtio,hostfwd=:127.0.0.1:222-:22 -daemonize -vga none -display none
+        until ssh -oStrictHostKeyChecking=no -p222 root@127.0.0.1 :; do sleep 1; done
 
-        cloud-localds seed.img user-data meta-data
+        cat >>/usr/local/bin/dovm.sh <<'END'
+        ssh -p222 root@127.0.0.1 bash --noprofile --norc -e -o pipefail <$1
+        END
 
     - name: Checkout
       uses: actions/checkout@v4
 
     - name: Test
+      shell: dovm.sh {0}
       run: |
-        ls -la
+        lscpu; free -h; df -h .
+        lspci; lsblk; dmesg
+        apt update
+        apt install -y g++multilib
