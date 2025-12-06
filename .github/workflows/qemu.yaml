@@ -42,9 +42,10 @@ jobs:
 
         mkdir .ssh; chmod 700 .ssh
         ssh-keygen -N '' -t rsa -b 1024 -f .ssh/id_rsa
-        cloud-localds seed.iso - <<END
+        tee <<END | cloud-localds seed.iso -
         #cloud-config
         users:
+
         - name: root
           ssh_authorized_keys: [ '$(<.ssh/id_rsa.pub)' ]
         END
