@@ -36,6 +36,7 @@ jobs:
           https://cloud-images.ubuntu.com/minimal/releases/focal/release/ubuntu-20.04-minimal-cloudimg-amd64.img
         qemu-img resize root.img 5G
 
+        mkdir .ssh; chmod 700 .ssh
         ssh-keygen -N '' -t rsa -b 1024 -f .ssh/id_rsa
         cloud-localds seed.img <<END
         #cloud-config
