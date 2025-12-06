@@ -49,7 +49,8 @@ jobs:
           ssh_authorized_keys: [ '$(<.ssh/id_rsa.pub)' ]
         END
 
-        sudo qemu-system-x86_64 -enable-kvm -cpu host -machine q35 -m 10G -smp 4 \
+        sudo qemu-system-x86_64 -machine help
+        sudo qemu-system-x86_64 -enable-kvm -cpu host -machine pc -m 10G -smp 4 \
           -drive file=root.img,format=qcow2,if=virtio -cdrom seed.iso \
           -nic user,model=virtio,hostfwd=:127.0.0.1:222-:22 -nographic # -daemonize -vga none -display none
         until ssh -oStrictHostKeyChecking=no -p222 root@127.0.0.1 : 2>/dev/null; do sleep 1; done
