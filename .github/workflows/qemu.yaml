@@ -21,7 +21,7 @@ jobs:
     - name: Host System Information
       run: |-
         date; uname -a; uptime; cat /etc/os-release; ls -C /boot || :
-        sudo dmesg
+        sudo dmesg -e
     - name: Context Information
       run: |-
         tty || :; id; printf %s\\n "$SHELL"; printf %s\\n "$PATH"; pwd
