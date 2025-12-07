@@ -35,7 +35,7 @@ jobs:
 
         sudo apt-get update
         sudo apt-get install --no-install-recommends qemu-system-x86 cloud-image-utils
-        qemu-system-x86 --version
+        qemu-system-x86_64 --version
 
         wget --no-show-progress -O root.img \
           https://cloud-images.ubuntu.com/minimal/releases/focal/release/ubuntu-20.04-minimal-cloudimg-amd64.img
