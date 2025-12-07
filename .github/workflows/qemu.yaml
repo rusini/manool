@@ -21,17 +21,19 @@ jobs:
         lscpu; free -h; df -H .
     - name: Host System Information
       run: |
+        exec 2>&1
         date; uname -a; uptime
         set -x
-        systemd-detect-virt
-        cat /etc/os-release; ls -C /boot || :
+        systemd-detect-virt; cat /etc/os-release; ls -C /boot || :
     - name: Context Information
       run: |
-        tty || :; id; printf %s\\n "$SHELL"; printf %s\\n "$PATH"; pwd
+        exec 2>&1; set -x
+        tty || :; id; printf %s\\n%s\\n "$SHELL" "$PATH"; pwd
 
     - name: Deploy and Start VM
       run: |
-        cd; set -x
+        exec 2>&1; set -x
+        cd
 
         sudo apt-get update
         sudo apt-get install --no-install-recommends qemu-system-x86 cloud-image-utils
@@ -83,18 +85,15 @@ jobs:
         exec 2>&1; set -x
         cd ..
         tar c manool | ssh -p222 root@127.0.0.1 tar x
-
     - name: Test
       shell: vmbash.sh {0}
       run: |
         exec 2>&1; set -x
         g++ --version
         ls -la manool
-
     - name: Download from VM
       run: |
         exec 2>&1; set -x
         cd ..
         rm -rf manool
         ssh -p222 root@127.0.0.1 tar c manool | tar x
-
