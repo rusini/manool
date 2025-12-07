@@ -17,8 +17,7 @@ jobs:
 
     - name: Host Machine Information
       run: |
-        exec 2>&1
-        set -x
+        exec 2>&1; set -x
         lscpu; free -h; df -H .
     - name: Host System Information
       run: |
@@ -36,6 +35,7 @@ jobs:
 
         sudo apt-get update
         sudo apt-get install --no-install-recommends qemu-system-x86 cloud-image-utils
+        qemu-system-x86 --version
 
         wget --no-show-progress -O root.img \
           https://cloud-images.ubuntu.com/minimal/releases/focal/release/ubuntu-20.04-minimal-cloudimg-amd64.img
@@ -61,14 +61,36 @@ jobs:
         END
         chmod +x /usr/local/bin/dovm.sh
 
-    - name: Set up VM
+    - name: VM Information
       shell: dovm.sh {0}
       run: |
         set -x
         lscpu; free -h; df -H .
+
+    - name: Set up VM
+      shell: dovm.sh {0}
+      run: |
+        set -x
         apt update
+        apt -y install rsync
         apt -y install g++-multilib
         g++ --version
 
     - name: Checkout
       uses: actions/checkout@v4
+
+    - name: Upload to VM
+      exec 2>&1; set -x; cd ..
+      tar c manool | ssh -p222 root@127.0.0.1 tar x
+
+    - name: Test
+      shell: dovm.sh {0}
+      run: |
+        g++ --version
+        ls -la manool
+
+    - name: Download from VM
+      exec 2>&1; set -x; cd ..
+      rm -rf manool
+      ssh -p222 root@127.0.0.1 tar c manool | tar x
+
