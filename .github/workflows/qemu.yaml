@@ -81,8 +81,8 @@ jobs:
 
     - name: Upload to VM
       run: |
-      exec 2>&1; set -x; cd ..
-      tar c manool | ssh -p222 root@127.0.0.1 tar x
+        exec 2>&1; set -x; cd ..
+        tar c manool | ssh -p222 root@127.0.0.1 tar x
 
     - name: Test
       shell: dovm.sh {0}
@@ -92,7 +92,7 @@ jobs:
 
     - name: Download from VM
       run: |
-      exec 2>&1; set -x; cd ..
-      rm -rf manool
-      ssh -p222 root@127.0.0.1 tar c manool | tar x
+        exec 2>&1; set -x; cd ..
+        rm -rf manool
+        ssh -p222 root@127.0.0.1 tar c manool | tar x
 
