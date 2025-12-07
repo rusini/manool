@@ -27,8 +27,10 @@ jobs:
         systemd-detect-virt; cat /etc/os-release; ls -C /boot || :
     - name: Context Information
       run: |
-        exec 2>&1; set -x
-        tty || :; id; printf %s\\n%s\\n "$SHELL" "$PATH"; pwd
+        exec 2>&1
+        tty || :; id; printf %s\\n%s\\n "SHELL=$SHELL" "PATH=$PATH"
+        set -x
+        pwd
 
     - name: Deploy and Start VM
       run: |
