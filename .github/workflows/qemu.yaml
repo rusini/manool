@@ -55,25 +55,24 @@ jobs:
           -nic user,model=virtio,hostfwd=:127.0.0.1:222-:22 -daemonize -vga none -display none
         until ssh -oStrictHostKeyChecking=no -p222 root@127.0.0.1 : 2>/dev/null; do sleep 1; done
 
-        tee /usr/local/bin/dovm.sh <<'END'
+        tee /usr/local/bin/vmbash.sh <<'END' >/dev/null; chmod +x /usr/local/bin/vmbash.sh
         #!/bin/bash
         ssh -p222 root@127.0.0.1 bash --noprofile --norc -e -o pipefail <$1
         END
-        chmod +x /usr/local/bin/dovm.sh
 
     - name: VM Information
-      shell: dovm.sh {0}
+      shell: vmbash.sh {0}
       run: |
-        set -x
+        exec 2>&1; set -x
         lscpu; free -h; df -H .
 
     - name: Set up VM
-      shell: dovm.sh {0}
+      shell: vmbash.sh {0}
       run: |
-        set -x
-        apt update
-        apt -y install rsync
-        apt -y install g++-multilib
+        exec 2>&1; set -x
+        apt-get update
+        apt-get -y install rsync
+        apt-get -y install make g++-multilib
         g++ --version
 
     - name: Checkout
@@ -81,18 +80,21 @@ jobs:
 
     - name: Upload to VM
       run: |
-        exec 2>&1; set -x; cd ..
+        exec 2>&1; set -x
+        cd ..
         tar c manool | ssh -p222 root@127.0.0.1 tar x
 
     - name: Test
-      shell: dovm.sh {0}
+      shell: vmbash.sh {0}
       run: |
+        exec 2>&1; set -x
         g++ --version
         ls -la manool
 
     - name: Download from VM
       run: |
-        exec 2>&1; set -x; cd ..
+        exec 2>&1; set -x
+        cd ..
         rm -rf manool
         ssh -p222 root@127.0.0.1 tar c manool | tar x
 
