@@ -7,7 +7,19 @@ on:
 
 jobs:
   build:
-    name: Build
+
+    strategy:
+      fail-fast: FALSE
+      matrix:
+        compiler:
+        - { label: 'gcc9',    gcc: 'gcc',      gxx: 'g++',        pkgs: 'g++-multilib'            }
+        - { label: 'gcc10',   gcc: 'gcc-10',   gxx: 'g++-10',     pkgs: 'g++-10-multilib'         }
+        - { label: 'clang18', gcc: 'clang-18', gxx: 'clang++-18', pkgs: 'clang-18 gcc++-multilib' }
+        mode:
+        - { label: '64',  flags: ''                         }
+        - { label: '32',  flags: '-m32 -msse2 -mfpmath=sse' }
+        - { label: 'x32', flags: '-mx32'                    }
+    name: Build with ${{matrix.compiler.GCC}} ${{matrix.mode.flags}}
     runs-on: ubuntu-latest
 
     defaults:
@@ -42,8 +54,8 @@ jobs:
         qemu-system-x86_64 --version
 
         wget --no-show-progress -O root.img \
-          https://cloud-images.ubuntu.com/minimal/releases/focal/release/ubuntu-20.04-minimal-cloudimg-amd64.img
-        qemu-img resize root.img 5G
+          https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img
+        qemu-img resize root.img 6G
 
         mkdir -m777 .ssh
         ssh-keygen -N '' -t rsa -b 1024 -f .ssh/id_rsa
@@ -76,26 +88,39 @@ jobs:
         exec 2>&1; set -x
         apt-get update
         apt-get -y install rsync
-        apt-get -y install make g++-multilib
-        g++ --version
+        apt-get -y install make ${{matrix.compiler.pkgs}}
+        ${{matrix.compiler.gxx}} --version
 
     - name: Checkout
       uses: actions/checkout@v4
-
     - name: Upload to VM
       run: |
         exec 2>&1; set -x
         cd ..
         tar c manool | ssh -p222 root@127.0.0.1 tar x
+
     - name: Test
       shell: vmbash.sh {0}
       run: |
         exec 2>&1; set -x
-        g++ --version
-        ls -la manool
+        tee hi.cc <<'END'
+        # include <cstdio>
+        int main() {
+           std::puts("Hi");
+           return 0;
+        }
+        END
+        ${{matrix.compiler.gxx}} ${{matrix.compiler.mode.flags}} hi.cc
+        ./a.out
+
     - name: Download from VM
       run: |
         exec 2>&1; set -x
         cd ..
         rm -rf manool
         ssh -p222 root@127.0.0.1 tar c manool | tar x
+    - name: Upload Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-${{matrix.compiler.label}}-${{matrix.mode.label}}
+        path: build
