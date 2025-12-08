@@ -7,24 +7,23 @@ on:
 
 jobs:
   build:
-
     strategy:
       fail-fast: FALSE
       matrix:
         compiler:
-        - { label: 'gcc9',    gcc: 'gcc',      gxx: 'g++',        pkgs: 'g++-multilib'          }
-        - { label: 'gcc10',   gcc: 'gcc-10',   gxx: 'g++-10',     pkgs: 'g++-10-multilib'       }
+        - { label: 'gcc9',    gcc: 'gcc',      gxx: 'g++',        pkgs: 'g++-multilib' }
+        - { label: 'gcc10',   gcc: 'gcc-10',   gxx: 'g++-10',     pkgs: 'g++-10-multilib' }
         - { label: 'clang18', gcc: 'clang-18', gxx: 'clang++-18', pkgs: 'clang-18 g++-multilib' }
         mode:
-        - { label: '64',  flags: ''                         }
+        - { label: '64',  flags: '' }
         - { label: '32',  flags: '-m32 -msse2 -mfpmath=sse' }
-        - { label: 'x32', flags: '-mx32'                    }
-    name: Build with ${{matrix.compiler.GCC}} ${{matrix.mode.flags}}
+        - { label: 'x32', flags: '-mx32' }
+
+    name: Build with ${{matrix.compiler.label}}/${{matrix.mode.label}}
     runs-on: ubuntu-latest
 
     defaults:
       run: { shell: bash }
-
     steps:
 
     - name: Host Machine Information
@@ -81,7 +80,6 @@ jobs:
       run: |
         exec 2>&1; set -x
         lscpu; free -h; df -H .
-
     - name: Set up VM
       shell: vmbash.sh {0}
       run: |
@@ -99,7 +97,7 @@ jobs:
         cd ..
         tar c manool | ssh -p222 root@127.0.0.1 tar x
 
-    - name: Test
+    - name: Build and Test
       shell: vmbash.sh {0}
       run: |
         exec 2>&1; set -x
