@@ -10,7 +10,6 @@ foo: bar
 jobs:
 
   qemu-build:
-    foo: bar
     name: Build with ${{matrix.compiler.label}}/${{matrix.mode.label}}
     strategy:
       fail-fast: FALSE
@@ -35,6 +34,7 @@ jobs:
       run: |
         exec 2>&1; set -x
         lscpu; free -h; df -H .
+      foo: bar
     - name: Host System Information
       run: |
         exec 2>&1
