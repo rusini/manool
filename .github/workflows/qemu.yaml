@@ -211,4 +211,4 @@ jobs:
       run: |
         exec 2>&1; set -x
         cd
-        while test "$(sudo lsof -w focal-server-cloudimg-amd64.img)"; do sleep 1; done
+        while test "$(sudo lsof -w root.img)"; do sleep 1; done
