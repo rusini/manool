@@ -12,9 +12,9 @@ jobs:
       fail-fast: FALSE
       matrix:
         compiler:
-        - { label: 'gcc9',    gcc: 'gcc',      gxx: 'g++' }
-        - { label: 'gcc10',   gcc: 'gcc-10',   gxx: 'g++-10' }
-        - { label: 'clang18', gcc: 'clang-18', gxx: 'clang++-18' }
+          - { label: 'gcc9',    gcc: 'gcc',      gxx: 'g++' }
+          - { label: 'gcc10',   gcc: 'gcc-10',   gxx: 'g++-10' }
+          - { label: 'clang18', gcc: 'clang-18', gxx: 'clang++-18' }
         mode:
         - { label: '64',  flags: '' }
         - { label: '32',  flags: '-m32 -msse2 -mfpmath=sse' }
