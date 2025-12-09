@@ -142,7 +142,7 @@ jobs:
       uses: actions/cache@v4
       with:
         key: ubuntu-focal-cloud-generic
-        path:
+        path: |
           /home/runner/root.img
           /home/runner/.ssh/id_rsa
 
