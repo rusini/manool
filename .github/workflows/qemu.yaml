@@ -130,8 +130,8 @@ jobs:
           https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img
         qemu-img resize root.img 6G
 
-#        mkdir -m777 .ssh
-#        ssh-keygen -N '' -t rsa -b 1024 -f .ssh/id_rsa
+        mkdir -m777 .ssh
+        ssh-keygen -N '' -t rsa -b 1024 -f .ssh/id_rsa
 #        cloud-localds seed.iso - <<END
 #        #cloud-config
 #        users:
