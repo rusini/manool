@@ -126,8 +126,8 @@ jobs:
         exec 2>&1; set -x
         cd
 
-#        wget --no-show-progress -O root.img \
-#          https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img
+        wget --no-show-progress -O root.img \
+          https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img
 #        qemu-img resize root.img 6G
 
 #        mkdir -m777 .ssh
