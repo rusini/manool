@@ -7,7 +7,7 @@ on:
 
 jobs:
 
-  qemu-build:
+  build:
     name: Build with ${{matrix.compiler.label}}/${{matrix.mode.label}}
     strategy:
       fail-fast: FALSE
@@ -105,7 +105,7 @@ jobs:
         name: build-${{matrix.compiler.label}}-${{matrix.mode.label}}
         path: build
 
-  qemu-cache:
+  cache:
     name: Prepare VM Image
     runs-on: ubuntu-latest
 
