@@ -5,6 +5,8 @@ name: Build in a QEMU VM
 on:
   workflow_dispatch: NULL
 
+foo: &bar
+
 jobs:
 
   qemu-build:
