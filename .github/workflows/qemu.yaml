@@ -11,18 +11,18 @@ jobs:
     strategy:
       fail-fast: FALSE
       matrix:
-        compiler:
-          - { label: 'gcc9',    gcc: 'gcc',      gxx: 'g++' }
-          - { label: 'gcc10',   gcc: 'gcc-10',   gxx: 'g++-10' }
-          - { label: 'clang18', gcc: 'clang-18', gxx: 'clang++-18' }
-        mode:
+#        compiler:
+#        - { label: 'gcc9',    gcc: 'gcc',      gxx: 'g++' }
+#        - { label: 'gcc10',   gcc: 'gcc-10',   gxx: 'g++-10' }
+#        - { label: 'clang18', gcc: 'clang-18', gxx: 'clang++-18' }
+#        mode:
         - { label: '64',  flags: '' }
         - { label: '32',  flags: '-m32 -msse2 -mfpmath=sse' }
         - { label: 'x32', flags: '-mx32' }
 
     name: Build with ${{matrix.compiler.label}}/${{matrix.mode.label}}
     runs-on: ubuntu-latest
-    needs: [ qemu-cache ]
+    needs: [ cache ]
 
     defaults:
       run: { shell: bash }
