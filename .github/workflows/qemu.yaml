@@ -120,11 +120,11 @@ jobs:
       with:
         path: /home/runner/root.img
         key: ubuntu-focal-cloud-generic
-#    - name: Deploy and Start VM
-#      if: steps.cache.outputs.cache-hit != 'true'
-#      run:
-#        exec 2>&1; set -x
-#        cd
+    - name: Deploy and Start VM
+      if: steps.cache.outputs.cache-hit != 'true'
+      run:
+        exec 2>&1; set -x
+        cd
 
 #        wget --no-show-progress -O root.img \
 #          https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img
