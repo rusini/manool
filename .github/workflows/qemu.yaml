@@ -10,6 +10,7 @@ foo: bar
 jobs:
 
   qemu-build:
+    foo: bar
     name: Build with ${{matrix.compiler.label}}/${{matrix.mode.label}}
     strategy:
       fail-fast: FALSE
