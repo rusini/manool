@@ -58,8 +58,8 @@ jobs:
       with:
         key: ubuntu-focal-cloud-generic
         path: |
-          ~/root.img
-          ~/.ssh/id_rsa
+          /home/runner/root.img
+          /home/runner/.ssh/id_rsa
     - name: Deploy and Start VM
       run: |
         exec 2>&1; set -x
@@ -143,8 +143,8 @@ jobs:
       with:
         key: ubuntu-focal-cloud-generic
         path:
-          ~/root.img
-          ~/.ssh/id_rsa
+          /home/runner/root.img
+          /home/runner/.ssh/id_rsa
 
     - name: Host Setup
       if: steps.cache.outputs.cache-hit != 'true'
@@ -192,7 +192,7 @@ jobs:
       run: |
         exec 2>&1; set -x
         lscpu; free -h; df -H .
-    - name: Set up VM and Initiate Shut Down
+    - name: Set up VM
       if: steps.cache.outputs.cache-hit != 'true'
       shell: vmbash.sh {0}
       run: |
