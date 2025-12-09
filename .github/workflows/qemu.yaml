@@ -128,7 +128,7 @@ jobs:
 
         wget --no-show-progress -O root.img \
           https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img
-#        qemu-img resize root.img 6G
+        qemu-img resize root.img 6G
 
 #        mkdir -m777 .ssh
 #        ssh-keygen -N '' -t rsa -b 1024 -f .ssh/id_rsa
