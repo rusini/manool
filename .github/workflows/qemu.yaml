@@ -114,12 +114,12 @@ jobs:
         set -x
         pwd
 
-#    - name: Lookup Cache Object
-#      id: cache
-#      uses: actions/cache@v4
-#      with:
-#        path: /home/runner/root.img
-#        key: ubuntu-focal-cloud-generic
+    - name: Lookup Cache Object
+      id: cache
+      uses: actions/cache@v4
+      with:
+        path: /home/runner/root.img
+        key: ubuntu-focal-cloud-generic
 #    - name: Deploy and Start VM
 #      if: steps.cache.outputs.cache-hit != 'true'
 #      run:
