@@ -118,11 +118,13 @@ jobs:
       id: cache
       uses: actions/cache@v4
       with:
-        path: /home/runner/root.img
         key: ubuntu-focal-cloud-generic
+        path:
+          /home/runner/root.img
+          /home/runner/.ssh/id_rsa
     - name: Deploy and Start VM
       if: steps.cache.outputs.cache-hit != 'true'
-      run:
+      run: |
         exec 2>&1; set -x
         cd
 
@@ -132,12 +134,12 @@ jobs:
 
         mkdir -m777 .ssh
         ssh-keygen -N '' -t rsa -b 1024 -f .ssh/id_rsa
-#        cloud-localds seed.iso - <<END
-#        #cloud-config
-#        users:
-#        - name: root
-#          ssh_authorized_keys: [ '$(<.ssh/id_rsa.pub)' ]
-#        END
+        cloud-localds seed.iso - <<END
+        #cloud-config
+        users:
+        - name: root
+          ssh_authorized_keys: [ '$(<.ssh/id_rsa.pub)' ]
+        END
 
 #        sudo qemu-system-x86_64 -enable-kvm -cpu host -m 10G -smp 4 \
 #          -drive file=root.img,format=qcow2,if=virtio -nic user,model=virtio,hostfwd=:127.0.0.1:222-:22 \
