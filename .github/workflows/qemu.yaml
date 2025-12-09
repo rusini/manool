@@ -6,14 +6,15 @@ on:
   workflow_dispatch: NULL
 
 jobs:
+
   build:
     strategy:
       fail-fast: FALSE
       matrix:
         compiler:
-        - { label: 'gcc9',    gcc: 'gcc',      gxx: 'g++',        pkgs: 'g++-multilib' }
-        - { label: 'gcc10',   gcc: 'gcc-10',   gxx: 'g++-10',     pkgs: 'g++-10-multilib' }
-        - { label: 'clang18', gcc: 'clang-18', gxx: 'clang++-18', pkgs: 'clang-18 g++-multilib' }
+        - { label: 'gcc9',    gcc: 'gcc',      gxx: 'g++' }
+        - { label: 'gcc10',   gcc: 'gcc-10',   gxx: 'g++-10' }
+        - { label: 'clang18', gcc: 'clang-18', gxx: 'clang++-18' }
         mode:
         - { label: '64',  flags: '' }
         - { label: '32',  flags: '-m32 -msse2 -mfpmath=sse' }
@@ -21,28 +22,20 @@ jobs:
 
     name: Build with ${{matrix.compiler.label}}/${{matrix.mode.label}}
     runs-on: ubuntu-latest
+    needs: [ cache ]
 
     defaults:
       run: { shell: bash }
     steps:
 
-    - name: Host Machine Information
-      run: |
-        exec 2>&1; set -x
-        lscpu; free -h; df -H .
-    - name: Host System Information
-      run: |
-        exec 2>&1
-        date; uname -a; uptime
-        set -x
-        systemd-detect-virt; cat /etc/os-release; ls -C /boot || :
-    - name: Context Information
-      run: |
-        exec 2>&1
-        tty || :; id; printf %s\\n%s\\n "SHELL=$SHELL" "PATH=$PATH"
-        set -x
-        pwd
-
+    - name: Lookup Cache Object
+      id: cache
+      uses: actions/cache@v4
+      with:
+        key: ubuntu-focal-cloud-generic
+        path: |
+          ~/root.img
+          ~/.ssh/id_rsa
     - name: Deploy and Start VM
       run: |
         exec 2>&1; set -x
@@ -52,42 +45,15 @@ jobs:
         sudo apt-get install --no-install-recommends qemu-system-x86 cloud-image-utils
         qemu-system-x86_64 --version
 
-        wget --no-show-progress -O root.img \
-          https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img
-        qemu-img resize root.img 6G
-
-        mkdir -m777 .ssh
-        ssh-keygen -N '' -t rsa -b 1024 -f .ssh/id_rsa
-        cloud-localds seed.iso - <<END
-        #cloud-config
-        users:
-        - name: root
-          ssh_authorized_keys: [ '$(<.ssh/id_rsa.pub)' ]
-        END
-
         sudo qemu-system-x86_64 -enable-kvm -cpu host -m 10G -smp 4 \
-          -drive file=root.img,format=qcow2,if=virtio -cdrom seed.iso \
-          -nic user,model=virtio,hostfwd=:127.0.0.1:222-:22 -daemonize -vga none -display none
+          -drive file=root.img,format=qcow2,if=virtio -nic user,model=virtio,hostfwd=:127.0.0.1:222-:22 \
+          -daemonize -vga none -display none
         until ssh -oStrictHostKeyChecking=no -p222 root@127.0.0.1 : 2>/dev/null; do sleep 1; done
 
         tee /usr/local/bin/vmbash.sh <<'END' >/dev/null; chmod +x /usr/local/bin/vmbash.sh
         #!/bin/bash
         ssh -p222 root@127.0.0.1 bash --noprofile --norc -e -o pipefail <$1
         END
-
-    - name: VM Information
-      shell: vmbash.sh {0}
-      run: |
-        exec 2>&1; set -x
-        lscpu; free -h; df -H .
-    - name: Set up VM
-      shell: vmbash.sh {0}
-      run: |
-        exec 2>&1; set -x
-        apt-get update
-        apt-get -y install rsync
-        apt-get -y install make ${{matrix.compiler.pkgs}}
-        ${{matrix.compiler.gxx}} --version
 
     - name: Checkout
       uses: actions/checkout@v4
@@ -122,3 +88,84 @@ jobs:
       with:
         name: build-${{matrix.compiler.label}}-${{matrix.mode.label}}
         path: build
+
+  cache:
+    name: Prepare VM Image
+
+    defaults:
+      run: { shell: bash }
+    steps:
+
+    - name: Host Machine Information
+      run: |
+        exec 2>&1; set -x
+        lscpu; free -h; df -H .
+    - name: Host System Information
+      run: |
+        exec 2>&1
+        date; uname -a; uptime
+        set -x
+        systemd-detect-virt; cat /etc/os-release; ls -C /boot || :
+    - name: Context Information
+      run: |
+        exec 2>&1
+        tty || :; id; printf %s\\n%s\\n "SHELL=$SHELL" "PATH=$PATH"
+        set -x
+        pwd
+
+    - name: Lookup Cache Object
+      id: cache
+      uses: actions/cache@v4
+      with:
+        key: ubuntu-focal-cloud-generic
+        path: |
+          ~/root.img
+          ~/.ssh/id_rsa
+    - name: Deploy and Start VM
+      if: steps.cache.outputs.cache-hit != 'true'
+      run:
+        exec 2>&1; set -x
+        cd
+
+        wget --no-show-progress -O root.img \
+          https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img
+        qemu-img resize root.img 6G
+
+        mkdir -m777 .ssh
+        ssh-keygen -N '' -t rsa -b 1024 -f .ssh/id_rsa
+        cloud-localds seed.iso - <<END
+        #cloud-config
+        users:
+        - name: root
+          ssh_authorized_keys: [ '$(<.ssh/id_rsa.pub)' ]
+        END
+
+        sudo qemu-system-x86_64 -enable-kvm -cpu host -m 10G -smp 4 \
+          -drive file=root.img,format=qcow2,if=virtio -nic user,model=virtio,hostfwd=:127.0.0.1:222-:22 \
+          -daemonize -vga none -display none -cdrom seed.iso
+        until ssh -oStrictHostKeyChecking=no -p222 root@127.0.0.1 : 2>/dev/null; do sleep 1; done
+
+        tee /usr/local/bin/vmbash.sh <<'END' >/dev/null; chmod +x /usr/local/bin/vmbash.sh
+        #!/bin/bash
+        ssh -p222 root@127.0.0.1 bash --noprofile --norc -e -o pipefail <$1
+        END
+
+    - name: VM Information
+      shell: vmbash.sh {0}
+      run: |
+        exec 2>&1; set -x
+        lscpu; free -h; df -H .
+    - name: Set up VM and Initiate Shut Down
+      shell: vmbash.sh {0}
+      run: |
+        exec 2>&1; set -x
+        apt-get update
+        apt-get -y install rsync
+        apt-get -y install make g++-multilib g++-10-multilib clang-18
+        make --version; g++ --version; g++-10 --version; clang++-18 --version
+        poweroff
+        
+    - name: Sync VM State
+        exec 2>&1; set -x
+        cd
+        while test "$(sudo lsof -w focal-server-cloudimg-amd64.img)"; do sleep 1; done
