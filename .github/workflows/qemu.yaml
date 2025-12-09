@@ -151,11 +151,13 @@ jobs:
         END
 
     - name: VM Information
+      if: steps.cache.outputs.cache-hit != 'true'
       shell: vmbash.sh {0}
       run: |
         exec 2>&1; set -x
         lscpu; free -h; df -H .
     - name: Set up VM and Initiate Shut Down
+      if: steps.cache.outputs.cache-hit != 'true'
       shell: vmbash.sh {0}
       run: |
         exec 2>&1; set -x
@@ -166,6 +168,8 @@ jobs:
         poweroff
         
     - name: Sync VM State
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: |
         exec 2>&1; set -x
         cd
         while test "$(sudo lsof -w focal-server-cloudimg-amd64.img)"; do sleep 1; done
