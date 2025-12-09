@@ -34,8 +34,8 @@ jobs:
       with:
         key: ubuntu-focal-cloud-generic
         path: |
-          /home/runner/root.img
-          /home/runner/.ssh/id_rsa
+          ~/root.img
+          ~/.ssh/id_rsa
     - name: Deploy and Start VM
       run: |
         exec 2>&1; set -x
@@ -120,8 +120,8 @@ jobs:
       with:
         key: ubuntu-focal-cloud-generic
         path:
-          /home/runner/root.img
-          /home/runner/.ssh/id_rsa
+          ~/root.img
+          ~/.ssh/id_rsa
     - name: Deploy and Start VM
       if: steps.cache.outputs.cache-hit != 'true'
       run: |
