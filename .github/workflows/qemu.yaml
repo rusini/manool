@@ -201,8 +201,11 @@ jobs:
         apt-get -y install rsync
         apt-get -y install make g++-multilib g++-10-multilib clang-18
         make --version; g++ --version; g++-10 --version; clang++-18 --version
-        poweroff
         
+    - name: Initiate VM Shutdown
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: |
+        ssh -p222 root@127.0.0.1 poweroff || :
     - name: Sync VM State
       if: steps.cache.outputs.cache-hit != 'true'
       run: |
