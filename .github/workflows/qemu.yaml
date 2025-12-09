@@ -126,18 +126,18 @@ jobs:
         exec 2>&1; set -x
         cd
 
-#        wget --no-show-progress -O root.img \
-#          https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img
-#        qemu-img resize root.img 6G
+        wget --no-show-progress -O root.img \
+          https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img
+        qemu-img resize root.img 6G
 
-#        mkdir -m777 .ssh
-#        ssh-keygen -N '' -t rsa -b 1024 -f .ssh/id_rsa
-#        cloud-localds seed.iso - <<END
-#        #cloud-config
-#        users:
-#        - name: root
-#          ssh_authorized_keys: [ '$(<.ssh/id_rsa.pub)' ]
-#        END
+        mkdir -m777 .ssh
+        ssh-keygen -N '' -t rsa -b 1024 -f .ssh/id_rsa
+        cloud-localds seed.iso - <<END
+        #cloud-config
+        users:
+        - name: root
+          ssh_authorized_keys: [ '$(<.ssh/id_rsa.pub)' ]
+        END
 
 #        sudo qemu-system-x86_64 -enable-kvm -cpu host -m 10G -smp 4 \
 #          -drive file=root.img,format=qcow2,if=virtio -nic user,model=virtio,hostfwd=:127.0.0.1:222-:22 \
