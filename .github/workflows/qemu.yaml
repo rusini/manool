@@ -141,36 +141,36 @@ jobs:
           ssh_authorized_keys: [ '$(<.ssh/id_rsa.pub)' ]
         END
 
-#        sudo qemu-system-x86_64 -enable-kvm -cpu host -m 10G -smp 4 \
-#          -drive file=root.img,format=qcow2,if=virtio -nic user,model=virtio,hostfwd=:127.0.0.1:222-:22 \
-#          -daemonize -vga none -display none -cdrom seed.iso
-#        until ssh -oStrictHostKeyChecking=no -p222 root@127.0.0.1 : 2>/dev/null; do sleep 1; done
+        sudo qemu-system-x86_64 -enable-kvm -cpu host -m 10G -smp 4 \
+          -drive file=root.img,format=qcow2,if=virtio -nic user,model=virtio,hostfwd=:127.0.0.1:222-:22 \
+          -daemonize -vga none -display none -cdrom seed.iso
+        until ssh -oStrictHostKeyChecking=no -p222 root@127.0.0.1 : 2>/dev/null; do sleep 1; done
 
-#        tee /usr/local/bin/vmbash.sh <<'END' >/dev/null; chmod +x /usr/local/bin/vmbash.sh
-#        #!/bin/bash
-#        ssh -p222 root@127.0.0.1 bash --noprofile --norc -e -o pipefail <$1
-#        END
+        tee /usr/local/bin/vmbash.sh <<'END' >/dev/null; chmod +x /usr/local/bin/vmbash.sh
+        #!/bin/bash
+        ssh -p222 root@127.0.0.1 bash --noprofile --norc -e -o pipefail <$1
+        END
 
-#    - name: VM Information
-#      if: steps.cache.outputs.cache-hit != 'true'
-#      shell: vmbash.sh {0}
-#      run: |
-#        exec 2>&1; set -x
-#        lscpu; free -h; df -H .
-#    - name: Set up VM and Initiate Shut Down
-#      if: steps.cache.outputs.cache-hit != 'true'
-#      shell: vmbash.sh {0}
-#      run: |
-#        exec 2>&1; set -x
-#        apt-get update
-#        apt-get -y install rsync
-#        apt-get -y install make g++-multilib g++-10-multilib clang-18
-#        make --version; g++ --version; g++-10 --version; clang++-18 --version
-#        poweroff
+    - name: VM Information
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: vmbash.sh {0}
+      run: |
+        exec 2>&1; set -x
+        lscpu; free -h; df -H .
+    - name: Set up VM and Initiate Shut Down
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: vmbash.sh {0}
+      run: |
+        exec 2>&1; set -x
+        apt-get update
+        apt-get -y install rsync
+        apt-get -y install make g++-multilib g++-10-multilib clang-18
+        make --version; g++ --version; g++-10 --version; clang++-18 --version
+        poweroff
         
-#    - name: Sync VM State
-#      if: steps.cache.outputs.cache-hit != 'true'
-#      run: |
-#        exec 2>&1; set -x
-#        cd
-#        while test "$(sudo lsof -w focal-server-cloudimg-amd64.img)"; do sleep 1; done
+    - name: Sync VM State
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: |
+        exec 2>&1; set -x
+        cd
+        while test "$(sudo lsof -w focal-server-cloudimg-amd64.img)"; do sleep 1; done
