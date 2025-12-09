@@ -212,3 +212,7 @@ jobs:
         exec 2>&1; set -x
         cd
         while test "$(sudo lsof -w root.img)"; do sleep 1; done
+
+    - name: Debug
+      run: |
+        ls -l /home/runner/root.img /home/runner/.ssh/id_rsa
