@@ -68,7 +68,7 @@ jobs:
         sudo qemu-system-x86_64 -enable-kvm -cpu host,+tsc,+tsc_deadline_timer -m 10G -smp 4 \
           -drive file=root.img,format=qcow2,if=virtio -nic user,model=virtio,hostfwd=:127.0.0.1:222-:22 \
           -daemonize -vga none -display none \
-          -rtc clock=host,driftfix=slew -device kvm-clock -no-hpet -timeshift 0 -no-kvm-pit
+          -rtc clock=host,driftfix=slew -device kvm-clock -no-hpet -no-kvm-pit
         until ssh -oStrictHostKeyChecking=no -p222 root@127.0.0.1 : 2>/dev/null; do sleep 1; done
 
         tee /usr/local/bin/vmbash.sh <<'END' >/dev/null; chmod +x /usr/local/bin/vmbash.sh
