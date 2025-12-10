@@ -79,6 +79,12 @@ jobs:
         ssh -p222 root@127.0.0.1 bash --noprofile --norc -e -o pipefail <$1
         END
 
+    - name: Time Sync
+      shell: vmbash.sh {0}
+      run: |
+        exec 2>&1; set -x
+        until [ "$(timedatectl show -p NTPSynchronized --value)" == yes ]; do sleep 1; done
+
     - name: Checkout
       uses: actions/checkout@v4
     - name: Upload to VM
@@ -185,6 +191,12 @@ jobs:
         #!/bin/bash
         ssh -p222 root@127.0.0.1 bash --noprofile --norc -e -o pipefail <$1
         END
+
+    - name: Time Sync
+      shell: vmbash.sh {0}
+      run: |
+        exec 2>&1; set -x
+        until [ "$(timedatectl show -p NTPSynchronized --value)" = yes ]; do sleep 1; done
 
     - name: VM Information
       if: steps.cache.outputs.cache-hit != 'true'
