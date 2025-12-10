@@ -193,6 +193,7 @@ jobs:
         END
 
     - name: Time Sync
+      if: steps.cache.outputs.cache-hit != 'true'
       shell: vmbash.sh {0}
       run: |
         exec 2>&1; set -x
