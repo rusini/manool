@@ -38,6 +38,7 @@ jobs:
         date; uname -a; uptime
         set -x
         systemd-detect-virt; cat /etc/os-release; ls -C /boot || :
+        cat /etc/apt/sources.list
     - name: Context Information
       run: |
         exec 2>&1
