@@ -79,8 +79,7 @@ jobs:
       shell: vmbash.sh {0}
       run: |
         exec 2>&1; set -x
-        #until [ "$(timedatectl show -p NTPSynchronized --value)" == yes ]; do sleep 1; done
-        hwclock -s
+        until [ "$(timedatectl show -p NTPSynchronized --value)" == yes ]; do sleep 1; done
 
     - name: Checkout
       uses: actions/checkout@v4
