@@ -151,6 +151,7 @@ jobs:
         path: |
           ~/root.img
           ~/.ssh/id_rsa
+        lookup-only: TRUE
 
     - name: Host Setup
       if: steps.cache.outputs.cache-hit != 'true'
