@@ -28,8 +28,9 @@ jobs:
       run: { shell: bash }
     steps:
 
-    - name: Host Machine Information
-      run: &minfo |
+    - &minfo
+      name: Host Machine Information
+      run: |
         exec 2>&1; set -x
         lscpu; free -h; df -H .
     - name: Host System Information
