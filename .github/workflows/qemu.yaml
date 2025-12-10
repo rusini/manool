@@ -38,9 +38,6 @@ jobs:
         date; uname -a; uptime
         set -x
         systemd-detect-virt; cat /etc/os-release; ls -C /boot || :
-        cat /etc/apt/apt-mirrors.txt
-        sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
-        cat /etc/apt/apt-mirrors.txt
     - name: Context Information
       run: |
         exec 2>&1
@@ -50,6 +47,7 @@ jobs:
     - name: Host Setup
       run: |
         exec 2>&1; set -x
+        #sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
         sudo apt-get update
         sudo apt-get install --no-install-recommends qemu-system-x86 cloud-image-utils
     - name: QEMU Information
