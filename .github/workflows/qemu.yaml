@@ -39,6 +39,8 @@ jobs:
         set -x
         systemd-detect-virt; cat /etc/os-release; ls -C /boot || :
         cat /etc/apt/apt-mirrors.txt
+        sed -i /azure/d /etc/apt/apt-mirrors.txt
+        cat /etc/apt/apt-mirrors.txt
     - name: Context Information
       run: |
         exec 2>&1
