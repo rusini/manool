@@ -48,6 +48,7 @@ jobs:
       run: |
         exec 2>&1; set -x
         #sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
+        find /etc/apt
         sudo apt-get update
         sudo apt-get install --no-install-recommends qemu-system-x86 cloud-image-utils
     - name: QEMU Information
