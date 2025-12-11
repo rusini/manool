@@ -25,7 +25,7 @@ jobs:
         - { triple: alpha-linux-gnu }
 
         - { triple: arm-linux-gnueabi, flags: '-march=armv7-a' }
-        - { triple: sh4-linux-gnu,     flags: '-O1' }
+        #- { triple: sh4-linux-gnu,     flags: '-O1' }
         # BE:
         #- { triple: m68k-linux-gnu,    flags: '-msoft-float' }
         #- { triple: hppa-linux-gnu }
@@ -89,8 +89,12 @@ jobs:
           compiler: { osver: '22.04' }
         - target:   { triple: sparc64-linux-gnu }
           compiler: { osver: '22.04' }
-        - target:   { triple: sh4-linux-gnu }
-          compiler: { osver: '22.04' }
+
+        include:
+        - target:   { triple: sh4-linux-gnu, flags: '-O1' }
+          compiler: { ver: '13', osver: '24.04' }
+        - target:   { triple: sh4-linux-gnu, flags: '-O1' }
+          compiler: { ver: '14', osver: '24.04' }
 
     defaults:
       run: { shell: bash }
@@ -118,8 +122,7 @@ jobs:
 
     - name: Checkout
       uses: actions/checkout@v4
-      with:
-        ref: master
+      with: { ref: master }
 
     - name: Test
       run: |
