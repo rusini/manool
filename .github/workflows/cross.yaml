@@ -7,7 +7,7 @@ on:
 
 jobs:
   cross-build:
-    name: Cross ${{matrix.compiler.osver}}/${{matrix.target.triple}}/${{matrix.compiler.ver}}
+    name: ${{matrix.compiler.osver}}/${{matrix.target.triple}}/${{matrix.compiler.ver}}
     runs-on: ubuntu-${{matrix.compiler.osver}}
 
     strategy:
@@ -47,7 +47,19 @@ jobs:
         - { ver: '12', osver: '24.04' }
         - { ver: '13', osver: '24.04' }
         - { ver: '14', osver: '24.04' }
-
+        exclude:
+        - target:   { triple: mipsel-linux-gnu }
+          compiler: { ver: '11', osver: '22.04' }
+        - target:   { triple: mipsel-linux-gnu }
+          compiler: { ver: '12', osver: '22.04' }
+        - target:   { triple: mips64el-linux-gnuabi64 }
+          compiler: { ver: '11', osver: '22.04' }
+        - target:   { triple: mips64el-linux-gnuabi64 }
+          compiler: { ver: '12', osver: '22.04' }
+        - target:   { triple: mipsisa64r6el-linux-gnuabi64 }
+          compiler: { ver: '11', osver: '22.04' }
+        - target:   { triple: mipsisa64r6el-linux-gnuabi64 }
+          compiler: { ver: '12', osver: '22.04' }
     defaults:
       run: { shell: bash }
     steps:
