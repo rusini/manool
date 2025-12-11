@@ -9,6 +9,7 @@ jobs:
   cross-build:
     name: ${{matrix.compiler.osver}}/${{matrix.target.triple}}/${{matrix.compiler.ver}}
     runs-on: ubuntu-${{matrix.compiler.osver}}
+    timeout-minutes: 20
 
     strategy:
       fail-fast: FALSE
