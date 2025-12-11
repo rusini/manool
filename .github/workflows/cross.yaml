@@ -25,7 +25,7 @@ jobs:
 
         - { triple: arm-linux-gnueabi, flags: '-march=armv7-a' }
         - { triple: m68k-linux-gnu,    flags: '-msoft-float' }
-        - { triple: sh4-linux-gnu }
+        - { triple: sh4-linux-gnu,     flags: '-O1' }
         # BE:
         - { triple: hppa-linux-gnu }
         - { triple: mips-linux-gnu }
@@ -37,6 +37,7 @@ jobs:
         - { triple: powerpc64-linux-gnu }
         - { triple: s390x-linux-gnu }
         - { triple: sparc64-linux-gnu }
+
         compiler:
         - { ver:  '9', osver: '22.04' }
         - { ver: '10', osver: '22.04' }
@@ -138,7 +139,7 @@ jobs:
         make -j5 run \
            GCC='${{matrix.target.triple}}-gcc-${{matrix.compiler.ver}}' \
            GXX='${{matrix.target.triple}}-g++-${{matrix.compiler.ver}}' \
-           CFLAGS='-Wno-psabi -O2 -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE' \
+           CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE' \
            MARCH='${{matrix.target.flags}}'
 
 #    - name: Upload Results
