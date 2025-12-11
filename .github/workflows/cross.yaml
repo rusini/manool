@@ -3,55 +3,53 @@
 name: Cross-Building
 
 on:
-  workflow_dispatch:
-  push:
-    branches: [ "test" ]
+  workflow_dispatch: NULL
 
 jobs:
-  build:
+  cross-build:
+    name: Cross-Build with ${{matrix.target.triple}}-gcc-${{matrix.compiler.ver}}
+    runs-on: ubuntu-${{matrix.compiler.osver}}
 
     strategy:
       fail-fast: false
       matrix:
-        target: [
-          "aarch64-linux-gnu", "arm-linux-gnueabihf",
-          "powerpc64le-linux-gnu",
-          "riscv64-linux-gnu",
-          "mipsel-linux-gnu", "mips64el-linux-gnuabi64", "mipsisa64r6el-linux-gnuabi64",
-          "alpha-linux-gnu"
-        ]
+        target:
+        - { triple: aarch64-linux-gnu }
+        - { triple: arm-linux-gnueabihf }
+        - { triple: powerpc64le-linux-gnu }
+        - { triple: riscv64-linux-gnu }
+        - { triple: mipsel-linux-gnu }
+        - { triple: mips64el-linux-gnuabi64 }
+        - { triple: mipsisa64r6el-linux-gnuabi64 }
+        - { triple: alpha-linux-gnu }
+        - { triple: arm-linux-gnueabi, flags: '-march=armv7-a' }
+        - { triple: m68k-linux-gnu,    flags: '-msoft-float' }
+        - { triple: sh4-linux-gnu }
+        # BE:
+        - { triple: hppa-linux-gnu }
+        - { triple: mips-linux-gnu }
+        - { triple: mips64-linux-gnuabi64 }
+        - { triple: mipsisa32r6-linux-gnu }
+        - { triple: mipsisa32r6el-linux-gnu }
+        - { triple: mipsisa64r6-linux-gnuabi64 }
+        - { triple: powerpc-linux-gnu }
+        - { triple: powerpc64-linux-gnu }
+        - { triple: s390x-linux-gnu }
+        - { triple: sparc64-linux-gnu }
         compiler:
-        - { ver: "8",  osver: "20.04" }
-        - { ver: "9",  osver: "20.04" }
-        - { ver: "10", osver: "22.04" }
-        - { ver: "11", osver: "22.04" }
-        - { ver: "12", osver: "22.04" }
-        exclude:
-        - target:   "mipsel-linux-gnu"
-          compiler: { ver: "8"  }
-        - target:   "mipsel-linux-gnu"
-          compiler: { ver: "11" }
-        - target:   "mipsel-linux-gnu"
-          compiler: { ver: "12" }
-        - target:   "mips64el-linux-gnuabi64"
-          compiler: { ver: "8"  }
-        - target:   "mips64el-linux-gnuabi64"
-          compiler: { ver: "11" }
-        - target:   "mips64el-linux-gnuabi64"
-          compiler: { ver: "12" }
-        - target:   "mipsisa64r6el-linux-gnuabi64"
-          compiler: { ver: "8"  }
-        - target:   "mipsisa64r6el-linux-gnuabi64"
-          compiler: { ver: "11" }
-        - target:   "mipsisa64r6el-linux-gnuabi64"
-          compiler: { ver: "12" }
-    name: Build with ${{matrix.target}}-gcc-${{matrix.compiler.ver}}
-    runs-on: ubuntu-${{matrix.compiler.osver}}
+        - { ver:  '9', osver: '22.04' }
+        - { ver: '10', osver: '22.04' }
+        - { ver: '11', osver: '22.04' }
+        - { ver: '12', osver: '22.04' }
+        - { ver:  '9', osver: '24.04' }
+        - { ver: '10', osver: '24.04' }
+        - { ver: '11', osver: '24.04' }
+        - { ver: '12', osver: '24.04' }
+        - { ver: '13', osver: '24.04' }
+        - { ver: '14', osver: '24.04' }
 
     defaults:
-      run:
-        shell: bash
-
+      run: { shell: bash }
     steps:
 
     - name: Machine Information
@@ -68,26 +66,33 @@ jobs:
       run: |
         set -x
         sudo apt-get update
-        sudo apt-get install g++-${{matrix.compiler.ver}}-${{matrix.target}} qemu-user
+        sudo apt-get install g++-${{matrix.compiler.ver}}-${{matrix.target.triple}} qemu-user
 
     - name: Build Tools Information
       run: |
-        make --version; ${{matrix.target}}-gcc-${{matrix.compiler.ver}} --version
+        make --version; ${{matrix.target.triple}}-gcc-${{matrix.compiler.ver}} --version
 
     - name: Checkout
       uses: actions/checkout@v4
 
     - name: Run Make (and Check)
       run: |
-        QEMU_LD_PREFIX=/usr/${{matrix.target}} \
-        make -j3 run \
-           GCC='${{matrix.target}}-gcc-${{matrix.compiler.ver}}' \
-           GXX='${{matrix.target}}-g++-${{matrix.compiler.ver}}' \
-           CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none' \
-           MARCH=
+        exec 2>&1; set -x
+        tee hi.cc <<'END'
+        # include <cstdio>
+        int main() {
+           std::puts("Hi");
+           return 0;
+        }
+        END
+        ${{matrix.target.triple}}-g++-${{matrix.compiler.ver}} ${{matrix.target.flags}} -std=c++17 -O3 \
+           -{fno-stack-protector,fcf-protection=none,fno-stack-clash-protection,U_FORTIFY_SOURCE} \
+           -include prelude.cc hi.cc
+        QEMU_LD_PREFIX=/usr/${{matrix.target.triple}} ./a.out
+        # -Wno-psabi
 
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
-        name: build-gcc-${{matrix.compiler.ver}}-${{matrix.target}}
+        name: build-gcc-${{matrix.compiler.ver}}-${{matrix.target.triple}}
         path: build
