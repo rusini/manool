@@ -7,7 +7,7 @@ on:
 
 jobs:
   cross-build:
-    name: Cross-Build with ${{matrix.target.triple}}-gcc-${{matrix.compiler.ver}}
+    name: Cross ${{matrix.compiler.osver}}/${{matrix.target.triple}}/${{matrix.compiler.ver}}
     runs-on: ubuntu-${{matrix.compiler.osver}}
 
     strategy:
@@ -75,8 +75,10 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Run Make (and Check)
+    - name: Test
       run: |
+        : Test
+
         exec 2>&1; set -x
         tee hi.cc <<'END'
         # include <cstdio>
@@ -91,8 +93,8 @@ jobs:
         QEMU_LD_PREFIX=/usr/${{matrix.target.triple}} ./a.out
         # -Wno-psabi
 
-    - name: Upload Results
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-gcc-${{matrix.compiler.ver}}-${{matrix.target.triple}}
-        path: build
+#    - name: Upload Results
+#      uses: actions/upload-artifact@v4
+#      with:
+#        name: build-gcc-${{matrix.compiler.ver}}-${{matrix.target.triple}}
+#        path: build
