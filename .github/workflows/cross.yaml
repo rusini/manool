@@ -32,7 +32,7 @@ jobs:
         #- { triple: mips-linux-gnu }
         #- { triple: mips64-linux-gnuabi64 }
         #- { triple: mipsisa32r6-linux-gnu }
-        #- { triple: mipsisa32r6el-linux-gnu }
+        - { triple: mipsisa32r6el-linux-gnu }
         #- { triple: mipsisa64r6-linux-gnuabi64 }
         #- { triple: powerpc-linux-gnu }
         #- { triple: powerpc64-linux-gnu }
@@ -145,8 +145,8 @@ jobs:
         make -j5 run \
            GCC='${{matrix.target.triple}}-gcc-${{matrix.compiler.ver}}' \
            GXX='${{matrix.target.triple}}-g++-${{matrix.compiler.ver}}' \
-           CFLAGS='-Wno-psabi -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE' \
-           MARCH='-O3 ${{matrix.target.flags}}'
+           CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE ${{matrix.target.flags}}' \
+           MARCH=''
 
 #    - name: Upload Results
 #      uses: actions/upload-artifact@v4
