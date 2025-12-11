@@ -114,24 +114,32 @@ jobs:
 
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        ref: master
 
     - name: Test
       run: |
-        : Test
+        # Bash Script
 
         exec 2>&1; set -x
-        tee hi.cc <<'END'
-        # include <cstdio>
-        int main() {
-           std::puts("Hi");
-           return 0;
-        }
-        END
-        ${{matrix.target.triple}}-g++-${{matrix.compiler.ver}} ${{matrix.target.flags}} -std=c++17 -O3 \
-           -{fno-stack-protector,fcf-protection=none,fno-stack-clash-protection,U_FORTIFY_SOURCE} \
-           -include prelude.cc -Werror hi.cc
-        QEMU_LD_PREFIX=/usr/${{matrix.target.triple}} ./a.out
-        # -Wno-psabi
+        #tee hi.cc <<'END'
+        ## include <cstdio>
+        #int main() {
+        #   std::puts("Hi");
+        #   return 0;
+        #}
+        #END
+        #${{matrix.target.triple}}-g++-${{matrix.compiler.ver}} ${{matrix.target.flags}} -std=c++17 -Wno-psabi \
+        #   -O3 -{fno-stack-protector,fcf-protection=none,fno-stack-clash-protection,U_FORTIFY_SOURCE} \
+        #   -include prelude.cc -Werror hi.cc
+        #QEMU_LD_PREFIX=/usr/${{matrix.target.triple}} ./a.out
+
+        QEMU_LD_PREFIX=/usr/${{matrix.target.triple}} \
+        make -j5 run \
+           GCC='${{matrix.target.triple}}-gcc-${{matrix.compiler.ver}}' \
+           GXX='${{matrix.target.triple}}-g++-${{matrix.compiler.ver}}' \
+           CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE' \
+           MARCH='${{matrix.target.flags}}'
 
 #    - name: Upload Results
 #      uses: actions/upload-artifact@v4
