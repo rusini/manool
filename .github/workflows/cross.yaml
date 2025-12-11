@@ -138,7 +138,7 @@ jobs:
         make -j5 run \
            GCC='${{matrix.target.triple}}-gcc-${{matrix.compiler.ver}}' \
            GXX='${{matrix.target.triple}}-g++-${{matrix.compiler.ver}}' \
-           CFLAGS='-Wno-psabi -O1 -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE' \
+           CFLAGS='-Wno-psabi -O2 -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE' \
            MARCH='${{matrix.target.flags}}'
 
 #    - name: Upload Results
