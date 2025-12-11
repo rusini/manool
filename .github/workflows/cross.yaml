@@ -68,9 +68,9 @@ jobs:
           compiler: { ver: '11', osver: '22.04' }
         - target:   { triple: mips-linux-gnu }
           compiler: { ver: '12', osver: '22.04' }
-        - target:   { triple: mips64-linux-gnu }
+        - target:   { triple: mips64-linux-gnuabi64 }
           compiler: { ver: '11', osver: '22.04' }
-        - target:   { triple: mips64-linux-gnu }
+        - target:   { triple: mips64-linux-gnuabi64 }
           compiler: { ver: '12', osver: '22.04' }
 
         - target:   { triple: mipsisa64r6-linux-gnuabi64 }
