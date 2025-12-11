@@ -89,7 +89,7 @@ jobs:
         END
         ${{matrix.target.triple}}-g++-${{matrix.compiler.ver}} ${{matrix.target.flags}} -std=c++17 -O3 \
            -{fno-stack-protector,fcf-protection=none,fno-stack-clash-protection,U_FORTIFY_SOURCE} \
-           -include prelude.cc hi.cc
+           -include prelude.cc -Werror hi.cc
         QEMU_LD_PREFIX=/usr/${{matrix.target.triple}} ./a.out
         # -Wno-psabi
 
