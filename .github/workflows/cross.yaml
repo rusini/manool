@@ -64,6 +64,25 @@ jobs:
         - target:   { triple: mipsisa64r6el-linux-gnuabi64 }
           compiler: { ver: '12', osver: '22.04' }
 
+        - target:   { triple: mips-linux-gnu }
+          compiler: { ver: '11', osver: '22.04' }
+        - target:   { triple: mips-linux-gnu }
+          compiler: { ver: '12', osver: '22.04' }
+        - target:   { triple: mips64-linux-gnu }
+          compiler: { ver: '11', osver: '22.04' }
+        - target:   { triple: mips64-linux-gnu }
+          compiler: { ver: '12', osver: '22.04' }
+
+        - target:   { triple: mipsisa64r6-linux-gnu }
+          compiler: { ver: '11', osver: '22.04' }
+        - target:   { triple: mipsisa64r6-linux-gnu }
+          compiler: { ver: '12', osver: '22.04' }
+
+        - target:   { triple: mipsisa32r6-linux-gnu }
+          compiler: { osver: '22.04' }
+        - target:   { triple: mipsisa32r6el-linux-gnu }
+          compiler: { osver: '22.04' }
+
         - target:   { triple: m68k-linux-gnu }
           compiler: { osver: '22.04' }
         - target:   { triple: sparc64-linux-gnu }
