@@ -51,6 +51,7 @@ jobs:
         sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
         sudo apt-get update
         sudo apt-get install --no-install-recommends qemu-system-x86 cloud-image-utils
+        sudo apt search 'g\+\+-'
     - name: QEMU Information
       run: |
         qemu-system-x86_64 --version
@@ -81,7 +82,7 @@ jobs:
       shell: vmbash.sh {0}
       run: |
         exec 2>&1; set -x
-        until [ "$(timedatectl show -p NTPSynchronized --value)" == yes ]; do sleep 1; done
+        until [ "$(timedatectl show -p NTPSynchronized --value)" = yes ]; do sleep 1; done
 
     - name: Checkout
       uses: actions/checkout@v4
