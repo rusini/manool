@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-${{matrix.compiler.osver}}
 
     strategy:
-      fail-fast: false
+      fail-fast: FALSE
       matrix:
         target:
         - { triple: aarch64-linux-gnu }
