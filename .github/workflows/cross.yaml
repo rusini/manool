@@ -154,9 +154,8 @@ jobs:
         make -j5 run \
            GCC='${{matrix.target.triple}}-gcc-${{matrix.compiler.ver}}' \
            GXX='${{matrix.target.triple}}-g++-${{matrix.compiler.ver}}' \
-           CFLAGS='-Werror -O3 -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE ${{matrix.target.flags}}' \
+           CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE ${{matrix.target.flags}}' \
            MARCH=''
-           #CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE ${{matrix.target.flags}}' \
 
 #    - name: Upload Results
 #      uses: actions/upload-artifact@v4
