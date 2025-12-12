@@ -93,7 +93,7 @@ jobs:
         include:
         - target:   { triple: sh4-linux-gnu, flags: '-O1' }
           compiler: { ver: '13', osver: '24.04' }
-        - target:   { triple: sh4-linux-gnu, flags: '-O2' }
+        - target:   { triple: sh4-linux-gnu, flags: '-O1' }
           compiler: { ver: '14', osver: '24.04' }
 
     defaults:
@@ -102,17 +102,26 @@ jobs:
 
     - name: Machine Information
       run: |
-        lscpu; free -h; df -h .
+        # Bash Script
+        exec 2>&1; set -x
+        lscpu; free -h; df -H .
     - name: System Information
       run: |
-        date; uname -a; uptime; cat /etc/os-release; ls -C /boot || :
+        # Bash Script
+        date; uname -a; uptime
+        exec 2>&1; set -x
+        systemd-detect-virt; cat /etc/os-release; ls -C /boot || :
     - name: Context Information
       run: |
-        tty || :; id; printf %s\\n "$SHELL"; printf %s\\n "$PATH"; pwd
+        # Bash Script
+        tty || :; id; printf %s\\n "SHELL=$SHELL" "PATH=$PATH"
+        exec 2>&1; set -x
+        pwd
 
     - name: Setup
       run: |
-        set -x
+        # Bash Script
+        exec 2>&1; set -x
         sudo apt-get update
         sudo apt-get install g++-${{matrix.compiler.ver}}-${{matrix.target.triple}} qemu-user
 
@@ -145,8 +154,9 @@ jobs:
         make -j5 run \
            GCC='${{matrix.target.triple}}-gcc-${{matrix.compiler.ver}}' \
            GXX='${{matrix.target.triple}}-g++-${{matrix.compiler.ver}}' \
-           CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE ${{matrix.target.flags}}' \
+           CFLAGS='-Werror -O3 -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE ${{matrix.target.flags}}' \
            MARCH=''
+           #CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE ${{matrix.target.flags}}' \
 
 #    - name: Upload Results
 #      uses: actions/upload-artifact@v4
