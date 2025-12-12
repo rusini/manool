@@ -93,7 +93,7 @@ jobs:
         include:
         - target:   { triple: sh4-linux-gnu, flags: '-O1' }
           compiler: { ver: '13', osver: '24.04' }
-        - target:   { triple: sh4-linux-gnu, flags: '-O1' }
+        - target:   { triple: sh4-linux-gnu, flags: '-O2' }
           compiler: { ver: '14', osver: '24.04' }
 
     defaults:
