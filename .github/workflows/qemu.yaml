@@ -28,23 +28,28 @@ jobs:
       run: { shell: bash }
     steps:
 
-    - &minfo
-      name: Host Machine Information
-      run: |
-        exec 2>&1; set -x
-        lscpu; free -h; df -H .
-    - name: Host System Information
-      run: |
-        exec 2>&1
-        date; uname -a; uptime
-        set -x
-        systemd-detect-virt; cat /etc/os-release; ls -C /boot || :
-    - name: Context Information
-      run: |
-        exec 2>&1
-        tty || :; id; printf %s\\n%s\\n "SHELL=$SHELL" "PATH=$PATH"
-        set -x
-        pwd
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Dump system info
+      uses: ./.github/actions/runner-info
+    #- &minfo
+    #  name: Host Machine Information
+    #  run: |
+    #    # Bash Script
+    #    exec 2>&1; set -x
+    #    lscpu; free -h; df -H .
+    #- name: Host System Information
+    #  run: |
+    #    exec 2>&1
+    #    date; uname -a; uptime
+    #    set -x
+    #    systemd-detect-virt; cat /etc/os-release; ls -C /boot || :
+    #- name: Context Information
+    #  run: |
+    #    exec 2>&1
+    #    tty || :; id; printf %s\\n%s\\n "SHELL=$SHELL" "PATH=$PATH"
+    #    set -x
+    #    pwd
     - name: Host Setup
       run: |
         exec 2>&1; set -x
@@ -84,8 +89,8 @@ jobs:
         exec 2>&1; set -x
         until [ "$(timedatectl show -p NTPSynchronized --value)" = yes ]; do sleep 1; done
 
-    - name: Checkout
-      uses: actions/checkout@v4
+    #- name: Checkout
+    #  uses: actions/checkout@v4
     - name: Upload to VM
       run: |
         exec 2>&1; set -x
@@ -126,11 +131,10 @@ jobs:
       run: { shell: bash }
     steps:
 
-    - *minfo
-#      name: Host Machine Information
-#      run: |
-#        exec 2>&1; set -x
-#        lscpu; free -h; df -H .
+    - name: Host Machine Information
+      run: |
+        exec 2>&1; set -x
+        lscpu; free -h; df -H .
     - name: Host System Information
       run: |
         exec 2>&1

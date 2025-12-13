@@ -117,8 +117,6 @@ jobs:
     #    tty || :; id; printf %s\\n "SHELL=$SHELL" "PATH=$PATH"
     #    exec 2>&1; set -x
     #    pwd
-    - name: Dump system info
-      uses: ./.github/actions/runner-info
 
     - name: Setup
       run: |
