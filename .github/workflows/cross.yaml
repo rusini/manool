@@ -100,23 +100,25 @@ jobs:
       run: { shell: bash }
     steps:
 
-    - name: Machine Information
-      run: |
-        # Bash Script
-        exec 2>&1; set -x
-        lscpu; free -h; df -H .
-    - name: System Information
-      run: |
-        # Bash Script
-        date; uname -a; uptime
-        exec 2>&1; set -x
-        systemd-detect-virt; cat /etc/os-release; ls -C /boot || :
-    - name: Context Information
-      run: |
-        # Bash Script
-        tty || :; id; printf %s\\n "SHELL=$SHELL" "PATH=$PATH"
-        exec 2>&1; set -x
-        pwd
+    #- name: Machine Information
+    #  run: |
+    #    # Bash Script
+    #    exec 2>&1; set -x
+    #    lscpu; free -h; df -H .
+    #- name: System Information
+    #  run: |
+    #    # Bash Script
+    #    date; uname -a; uptime
+    #    exec 2>&1; set -x
+    #    systemd-detect-virt; cat /etc/os-release; ls -C /boot || :
+    #- name: Context Information
+    #  run: |
+    #    # Bash Script
+    #    tty || :; id; printf %s\\n "SHELL=$SHELL" "PATH=$PATH"
+    #    exec 2>&1; set -x
+    #    pwd
+    - name: Dump system info
+      uses: ./.github/actions/runner-info
 
     - name: Setup
       run: |
