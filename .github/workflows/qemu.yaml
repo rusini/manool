@@ -28,39 +28,32 @@ jobs:
       run: { shell: bash }
     steps:
 
-    - name: Checkout GHA Tools
-      uses: actions/checkout@v4
-      with:
-        path: gha-tools
-        sparse-checkout: .github/actions
-        show-progress: FALSE
-    - name: Dump System Info
-      uses: ./gha-tools/.github/actions/runner-info
-    #- &minfo
-    #  name: Host Machine Information
-    #  run: |
-    #    # Bash Script
-    #    exec 2>&1; set -x
-    #    lscpu; free -h; df -H .
-    #- name: Host System Information
-    #  run: |
-    #    exec 2>&1
-    #    date; uname -a; uptime
-    #    set -x
-    #    systemd-detect-virt; cat /etc/os-release; ls -C /boot || :
-    #- name: Context Information
-    #  run: |
-    #    exec 2>&1
-    #    tty || :; id; printf %s\\n%s\\n "SHELL=$SHELL" "PATH=$PATH"
-    #    set -x
-    #    pwd
+    - &minfo
+      name: Host Machine Information
+      run: |
+        exec 2>&1
+        set -x
+        lscpu; free -h; df -H .
+    - &sinfo
+      name: Host System Information
+      run: |
+        exec 2>&1
+        date; uname -a; uptime
+        set -x
+        systemd-detect-virt; cat /etc/os-release; ls -C /boot || :
+    - &cinfo
+      name: Context Information
+      run: |
+        exec 2>&1
+        tty || :; id; printf %s\\n "SHELL=$SHELL" "PATH=$PATH"
+        set -x
+        pwd
     - name: Host Setup
       run: |
         exec 2>&1; set -x
         sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
         sudo apt-get update
         sudo apt-get install --no-install-recommends qemu-system-x86 cloud-image-utils
-        #sudo apt search 'g\+\+-'
     - name: QEMU Information
       run: |
         qemu-system-x86_64 --version
@@ -95,14 +88,12 @@ jobs:
 
     - name: Checkout
       uses: actions/checkout@v4
-      with:
-        ref: master
-        path: manool
+      with: { ref: master }
     - name: Upload to VM
       run: |
         exec 2>&1; set -x
         ls -la
-        #cd ..
+        cd ..
         tar c manool | ssh -p222 root@127.0.0.1 tar x
 
     - name: Build and Test
@@ -123,7 +114,7 @@ jobs:
     - name: Download from VM
       run: |
         exec 2>&1; set -x
-        #cd ..
+        cd ..
         rm -rf manool
         ssh -p222 root@127.0.0.1 tar c manool | tar x
     - name: Upload Results
