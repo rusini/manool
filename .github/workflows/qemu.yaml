@@ -64,10 +64,13 @@ jobs:
       uses: actions/cache@v4
       with:
         key: ubuntu-focal-cloud-generic
-        path: ~/root.img ~/.ssh/id_rsa
+        path: |
+          ~/root.img
+          ~/.ssh/id_rsa
     - name: Deploy and Start VM
       run: |
-        exec 2>&1; set -x
+        exec 2>&1
+        set -x
         cd
 
         sudo qemu-system-x86_64 -enable-kvm -cpu host -m 10G -smp 4 \
@@ -110,6 +113,13 @@ jobs:
         END
         ${{matrix.compiler.gxx}} ${{matrix.compiler.mode.flags}} hi.cc
         ./a.out
+
+        cd manool
+        make -j5 run \
+           GCC='${{matrix.compiler.gcc}}' \
+           GXX='${{matrix.compiler.gxx}}' \
+           CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE' \
+           MARCH='${{matrix.mode.flags}}'
 
     - name: Download from VM
       run: |
@@ -160,7 +170,8 @@ jobs:
     - name: Deploy and Start VM
       if: steps.cache.outputs.cache-hit != 'true'
       run: |
-        exec 2>&1; set -x
+        exec 2>&1
+        set -x
         cd
 
         wget --no-show-progress -O root.img \
@@ -197,25 +208,29 @@ jobs:
       if: steps.cache.outputs.cache-hit != 'true'
       shell: vmbash.sh {0}
       run: |
-        exec 2>&1; set -x
+        exec 2>&1
+        set -x
         lscpu; free -h; df -H .
     - name: Set up VM
       if: steps.cache.outputs.cache-hit != 'true'
       shell: vmbash.sh {0}
       run: |
-        exec 2>&1; set -x
+        exec 2>&1
+        set -x
         apt-get update
         apt-get -y install rsync
-        apt-get -y install make g++-multilib g++-10-multilib clang-18
+        apt-get -y install make g++{,-10}-multilib clang-18
         make --version; g++ --version; g++-10 --version; clang++-18 --version
         
     - name: Initiate VM Shutdown
       if: steps.cache.outputs.cache-hit != 'true'
       run: |
+        exec 2>&1
         ssh -p222 root@127.0.0.1 poweroff || :
     - name: Sync VM State
       if: steps.cache.outputs.cache-hit != 'true'
       run: |
-        exec 2>&1; set -x
-        cd
-        while test "$(sudo lsof -w root.img)"; do sleep 1; done
+        exec 2>&1
+        set -x
+        #cd
+        while test "$(sudo lsof -w ~/root.img)"; do sleep 1; done
