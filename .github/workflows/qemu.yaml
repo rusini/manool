@@ -101,6 +101,7 @@ jobs:
     - name: Upload to VM
       run: |
         exec 2>&1; set -x
+        ls -la
         #cd ..
         tar c manool | ssh -p222 root@127.0.0.1 tar x
 
