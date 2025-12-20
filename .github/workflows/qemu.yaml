@@ -31,11 +31,11 @@ jobs:
     - name: Checkout GHA Tools
       uses: actions/checkout@v4
       with:
-        path: gha-tools
+        path: ../gha-tools
         sparse-checkout: .github/actions
         show-progress: FALSE
     - name: Dump System Info
-      uses: ./gha-tools/.github/actions/runner-info
+      uses: ./../gha-tools/.github/actions/runner-info
     #- &minfo
     #  name: Host Machine Information
     #  run: |
@@ -107,8 +107,6 @@ jobs:
       shell: vmbash.sh {0}
       run: |
         exec 2>&1; set -x
-        ls -la manool
-        ls -la manool/gha-tools
         tee hi.cc <<'END'
         # include <cstdio>
         int main() {
