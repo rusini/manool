@@ -30,9 +30,10 @@ jobs:
 
     - name: Checkout GHA Tools
       uses: actions/checkout@v4
-      path: gha-tools
-      sparse-checkout: .github/actions
-      show-progress: FALSE
+      with:
+        path: gha-tools
+        sparse-checkout: .github/actions
+        show-progress: FALSE
     - name: Dump System Info
       uses: ./gha-tools/.github/actions/runner-info
     #- &minfo
@@ -94,7 +95,8 @@ jobs:
 
     - name: Checkout
       uses: actions/checkout@v4
-      ref: master
+      with:
+        ref: master
     - name: Upload to VM
       run: |
         exec 2>&1; set -x
@@ -105,6 +107,8 @@ jobs:
       shell: vmbash.sh {0}
       run: |
         exec 2>&1; set -x
+        ls -la
+        ls -la gha-tools
         tee hi.cc <<'END'
         # include <cstdio>
         int main() {
