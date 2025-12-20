@@ -28,10 +28,13 @@ jobs:
       run: { shell: bash }
     steps:
 
-    - name: Checkout
+    - name: Checkout GHA Tools
       uses: actions/checkout@v4
-    - name: Dump system info
-      uses: ./.github/actions/runner-info
+      path: gha-tools
+      sparse-checkout: .github/actions
+      show-progress: FALSE
+    - name: Dump System Info
+      uses: ./gha-tools/.github/actions/runner-info
     #- &minfo
     #  name: Host Machine Information
     #  run: |
@@ -89,8 +92,9 @@ jobs:
         exec 2>&1; set -x
         until [ "$(timedatectl show -p NTPSynchronized --value)" = yes ]; do sleep 1; done
 
-    #- name: Checkout
-    #  uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
+      ref: master
     - name: Upload to VM
       run: |
         exec 2>&1; set -x
