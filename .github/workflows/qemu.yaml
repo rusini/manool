@@ -50,21 +50,23 @@ jobs:
         pwd
     - name: Host Setup
       run: |
-        exec 2>&1; set -x
+        exec 2>&1
+        set -x
         sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
         sudo apt-get update
         sudo apt-get install --no-install-recommends qemu-system-x86 cloud-image-utils
     - name: QEMU Information
       run: |
+        exec 2>&1
         qemu-system-x86_64 --version
 
     - name: Lookup Cache Object
       uses: actions/cache@v4
       with:
         key: ubuntu-focal-cloud-generic
-        path: |
-          ~/root.img
-          ~/.ssh/id_rsa
+        path:
+          - ~/root.img
+          - ~/.ssh/id_rsa
     - name: Deploy and Start VM
       run: |
         exec 2>&1; set -x
@@ -132,22 +134,8 @@ jobs:
     steps:
 
     - *minfo
-      #name: Host Machine Information
-      #run: |
-      #  exec 2>&1; set -x
-      #  lscpu; free -h; df -H .
-    - name: Host System Information
-      run: |
-        exec 2>&1
-        date; uname -a; uptime
-        set -x
-        systemd-detect-virt; cat /etc/os-release; ls -C /boot || :
-    - name: Context Information
-      run: |
-        exec 2>&1
-        tty || :; id; printf %s\\n%s\\n "SHELL=$SHELL" "PATH=$PATH"
-        set -x
-        pwd
+    - *sinfo
+    - *cinfo
     - name: Lookup Cache Object
       id: cache
       uses: actions/cache@v4
@@ -168,6 +156,7 @@ jobs:
     - name: QEMU Information
       if: steps.cache.outputs.cache-hit != 'true'
       run: |
+        exec 2>&1
         qemu-system-x86_64 --version
 
     - name: Deploy and Start VM
