@@ -199,7 +199,7 @@ jobs:
         exec 2>&1
         set -x
         lscpu; free -h; df -H .
-    - name: Set up VM
+    - name: VM Setup
       if: steps.cache.outputs.cache-hit != 'true'
       shell: vmbash.sh {0}
       run: |
