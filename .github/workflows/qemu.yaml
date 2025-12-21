@@ -73,8 +73,8 @@ jobs:
         set -x
         cd
 
-        sudo qemu-system-x86_64 -enable-kvm -cpu host -m 10G -smp 4 \
-          -drive file=root.img,format=qcow2,if=virtio -nic user,model=virtio,hostfwd=:127.0.0.1:222-:22 \
+        sudo qemu-system-x86_64 -enable-kvm -cpu host -smp 4 -m 10G \
+          -drive file=root.img,if=virtio,cache=unsafe -nic user,model=virtio,hostfwd=:127.0.0.1:222-:22 \
           -daemonize -vga none -display none
         until ssh -oStrictHostKeyChecking=no -p222 root@127.0.0.1 : 2>/dev/null; do sleep 1; done
 
@@ -102,19 +102,10 @@ jobs:
     - name: Build and Test
       shell: vmbash.sh {0}
       run: |
-        exec 2>&1; set -x
-        ls -la manool
-        tee hi.cc <<'END'
-        # include <cstdio>
-        int main() {
-           std::puts("Hi");
-           return 0;
-        }
-        END
-        ${{matrix.compiler.gxx}} ${{matrix.compiler.mode.flags}} hi.cc
-        ./a.out
-
+        exec 2>&1
+        set -x
         cd manool
+
         make -j5 run \
            GCC='${{matrix.compiler.gcc}}' \
            GXX='${{matrix.compiler.gxx}}' \
@@ -187,8 +178,8 @@ jobs:
           ssh_authorized_keys: [ '$(<.ssh/id_rsa.pub)' ]
         END
 
-        sudo qemu-system-x86_64 -enable-kvm -cpu host -m 10G -smp 4 \
-          -drive file=root.img,format=qcow2,if=virtio -nic user,model=virtio,hostfwd=:127.0.0.1:222-:22 \
+        sudo qemu-system-x86_64 -enable-kvm -cpu host -smp 4 -m 10G \
+          -drive file=root.img,format=qcow2,if=virtio,cache=unsafe -nic user,model=virtio,hostfwd=:127.0.0.1:222-:22 \
           -daemonize -vga none -display none -cdrom seed.iso
         until ssh -oStrictHostKeyChecking=no -p222 root@127.0.0.1 : 2>/dev/null; do sleep 1; done
 
