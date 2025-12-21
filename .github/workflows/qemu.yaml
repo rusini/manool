@@ -79,15 +79,11 @@ jobs:
           -daemonize -vga none -display none
         until ssh -oStrictHostKeyChecking=no -p222 root@127.0.0.1 : 2>/dev/null; do sleep 1; done
 
-        #tee /usr/local/bin/vmbash.sh <<'END' >/dev/null; chmod +x /usr/local/bin/vmbash.sh
-        ##!/bin/bash
-        #ssh -p222 root@127.0.0.1 bash --noprofile --norc -e -o pipefail <$1
-        #END
-
     - name: Time Sync
       shell: vmbash.sh {0}
       run: |
-        exec 2>&1; set -x
+        exec 2>&1
+        set -x
         until [ "$(timedatectl show -p NTPSynchronized --value)" = yes ]; do sleep 1; done
 
     - name: Checkout
@@ -227,4 +223,5 @@ jobs:
         exec 2>&1
         set -x
         #cd
-        while test "$(sudo lsof -w ~/root.img)"; do sleep 1; done
+        #while test "$(sudo lsof -w ~/root.img)"; do sleep 1; done
+        flock ~/root.img true
