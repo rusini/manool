@@ -102,7 +102,6 @@ jobs:
            GCC='${{matrix.compiler.gcc}}' \
            GXX='${{matrix.compiler.gxx}}' \
            MARCH='${{matrix.march.flags}}'
-           #CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE' \
 
     - name: Download from Guest
       run: |
