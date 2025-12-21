@@ -91,7 +91,7 @@ jobs:
         exec 2>&1
         set -x
         cd ..
-        tar c manool | ssh -p222 root@127.0.0.1 tar x
+        tar c --{owner,group}=0 manool | ssh -p222 root@127.0.0.1 tar x
 
     - name: Build and Test
       shell: vmbash.sh {0}
@@ -107,8 +107,8 @@ jobs:
         exec 2>&1
         set -x
         cd ..
-        rm -rf manool
-        ssh -p222 root@127.0.0.1 tar c manool | tar x
+        rm -r manool
+        ssh -p222 root@127.0.0.1 tar c --{owner,group}=0 manool | tar x
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
