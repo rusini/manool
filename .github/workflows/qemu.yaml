@@ -100,7 +100,7 @@ jobs:
         set -x
         cd manool
 
-        make -j4 run \
+        make -j6 run \
            GCC='${{matrix.compiler.gcc}}' \
            GXX='${{matrix.compiler.gxx}}' \
            CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE' \
