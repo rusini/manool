@@ -224,4 +224,4 @@ jobs:
         set -x
         #cd
         #while test "$(sudo lsof -w ~/root.img)"; do sleep 1; done
-        flock ~/root.img true
+        date; flock ~/root.img true; date
