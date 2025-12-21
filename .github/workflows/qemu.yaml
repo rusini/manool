@@ -100,7 +100,7 @@ jobs:
         set -x
         cd manool
 
-        make -j3 run \
+        make -j4 run \
            GCC='${{matrix.compiler.gcc}}' \
            GXX='${{matrix.compiler.gxx}}' \
            CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE' \
@@ -166,8 +166,8 @@ jobs:
           https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img
         qemu-img resize root.img 6G
 
-        mkdir -m777 .ssh
-        ssh-keygen -N '' -t rsa -b 1024 -f .ssh/id_rsa
+        mkdir -m700 .ssh
+        ssh-keygen -N '' -t ed25519 -f .ssh/id_rsa
         cloud-localds seed.iso - <<END
         #cloud-config
         users:
