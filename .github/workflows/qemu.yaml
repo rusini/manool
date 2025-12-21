@@ -81,7 +81,7 @@ jobs:
       shell: vmbash.sh {0}
       run: |
         exec 2>&1
-        until [ "$(set -x; timedatectl show -pNTPSynchronized --value)" = yes ]; do (set -x; sleep 1) done
+        until [ "$(set -x; timedatectl show --value -pNTPSynchronized)" = yes ]; do (set -x; sleep 1) done
 
     - name: Checkout
       uses: actions/checkout@v4
@@ -100,7 +100,7 @@ jobs:
         set -x
         cd manool
 
-        make -j6 run \
+        make -j4 run \
            GCC='${{matrix.compiler.gcc}}' \
            GXX='${{matrix.compiler.gxx}}' \
            CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE' \
@@ -190,7 +190,7 @@ jobs:
       shell: vmbash.sh {0}
       run: |
         exec 2>&1
-        until [ "$(set -x; timedatectl show -pNTPSynchronized --value)" = yes ]; do (set -x; sleep 1) done
+        until [ "$(set -x; timedatectl show --value -pNTPSynchronized)" = yes ]; do (set -x; sleep 1) done
 
     - name: VM Information
       if: steps.cache.outputs.cache-hit != 'true'
