@@ -8,7 +8,7 @@ on:
 jobs:
 
   qemu-build:
-    name: Build with ${{matrix.compiler.label}}/${{matrix.mode.label}}
+    name: Build with ${{matrix.compiler.label}}/${{matrix.march.label}}
     strategy:
       fail-fast: FALSE
       matrix:
@@ -16,7 +16,7 @@ jobs:
         - { label: 'gcc9',    gcc: 'gcc',      gxx: 'g++' }
         - { label: 'gcc10',   gcc: 'gcc-10',   gxx: 'g++-10' }
         - { label: 'clang18', gcc: 'clang-18', gxx: 'clang++-18' }
-        mode:
+        march:
         - { label: '64',  flags: '' }
         - { label: '32',  flags: '-m32 -msse2 -mfpmath=sse' }
         - { label: 'x32', flags: '-mx32' }
@@ -98,13 +98,11 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        cd manool
-
-        make -j4 run \
+        make -Cmanool -j4 run \
            GCC='${{matrix.compiler.gcc}}' \
            GXX='${{matrix.compiler.gxx}}' \
            CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE' \
-           MARCH='${{matrix.mode.flags}}'
+           MARCH='${{matrix.march.flags}}'
 
     - name: Download from Guest
       run: |
@@ -116,7 +114,7 @@ jobs:
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
-        name: build-${{matrix.compiler.label}}-${{matrix.mode.label}}
+        name: build-${{matrix.compiler.label}}-${{matrix.march.label}}
         path: build
 
   qemu-cache:
