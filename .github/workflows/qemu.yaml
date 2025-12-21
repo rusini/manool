@@ -212,15 +212,9 @@ jobs:
         apt-get -y install make g++{,-10}-multilib clang-18
         make --version; g++ --version; g++-10 --version; clang++-18 --version
         
-    - name: Initiate VM Shutdown
+    - name: VM Shutdown
       if: steps.cache.outputs.cache-hit != 'true'
       run: |
         exec 2>&1
         ssh -p222 root@127.0.0.1 poweroff || :
-    - name: Sync VM State
-      if: steps.cache.outputs.cache-hit != 'true'
-      run: |
-        exec 2>&1
-        #set -x
-        #cd
         while test "$(set -x; sudo lsof -w ~/root.img)"; do (set -x; sleep 1) done
