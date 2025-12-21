@@ -64,7 +64,8 @@ jobs:
       uses: actions/cache@v4
       with:
         key: ubuntu-focal-cloud-generic
-        #path: |
+        path: ''
+        #|
         #  ~/root.img
         #  ~/.ssh/id_rsa
     - name: Deploy and Start VM
