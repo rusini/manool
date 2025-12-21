@@ -64,9 +64,9 @@ jobs:
       uses: actions/cache@v4
       with:
         key: ubuntu-focal-cloud-generic
-        path: |
-          ~/root.img
-          ~/.ssh/id_rsa
+        #path: |
+        #  ~/root.img
+        #  ~/.ssh/id_rsa
     - name: Deploy and Start VM
       run: |
         exec 2>&1
@@ -148,7 +148,8 @@ jobs:
     - name: Host Setup
       if: steps.cache.outputs.cache-hit != 'true'
       run: |
-        exec 2>&1; set -x
+        exec 2>&1
+        set -x
         sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
         sudo apt-get update
         sudo apt-get install --no-install-recommends qemu-system-x86 cloud-image-utils
@@ -179,7 +180,7 @@ jobs:
         END
 
         sudo qemu-system-x86_64 -enable-kvm -cpu host -smp 4 -m 10G \
-          -drive file=root.img,format=qcow2,if=virtio,cache=unsafe -nic user,model=virtio,hostfwd=:127.0.0.1:222-:22 \
+          -drive file=root.img,if=virtio,cache=unsafe -nic user,model=virtio,hostfwd=:127.0.0.1:222-:22 \
           -daemonize -vga none -display none -cdrom seed.iso
         until ssh -oStrictHostKeyChecking=no -p222 root@127.0.0.1 : 2>/dev/null; do sleep 1; done
 
