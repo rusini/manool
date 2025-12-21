@@ -216,5 +216,5 @@ jobs:
       if: steps.cache.outputs.cache-hit != 'true'
       run: |
         exec 2>&1
-        ssh -p222 root@127.0.0.1 poweroff || :
+        (set -x; ssh -p222 root@127.0.0.1 poweroff) || :
         while test "$(set -x; sudo lsof -w ~/root.img)"; do (set -x; sleep 1) done
