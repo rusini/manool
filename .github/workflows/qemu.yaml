@@ -73,26 +73,23 @@ jobs:
         exec 2>&1
         set -x
         cd
-
         sudo qemu-system-x86_64 -enable-kvm -cpu host -smp 4 -m 10G \
           -drive file=root.img,if=virtio,cache=unsafe -nic user,model=virtio,hostfwd=:127.0.0.1:222-:22 \
           -daemonize -vga none -display none
         until ssh -oStrictHostKeyChecking=no -p222 root@127.0.0.1 : 2>/dev/null; do sleep 1; done
-
     - name: Time Sync
       shell: vmbash.sh {0}
       run: |
         exec 2>&1
-        set -x
-        until [ "$(timedatectl show -p NTPSynchronized --value)" = yes ]; do sleep 1; done
+        until [ "$(set -x; timedatectl show -pNTPSynchronized --value)" = yes ]; do (set -x; sleep 1) done
 
     - name: Checkout
       uses: actions/checkout@v4
       with: { ref: master }
     - name: Upload to VM
       run: |
-        exec 2>&1; set -x
-        ls -la
+        exec 2>&1
+        set -x
         cd ..
         tar c manool | ssh -p222 root@127.0.0.1 tar x
 
@@ -111,7 +108,8 @@ jobs:
 
     - name: Download from VM
       run: |
-        exec 2>&1; set -x
+        exec 2>&1
+        set -x
         cd ..
         rm -rf manool
         ssh -p222 root@127.0.0.1 tar c manool | tar x
@@ -192,7 +190,7 @@ jobs:
       shell: vmbash.sh {0}
       run: |
         exec 2>&1
-        until [ "$(set -x; timedatectl show -p NTPSynchronized --value)" = yes ]; do (set -x; sleep 1) done
+        until [ "$(set -x; timedatectl show -pNTPSynchronized --value)" = yes ]; do (set -x; sleep 1) done
 
     - name: VM Information
       if: steps.cache.outputs.cache-hit != 'true'
