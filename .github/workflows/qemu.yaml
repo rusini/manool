@@ -120,7 +120,7 @@ jobs:
         path: build
 
   qemu-cache:
-    name: Prepare and Cache Guest VM
+    name: Cache Guest VM
     runs-on: ubuntu-latest
 
     defaults:
