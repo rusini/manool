@@ -221,6 +221,6 @@ jobs:
       if: steps.cache.outputs.cache-hit != 'true'
       run: |
         exec 2>&1
-        set -x
+        #set -x
         #cd
-        while test "$(sudo lsof -w ~/root.img)"; do sleep 1; done
+        while test "$(set -x; sudo lsof -w ~/root.img)"; do (set -x; sleep 1) done
