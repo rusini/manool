@@ -98,8 +98,10 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        make -Cmanool -j4 run
-           GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}' \
+        make -Cmanool -j4 run \
+           GCC='${{matrix.compiler.gcc}}' \
+           GXX='${{matrix.compiler.gxx}}' \
+           CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE' \
            MARCH='${{matrix.march.flags}}'
 
     - name: Download from Guest
