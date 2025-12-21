@@ -202,7 +202,6 @@ jobs:
         exec 2>&1
         set -x
         apt-get update
-        apt-get -y install rsync
         apt-get -y install make g++{,-10}-multilib clang-18
         make --version; g++ --version; g++-10 --version; clang++-18 --version
         
