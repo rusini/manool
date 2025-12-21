@@ -191,8 +191,8 @@ jobs:
       if: steps.cache.outputs.cache-hit != 'true'
       shell: vmbash.sh {0}
       run: |
-        exec 2>&1; set -x
-        until [ "$(timedatectl show -p NTPSynchronized --value)" = yes ]; do sleep 1; done
+        exec 2>&1
+        until [ "$(set -x; timedatectl show -p NTPSynchronized --value)" = yes ]; do (set -x; sleep 1) done
 
     - name: VM Information
       if: steps.cache.outputs.cache-hit != 'true'
@@ -217,4 +217,4 @@ jobs:
       run: |
         exec 2>&1
         (set -x; ssh -p222 root@127.0.0.1 poweroff) || :
-        while test "$(set -x; sudo lsof -w ~/root.img)"; do (set -x; sleep 1) done
+        while [ "$(set -x; sudo lsof -w ~/root.img)" ]; do (set -x; sleep 1) done
