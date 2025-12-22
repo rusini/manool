@@ -17,9 +17,9 @@ jobs:
         - { label: 'gcc12',   gcc: 'gcc-12',   gxx: 'g++-12' }
         - { label: 'gcc13',   gcc: 'gcc-13',   gxx: 'g++-13' }
         - { label: 'gcc14',   gcc: 'gcc-14',   gxx: 'g++-14' }
-        # - { label: 'gcc15',   gcc: 'gcc',      gxx: 'g++' }
+        - { label: 'gcc15',   gcc: 'gcc',      gxx: 'g++' }
         - { label: 'clang14', gcc: 'clang-14', gxx: 'clang++-14' }
-        - { label: 'clang15', gcc: 'clang-15', gxx: 'clang++-15' }
+        # - { label: 'clang15', gcc: 'clang-15', gxx: 'clang++-15' }
         - { label: 'clang17', gcc: 'clang-17', gxx: 'clang++-17' }
         - { label: 'clang18', gcc: 'clang-18', gxx: 'clang++-18' }
         - { label: 'clang19', gcc: 'clang-19', gxx: 'clang++-19' }
