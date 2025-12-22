@@ -212,9 +212,9 @@ jobs:
         exec 2>&1
         set -x
         apt-get update
-        apt-get -y install software-properties-common
-        add-apt-repository universe
-        apt-get update
+        #apt-get -y install software-properties-common
+        #add-apt-repository universe
+        #apt-get update
         apt-get -y install make g++{,-{11..15}} clang{,-{14,17,18,19,21}}
         
     - name: Guest Shutdown
