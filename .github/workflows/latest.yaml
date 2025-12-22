@@ -19,7 +19,7 @@ jobs:
         - { label: 'gcc14',   gcc: 'gcc-14',   gxx: 'g++-14' }
         - { label: 'gcc15',   gcc: 'gcc',      gxx: 'g++' }
         - { label: 'clang14', gcc: 'clang-14', gxx: 'clang++-14' }
-        # - { label: 'clang15', gcc: 'clang-15', gxx: 'clang++-15' }
+        -   { label: 'clang16', gcc: 'clang-16', gxx: 'clang++-16' }
         - { label: 'clang17', gcc: 'clang-17', gxx: 'clang++-17' }
         - { label: 'clang18', gcc: 'clang-18', gxx: 'clang++-18' }
         - { label: 'clang19', gcc: 'clang-19', gxx: 'clang++-19' }
@@ -212,9 +212,6 @@ jobs:
         exec 2>&1
         set -x
         apt-get update
-        #apt-get -y install software-properties-common
-        #add-apt-repository universe
-        #apt-get update
         apt-get -y install make g++{,-{11..15}}-multilib clang{,-{14,17,18,19,21}}
         
     - name: Guest Shutdown
