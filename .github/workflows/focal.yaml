@@ -98,6 +98,7 @@ jobs:
       run: |
         exec 2>&1
         set -x
+        make --version; ${{matrix.compiler.gcc}} --version
         make -Cmanool -j4 run \
            GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}' \
            MARCH='${{matrix.march.flags}}'
@@ -203,7 +204,7 @@ jobs:
         set -x
         apt-get update
         apt-get -y install make g++{,-10}-multilib clang-18
-        make --version; g++ --version; g++-10 --version; clang++-18 --version
+        df -H .
         
     - name: Guest Shutdown
       if: steps.cache.outputs.cache-hit != 'true'

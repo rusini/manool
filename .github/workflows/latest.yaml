@@ -217,6 +217,7 @@ jobs:
         set -x
         apt-get update
         apt-get -y install make g++{,-{11..15}}-multilib clang{,-{14,17,18,19,21}}
+        df -H .
         
     - name: Guest Shutdown
       if: steps.cache.outputs.cache-hit != 'true'
