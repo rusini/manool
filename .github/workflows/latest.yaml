@@ -25,7 +25,7 @@ jobs:
         - { label: 'clang20', gcc: 'clang',    gxx: 'clang++' }
         - { label: 'clang21', gcc: 'clang-21', gxx: 'clang++-21' }
         march:
-        - { label: '64', flags: '' }
+        - { label: '64' }
         - { label: '32', flags: '-m32 -msse2 -mfpmath=sse' }
         exclude:
         - compiler: { label: 'gcc11' }

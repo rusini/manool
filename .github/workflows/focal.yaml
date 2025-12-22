@@ -17,7 +17,7 @@ jobs:
         - { label: 'gcc10',   gcc: 'gcc-10',   gxx: 'g++-10' }
         - { label: 'clang18', gcc: 'clang-18', gxx: 'clang++-18' }
         march:
-        - { label: '64',  flags: '' }
+        - { label: '64' }
         - { label: '32',  flags: '-m32 -msse2 -mfpmath=sse' }
         - { label: 'x32', flags: '-mx32' }
 
