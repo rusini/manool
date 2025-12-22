@@ -170,7 +170,7 @@ jobs:
         wget --no-show-progress -O root.img \
           https://cloud-images.ubuntu.com/minimal/releases/questing/release/ubuntu-25.10-minimal-cloudimg-amd64.img
           #https://cloud-images.ubuntu.com/questing/current/questing-server-cloudimg-amd64.img
-        qemu-img resize root.img 8G
+        qemu-img resize root.img 12G
 
         mkdir -m700 .ssh
         ssh-keygen -N '' -t ed25519 -f .ssh/id_rsa
@@ -215,7 +215,7 @@ jobs:
         #apt-get -y install software-properties-common
         #add-apt-repository universe
         #apt-get update
-        apt-get -y install make g++{,-{11..15}} clang{,-{14,17,18,19,21}}
+        apt-get -y install make g++{,-{11..15}}-multilib clang{,-{14,17,18,19,21}}
         
     - name: Guest Shutdown
       if: steps.cache.outputs.cache-hit != 'true'
