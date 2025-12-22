@@ -1,4 +1,4 @@
-# .github/workflows/qemu.yaml
+# .github/workflows/focal.yaml
 
 name: Build Under Ubuntu 20.04
 

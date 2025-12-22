@@ -1,4 +1,4 @@
-# .github/workflows/qemu.yaml
+# .github/workflows/latest.yaml
 
 name: Build Under Latest Ubuntu
 
