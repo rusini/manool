@@ -173,7 +173,6 @@ jobs:
 
         wget --no-show-progress -O root.img \
           https://cloud-images.ubuntu.com/minimal/releases/questing/release/ubuntu-25.10-minimal-cloudimg-amd64.img
-          #https://cloud-images.ubuntu.com/questing/current/questing-server-cloudimg-amd64.img
         qemu-img resize root.img 12G
 
         mkdir -m700 .ssh
