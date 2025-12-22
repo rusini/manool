@@ -71,7 +71,7 @@ jobs:
     - name: Cache Object Lookup
       uses: actions/cache@v4
       with:
-        key: ubuntu-focal-cloud-generic
+        key: ubuntu-latest-cloud-minimal
         path: |
           ~/root.img
           ~/.ssh/id_rsa
@@ -139,7 +139,7 @@ jobs:
       id: cache
       uses: actions/cache@v4
       with:
-        key: ubuntu-focal-cloud-generic
+        key: ubuntu-latest-cloud-minimal
         path: |
           ~/root.img
           ~/.ssh/id_rsa
