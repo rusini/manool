@@ -1,28 +1,36 @@
 # .github/workflows/qemu.yaml
 
-name: Build Under Ubuntu 20.04
+name: Build Under Latest Ubuntu
 
 on:
   workflow_dispatch: NULL
 
 jobs:
 
-  focal-build:
+  latest-build:
     name: Build with ${{matrix.compiler.label}}/${{matrix.march.label}}
     strategy:
       fail-fast: FALSE
       matrix:
         compiler:
-        - { label: 'gcc9',    gcc: 'gcc',      gxx: 'g++' }
-        - { label: 'gcc10',   gcc: 'gcc-10',   gxx: 'g++-10' }
+        - { label: 'gcc11',   gcc: 'gcc-11',   gxx: 'g++-11' }
+        - { label: 'gcc12',   gcc: 'gcc-12',   gxx: 'g++-12' }
+        - { label: 'gcc13',   gcc: 'gcc-13',   gxx: 'g++-13' }
+        - { label: 'gcc14',   gcc: 'gcc-14',   gxx: 'g++-14' }
+        - { label: 'gcc15',   gcc: 'gcc',      gxx: 'g++' }
+        - { label: 'clang14', gcc: 'clang-14', gxx: 'clang++-14' }
+        - { label: 'clang15', gcc: 'clang-15', gxx: 'clang++-15' }
+        - { label: 'clang17', gcc: 'clang-17', gxx: 'clang++-17' }
         - { label: 'clang18', gcc: 'clang-18', gxx: 'clang++-18' }
+        - { label: 'clang19', gcc: 'clang-19', gxx: 'clang++-19' }
+        - { label: 'clang20', gcc: 'clang',    gxx: 'clang++' }
+        - { label: 'clang21', gcc: 'clang-21', gxx: 'clang++-21' }
         march:
-        - { label: '64',  flags: '' }
-        - { label: '32',  flags: '-m32 -msse2 -mfpmath=sse' }
-        - { label: 'x32', flags: '-mx32' }
+        - { label: '64', flags: '' }
+        - { label: '32', flags: '-m32 -msse2 -mfpmath=sse' }
 
     runs-on: ubuntu-latest
-    needs: [ focal-cache ]
+    needs: [ latest-cache ]
 
     defaults:
       run: { shell: bash }
@@ -98,6 +106,7 @@ jobs:
       run: |
         exec 2>&1
         set -x
+        make --version; ${{matrix.compiler.gcc}} --version
         make -Cmanool -j4 run \
            GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}' \
            MARCH='${{matrix.march.flags}}'
@@ -112,10 +121,10 @@ jobs:
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
-        name: focal-${{matrix.compiler.label}}-${{matrix.march.label}}
+        name: latest-${{matrix.compiler.label}}-${{matrix.march.label}}
         path: build
 
-  focal-cache:
+  latest-cache:
     name: Prepare Guest VM
     runs-on: ubuntu-latest
 
@@ -159,7 +168,7 @@ jobs:
         cd
 
         wget --no-show-progress -O root.img \
-          https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img
+          https://cloud-images.ubuntu.com/minimal/releases/questing/release/ubuntu-25.10-minimal-cloudimg-amd64.img
         qemu-img resize root.img 6G
 
         mkdir -m700 .ssh
@@ -202,8 +211,7 @@ jobs:
         exec 2>&1
         set -x
         apt-get update
-        apt-get -y install make g++{,-10}-multilib clang-18
-        make --version; g++ --version; g++-10 --version; clang++-18 --version
+        apt-get -y install make g++{,-{11..15}} clang{,-{14,15,17,18,19,21}}
         
     - name: Guest Shutdown
       if: steps.cache.outputs.cache-hit != 'true'
