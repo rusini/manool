@@ -212,7 +212,7 @@ jobs:
         exec 2>&1
         set -x
         apt-get update
-        apt-get -y install make g++{,-{11..15}}-multilib clang{,-{14,17,18,19,21}}
+        apt-get -y install make g++{,-{11..15}}-multilib clang{,-{14,16,17,18,19,21}}
         
     - name: Guest Shutdown
       if: steps.cache.outputs.cache-hit != 'true'
