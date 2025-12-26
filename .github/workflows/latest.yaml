@@ -35,7 +35,7 @@ jobs:
 
     runs-on: ubuntu-latest
     #needs: [ latest-cache ]
-    container: questing-20251029
+    container: ubuntu:25.10
 
     defaults:
       run: { shell: bash }
