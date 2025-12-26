@@ -3,34 +3,10 @@
 name: Build
 
 on:
-  workflow_dispatch: {}
-  push:
-    branches: [ test ]
+  workflow_dispatch: NULL
 
 jobs:
-
-####################################################################################################
-  build-linux:
-
-20.04 g++-8   -m64
-20.04 g++     -m64
-20.04 g++     -m32
-20.04 g++     -mx32
-20.04 clang++-8  -m64
-20.04 clang++    -m64
-
-22.04 g++        -m64
-22.04 g++        -m32
-22.04 g++-12     -m64
-22.04 g++-13     -m64
-22.04 clang++    -m64
-22.04 clang++-15 -m64
-
-22.04 aarch64-linux-gnu-g++
-22.04 arm-linux-gnueabihf-g++
-22.04 Alpine
-
-
+  build:
     strategy:
       fail-fast: false
       matrix:

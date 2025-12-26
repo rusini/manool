@@ -34,7 +34,8 @@ jobs:
           march:    { label: '32' }
 
     runs-on: ubuntu-latest
-    needs: [ latest-cache ]
+    #needs: [ latest-cache ]
+    container: questing-20251029
 
     defaults:
       run: { shell: bash }
@@ -60,53 +61,59 @@ jobs:
         tty || :; id; printf %s\\n "SHELL=$SHELL" "PATH=$PATH"
         set -x
         pwd
-    - name: Host Setup
+    #- name: Host Setup
+    #  run: |
+    #    exec 2>&1
+    #    set -x
+    #    sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
+    #    sudo apt-get update
+    #    sudo apt-get install --no-install-recommends qemu-system-x86 cloud-image-utils
+    #- name: QEMU Information
+    #  run: |
+    #    exec 2>&1
+    #    qemu-system-x86_64 --version
+    - name: Setup
       run: |
         exec 2>&1
         set -x
-        sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
-        sudo apt-get update
-        sudo apt-get install --no-install-recommends qemu-system-x86 cloud-image-utils
-    - name: QEMU Information
-      run: |
-        exec 2>&1
-        qemu-system-x86_64 --version
+        apt-get update
+        apt-get -y install make g++{,-{11..15}}-multilib clang{,-{14,17,18,19,21}}
 
-    - name: Cache Object Lookup
-      uses: actions/cache@v4
-      with:
-        key: ubuntu-latest-cloud-minimal
-        path: |
-          ~/root.img
-          ~/.ssh/id_rsa
-          /usr/local/bin/vmbash.sh
-    - name: Start Guest
-      run: |
-        exec 2>&1
-        set -x
-        cd
-        sudo qemu-system-x86_64 -enable-kvm -cpu host -smp 4 -m 10G \
-          -drive file=root.img,if=virtio,cache=unsafe -nic user,model=virtio,hostfwd=:127.0.0.1:222-:22 \
-          -daemonize -vga none -display none
-        until ssh -oStrictHostKeyChecking=no -p222 root@127.0.0.1 : 2>/dev/null; do sleep 1; done
-    - name: Time Synchronization
-      shell: vmbash.sh {0}
-      run: |
-        exec 2>&1
-        until [ "$(set -x; timedatectl show --value -pNTPSynchronized)" = yes ]; do (set -x; sleep 1) done
+    #- name: Cache Object Lookup
+    #  uses: actions/cache@v4
+    #  with:
+    #    key: ubuntu-latest-cloud-minimal
+    #    path: |
+    #      ~/root.img
+    #      ~/.ssh/id_rsa
+    #      /usr/local/bin/vmbash.sh
+    #- name: Start Guest
+    #  run: |
+    #    exec 2>&1
+    #    set -x
+    #    cd
+    #    sudo qemu-system-x86_64 -enable-kvm -cpu host -smp 4 -m 10G \
+    #      -drive file=root.img,if=virtio,cache=unsafe -nic user,model=virtio,hostfwd=:127.0.0.1:222-:22 \
+    #      -daemonize -vga none -display none
+    #    until ssh -oStrictHostKeyChecking=no -p222 root@127.0.0.1 : 2>/dev/null; do sleep 1; done
+    #- name: Time Synchronization
+    #  shell: vmbash.sh {0}
+    #  run: |
+    #    exec 2>&1
+    #    until [ "$(set -x; timedatectl show --value -pNTPSynchronized)" = yes ]; do (set -x; sleep 1) done
 
     - name: Checkout
       uses: actions/checkout@v4
       with: { ref: master }
-    - name: Upload to Guest
-      run: |
-        exec 2>&1
-        set -x
-        cd ..
-        tar c --{owner,group}=0 manool | ssh -p222 root@127.0.0.1 tar x
+    #- name: Upload to Guest
+    #  run: |
+    #    exec 2>&1
+    #    set -x
+    #    cd ..
+    #    tar c --{owner,group}=0 manool | ssh -p222 root@127.0.0.1 tar x
 
     - name: Build and Test
-      shell: vmbash.sh {0}
+      #shell: vmbash.sh {0}
       run: |
         exec 2>&1
         set -x
@@ -115,13 +122,13 @@ jobs:
            GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}' \
            MARCH='${{matrix.march.flags}}'
 
-    - name: Download from Guest
-      run: |
-        exec 2>&1
-        set -x
-        cd ..
-        rm -r manool
-        ssh -p222 root@127.0.0.1 tar c --{owner,group}=0 manool | tar x
+    #- name: Download from Guest
+    #  run: |
+    #    exec 2>&1
+    #    set -x
+    #    cd ..
+    #    rm -r manool
+    #    ssh -p222 root@127.0.0.1 tar c --{owner,group}=0 manool | tar x
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
