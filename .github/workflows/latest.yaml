@@ -53,7 +53,7 @@ jobs:
         exec 2>&1
         date; uname -a; uptime
         set -x
-        systemd-detect-virt; cat /etc/os-release; ls -C /boot || :
+        cat /etc/os-release; ls -C /boot || :
     - &cinfo
       name: Context Information
       run: |
