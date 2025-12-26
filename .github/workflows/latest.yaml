@@ -24,14 +24,21 @@ jobs:
         - { label: 'clang19', gcc: 'clang-19', gxx: 'clang++-19' }
         - { label: 'clang20', gcc: 'clang',    gxx: 'clang++' }
         - { label: 'clang21', gcc: 'clang-21', gxx: 'clang++-21' }
+
+        - { label: 'clang14libcxx', gcc: 'clang-14', gxx: 'clang++-14 -stdlib=libc++' }
+        - { label: 'clang17libcxx', gcc: 'clang-17', gxx: 'clang++-17 -stdlib=libc++' }
+        - { label: 'clang18libcxx', gcc: 'clang-18', gxx: 'clang++-18 -stdlib=libc++' }
+        - { label: 'clang19libcxx', gcc: 'clang-19', gxx: 'clang++-19 -stdlib=libc++' }
+        - { label: 'clang20libcxx', gcc: 'clang',    gxx: 'clang++ -stdlib=libc++' }
+        - { label: 'clang21libcxx', gcc: 'clang-21', gxx: 'clang++-21 -stdlib=libc++' }
         march:
         - { label: '64' }
         - { label: '32', flags: '-m32 -msse2 -mfpmath=sse' }
-        exclude:
-        - compiler: { label: 'gcc11' }
-          march:    { label: '32' }
-        - compiler: { label: 'clang14' }
-          march:    { label: '32' }
+        #exclude:
+        #- compiler: { label: 'gcc11' }
+        #  march:    { label: '32' }
+        #- compiler: { label: 'clang14' }
+        #  march:    { label: '32' }
 
     runs-on: ubuntu-latest
     #needs: [ latest-cache ]
