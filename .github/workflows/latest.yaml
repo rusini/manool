@@ -82,9 +82,9 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        sudo dpkg --add-architecture i386
-        sudo apt-get update
-        sudo apt-get -y install make g++{,-{11..15}}-multilib clang{,-{14,17,18,19,21}} libc++-dev{,:i386} libc++abi-dev{,:i386}
+        dpkg --add-architecture i386
+        apt-get update
+        apt-get -y install make g++{,-{11..15}}-multilib clang{,-{14,17,18,19,21}} libc++-dev{,:i386} libc++abi-dev{,:i386}
 
     #- name: Cache Object Lookup
     #  uses: actions/cache@v4
