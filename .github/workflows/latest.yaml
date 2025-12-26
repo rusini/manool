@@ -13,18 +13,17 @@ jobs:
       fail-fast: FALSE
       matrix:
         compiler:
-        - { label: 'gcc11',   gcc: 'gcc-11',   gxx: 'g++-11' }
-        - { label: 'gcc12',   gcc: 'gcc-12',   gxx: 'g++-12' }
-        - { label: 'gcc13',   gcc: 'gcc-13',   gxx: 'g++-13' }
-        - { label: 'gcc14',   gcc: 'gcc-14',   gxx: 'g++-14' }
-        - { label: 'gcc15',   gcc: 'gcc',      gxx: 'g++' }
-        - { label: 'clang14', gcc: 'clang-14', gxx: 'clang++-14' }
-        - { label: 'clang17', gcc: 'clang-17', gxx: 'clang++-17' }
-        - { label: 'clang18', gcc: 'clang-18', gxx: 'clang++-18' }
-        - { label: 'clang19', gcc: 'clang-19', gxx: 'clang++-19' }
-        - { label: 'clang20', gcc: 'clang',    gxx: 'clang++' }
-        - { label: 'clang21', gcc: 'clang-21', gxx: 'clang++-21' }
-
+        - { label: 'gcc11',          gcc: 'gcc-11',   gxx: 'g++-11' }
+        - { label: 'gcc12',          gcc: 'gcc-12',   gxx: 'g++-12' }
+        - { label: 'gcc13',          gcc: 'gcc-13',   gxx: 'g++-13' }
+        - { label: 'gcc14',          gcc: 'gcc-14',   gxx: 'g++-14' }
+        - { label: 'gcc15',          gcc: 'gcc',      gxx: 'g++' }
+        - { label: 'clang14',        gcc: 'clang-14', gxx: 'clang++-14' }
+        - { label: 'clang17',        gcc: 'clang-17', gxx: 'clang++-17' }
+        - { label: 'clang18',        gcc: 'clang-18', gxx: 'clang++-18' }
+        - { label: 'clang19',        gcc: 'clang-19', gxx: 'clang++-19' }
+        - { label: 'clang20',        gcc: 'clang',    gxx: 'clang++' }
+        - { label: 'clang21',        gcc: 'clang-21', gxx: 'clang++-21' }
         - { label: 'clang14-libcxx', gcc: 'clang-14', gxx: 'clang++-14 -stdlib=libc++' }
         - { label: 'clang17-libcxx', gcc: 'clang-17', gxx: 'clang++-17 -stdlib=libc++' }
         - { label: 'clang18-libcxx', gcc: 'clang-18', gxx: 'clang++-18 -stdlib=libc++' }
@@ -84,7 +83,7 @@ jobs:
         exec 2>&1
         set -x
         apt-get update
-        apt-get -y install make g++{,-{11..15}}-multilib clang{,-{14,17,18,19,21}} libc++-dev libc++abi-dev
+        apt-get -y install make g++{,-{11..15}}-multilib clang{,-{14,17,18,19,21}} libc++-dev{,:i386} libc++abi-dev{,:i386}
 
     #- name: Cache Object Lookup
     #  uses: actions/cache@v4
