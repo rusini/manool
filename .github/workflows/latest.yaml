@@ -84,7 +84,7 @@ jobs:
         exec 2>&1
         set -x
         apt-get update
-        apt-get -y install make g++{,-{11..15}}-multilib clang{,-{14,17,18,19,21}}
+        apt-get -y install make g++{,-{11..15}}-multilib clang{,-{14,17,18,19,21}} libc++-dev libc++abi-dev
 
     #- name: Cache Object Lookup
     #  uses: actions/cache@v4
