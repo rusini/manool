@@ -1,12 +1,12 @@
-# .github/workflows/latest.yaml
+# .github/workflows/clang.yaml
 
-name: Build Under Latest Ubuntu
+name: Build Using Official Clang Repo
 
 on:
   workflow_dispatch: NULL
 
 jobs:
-  latest-build:
+  clang-build:
     name: Build with ${{matrix.variant.label}}
     strategy:
       fail-fast: FALSE
@@ -41,8 +41,7 @@ jobs:
         - { label: 'clang21-32',     gcc: 'clang-21', gxx: 'clang++-21',                setup: 'clang-21 g++-multilib', march: '-m32 -msse2 -mfpmath=sse' }
         - { label: 'clang21-libcxx', gcc: 'clang-21', gxx: 'clang++-21 -stdlib=libc++', setup: 'clang-21 libc++{,abi}-21-dev' }
 
-    runs-on: ubuntu-latest
-    container: ubuntu:25.10
+    runs-on: ubuntu-22.04
 
     defaults:
       run: { shell: bash }

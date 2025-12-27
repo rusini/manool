@@ -20,6 +20,9 @@ jobs:
         - { label: '64' }
         - { label: '32',  flags: '-m32 -msse2 -mfpmath=sse' }
         - { label: 'x32', flags: '-mx32' }
+        include:
+        - compiler: { label: 'clang18-libcxx', gcc: 'clang-18', gxx: 'clang++-18 -stdlib=libc++' }
+          march:    { label: '64' }
 
     runs-on: ubuntu-latest
     needs: [ focal-cache ]
@@ -40,7 +43,9 @@ jobs:
         exec 2>&1
         date; uname -a; uptime
         set -x
-        systemd-detect-virt; cat /etc/os-release; ls -C /boot || :
+        systemd-detect-virt || :
+        cat /etc/os-release
+        ls -C /boot || :
     - &cinfo
       name: Context Information
       run: |
@@ -204,7 +209,7 @@ jobs:
         exec 2>&1
         set -x
         apt-get update
-        apt-get -y install make g++{,-10}-multilib clang-18
+        apt-get -y install make g++{,-10}-multilib clang-18 libc++{,abi}-18-dev
         df -H .
         
     - name: Guest Shutdown

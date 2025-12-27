@@ -3,52 +3,53 @@
 name: Build on Alpine Linux (Chroot)
 
 on:
-  workflow_dispatch:
-  push:
-    branches: [ "test" ]
+  workflow_dispatch: NULL
 
 jobs:
-  build:
-
+  alpine-build:
+    name: Build on Alpine Linux for ${{matrix.target}} with ${{matrix.compiler.GCC}}
     strategy:
-      fail-fast: false
+      fail-fast: FALSE
       matrix:
         target: [
-          "x86_64", "x86", "aarch64", "armhf", "ppc64le", "armv7"
+          'x86_64', 'x86', 'aarch64', 'armhf', 'ppc64le', 'armv7'
         ]
         compiler:
-        - { apk: "g++",     GCC: "gcc",      GXX: "g++"        }
-        - { apk: "clang14", GCC: "clang-14", GXX: "clang++-14" }
-        - { apk: "clang15", GCC: "clang-15", GXX: "clang++-15" }
-        - { apk: "clang16", GCC: "clang-16", GXX: "clang++-16" }
-        - { apk: "clang17", GCC: "clang-17", GXX: "clang++-17" }
-    name: Build on Alpine Linux for ${{matrix.target}} with ${{matrix.compiler.GCC}}
+        - { apk: 'g++',     GCC: 'gcc',      GXX: 'g++'        }
+        - { apk: 'clang14', GCC: 'clang-14', GXX: 'clang++-14' }
+        - { apk: 'clang15', GCC: 'clang-15', GXX: 'clang++-15' }
+        - { apk: 'clang16', GCC: 'clang-16', GXX: 'clang++-16' }
+        - { apk: 'clang17', GCC: 'clang-17', GXX: 'clang++-17' }
+
     runs-on: ubuntu-22.04
 
     defaults:
-      run:
-        shell: bash
-
+      run: { shell: bash }
     steps:
 
     - name: Machine Information
       run: |
+        exec 2>&1
         lscpu; free -h; df -h .
     - name: System Information
       run: |
+        exec 2>&1
         date; uname -a; uptime; cat /etc/os-release; ls -C /boot || :
     - name: Context Information
       run: |
+        exec 2>&1
         tty || :; id; printf %s\\n "$SHELL"; printf %s\\n "$PATH"; pwd
 
-    - name: Setup Host System
+    - name: Host System Setup
       run: |
+        exec 2>&1
         set -x
         sudo apt-get update
         sudo apt-get install qemu-user-static
 
-    - name: Setup Alpine Linux Chroot
+    - name: Alpine Linux Chroot Setup
       run: |
+        exec 2>&1
 
         wget -q -O- https://dl-cdn.alpinelinux.org/alpine/v3.19/releases/${{matrix.target}}/alpine-minirootfs-3.19.1-${{matrix.target}}.tar.gz |
            (sudo mkdir /srv/alpine && sudo tar xz -C /srv/alpine)
@@ -77,6 +78,7 @@ jobs:
 
     - name: Checkout
       uses: actions/checkout@v4
+      with: { ref: master }
 
     - name: Run Make (and Check)
       run: |
@@ -84,7 +86,6 @@ jobs:
            make -j3 run \
               GCC='${{matrix.compiler.GCC}}' \
               GXX='${{matrix.compiler.GXX}}' \
-              CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none' \
               MARCH=
         END
 
