@@ -26,7 +26,7 @@ jobs:
         #- { apk: 'clang16', GCC: 'clang-16', GXX: 'clang++-16 -stdlib=libc++' }
         #- { apk: 'clang17', GCC: 'clang-17', GXX: 'clang++-17 -stdlib=libc++' }
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     defaults:
       run: { shell: bash }
