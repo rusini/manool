@@ -66,23 +66,12 @@ jobs:
         tty || :; id; printf %s\\n "SHELL=$SHELL" "PATH=$PATH"
         set -x
         pwd
-    #- name: Host Setup
-    #  run: |
-    #    exec 2>&1
-    #    set -x
-    #    sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
-    #    sudo apt-get update
-    #    sudo apt-get install --no-install-recommends qemu-system-x86 cloud-image-utils
-    #- name: QEMU Information
-    #  run: |
-    #    exec 2>&1
-    #    qemu-system-x86_64 --version
     - name: Setup
       run: |
         exec 2>&1
         set -x
         apt-get update
-        apt-get -y install make ${{matrix.compiler.setup}}
+        apt-get install make ${{matrix.compiler.setup}}
 
     - name: Checkout
       uses: actions/checkout@v4
