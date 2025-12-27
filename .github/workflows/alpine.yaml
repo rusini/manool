@@ -21,9 +21,9 @@ jobs:
         - { apk: 'clang16', GCC: 'clang-16', GXX: 'clang++-16' }
         - { apk: 'clang17', GCC: 'clang-17', GXX: 'clang++-17' }
 
-        #- { apk: 'clang18', GCC: 'clang-18', GXX: 'clang++-18 }
-        #- { apk: 'clang19', GCC: 'clang-19', GXX: 'clang++-19' }
-        #- { apk: 'clang20', GCC: 'clang-20', GXX: 'clang++-20' }
+        - { apk: 'clang18', GCC: 'clang-18', GXX: 'clang++-18' }
+        - { apk: 'clang19', GCC: 'clang-19', GXX: 'clang++-19' }
+        - { apk: 'clang20', GCC: 'clang-20', GXX: 'clang++-20' }
 
         #- { apk: 'clang14', GCC: 'clang-14', GXX: 'clang++-14 -stdlib=libc++' }
         #- { apk: 'clang15', GCC: 'clang-15', GXX: 'clang++-15 -stdlib=libc++' }
