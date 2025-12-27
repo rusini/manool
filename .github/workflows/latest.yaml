@@ -71,20 +71,18 @@ jobs:
         set -x
         apt-get update
         apt-get -y install make ${{matrix.variant.setup}}
+        make --version; ${{matrix.variant.gcc}} --version
 
     - name: Checkout
       uses: actions/checkout@v4
       with: { ref: master }
-
     - name: Build and Test
       run: |
         exec 2>&1
         set -x
-        make --version; ${{matrix.variant.gcc}} --version
         make -j4 run \
            GCC='${{matrix.variant.gcc}}' GXX='${{matrix.variant.gxx}}' \
            MARCH='${{matrix.variant.march}}'
-
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
