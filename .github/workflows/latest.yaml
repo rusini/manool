@@ -8,13 +8,11 @@ on:
 jobs:
 
   latest-build:
-    #name: Build with ${{matrix.compiler.label}}/${{matrix.march.label}}
     name: Build with ${{matrix.compiler.label}}
     strategy:
       fail-fast: FALSE
       matrix:
         compiler:
-
         - { label: 'gcc11-64',       gcc: 'gcc-11',                            gxx: 'g++-11',                              setup: 'g++-11' }
         - { label: 'gcc11-32',       gcc: 'gcc-11 -m32 -msse2 -mfpmath=sse',   gxx: 'g++-11 -m32 -msse2 -mfpmath=sse',     setup: 'g++-11-multilib' }
         - { label: 'gcc12-64',       gcc: 'gcc-12',                            gxx: 'g++-12',                              setup: 'g++-12' }
@@ -25,7 +23,6 @@ jobs:
         - { label: 'gcc14-32',       gcc: 'gcc-14 -m32',                       gxx: 'g++-14 -m32',                         setup: 'g++-14-multilib' }
         - { label: 'gcc15-64',       gcc: 'gcc',                               gxx: 'g++',                                 setup: 'g++' }
         - { label: 'gcc15-32',       gcc: 'gcc -m32',                          gxx: 'g++ -m32',                            setup: 'g++-multilib' }
-
         - { label: 'clang14-64',     gcc: 'clang-14',                          gxx: 'clang++-14',                          setup: 'clang-14' }
         - { label: 'clang14-32',     gcc: 'clang-14 -m32 -msse2 -mfpmath=sse', gxx: 'clang++-14 -m32 -msse2 -mfpmath=sse', setup: 'clang-14 g++-multilib' }
         - { label: 'clang14-libcxx', gcc: 'clang-14',                          gxx: 'clang++-14 -stdlib=libc++',           setup: 'clang-14 libc++{,abi}-14-dev' }
@@ -45,56 +42,25 @@ jobs:
         - { label: 'clang21-32',     gcc: 'clang-21 -m32 -msse2 -mfpmath=sse', gxx: 'clang++-21 -m32 -msse2 -mfpmath=sse', setup: 'clang-21 g++-multilib' }
         - { label: 'clang21-libcxx', gcc: 'clang-21',                          gxx: 'clang++-21 -stdlib=libc++',           setup: 'clang-21 libc++{,abi}-21-dev' }
 
-
-        #- { label: 'gcc11',          gcc: 'gcc-11',   gxx: 'g++-11' }
-        #- { label: 'gcc12',          gcc: 'gcc-12',   gxx: 'g++-12' }
-        #- { label: 'gcc13',          gcc: 'gcc-13',   gxx: 'g++-13' }
-        #- { label: 'gcc14',          gcc: 'gcc-14',   gxx: 'g++-14' }
-        #- { label: 'gcc15',          gcc: 'gcc',      gxx: 'g++' }
-        #- { label: 'clang14',        gcc: 'clang-14', gxx: 'clang++-14' }
-        #- { label: 'clang17',        gcc: 'clang-17', gxx: 'clang++-17' }
-        #- { label: 'clang18',        gcc: 'clang-18', gxx: 'clang++-18' }
-        #- { label: 'clang19',        gcc: 'clang-19', gxx: 'clang++-19' }
-        #- { label: 'clang20',        gcc: 'clang',    gxx: 'clang++' }
-        #- { label: 'clang21',        gcc: 'clang-21', gxx: 'clang++-21' }
-        #- { label: 'clang14-libcxx', gcc: 'clang-14', gxx: 'clang++-14 -stdlib=libc++' }
-        #- { label: 'clang17-libcxx', gcc: 'clang-17', gxx: 'clang++-17 -stdlib=libc++' }
-        #- { label: 'clang18-libcxx', gcc: 'clang-18', gxx: 'clang++-18 -stdlib=libc++' }
-        #- { label: 'clang19-libcxx', gcc: 'clang-19', gxx: 'clang++-19 -stdlib=libc++' }
-        #- { label: 'clang20-libcxx', gcc: 'clang',    gxx: 'clang++ -stdlib=libc++' }
-        #- { label: 'clang21-libcxx', gcc: 'clang-21', gxx: 'clang++-21 -stdlib=libc++' }
-        #march:
-        #- { label: '64' }
-        #- { label: '32', flags: '-m32 -msse2 -mfpmath=sse' }
-        #exclude:
-        #- compiler: { label: 'gcc11' }
-        #  march:    { label: '32' }
-        #- compiler: { label: 'clang14' }
-        #  march:    { label: '32' }
-
     runs-on: ubuntu-latest
-    #needs: [ latest-cache ]
     container: ubuntu:25.10
 
     defaults:
       run: { shell: bash }
     steps:
 
-    - &minfo
-      name: Host Machine Information
+    - name: Machine Information
       run: |
         exec 2>&1
         set -x
         lscpu; free -h; df -H .
-    - &sinfo
-      name: Host System Information
+    - name: System Information
       run: |
         exec 2>&1
         date; uname -a; uptime
         set -x
         cat /etc/os-release; ls -C /boot || :
-    - &cinfo
-      name: Context Information
+    - name: Context Information
       run: |
         exec 2>&1
         tty || :; id; printf %s\\n "SHELL=$SHELL" "PATH=$PATH"
@@ -116,63 +82,24 @@ jobs:
         exec 2>&1
         set -x
         apt-get update
-        #apt-get -y install make g++{,-{11..15}}-multilib clang{,-{14,17,18,19,21}} libc++-dev libc++abi-dev
         apt-get -y install make ${{matrix.compiler.setup}}
-
-    #- name: Cache Object Lookup
-    #  uses: actions/cache@v4
-    #  with:
-    #    key: ubuntu-latest-cloud-minimal
-    #    path: |
-    #      ~/root.img
-    #      ~/.ssh/id_rsa
-    #      /usr/local/bin/vmbash.sh
-    #- name: Start Guest
-    #  run: |
-    #    exec 2>&1
-    #    set -x
-    #    cd
-    #    sudo qemu-system-x86_64 -enable-kvm -cpu host -smp 4 -m 10G \
-    #      -drive file=root.img,if=virtio,cache=unsafe -nic user,model=virtio,hostfwd=:127.0.0.1:222-:22 \
-    #      -daemonize -vga none -display none
-    #    until ssh -oStrictHostKeyChecking=no -p222 root@127.0.0.1 : 2>/dev/null; do sleep 1; done
-    #- name: Time Synchronization
-    #  shell: vmbash.sh {0}
-    #  run: |
-    #    exec 2>&1
-    #    until [ "$(set -x; timedatectl show --value -pNTPSynchronized)" = yes ]; do (set -x; sleep 1) done
 
     - name: Checkout
       uses: actions/checkout@v4
       with: { ref: master }
-    #- name: Upload to Guest
-    #  run: |
-    #    exec 2>&1
-    #    set -x
-    #    cd ..
-    #    tar c --{owner,group}=0 manool | ssh -p222 root@127.0.0.1 tar x
 
     - name: Build and Test
-      #shell: vmbash.sh {0}
       run: |
         exec 2>&1
         set -x
         make --version; ${{matrix.compiler.gcc}} --version
         make -j4 run \
            GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}' \
-           MARCH='${{matrix.march.flags}}'
+           MARCH='${{matrix.compiler.march}}'
 
-    #- name: Download from Guest
-    #  run: |
-    #    exec 2>&1
-    #    set -x
-    #    cd ..
-    #    rm -r manool
-    #    ssh -p222 root@127.0.0.1 tar c --{owner,group}=0 manool | tar x
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
-        #name: latest-${{matrix.compiler.label}}-${{matrix.march.label}}
         name: latest-${{matrix.compiler.label}}
         path: build
 
