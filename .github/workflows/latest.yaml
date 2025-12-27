@@ -25,7 +25,7 @@ jobs:
         - { label: 'gcc15-32',       gcc: 'gcc',      gxx: 'g++',                       setup: 'g++-multilib',          march: '-m32 -msse2 -mfpmath=sse' }
         - { label: 'clang14-64',     gcc: 'clang-14', gxx: 'clang++-14',                setup: 'clang-14' }
         - { label: 'clang14-32',     gcc: 'clang-14', gxx: 'clang++-14 ',               setup: 'clang-14 g++-multilib', march: '-m32 -msse2 -mfpmath=sse' }
-        - { label: 'clang14-libcxx', gcc: 'clang-14', gxx: 'clang++-14 -stdlib=libc++', setup: 'clang-14 libc++-14-dev' }
+        - { label: 'clang14-libcxx', gcc: 'clang-14', gxx: 'clang++-14 -stdlib=libc++', setup: 'clang-14 libc++abi-14-dev' }
         - { label: 'clang17-64',     gcc: 'clang-17', gxx: 'clang++-17',                setup: 'clang-17' }
         - { label: 'clang17-32',     gcc: 'clang-17', gxx: 'clang++-17',                setup: 'clang-17 g++-multilib', march: '-m32 -msse2 -mfpmath=sse' }
         - { label: 'clang17-libcxx', gcc: 'clang-17', gxx: 'clang++-17 -stdlib=libc++', setup: 'clang-17 libc++{,abi}-17-dev' }
