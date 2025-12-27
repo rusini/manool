@@ -66,6 +66,7 @@ jobs:
         tty || :; id; printf %s\\n "SHELL=$SHELL" "PATH=$PATH"
         set -x
         pwd
+        ps -eH --sort pid -o pid,user:12,group:12,comm:24,rsz,vsz,thcount,bsdstart,state,tname
     - name: Setup
       run: |
         exec 2>&1
