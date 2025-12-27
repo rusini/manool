@@ -59,8 +59,7 @@ jobs:
         exec 2>&1
         date; uname -a; uptime
         set -x
-        cat /etc/os-release; ls -C /boot || :
-        stat /boot
+        cat /etc/os-release; ls -Ca /boot || :
     - name: Context Information
       run: |
         exec 2>&1
