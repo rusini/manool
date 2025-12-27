@@ -12,7 +12,7 @@ jobs:
       fail-fast: FALSE
       matrix:
         target: [
-          'x86_64', 'x86', 'aarch64', 'armhf', 'ppc64le', 'armv7'
+          'x86_64', 'x86', 'aarch64', 'armhf', 'ppc64le', 'armv7', 'riscv64', 'loongarch64'
         ]
         compiler:
         - { apk: 'g++',     GCC: 'gcc',      GXX: 'g++'        }
@@ -51,7 +51,7 @@ jobs:
       run: |
         exec 2>&1
 
-        wget -q -O- https://dl-cdn.alpinelinux.org/alpine/v3.19/releases/${{matrix.target}}/alpine-minirootfs-3.19.1-${{matrix.target}}.tar.gz |
+        wget -q -O- https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/${{matrix.target}}/alpine-minirootfs-3.22.2-${{matrix.target}}.tar.gz |
            (sudo mkdir /srv/alpine && sudo tar xz -C /srv/alpine)
         (for d in dev proc sys; do sudo mount --rbind -o ro {,/srv/alpine}/"$d"; done)
         (for d in run tmp; do sudo mount {-t,}tmpfs /srv/alpine/"$d"; done)
@@ -83,7 +83,7 @@ jobs:
     - name: Run Make (and Check)
       run: |
         sudo chroot /srv/alpine su - runner <<'END'
-           make -j3 run \
+           make -j4 run \
               GCC='${{matrix.compiler.GCC}}' \
               GXX='${{matrix.compiler.GXX}}' \
               MARCH=
