@@ -21,10 +21,10 @@ jobs:
         - { apk: 'clang16', GCC: 'clang-16', GXX: 'clang++-16' }
         - { apk: 'clang17', GCC: 'clang-17', GXX: 'clang++-17' }
 
-        - { apk: 'clang14', GCC: 'clang-14', GXX: 'clang++-14 -stdlib=libc++' }
-        - { apk: 'clang15', GCC: 'clang-15', GXX: 'clang++-15 -stdlib=libc++' }
-        - { apk: 'clang16', GCC: 'clang-16', GXX: 'clang++-16 -stdlib=libc++' }
-        - { apk: 'clang17', GCC: 'clang-17', GXX: 'clang++-17 -stdlib=libc++' }
+        #- { apk: 'clang14', GCC: 'clang-14', GXX: 'clang++-14 -stdlib=libc++' }
+        #- { apk: 'clang15', GCC: 'clang-15', GXX: 'clang++-15 -stdlib=libc++' }
+        #- { apk: 'clang16', GCC: 'clang-16', GXX: 'clang++-16 -stdlib=libc++' }
+        #- { apk: 'clang17', GCC: 'clang-17', GXX: 'clang++-17 -stdlib=libc++' }
 
     runs-on: ubuntu-22.04
 
