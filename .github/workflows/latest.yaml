@@ -71,7 +71,7 @@ jobs:
         exec 2>&1
         set -x
         apt-get update
-        apt-get install make ${{matrix.compiler.setup}}
+        apt-get -y install make ${{matrix.compiler.setup}}
 
     - name: Checkout
       uses: actions/checkout@v4
