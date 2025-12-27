@@ -8,31 +8,64 @@ on:
 jobs:
 
   latest-build:
-    name: Build with ${{matrix.compiler.label}}/${{matrix.march.label}}
+    #name: Build with ${{matrix.compiler.label}}/${{matrix.march.label}}
+    name: Build with ${{matrix.compiler.label}}
     strategy:
       fail-fast: FALSE
       matrix:
         compiler:
-        - { label: 'gcc11',          gcc: 'gcc-11',   gxx: 'g++-11' }
-        - { label: 'gcc12',          gcc: 'gcc-12',   gxx: 'g++-12' }
-        - { label: 'gcc13',          gcc: 'gcc-13',   gxx: 'g++-13' }
-        - { label: 'gcc14',          gcc: 'gcc-14',   gxx: 'g++-14' }
-        - { label: 'gcc15',          gcc: 'gcc',      gxx: 'g++' }
-        - { label: 'clang14',        gcc: 'clang-14', gxx: 'clang++-14' }
-        - { label: 'clang17',        gcc: 'clang-17', gxx: 'clang++-17' }
-        - { label: 'clang18',        gcc: 'clang-18', gxx: 'clang++-18' }
-        - { label: 'clang19',        gcc: 'clang-19', gxx: 'clang++-19' }
-        - { label: 'clang20',        gcc: 'clang',    gxx: 'clang++' }
-        - { label: 'clang21',        gcc: 'clang-21', gxx: 'clang++-21' }
-        - { label: 'clang14-libcxx', gcc: 'clang-14', gxx: 'clang++-14 -stdlib=libc++' }
-        - { label: 'clang17-libcxx', gcc: 'clang-17', gxx: 'clang++-17 -stdlib=libc++' }
-        - { label: 'clang18-libcxx', gcc: 'clang-18', gxx: 'clang++-18 -stdlib=libc++' }
-        - { label: 'clang19-libcxx', gcc: 'clang-19', gxx: 'clang++-19 -stdlib=libc++' }
-        - { label: 'clang20-libcxx', gcc: 'clang',    gxx: 'clang++ -stdlib=libc++' }
-        - { label: 'clang21-libcxx', gcc: 'clang-21', gxx: 'clang++-21 -stdlib=libc++' }
-        march:
-        - { label: '64' }
-        - { label: '32', flags: '-m32 -msse2 -mfpmath=sse' }
+
+        - { label: 'gcc11-64',       gcc: 'gcc-11',                            gxx: 'g++-11',                              setup: 'g++-11' }
+        - { label: 'gcc11-32',       gcc: 'gcc-11 -m32 -msse2 -mfpmath=sse',   gxx: 'g++-11 -m32 -msse2 -mfpmath=sse',     setup: 'g++-11-multilib' }
+        - { label: 'gcc12-64',       gcc: 'gcc-12',                            gxx: 'g++-12',                              setup: 'g++-12' }
+        - { label: 'gcc12-32',       gcc: 'gcc-12 -m32',                       gxx: 'g++-12 -m32',                         setup: 'g++-12-multilib' }
+        - { label: 'gcc13-64',       gcc: 'gcc-13',                            gxx: 'g++-13',                              setup: 'g++-13' }
+        - { label: 'gcc13-32',       gcc: 'gcc-13 -m32',                       gxx: 'g++-13 -m32',                         setup: 'g++-13-multilib' }
+        - { label: 'gcc14-64',       gcc: 'gcc-14',                            gxx: 'g++-14',                              setup: 'g++-14' }
+        - { label: 'gcc14-32',       gcc: 'gcc-14 -m32',                       gxx: 'g++-14 -m32',                         setup: 'g++-14-multilib' }
+        - { label: 'gcc15-64',       gcc: 'gcc',                               gxx: 'g++',                                 setup: 'g++' }
+        - { label: 'gcc15-32',       gcc: 'gcc -m32',                          gxx: 'g++ -m32',                            setup: 'g++-multilib' }
+
+        - { label: 'clang14-64',     gcc: 'clang-14',                          gxx: 'clang++-14',                          setup: 'clang-14' }
+        - { label: 'clang14-32',     gcc: 'clang-14 -m32 -msse2 -mfpmath=sse', gxx: 'clang++-14 -m32 -msse2 -mfpmath=sse', setup: 'clang-14 g++-multilib' }
+        - { label: 'clang14-libcxx', gcc: 'clang-14',                          gxx: 'clang++-14 -stdlib=libc++',           setup: 'clang-14 libc++{,abi}-14-dev' }
+        - { label: 'clang17-64',     gcc: 'clang-17',                          gxx: 'clang++-17',                          setup: 'clang-17' }
+        - { label: 'clang17-32',     gcc: 'clang-17 -m32 -msse2 -mfpmath=sse', gxx: 'clang++-17 -m32 -msse2 -mfpmath=sse', setup: 'clang-17 g++-multilib' }
+        - { label: 'clang17-libcxx', gcc: 'clang-17',                          gxx: 'clang++-17 -stdlib=libc++',           setup: 'clang-17 libc++{,abi}-17-dev' }
+        - { label: 'clang18-64',     gcc: 'clang-18',                          gxx: 'clang++-18',                          setup: 'clang-18' }
+        - { label: 'clang18-32',     gcc: 'clang-18 -m32 -msse2 -mfpmath=sse', gxx: 'clang++-18 -m32 -msse2 -mfpmath=sse', setup: 'clang-18 g++-multilib' }
+        - { label: 'clang18-libcxx', gcc: 'clang-18',                          gxx: 'clang++-18 -stdlib=libc++',           setup: 'clang-18 libc++{,abi}-18-dev' }
+        - { label: 'clang19-64',     gcc: 'clang-19',                          gxx: 'clang++-19',                          setup: 'clang-19' }
+        - { label: 'clang19-32',     gcc: 'clang-19 -m32 -msse2 -mfpmath=sse', gxx: 'clang++-19 -m32 -msse2 -mfpmath=sse', setup: 'clang-19 g++-multilib' }
+        - { label: 'clang19-libcxx', gcc: 'clang-19',                          gxx: 'clang++-19 -stdlib=libc++',           setup: 'clang-19 libc++{,abi}-19-dev' }
+        - { label: 'clang20-64',     gcc: 'clang',                             gxx: 'clang++',                             setup: 'clang' }
+        - { label: 'clang20-32',     gcc: 'clang -m32 -msse2 -mfpmath=sse',    gxx: 'clang++ -m32 -msse2 -mfpmath=sse',    setup: 'clang g++-multilib' }
+        - { label: 'clang20-libcxx', gcc: 'clang',                             gxx: 'clang++ -stdlib=libc++',              setup: 'clang libc++{,abi}-dev' }
+        - { label: 'clang21-64',     gcc: 'clang-21',                          gxx: 'clang++-21',                          setup: 'clang-21' }
+        - { label: 'clang21-32',     gcc: 'clang-21 -m32 -msse2 -mfpmath=sse', gxx: 'clang++-21 -m32 -msse2 -mfpmath=sse', setup: 'clang-21 g++-multilib' }
+        - { label: 'clang21-libcxx', gcc: 'clang-21',                          gxx: 'clang++-21 -stdlib=libc++',           setup: 'clang-21 libc++{,abi}-21-dev' }
+
+
+        #- { label: 'gcc11',          gcc: 'gcc-11',   gxx: 'g++-11' }
+        #- { label: 'gcc12',          gcc: 'gcc-12',   gxx: 'g++-12' }
+        #- { label: 'gcc13',          gcc: 'gcc-13',   gxx: 'g++-13' }
+        #- { label: 'gcc14',          gcc: 'gcc-14',   gxx: 'g++-14' }
+        #- { label: 'gcc15',          gcc: 'gcc',      gxx: 'g++' }
+        #- { label: 'clang14',        gcc: 'clang-14', gxx: 'clang++-14' }
+        #- { label: 'clang17',        gcc: 'clang-17', gxx: 'clang++-17' }
+        #- { label: 'clang18',        gcc: 'clang-18', gxx: 'clang++-18' }
+        #- { label: 'clang19',        gcc: 'clang-19', gxx: 'clang++-19' }
+        #- { label: 'clang20',        gcc: 'clang',    gxx: 'clang++' }
+        #- { label: 'clang21',        gcc: 'clang-21', gxx: 'clang++-21' }
+        #- { label: 'clang14-libcxx', gcc: 'clang-14', gxx: 'clang++-14 -stdlib=libc++' }
+        #- { label: 'clang17-libcxx', gcc: 'clang-17', gxx: 'clang++-17 -stdlib=libc++' }
+        #- { label: 'clang18-libcxx', gcc: 'clang-18', gxx: 'clang++-18 -stdlib=libc++' }
+        #- { label: 'clang19-libcxx', gcc: 'clang-19', gxx: 'clang++-19 -stdlib=libc++' }
+        #- { label: 'clang20-libcxx', gcc: 'clang',    gxx: 'clang++ -stdlib=libc++' }
+        #- { label: 'clang21-libcxx', gcc: 'clang-21', gxx: 'clang++-21 -stdlib=libc++' }
+        #march:
+        #- { label: '64' }
+        #- { label: '32', flags: '-m32 -msse2 -mfpmath=sse' }
         #exclude:
         #- compiler: { label: 'gcc11' }
         #  march:    { label: '32' }
@@ -82,9 +115,9 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        dpkg --add-architecture i386
         apt-get update
-        apt-get -y install make g++{,-{11..15}}-multilib clang{,-{14,17,18,19,21}} libc++-dev{,:i386} libc++abi-dev{,:i386}
+        #apt-get -y install make g++{,-{11..15}}-multilib clang{,-{14,17,18,19,21}} libc++-dev libc++abi-dev
+        apt-get -y install make ${{matrix.compiler.setup}}
 
     #- name: Cache Object Lookup
     #  uses: actions/cache@v4
@@ -139,7 +172,8 @@ jobs:
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
-        name: latest-${{matrix.compiler.label}}-${{matrix.march.label}}
+        #name: latest-${{matrix.compiler.label}}-${{matrix.march.label}}
+        name: latest-${{matrix.compiler.label}}
         path: build
 
   latest-cache:
