@@ -62,7 +62,10 @@ jobs:
         sudo cp -L /etc/resolv.conf /srv/alpine/etc
 
         sudo chroot /srv/alpine su - <<'END'
-           set -x; addgroup -g127 docker && adduser -D -u1001 -Gdocker -s/bin/ash runner && delgroup runner docker
+           set -x
+           cat /etc/passwd /etc/group
+           addgroup -g127 docker && adduser -D -u1001 -Gdocker -s/bin/ash runner && delgroup runner docker
+           cat /etc/passwd /etc/group
         END
         (set -x; sudo mount --rbind . /srv/alpine/home/runner)
 
