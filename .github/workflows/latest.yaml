@@ -71,7 +71,7 @@ jobs:
         exec 2>&1
         set -x
         apt-get update
-        apt-get -y install make ${{matrix.variant.setup}}
+        apt-get -y install make ${{matrix.variant.setup}} git
         make --version; ${{matrix.variant.gcc}} --version
 
     - name: Checkout
