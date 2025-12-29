@@ -12,7 +12,7 @@ jobs:
       fail-fast: FALSE
       matrix:
         target: [
-          'x86_64', 'x86', 'aarch64', 'armhf', 'ppc64le', 'armv7', 'riscv64', 'loongarch64' #, 's390x'
+          'x86_64', 'x86', 'aarch64', 'armhf', 'ppc64le', 'armv7', 'riscv64', 'loongarch64', 's390x'
         ]
         compiler:
         - { apk: 'g++',     GCC: 'gcc',      GXX: 'g++'        }
@@ -23,7 +23,6 @@ jobs:
         - { apk: 'clang18', GCC: 'clang-18', GXX: 'clang++-18' }
         - { apk: 'clang19', GCC: 'clang-19', GXX: 'clang++-19' }
         - { apk: 'clang20', GCC: 'clang-20', GXX: 'clang++-20' }
-        - { apk: 'clang21', GCC: 'clang-21', GXX: 'clang++-21' }
 
     runs-on: ubuntu-24.04
 
