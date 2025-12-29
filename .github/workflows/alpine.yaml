@@ -89,7 +89,9 @@ jobs:
 
     - name: Run Make (and Check)
       run: |
+        ls -l
         sudo chroot /srv/alpine su - runner <<'END'
+           ls -l
            make -j4 run \
               GCC='${{matrix.compiler.GCC}}' \
               GXX='${{matrix.compiler.GXX}}' \
