@@ -60,7 +60,7 @@ jobs:
         (for d in run tmp; do sudo mount {-t,}tmpfs /srv/alpine/"$d"; done)
         sudo cp -L /etc/resolv.conf /srv/alpine/etc
 
-        sudo chroot /srv/alpine su - <<'END'
+        sudo chroot /srv/alpine /bin/su - <<'END'
            set -x
            #cat /etc/passwd /etc/group
            #addgroup -g127 docker && adduser -D -u1001 -Gdocker -s/bin/ash runner && delgroup runner docker
@@ -70,18 +70,18 @@ jobs:
         END
         (set -x; sudo mount --rbind . /srv/alpine/home/runner)
 
-        sudo chroot /srv/alpine su - runner <<'END'
+        sudo chroot /srv/alpine /bin/su - runner <<'END'
            id
            uname -a && printf %s\\n "$SHELL"; printf %s\\n "$PATH" && pwd
         END
 
-        sudo chroot /srv/alpine su - <<'END'
+        sudo chroot /srv/alpine /bin/su - <<'END'
            apk update && apk add ${{matrix.compiler.apk}} libc-dev make
         END
 
     - name: Build Tools Information
       run: |
-        sudo chroot /srv/alpine su - runner <<'END'
+        sudo chroot /srv/alpine /bin/su - runner <<'END'
            make --version; ${{matrix.compiler.GCC}} --version
         END
 
@@ -91,13 +91,10 @@ jobs:
 
     - name: Run Make (and Check)
       run: |
-        ls -l
-        sudo chroot /srv/alpine su - runner <<'END'
-           ls -l
-           make -j4 run \
-              GCC='${{matrix.compiler.GCC}}' \
-              GXX='${{matrix.compiler.GXX}}' \
-              MARCH=
+        #ls -l
+        sudo chroot /srv/alpine /bin/su - runner <<'END'
+           #ls -l
+           make -j4 run GCC='${{matrix.compiler.GCC}}' GXX='${{matrix.compiler.GXX}}' MARCH=
         END
 
     - name: Upload Results
