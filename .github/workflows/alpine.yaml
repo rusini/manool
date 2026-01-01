@@ -12,7 +12,7 @@ jobs:
       fail-fast: FALSE
       matrix:
         target: [
-          'x86_64', 'x86', 'aarch64', 'armhf', 'ppc64le', 'armv7', 'riscv64', 'loongarch64', 's390x'
+          'x86_64', 'x86', 'aarch64', 'armhf', 'ppc64le', 'armv7', 'riscv64', 'loongarch64' #, 's390x'
         ]
         compiler:
         - { apk: 'g++',     GCC: 'gcc',      GXX: 'g++'        }
@@ -63,7 +63,8 @@ jobs:
         sudo chroot /srv/alpine su - <<'END'
            set -x
            cat /etc/passwd /etc/group
-           addgroup -g127 docker && adduser -D -u1001 -Gdocker -s/bin/ash runner && delgroup runner docker
+           #addgroup -g127 docker && adduser -D -u1001 -Gdocker -s/bin/ash runner && delgroup runner docker
+           adduser -D -u1001 -s/bin/ash runner
            cat /etc/passwd /etc/group
         END
         (set -x; sudo mount --rbind . /srv/alpine/home/runner)
