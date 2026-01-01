@@ -65,8 +65,8 @@ jobs:
            #cat /etc/passwd /etc/group
            #addgroup -g127 docker && adduser -D -u1001 -Gdocker -s/bin/ash runner && delgroup runner docker
            #adduser -D -u1001 -s/bin/ash runner
-           adduser -D -u1001 runner
-           ls -la /bin
+           #adduser -D -u1001 runner
+           adduser -D -s/bin/ash runner
            cat /etc/passwd
            cat /etc/group
         END
