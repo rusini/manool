@@ -99,7 +99,7 @@ jobs:
         exec 2>&1
         sudo chroot /srv/alpine /bin/su - runner <<'END'
         exec 2>&1; set -x
-        ${{matrix.compiler.GCC}} -dM -E - < /dev/null
+        echo '#include <stdio.h>' | ${{matrix.compiler.GCC}} -dM -E -
         make -j4 run GCC='${{matrix.compiler.GCC}}' GXX='${{matrix.compiler.GXX}}' MARCH=
         END
 
