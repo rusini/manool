@@ -60,7 +60,9 @@ jobs:
         (for d in run tmp; do sudo mount {-t,}tmpfs /srv/alpine/"$d"; done)
         sudo cp -L /etc/resolv.conf /srv/alpine/etc
 
-        sudo chroot /srv/alpine /bin/env
+        sudo chroot /srv/alpine /bin/ash <<'END'
+        echo $PATH
+        END
 
         sudo chroot /srv/alpine /bin/su - <<'END'
            set -x
