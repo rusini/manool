@@ -62,9 +62,8 @@ jobs:
 
         sudo chroot /srv/alpine /bin/su - <<'END'
            set -x
-           #cat /etc/passwd /etc/group
-           #addgroup -g127 docker && adduser -D -u1001 -Gdocker -s/bin/ash runner && delgroup runner docker
            adduser -D -u1001 -s/bin/ash runner
+           ls -la ~runner
            cat /etc/passwd
            cat /etc/group
         END
@@ -81,6 +80,7 @@ jobs:
 
     - name: Build Tools Information
       run: |
+        exec 2>&1
         sudo chroot /srv/alpine /bin/su - runner <<'END'
            make --version; ${{matrix.compiler.GCC}} --version
         END
@@ -91,10 +91,10 @@ jobs:
 
     - name: Run Make (and Check)
       run: |
-        #ls -l
+        exec 2>&1
         sudo chroot /srv/alpine /bin/su - runner <<'END'
-           #ls -l
-           make -j4 run GCC='${{matrix.compiler.GCC}}' GXX='${{matrix.compiler.GXX}}' MARCH=
+        exec 2>&1; set -x
+        make -j4 run GCC='${{matrix.compiler.GCC}}' GXX='${{matrix.compiler.GXX}}' MARCH=
         END
 
     - name: Upload Results
