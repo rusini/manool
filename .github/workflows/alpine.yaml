@@ -103,6 +103,7 @@ jobs:
         make -j4 run GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}' MARCH=
         END
     - name: Upload Results
+      if: matrix.target != 's390x'
       uses: actions/upload-artifact@v4
       with:
         name: build-${{matrix.target}}-${{matrix.compiler.label}}
