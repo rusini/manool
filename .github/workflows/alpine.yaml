@@ -22,7 +22,7 @@ jobs:
         - { label: 'clang20', apk: 'clang20', gcc: 'clang-20', gxx: 'clang++-20' }
         # clang15 (partial), clang17
 
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
 
     defaults:
       run: { shell: bash }
