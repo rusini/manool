@@ -102,10 +102,10 @@ jobs:
         exec 2>&1
         sudo chroot /srv/alpine /bin/su - runner <<'END'
         set -x
-        make -j4 run GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}' MARCH=
         '${{matrix.compiler.gxx}} -pipe -w -pthread -std=c++17 -shared -fPIC -Wno-psabi -O3 \
            -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE \
            prelude.cc
+        make -j4 run GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}' MARCH=
         END
     - name: Upload Results
       if: matrix.target != 's390x'
