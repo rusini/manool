@@ -31,6 +31,7 @@ jobs:
     - name: Machine Information
       run: |
         exec 2>&1
+        set -x
         lscpu; free -h; df -H .
     - name: System Information
       run: |
