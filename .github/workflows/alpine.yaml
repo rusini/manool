@@ -55,7 +55,6 @@ jobs:
 
         wget -q -O- https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/${{matrix.target}}/alpine-minirootfs-3.22.2-${{matrix.target}}.tar.gz |
            (sudo mkdir /srv/alpine && sudo tar xz -C /srv/alpine)
-        #(for d in dev proc sys; do sudo mount --rbind -o ro {,/srv/alpine}/"$d"; done)
         (for d in dev proc sys; do sudo mount -R -r {,/srv/alpine}/"$d"; done)
         (for d in run tmp; do sudo mount {-t,}tmpfs /srv/alpine/"$d"; done)
         sudo cp -L /etc/resolv.conf /srv/alpine/etc
@@ -64,19 +63,22 @@ jobs:
            set -x
            adduser -D -u1001 -s/bin/ash runner
         END
-        (set -x; sudo mount --rbind . /srv/alpine/home/runner)
+        (set -x; sudo mount -R . /srv/alpine/home/runner)
 
+        sudo chroot /srv/alpine /bin/su - <<'END'
+        set -x
+        apk update && apk add make ${{matrix.compiler.apk}} libc-dev
+        END
+
+    - name: Context Information
+      run: |
+        exec 2>&1
         sudo chroot /srv/alpine /bin/su - runner <<'END'
            uname -a
            id
            printf %s\\n SHELL="$SHELL" PATH="$PATH"
            set -x
            pwd
-        END
-
-        sudo chroot /srv/alpine /bin/su - <<'END'
-        set -x
-        apk update && apk add make ${{matrix.compiler.apk}} libc-dev
         END
 
     - name: Build Tools Information
@@ -95,7 +97,7 @@ jobs:
       run: |
         exec 2>&1
         sudo chroot /srv/alpine /bin/su - runner <<'END'
-        exec 2>&1; set -x
+        set -x
         make -j4 run GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}' MARCH=
         END
 
