@@ -50,7 +50,7 @@ jobs:
       name: Context Information
       run: |
         exec 2>&1
-        tty || :; id; printf %s\\n "SHELL=$SHELL" "PATH=$PATH"
+        tty || :; id; printf %s\\n SHELL="$SHELL" PATH="$PATH"
         set -x
         pwd
         ps -eH --sort pid -o pid,user:12,group:12,comm:24,rsz,vsz,thcount,bsdstart,state,tname
