@@ -105,7 +105,7 @@ jobs:
         echo 'int main() {}' >main.cc
         ${{matrix.compiler.gxx}} -pipe -w -pthread -std=c++17 -shared -fPIC -Wno-psabi -O3 -fmath-errno \
            -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE \
-           -include prelude.cc main.cc
+           prelude.cc
         ls a.out
         #make -j4 run GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}' MARCH=
         END
