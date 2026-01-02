@@ -15,14 +15,13 @@ jobs:
           'x86_64', 'x86', 'aarch64', 'armhf', 'ppc64le', 'armv7', 'riscv64', 'loongarch64' #, 's390x'
         ]
         compiler:
-        - { apk: 'g++',     GCC: 'gcc',      GXX: 'g++'        }
-        #- { apk: 'clang15', GCC: 'clang-15', GXX: 'clang++-15' }
-        - { apk: 'clang16', GCC: 'clang-16', GXX: 'clang++-16' }
-        #- { apk: 'clang17', GCC: 'clang-17', GXX: 'clang++-17' }
-
-        - { apk: 'clang18', GCC: 'clang-18', GXX: 'clang++-18' }
-        - { apk: 'clang19', GCC: 'clang-19', GXX: 'clang++-19' }
-        - { apk: 'clang20', GCC: 'clang-20', GXX: 'clang++-20' }
+        - { label: 'gcc',     apk: 'g++',     gcc: 'gcc',      gxx: 'g++'        }
+        - { label: 'clang16', apk: 'clang16', gcc: 'clang-16', gxx: 'clang++-16' }
+        - { label: 'clang18', apk: 'clang18', gcc: 'clang-18', gxx: 'clang++-18' }
+        - { label: 'clang19', apk: 'clang19', gcc: 'clang-19', gxx: 'clang++-19' }
+        - { label: 'clang20', apk: 'clang20', gcc: 'clang-20', gxx: 'clang++-20' }
+        #- { label: 'clang15', apk: 'clang15', gcc: 'clang-15', gxx: 'clang++-15' }
+        #- { label: 'clang17', apk: 'clang17', gcc: 'clang-17', gxx: 'clang++-17' }
 
     runs-on: ubuntu-24.04
 
@@ -60,34 +59,29 @@ jobs:
         (for d in run tmp; do sudo mount {-t,}tmpfs /srv/alpine/"$d"; done)
         sudo cp -L /etc/resolv.conf /srv/alpine/etc
 
-        echo $PATH
-        sudo chroot /srv/alpine /bin/ash <<'END'
-        echo $PATH
-        END
-
         sudo chroot /srv/alpine /bin/su - <<'END'
            set -x
            adduser -D -u1001 -s/bin/ash runner
-           ls -la ~runner
-           cat /etc/passwd
-           cat /etc/group
         END
         (set -x; sudo mount --rbind . /srv/alpine/home/runner)
 
         sudo chroot /srv/alpine /bin/su - runner <<'END'
+           uname -a
            id
-           uname -a && printf %s\\n "$SHELL"; printf %s\\n "$PATH" && pwd
+           printf %s\\n SHELL="$SHELL" PATH="$PATH"
+           set -x
+           pwd
         END
 
         sudo chroot /srv/alpine /bin/su - <<'END'
-           apk update && apk add ${{matrix.compiler.apk}} libc-dev make
+           apk update && apk add make ${{matrix.compiler.apk}} libc-dev
         END
 
     - name: Build Tools Information
       run: |
         exec 2>&1
         sudo chroot /srv/alpine /bin/su - runner <<'END'
-           make --version; ${{matrix.compiler.GCC}} --version
+           make --version; ${{matrix.compiler.gcc}} --version
         END
 
     - name: Checkout
@@ -99,12 +93,11 @@ jobs:
         exec 2>&1
         sudo chroot /srv/alpine /bin/su - runner <<'END'
         exec 2>&1; set -x
-        echo '#include <stdio.h>' | ${{matrix.compiler.GCC}} -dM -E -
-        make -j4 run GCC='${{matrix.compiler.GCC}}' GXX='${{matrix.compiler.GXX}}' MARCH=
+        make -j4 run GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}' MARCH=
         END
 
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
-        name: build-${{matrix.target}}-${{matrix.compiler.GCC}}
+        name: build-${{matrix.target}}-${{matrix.compiler.label}}
         path: build
