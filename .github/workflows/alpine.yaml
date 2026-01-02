@@ -103,7 +103,7 @@ jobs:
         sudo chroot /srv/alpine /bin/su - runner <<'END'
         set -x
         echo 'int main() {}' >main.cc
-        ${{matrix.compiler.gxx}} -pipe -w -pthread -std=c++17 -shared -fPIC -Wno-psabi -O3 -fmath-errno \
+        ${{matrix.compiler.gxx}} -pipe -w -pthread -std=c++17 -fPIC -Wno-psabi -O3 -fmath-errno \
            -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE \
            prelude.cc
         ls a.out
