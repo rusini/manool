@@ -12,7 +12,7 @@ jobs:
       fail-fast: FALSE
       matrix:
         target: [
-          'x86_64', 'x86', 'aarch64', 'armhf', 'ppc64le', 'armv7', 'riscv64', 'loongarch64' #, 's390x'
+          'x86_64', 'x86', 'aarch64', 'armhf', 'ppc64le', 'armv7', 'riscv64', 'loongarch64', 's390x'
         ]
         compiler:
         - { label: 'gcc',     apk: 'g++',     gcc: 'gcc',      gxx: 'g++'        }
@@ -20,8 +20,7 @@ jobs:
         - { label: 'clang18', apk: 'clang18', gcc: 'clang-18', gxx: 'clang++-18' }
         - { label: 'clang19', apk: 'clang19', gcc: 'clang-19', gxx: 'clang++-19' }
         - { label: 'clang20', apk: 'clang20', gcc: 'clang-20', gxx: 'clang++-20' }
-        #- { label: 'clang15', apk: 'clang15', gcc: 'clang-15', gxx: 'clang++-15' }
-        #- { label: 'clang17', apk: 'clang17', gcc: 'clang-17', gxx: 'clang++-17' }
+        # clang15 (partial), clang17
 
     runs-on: ubuntu-24.04
 
@@ -32,17 +31,23 @@ jobs:
     - name: Machine Information
       run: |
         exec 2>&1
-        lscpu; free -h; df -h .
+        lscpu; free -h; df -H .
     - name: System Information
       run: |
         exec 2>&1
-        date; uname -a; uptime; cat /etc/os-release; ls -C /boot || :
+        date; uname -a; uptime
+        set -x
+        systemd-detect-virt || :
+        cat /etc/os-release
+        ls -C /boot || :
     - name: Context Information
       run: |
         exec 2>&1
-        tty || :; id; printf %s\\n "$SHELL"; printf %s\\n "$PATH"; pwd
-
-    - name: Host System Setup
+        tty || :; id; printf %s\\n SHELL="$SHELL" PATH="$PATH"
+        set -x
+        pwd
+        ps -eH --sort pid -o pid,user:12,group:12,comm:24,rsz,vsz,thcount,bsdstart,state,tname
+    - name: Host Setup
       run: |
         exec 2>&1
         set -x
@@ -78,7 +83,6 @@ jobs:
         set -x
         pwd
         END
-
     - name: Build Tools Information
       run: |
         exec 2>&1
@@ -90,15 +94,14 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
       with: { ref: master }
-
     - name: Run Make (and Check)
+      if: matrix.target != 's390x'
       run: |
         exec 2>&1
         sudo chroot /srv/alpine /bin/su - runner <<'END'
         set -x
         make -j4 run GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}' MARCH=
         END
-
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
