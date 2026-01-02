@@ -53,12 +53,11 @@ jobs:
       run: |
         exec 2>&1
 
-        (  set -x
-           wget -q -O- https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/${{matrix.target}}/alpine-minirootfs-3.22.2-${{matrix.target}}.tar.gz |
-              (sudo mkdir /srv/alpine && sudo tar xz -C /srv/alpine)
-           for d in dev proc sys; do sudo mount -R -r {,/srv/alpine}/"$d"; done
-           for d in run tmp; do sudo mount {-t,}tmpfs /srv/alpine/"$d"; done
-           sudo cp -L /etc/resolv.conf /srv/alpine/etc )
+        (set -x; wget -q -O- https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/${{matrix.target}}/alpine-minirootfs-3.22.2-${{matrix.target}}.tar.gz) |
+           (set -x; sudo mkdir /srv/alpine; sudo tar xz -C /srv/alpine)
+        (for d in dev proc sys; do (set -x; sudo mount -R -r {,/srv/alpine}/"$d") done)
+        (for d in run tmp; do (set -x; sudo mount {-t,}tmpfs /srv/alpine/"$d") done)
+        (set -x; sudo cp -L /etc/resolv.conf /srv/alpine/etc)
 
         sudo chroot /srv/alpine /bin/su - <<'END'
         set -x
