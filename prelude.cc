@@ -43,8 +43,8 @@
 # if !__EXCEPTIONS
    static_assert(false, "Please do not use -fno-exceptions");
 # endif
-# if __NO_MATH_ERRNO__ // mostly useless but disabling it might cause compatibility issues with third-party libraries
-   static_assert(false, "Please do not use -fno-math-errno");
+# if !__NO_MATH_ERRNO__ // universally preferred due to several reasons
+   static_assert(false, "Please use -fno-math-errno");
 # endif
 
 static_assert( // `__has_cpp_attribute` is an extension adopted by C++20
