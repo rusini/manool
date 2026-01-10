@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
     inputs:
       valgrind:
-        #type: boolean
         description: Use Valgrind
+        type: boolean
 
 jobs:
   quick-build:
