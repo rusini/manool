@@ -40,10 +40,10 @@ jobs:
         - { label: 'gcc11',   osver: '24.04', gcc: 'gcc-11',   gxx: 'g++-11',     pkgs: 'g++-11' }
         - { label: 'gcc12',   osver: '22.04', gcc: 'gcc-12',   gxx: 'g++-12',     pkgs: 'g++-12' }
         - { label: 'gcc12',   osver: '24.04', gcc: 'gcc-12',   gxx: 'g++-12',     pkgs: 'g++-12' }
-        - { label: 'gcc13',   osver: '24.04', gcc: 'gcc',      gxx: 'g++',        pkgs: 'g++'    }
+        - { label: 'gcc13',   osver: '24.04', gcc: 'gcc',      gxx: 'g++',        pkgs: 'make'    }
         - { label: 'gcc14',   osver: '24.04', gcc: 'gcc-14',   gxx: 'g++-14',     pkgs: 'g++-14' }
         - { label: 'clang13', osver: '22.04', gcc: 'clang-13', gxx: 'clang++-13', pkgs: 'clang-13' }
-        - { label: 'clang14', osver: '22.04', gcc: 'clang',    gxx: 'clang++',    pkgs: 'clang'    }
+        - { label: 'clang14', osver: '22.04', gcc: 'clang',    gxx: 'clang++',    pkgs: 'make'    }
         - { label: 'clang14', osver: '24.04', gcc: 'clang-14', gxx: 'clang++-14', pkgs: 'clang-14' }
         - { label: 'clang15', osver: '22.04', gcc: 'clang-15', gxx: 'clang++-15', pkgs: 'clang-15' }
         - { label: 'clang15', osver: '24.04', gcc: 'clang-15', gxx: 'clang++-15', pkgs: 'clang-15' }
