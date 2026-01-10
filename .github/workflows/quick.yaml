@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       valgrind:
-        type: boolean
+        #type: boolean
         description: Use Valgrind
 
 jobs:
