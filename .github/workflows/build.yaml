@@ -105,8 +105,8 @@ jobs:
       run: exec 2>&1; sudo apt-get update
     - name: Install Build Dependencies
       run: exec 2>&1; sudo apt-get install ${{matrix.compiler.pkgs}}
-    - name: Install Valgrind
-      run: exec 2>&1; sudo apt-get --no-install-recommends install valgrind
+    #- name: Install Valgrind
+    #  run: exec 2>&1; sudo apt-get --no-install-recommends install valgrind
 
     - name: Build Tools Information
       run: make --version; ${{matrix.compiler.gcc}} --version
