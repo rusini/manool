@@ -32,9 +32,9 @@ jobs:
         #- { label: 'clang18', osver: '24.04', gcc: 'clang',    gxx: 'clang++',    pkgs: 'g++-multilib clang'    }
         #- { label: 'clang19', osver: '24.04', gcc: 'clang-19', gxx: 'clang++-19', pkgs: 'g++-multilib clang-19' }
 
-        - { label: 'gcc9',    osver: '22.04', gcc: 'gcc-9',    gxx: 'g++-9',      pkgs: 'make'  }
+        - { label: 'gcc9',    osver: '22.04', gcc: 'gcc-9',    gxx: 'g++-9',      pkgs: 'g++-9'  }
         - { label: 'gcc9',    osver: '24.04', gcc: 'gcc-9',    gxx: 'g++-9',      pkgs: 'g++-9'  }
-        - { label: 'gcc10',   osver: '22.04', gcc: 'gcc-10',   gxx: 'g++-10',     pkgs: 'g++-10' }
+        - { label: 'gcc10',   osver: '22.04', gcc: 'gcc-10',   gxx: 'g++-10',     pkgs: 'make' }
         - { label: 'gcc10',   osver: '24.04', gcc: 'gcc-10',   gxx: 'g++-10',     pkgs: 'g++-10' }
         - { label: 'gcc11',   osver: '22.04', gcc: 'gcc',      gxx: 'g++',        pkgs: 'make'    }
         - { label: 'gcc11',   osver: '24.04', gcc: 'gcc-11',   gxx: 'g++-11',     pkgs: 'g++-11' }
