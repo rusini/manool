@@ -38,7 +38,7 @@ jobs:
         - { label: 'clang17', osver: '24.04', gcc: 'clang-17', gxx: 'clang++-17'                   }
         - { label: 'clang18', osver: '24.04', gcc: 'clang',    gxx: 'clang++'                      }
         - { label: 'clang19', osver: '24.04', gcc: 'clang-19', gxx: 'clang++-19', pkgs: 'clang-19' }
-    runs-on: ubuntu-${{matrix.compiler.osver}}${{inputs.aarch64 && '-arm'}}
+    runs-on: ubuntu-${{matrix.compiler.osver}}${{inputs.aarch64 && '-arm' || ''}}
 
     defaults:
       run: { shell: bash }
