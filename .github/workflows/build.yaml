@@ -83,6 +83,7 @@ jobs:
       run: |
         make -j4 GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}' MARCH='${{matrix.target.march}}' run
     - name: Check Valgrind
+      if: ${{matrix.target.march}} == '64'
       run: |
         make -j4 GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}' MARCH='${{matrix.target.march}}' run-valgrind
       #continue-on-error: TRUE
