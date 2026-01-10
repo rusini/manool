@@ -26,7 +26,8 @@ SCL        =
 GCC        = gcc
 GXX        = g++
 PIPE       = -pipe
-MARCH      = -msse2 -mfpmath=sse
+MARCH      =
+#-msse2 -mfpmath=sse
 LDFLAGS_SO = -fPIC ##### better omit on i386
 RUN_ARGS   = test.mnl
 VALGRIND   = $(SCL) valgrind
