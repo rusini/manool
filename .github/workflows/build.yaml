@@ -49,7 +49,7 @@ jobs:
         - { label: 'clang15', osver: '24.04', gcc: 'clang-15', gxx: 'clang++-15', pkgs: 'clang-15' }
         - { label: 'clang16', osver: '24.04', gcc: 'clang-16', gxx: 'clang++-16', pkgs: 'clang-16' }
         - { label: 'clang17', osver: '24.04', gcc: 'clang-17', gxx: 'clang++-17', pkgs: 'clang-17' }
-        - { label: 'clang18', osver: '24.04', gcc: 'clang',    gxx: 'clang++',    pkgs: 'clang'    }
+        - { label: 'clang18', osver: '24.04', gcc: 'clang',    gxx: 'clang++',    pkgs: 'make'    }
         - { label: 'clang19', osver: '24.04', gcc: 'clang-19', gxx: 'clang++-19', pkgs: 'clang-19' }
 
         #- { label: 'gcc9',    osver: '22.04-arm', gcc: 'gcc-9',    gxx: 'g++-9',      pkgs: 'g++-9'  }
