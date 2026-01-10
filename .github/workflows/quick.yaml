@@ -8,6 +8,9 @@ on:
       valgrind:
         description: Use Valgrind
         type: boolean
+      aarch64:
+        description: Run on AArch64
+        type: boolean
 
 jobs:
   quick-build:
@@ -35,7 +38,7 @@ jobs:
         - { label: 'clang17', osver: '24.04', gcc: 'clang-17', gxx: 'clang++-17'                   }
         - { label: 'clang18', osver: '24.04', gcc: 'clang',    gxx: 'clang++'                      }
         - { label: 'clang19', osver: '24.04', gcc: 'clang-19', gxx: 'clang++-19', pkgs: 'clang-19' }
-    runs-on: ubuntu-${{matrix.compiler.osver}}
+    runs-on: ubuntu-${{matrix.compiler.osver}}${{inputs.aarch64 && '-arm'}}
 
     defaults:
       run: { shell: bash }
@@ -63,10 +66,10 @@ jobs:
         ps -eH --sort pid -o pid,user:12,group:12,comm:24,rsz,vsz,thcount,bsdstart,state,tname
 
     - name: Update Package DB
-      if: ${{matrix.compiler.pkgs || inputs.valgrind}}
+      if: (matrix.compiler.pkgs || inputs.valgrind)
       run: exec 2>&1; sudo apt-get update
     - name: Install Build Dependencies
-      if: ${{matrix.compiler.pkgs}}
+      if: (matrix.compiler.pkgs)
       run: exec 2>&1; sudo apt-get install ${{matrix.compiler.pkgs}}
     - name: Install Valgrind
       if: (inputs.valgrind)
