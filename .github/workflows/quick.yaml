@@ -59,13 +59,15 @@ jobs:
         ps -eH --sort pid -o pid,user:12,group:12,comm:24,rsz,vsz,thcount,bsdstart,state,tname
 
     - name: Update Package DB
+      if: ${{matrix.compiler.pkgs}}
       run: exec 2>&1; sudo apt-get update
     - name: Install Build Dependencies
       if: ${{matrix.compiler.pkgs}}
       run: exec 2>&1; sudo apt-get install ${{matrix.compiler.pkgs}}
-
     - name: Build Tools Information
-      run: make --version; ${{matrix.compiler.gcc}} --version
+      run: |
+        exec 2>&1
+        make --version; ${{matrix.compiler.gcc}} --version
 
     - name: Checkout
       uses: actions/checkout@v4
@@ -73,9 +75,11 @@ jobs:
 
     - name: Run Make
       run: |
+        exec 2>&1
         make -j4 GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}'
     - name: Check
       run: |
+        exec 2>&1
         make -j4 GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}' run
 
     - name: Upload Results
