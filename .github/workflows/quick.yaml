@@ -7,7 +7,7 @@ on:
 
 jobs:
   quick-build:
-    name: On ubuntu ${{matrix.compiler.osver}} with ${{matrix.compiler.label}}
+    name: On Ubuntu ${{matrix.compiler.osver}} with ${{matrix.compiler.label}}
     strategy:
       fail-fast: FALSE
       matrix:
@@ -61,7 +61,7 @@ jobs:
     - name: Update Package DB
       run: exec 2>&1; sudo apt-get update
     - name: Install Build Dependencies
-      if: matrix.compiler.pkgs != ''
+      if: ${{matrix.compiler.pkgs}}
       run: exec 2>&1; sudo apt-get install ${{matrix.compiler.pkgs}}
 
     - name: Build Tools Information
