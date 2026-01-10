@@ -28,8 +28,8 @@ jobs:
         - { label: 'clang15', osver: '22.04', gcc: 'clang-15', gxx: 'clang++-15'                   }
         - { label: 'clang15', osver: '24.04', gcc: 'clang-15', gxx: 'clang++-15', pkgs: 'clang-15' }
         - { label: 'clang16', osver: '24.04', gcc: 'clang-16', gxx: 'clang++-16'                   }
-        - { label: 'clang17', osver: '24.04', gcc: 'clang-17', gxx: 'clang++-17', pkgs: 'make' }
-        - { label: 'clang18', osver: '24.04', gcc: 'clang',    gxx: 'clang++',    pkgs: 'make'    }
+        - { label: 'clang17', osver: '24.04', gcc: 'clang-17', gxx: 'clang++-17'                   }
+        - { label: 'clang18', osver: '24.04', gcc: 'clang',    gxx: 'clang++'                      }
         - { label: 'clang19', osver: '24.04', gcc: 'clang-19', gxx: 'clang++-19', pkgs: 'clang-19' }
     runs-on: ubuntu-${{matrix.compiler.osver}}
 
