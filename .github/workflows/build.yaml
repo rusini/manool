@@ -85,7 +85,7 @@ jobs:
     - name: Check Valgrind
       run: |
         make -j4 GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}' MARCH='${{matrix.target.march}}' run-valgrind
-      continue-on-error: TRUE
+      #continue-on-error: TRUE
 
     - name: Upload Results
       uses: actions/upload-artifact@v4
