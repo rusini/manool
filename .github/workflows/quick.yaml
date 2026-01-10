@@ -3,7 +3,11 @@
 name: Quick Build
 
 on:
-  workflow_dispatch: NULL
+  workflow_dispatch:
+    inputs:
+      valgrind:
+        type: boolean
+        description: Use Valgrind
 
 jobs:
   quick-build:
