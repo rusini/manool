@@ -67,13 +67,21 @@ jobs:
 
     - name: Update Package DB
       if: (matrix.compiler.pkgs || inputs.valgrind)
-      run: exec 2>&1; sudo apt-get update
+      run: |
+        exec 2>&1
+        sudo apt-get update
     - name: Install Build Dependencies
       if: (matrix.compiler.pkgs)
-      run: exec 2>&1; sudo apt-get install ${{matrix.compiler.pkgs}}
+      run: |
+        exec 2>&1
+        set -x
+        sudo apt-get install ${{matrix.compiler.pkgs}}
     - name: Install Valgrind
       if: (inputs.valgrind)
-      run: exec 2>&1; sudo apt-get --no-install-recommends install valgrind
+      run: |
+        exec 2>&1
+        set -x
+        sudo apt-get install --no-install-recommends valgrind
     - name: Build Tools Information
       run: |
         exec 2>&1

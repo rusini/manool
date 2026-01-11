@@ -7,7 +7,7 @@ on:
 
 jobs:
   longer-build:
-    name: Ubuntu${{matrix.variant.os}}, ${{matrix.variant.label}}
+    name: Ubuntu ${{matrix.variant.os}}, ${{matrix.variant.label}}
     strategy:
       fail-fast: FALSE
       matrix:
@@ -130,7 +130,7 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        sudo apt-get --no-install-recommends install valgrind
+        sudo apt-get install --no-install-recommends valgrind
     - name: Build Tools Information
       run: |
         exec 2>&1
