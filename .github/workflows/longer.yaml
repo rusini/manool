@@ -121,6 +121,9 @@ jobs:
     - name: Install Build Dependencies
       if: (matrix.variant.pkgs)
       run: exec 2>&1; sudo apt-get install ${{matrix.variant.pkgs}}
+    - name: Install Valgrind
+      if: (!variant.i686sse2)
+      run: exec 2>&1; sudo apt-get --no-install-recommends install valgrind
     - name: Build Tools Information
       run: |
         exec 2>&1
@@ -133,7 +136,8 @@ jobs:
     - name: Run Make and Check
       run: |
         exec 2>&1
-        make -j4 GCC='${{matrix.variant.gcc}}' GXX='${{matrix.variant.gxx}}' MARCH='${{matrix.variant.i686sse2 && '-m32 -msse2 -mfpmath=sse' || ''}}' run
+        make -j4 GCC='${{matrix.variant.gcc}}' GXX='${{matrix.variant.gxx}}' MARCH='${{matrix.variant.i686sse2 && '-m32 -msse2 -mfpmath=sse' || ''}}' \
+           run${{variant.i686sse2 && '-valgrind' || ''}}
 
     - name: Upload Results
       uses: actions/upload-artifact@v4
