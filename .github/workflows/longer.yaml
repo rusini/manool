@@ -113,7 +113,7 @@ jobs:
         tty || :; id; printf %s\\n SHELL="$SHELL" PATH="$PATH"
         set -x
         pwd
-        sudo ps -eH --sort pid -o pid,user:12,group:12,comm:24,rsz,vsz,thcount,bsdstart,state,tname
+        sudo ps -eH --sort pid -o pid,user:12,group:12,comm:24,rsz,vsz,thcount,bsdstart,state,tname --ns pid
         sudo ls /proc
 
     - name: Update Package DB
