@@ -51,13 +51,13 @@ jobs:
         - { label: 'clang18-32',     os: '24.04',     gcc: 'clang',    gxx: 'clang++',                   pkgs: 'g++-multilib',          i686sse2: TRUE   }
         - { label: 'clang19-32',     os: '24.04',     gcc: 'clang-19', gxx: 'clang++-19',                pkgs: 'g++-multilib clang-19', i686sse2: TRUE   }
         - { label: 'clang13-libcxx', os: '22.04',     gcc: 'clang-13', gxx: 'clang++-13 -stdlib=libc++', pkgs: 'clang-13 libc++-13-dev libc++abi-13-dev' } # *
-        - { label: 'clang14-libcxx', os: '22.04',     gcc: 'clang',    gxx: 'clang++    -stdlib=libc++', pkgs:          'libc++-dev libc++abi-dev'       }
+        - { label: 'clang14-libcxx', os: '22.04',     gcc: 'clang',    gxx: 'clang++ -stdlib=libc++',    pkgs:          'libc++-dev libc++abi-dev'       }
         - { label: 'clang14-libcxx', os: '24.04',     gcc: 'clang-14', gxx: 'clang++-14 -stdlib=libc++', pkgs: 'clang-14 libc++-14-dev libc++abi-14-dev' }
         - { label: 'clang15-libcxx', os: '22.04',     gcc: 'clang-15', gxx: 'clang++-15 -stdlib=libc++', pkgs:          'libc++-15-dev libc++abi-15-dev' }
         - { label: 'clang15-libcxx', os: '24.04',     gcc: 'clang-15', gxx: 'clang++-15 -stdlib=libc++', pkgs: 'clang-15 libc++-15-dev libc++abi-15-dev' }
         - { label: 'clang16-libcxx', os: '24.04',     gcc: 'clang-16', gxx: 'clang++-16 -stdlib=libc++', pkgs:          'libc++-16-dev libc++abi-16-dev' }
         - { label: 'clang17-libcxx', os: '24.04',     gcc: 'clang-17', gxx: 'clang++-17 -stdlib=libc++', pkgs:          'libc++-17-dev libc++abi-17-dev' }
-        - { label: 'clang18-libcxx', os: '24.04',     gcc: 'clang',    gxx: 'clang++    -stdlib=libc++', pkgs:          'libc++-dev libc++abi-dev'       }
+        - { label: 'clang18-libcxx', os: '24.04',     gcc: 'clang',    gxx: 'clang++ -stdlib=libc++',    pkgs:          'libc++-dev libc++abi-dev'       }
         - { label: 'clang19-libcxx', os: '24.04',     gcc: 'clang-19', gxx: 'clang++-19 -stdlib=libc++', pkgs: 'clang-19 libc++-19-dev libc++abi-19-dev' }
         - { label: 'gcc9',           os: '22.04-arm', gcc: 'gcc-9',    gxx: 'g++-9',                     pkgs: 'g++-9'                                   }
         - { label: 'gcc9',           os: '24.04-arm', gcc: 'gcc-9',    gxx: 'g++-9',                     pkgs: 'g++-9'                                   }
@@ -79,13 +79,13 @@ jobs:
         - { label: 'clang18',        os: '24.04-arm', gcc: 'clang',    gxx: 'clang++'                                                                    }
         - { label: 'clang19',        os: '24.04-arm', gcc: 'clang-19', gxx: 'clang++-19',                pkgs: 'clang-19'                                }
         - { label: 'clang13-libcxx', os: '22.04-arm', gcc: 'clang-13', gxx: 'clang++-13 -stdlib=libc++', pkgs: 'clang-13 libc++-13-dev libc++abi-13-dev' } # *
-        - { label: 'clang14-libcxx', os: '22.04-arm', gcc: 'clang',    gxx: 'clang++    -stdlib=libc++', pkgs:          'libc++-dev libc++abi-dev'       }
+        - { label: 'clang14-libcxx', os: '22.04-arm', gcc: 'clang',    gxx: 'clang++ -stdlib=libc++',    pkgs:          'libc++-dev libc++abi-dev'       }
         - { label: 'clang14-libcxx', os: '24.04-arm', gcc: 'clang-14', gxx: 'clang++-14 -stdlib=libc++', pkgs: 'clang-14 libc++-14-dev libc++abi-14-dev' }
         - { label: 'clang15-libcxx', os: '22.04-arm', gcc: 'clang-15', gxx: 'clang++-15 -stdlib=libc++', pkgs:          'libc++-15-dev libc++abi-15-dev' }
         - { label: 'clang15-libcxx', os: '24.04-arm', gcc: 'clang-15', gxx: 'clang++-15 -stdlib=libc++', pkgs: 'clang-15 libc++-15-dev libc++abi-15-dev' }
         - { label: 'clang16-libcxx', os: '24.04-arm', gcc: 'clang-16', gxx: 'clang++-16 -stdlib=libc++', pkgs:          'libc++-16-dev libc++abi-16-dev' }
         - { label: 'clang17-libcxx', os: '24.04-arm', gcc: 'clang-17', gxx: 'clang++-17 -stdlib=libc++', pkgs:          'libc++-17-dev libc++abi-17-dev' }
-        - { label: 'clang18-libcxx', os: '24.04-arm', gcc: 'clang',    gxx: 'clang++    -stdlib=libc++', pkgs:          'libc++-dev libc++abi-dev'       }
+        - { label: 'clang18-libcxx', os: '24.04-arm', gcc: 'clang',    gxx: 'clang++ -stdlib=libc++',    pkgs:          'libc++-dev libc++abi-dev'       }
         - { label: 'clang19-libcxx', os: '24.04-arm', gcc: 'clang-19', gxx: 'clang++-19 -stdlib=libc++', pkgs: 'clang-19 libc++-19-dev libc++abi-19-dev' }
 
     runs-on: ubuntu-${{matrix.variant.os}}
@@ -113,7 +113,6 @@ jobs:
         tty || :; id; printf %s\\n SHELL="$SHELL" PATH="$PATH"
         set -x
         pwd
-        #sudo ps -eH --sort pid -o pid,user:12,group:12,comm:24,rsz,vsz,thcount,bsdstart,state,tname
         sudo ps -e --sort pid -o pid,user:12,group:12,comm:24,rsz,vsz,thcount,bsdstart,state,tname
 
     - name: Update Package DB
