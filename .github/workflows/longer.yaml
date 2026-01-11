@@ -116,13 +116,21 @@ jobs:
         ps -eH --sort pid -o pid,user:12,group:12,comm:24,rsz,vsz,thcount,bsdstart,state,tname
 
     - name: Update Package DB
-      run: exec 2>&1; sudo apt-get update
+      run: |
+        exec 2>&1
+        sudo apt-get update
     - name: Install Build Dependencies
       if: (matrix.variant.pkgs)
-      run: exec 2>&1; sudo apt-get install ${{matrix.variant.pkgs}}
+      run: |
+        exec 2>&1
+        set -x
+        sudo apt-get install ${{matrix.variant.pkgs}}
     - name: Install Valgrind
       if: (!matrix.variant.i686sse2)
-      run: exec 2>&1; sudo apt-get --no-install-recommends install valgrind
+      run: |
+        exec 2>&1
+        set -x
+        sudo apt-get --no-install-recommends install valgrind
     - name: Build Tools Information
       run: |
         exec 2>&1
