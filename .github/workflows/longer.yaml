@@ -116,7 +116,6 @@ jobs:
         ps -eH --sort pid -o pid,user:12,group:12,comm:24,rsz,vsz,thcount,bsdstart,state,tname
 
     - name: Update Package DB
-      if: (matrix.variant.pkgs || !matrix.variant.i686sse2)
       run: exec 2>&1; sudo apt-get update
     - name: Install Build Dependencies
       if: (matrix.variant.pkgs)
