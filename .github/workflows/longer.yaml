@@ -218,7 +218,7 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        apt-get -y install --noinstall-recommends valgrind
+        apt-get -y install --no-install-recommends valgrind
 
     - name: Checkout
       uses: actions/checkout@v4
