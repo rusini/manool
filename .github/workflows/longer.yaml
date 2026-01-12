@@ -250,5 +250,5 @@ jobs:
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
-        name: latest-${{matrix.variant.label}}
+        name: latest-${{matrix.variant.label}}${{matrix.variant.os}}
         path: build
