@@ -214,7 +214,7 @@ jobs:
         apt-get -y install make ${{matrix.variant.pkgs}}
         make --version; ${{matrix.variant.gcc}} --version
     - name: Setup
-      if: (!variant.i686sse2)
+      if: (!matrix.variant.i686sse2)
       run: |
         exec 2>&1
         set -x
