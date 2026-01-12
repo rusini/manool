@@ -169,8 +169,8 @@ jobs:
         - { label: 'gcc13-64',       gcc: 'gcc-13',   gxx: 'g++-13',                    pkgs: 'g++-13'                                }
         - { label: 'gcc13-32',       gcc: 'gcc-13',   gxx: 'g++-13',                    pkgs: 'g++-13-multilib',       i686sse2: TRUE }
         - { label: 'gcc14-64',       gcc: 'gcc',      gxx: 'g++',                       pkgs: 'g++'                                   }
-        #- { label: 'gcc14-32',       gcc: 'gcc',      gxx: 'g++',                       pkgs: 'g++-multilib',          i686sse2: TRUE }
-        #- { label: 'gcc15-64',       gcc: 'gcc-15     gxx: 'g++-15',                    pkgs: 'g++'                                   }
+        - { label: 'gcc14-32',       gcc: 'gcc',      gxx: 'g++',                       pkgs: 'g++-multilib',          i686sse2: TRUE }
+        - { label: 'gcc15-64',       gcc: 'gcc-15     gxx: 'g++-15',                    pkgs: 'g++'                                   }
         #- { label: 'gcc15-32',       gcc: 'gcc-15',   gxx: 'g++-15',                    pkgs: 'g++-multilib',          i686sse2: TRUE }
         #- { label: 'clang14-64',     gcc: 'clang-14', gxx: 'clang++-14',                pkgs: 'clang-14'                              }
         #- { label: 'clang14-32',     gcc: 'clang-14', gxx: 'clang++-14 ',               pkgs: 'clang-14 g++-multilib', i686sse2: TRUE }
