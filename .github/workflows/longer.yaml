@@ -163,9 +163,9 @@ jobs:
       matrix:
         variant:
         - { label: 'gcc11-64',       gcc: 'gcc-11',   gxx: 'g++-11',                    pkgs: 'g++-11'                                }
-        #- { label: 'gcc11-32',       gcc: 'gcc-11',   gxx: 'g++-11',                    pkgs: 'g++-11-multilib',       i686sse2: TRUE }
-        #- { label: 'gcc12-64',       gcc: 'gcc-12',   gxx: 'g++-12',                    pkgs: 'g++-12'                                }
-        #- { label: 'gcc12-32',       gcc: 'gcc-12',   gxx: 'g++-12',                    pkgs: 'g++-12-multilib',       i686sse2: TRUE }
+        - { label: 'gcc11-32',       gcc: 'gcc-11',   gxx: 'g++-11',                    pkgs: 'g++-11-multilib',       i686sse2: TRUE }
+        - { label: 'gcc12-64',       gcc: 'gcc-12',   gxx: 'g++-12',                    pkgs: 'g++-12'                                }
+        - { label: 'gcc12-32',       gcc: 'gcc-12',   gxx: 'g++-12',                    pkgs: 'g++-12-multilib',       i686sse2: TRUE }
         #- { label: 'gcc13-64',       gcc: 'gcc-13',   gxx: 'g++-13',                    pkgs: 'g++-13'                                }
         #- { label: 'gcc13-32',       gcc: 'gcc-13',   gxx: 'g++-13',                    pkgs: 'g++-13-multilib',       i686sse2: TRUE }
         #- { label: 'gcc14-64',       gcc: 'gcc',      gxx: 'g++',                       pkgs: 'g++'                                   }
