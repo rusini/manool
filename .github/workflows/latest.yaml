@@ -82,7 +82,7 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        make -j4 run GCC='${{matrix.variant.gcc}}' GXX='${{matrix.variant.gxx}}' MARCH='${{matrix.variant.march}}'
+        make -j4 run GCC='${{matrix.variant.gcc}}' GXX='${{matrix.variant.gxx}}' MARCH='${{matrix.variant.march}}' run
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
