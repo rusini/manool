@@ -157,7 +157,7 @@ jobs:
         path: build
 
   container-build:
-    name: Ubuntu 25.10, ${{matrix.variant.label}}
+    name: Ubuntu 25.10${{matrix.variant.os}}, ${{matrix.variant.label}}
     strategy:
       fail-fast: FALSE
       matrix:
