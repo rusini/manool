@@ -254,7 +254,7 @@ jobs:
         path: build
 
   llvm-build:
-    name: LLVM ${{matrix.variant.label}}
+    name: LLVM ${{matrix.variant.label}}${{matrix.variant.isa}}
     strategy:
       fail-fast: FALSE
       matrix:
@@ -303,11 +303,12 @@ jobs:
         exec 2>&1
         set -x
         sudo wget -O /etc/apt/trusted.gpg.d/apt.llvm.org.asc https://apt.llvm.org/llvm-snapshot.gpg.key
-        (for v in {16..21}; do cat <<END | sudo tee /etc/apt/sources.list.d/llvm.list >/dev/null
+        (for v in {16..21}; do sudo tee /etc/apt/sources.list.d/llvm.list <<END >/dev/null
         deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-$v main
         deb-src http://apt.llvm.org/jammy/ llvm-toolchain-jammy-$v main
         END
         done)
+        cat /etc/apt/sources.list.d/llvm.list
         sudo apt-get update
     - name: Install Build Dependencies
       run: |
