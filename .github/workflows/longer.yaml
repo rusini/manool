@@ -302,12 +302,11 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-        (for v in {16..21}; do
-          cat <<END | sudo tee /etc/apt/sources.list.d/llvm.list >/dev/null
-            deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-$v main
-            deb-src http://apt.llvm.org/jammy/ llvm-toolchain-jammy-$v main
-          END
+        sudo wget -O /etc/apt/trusted.gpg.d/apt.llvm.org.asc https://apt.llvm.org/llvm-snapshot.gpg.key
+        (for v in {16..21}; do cat <<END | sudo tee /etc/apt/sources.list.d/llvm.list >/dev/null
+        deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-$v main
+        deb-src http://apt.llvm.org/jammy/ llvm-toolchain-jammy-$v main
+        END
         done)
         apt-get update
     - name: Install Build Dependencies
