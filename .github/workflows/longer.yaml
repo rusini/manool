@@ -308,19 +308,19 @@ jobs:
         deb-src http://apt.llvm.org/jammy/ llvm-toolchain-jammy-$v main
         END
         done)
-        apt-get update
+        sudo apt-get update
     - name: Install Build Dependencies
       run: |
         exec 2>&1
         set -x
-        apt-get install ${{matrix.variant.pkgs}}
+        sudo apt-get install ${{matrix.variant.pkgs}}
         make --version; ${{matrix.variant.gcc}} --version
     - name: Install Valgrind
       if: (!matrix.variant.i686sse2)
       run: |
         exec 2>&1
         set -x
-        apt-get -y install --no-install-recommends valgrind
+        sudo apt-get install --no-install-recommends valgrind
 
     - name: Checkout
       uses: actions/checkout@v4
