@@ -124,7 +124,7 @@ jobs:
     - name: Update Package DB
       run: |
         exec 2>&1
-        dpkg --add-architecture armhf
+        sudo dpkg --add-architecture armhf
         sudo apt-get update
     - name: Install Build Dependencies
       if: (matrix.variant.pkgs)
