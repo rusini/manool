@@ -130,7 +130,7 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        sudo apt-get install ${{matrix.variant.pkgs}}
+        sudo apt-get install ${{matrix.variant.pkgs}} qemu-user-static
     - name: Install Valgrind
       if: (!matrix.variant.i686sse2)
       run: |
