@@ -88,7 +88,7 @@ jobs:
         - { label: 'clang18-libcxx', os: '24.04-arm', gcc: 'clang',    gxx: 'clang++ -stdlib=libc++',    pkgs:          'libc++{,abi}-dev'             }
         - { label: 'clang19-libcxx', os: '24.04-arm', gcc: 'clang-19', gxx: 'clang++-19 -stdlib=libc++', pkgs: 'clang-19 libc++{,abi}-19-dev'          }
 
-        - { label: 'gcc13-arm32',    os: '24.04-arm', gcc: 'arm-linux-gnueabihf-gcc-13',      gxx: 'arm-linux-gnueabihf-g++-13',   pkgs: 'g++-13-arm-linux-gnueabihf'               }
+        - { label: 'gcc13-arm32',    os: '24.04-arm', gcc: 'arm-linux-gnueabihf-gcc-13',      gxx: 'arm-linux-gnueabihf-g++-13',   pkgs: 'g++-13-arm-linux-gnueabihf libc6:armhf'               }
 
 
     runs-on: ubuntu-${{matrix.variant.os}}
@@ -124,13 +124,14 @@ jobs:
     - name: Update Package DB
       run: |
         exec 2>&1
+        dpkg --add-architecture armhf
         sudo apt-get update
     - name: Install Build Dependencies
       if: (matrix.variant.pkgs)
       run: |
         exec 2>&1
         set -x
-        sudo apt-get install ${{matrix.variant.pkgs}} qemu-user-static
+        sudo apt-get install ${{matrix.variant.pkgs}}
     - name: Install Valgrind
       if: (!matrix.variant.i686sse2)
       run: |
