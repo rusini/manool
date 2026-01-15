@@ -52,6 +52,7 @@ jobs:
       run: |
         exec 2>&1
         set -x
+        cat /etc/apt/apt-mirrors.txt
         sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
         sudo apt-get update
         sudo apt-get install --no-install-recommends qemu-system-x86 cloud-image-utils
