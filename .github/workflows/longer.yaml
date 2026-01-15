@@ -130,7 +130,7 @@ jobs:
         set -x
         ls -lA /etc/apt/sources.list.d
         codename=$(. /etc/os-release; printf %s "$VERSION_CODENAME")
-        sudo tee >/etc/apt/sources.list <<END
+        sudo tee /etc/apt/sources.list <<END
         deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu $codename main restricted universe multiverse
         deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu $codename-updates main restricted universe multiverse
         deb [arch=amd64] http://security.ubuntu.com/ubuntu $codename-security main restricted universe multiverse
