@@ -135,10 +135,10 @@ jobs:
         deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu $codename-updates main restricted universe multiverse
         deb [arch=amd64] http://security.ubuntu.com/ubuntu $codename-security main restricted universe multiverse
         deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu $codename-backports main restricted universe multiverse
-        deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports $codename main restricted universe multiverse
-        deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports $codename-updates main restricted universe multiverse
-        deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports $codename-security main restricted universe multiverse
-        deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports $codename-backports main restricted universe multiverse
+        deb [arch=aarch64,armhf] http://ports.ubuntu.com/ubuntu-ports $codename main restricted universe multiverse
+        deb [arch=aarch64,armhf] http://ports.ubuntu.com/ubuntu-ports $codename-updates main restricted universe multiverse
+        deb [arch=aarch64,armhf] http://ports.ubuntu.com/ubuntu-ports $codename-security main restricted universe multiverse
+        deb [arch=aarch64,armhf] http://ports.ubuntu.com/ubuntu-ports $codename-backports main restricted universe multiverse
         END
         sudo dpkg --add-architecture armhf
         sudo apt-get update
