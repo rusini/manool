@@ -124,6 +124,7 @@ jobs:
     - name: Update Package DB
       run: |
         exec 2>&1
+        sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
         sudo dpkg --add-architecture armhf
         sudo apt-get update
     - name: Install Build Dependencies
