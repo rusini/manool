@@ -124,9 +124,22 @@ jobs:
     - name: Update Package DB
       run: |
         exec 2>&1
-        cat /etc/apt/sources.list
-        cat /etc/apt/apt-mirrors.txt
-        sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
+        #cat /etc/apt/sources.list
+        #cat /etc/apt/apt-mirrors.txt
+        #sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
+        set -x
+        ls -lA /etc/apt/sources.list.d
+        codename=$(. /etc/os-release; printf %s "$VERSION_CODENAME")
+        sudo tee >/etc/apt/sources.list <<END
+        deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu $codename main restricted universe multiverse
+        deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu $codename-updates main restricted universe multiverse
+        deb [arch=amd64] http://security.ubuntu.com/ubuntu $codename-security main restricted universe multiverse
+        deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu $codename-backports main restricted universe multiverse
+        deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports $codename main restricted universe multiverse
+        deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports $codename-updates main restricted universe multiverse
+        deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports $codename-security main restricted universe multiverse
+        deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports $codename-backports main restricted universe multiverse
+        END
         sudo dpkg --add-architecture armhf
         sudo apt-get update
     - name: Install Build Dependencies
