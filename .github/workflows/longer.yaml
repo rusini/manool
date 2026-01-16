@@ -87,10 +87,6 @@ jobs:
         - { label: 'clang17-libcxx', os: '24.04-arm', gcc: 'clang-17', gxx: 'clang++-17 -stdlib=libc++', pkgs:          'libc++{,abi}-17-dev'          }
         - { label: 'clang18-libcxx', os: '24.04-arm', gcc: 'clang',    gxx: 'clang++ -stdlib=libc++',    pkgs:          'libc++{,abi}-dev'             }
         - { label: 'clang19-libcxx', os: '24.04-arm', gcc: 'clang-19', gxx: 'clang++-19 -stdlib=libc++', pkgs: 'clang-19 libc++{,abi}-19-dev'          }
-
-        - { label: 'gcc13-arm32',    os: '24.04-arm', gcc: 'arm-linux-gnueabihf-gcc-13',      gxx: 'arm-linux-gnueabihf-g++-13',   pkgs: 'g++-13-arm-linux-gnueabihf libc6:armhf'               }
-
-
     runs-on: ubuntu-${{matrix.variant.os}}
 
     defaults:
@@ -124,23 +120,7 @@ jobs:
     - name: Update Package DB
       run: |
         exec 2>&1
-        #cat /etc/apt/sources.list
-        #cat /etc/apt/apt-mirrors.txt
-        #sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
-        set -x
-        ls -lA /etc/apt/sources.list.d
-        codename=$(. /etc/os-release; printf %s "$VERSION_CODENAME")
-        sudo tee /etc/apt/sources.list <<END
-        deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu $codename main restricted universe multiverse
-        deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu $codename-updates main restricted universe multiverse
-        deb [arch=amd64] http://security.ubuntu.com/ubuntu $codename-security main restricted universe multiverse
-        deb [arch=amd64] http://us.archive.ubuntu.com/ubuntu $codename-backports main restricted universe multiverse
-        deb [arch=aarch64,armhf] http://ports.ubuntu.com/ubuntu-ports $codename main restricted universe multiverse
-        deb [arch=aarch64,armhf] http://ports.ubuntu.com/ubuntu-ports $codename-updates main restricted universe multiverse
-        deb [arch=aarch64,armhf] http://ports.ubuntu.com/ubuntu-ports $codename-security main restricted universe multiverse
-        deb [arch=aarch64,armhf] http://ports.ubuntu.com/ubuntu-ports $codename-backports main restricted universe multiverse
-        END
-        sudo dpkg --add-architecture armhf
+        sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
         sudo apt-get update
     - name: Install Build Dependencies
       if: (matrix.variant.pkgs)
@@ -168,13 +148,8 @@ jobs:
         exec 2>&1
         set -x
         make -j4 GCC='${{matrix.variant.gcc}}' GXX='${{matrix.variant.gxx}}' \
-           MARCH='${{matrix.variant.i686sse2 && '-m32 -msse2 -mfpmath=sse' || ''}}'
-        ls build/mnlexec || :
-        file build/mnlexec || :
-        readelf -l build/mnlexec || :
-        make -j4 GCC='${{matrix.variant.gcc}}' GXX='${{matrix.variant.gxx}}' \
            MARCH='${{matrix.variant.i686sse2 && '-m32 -msse2 -mfpmath=sse' || ''}}' \
-           run # ${{!matrix.variant.i686sse2 && '-valgrind' || ''}}
+           run${{!matrix.variant.i686sse2 && '-valgrind' || ''}}
 
     - name: Upload Results
       uses: actions/upload-artifact@v4
@@ -233,7 +208,6 @@ jobs:
         - { label: 'clang20-libcxx', gcc: 'clang',    gxx: 'clang++ -stdlib=libc++',    pkgs: 'clang libc++{,abi}-dev',       os: '-arm' }
         - { label: 'clang21-64',     gcc: 'clang-21', gxx: 'clang++-21',                pkgs: 'clang-21',                     os: '-arm' }
         - { label: 'clang21-libcxx', gcc: 'clang-21', gxx: 'clang++-21 -stdlib=libc++', pkgs: 'clang-21 libc++{,abi}-21-dev', os: '-arm' }
-
     runs-on: ubuntu-24.04${{matrix.variant.os}}
     container: ubuntu:25.10
 
