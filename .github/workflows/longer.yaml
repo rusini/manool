@@ -156,7 +156,7 @@ jobs:
         path: build
 
   container-build:
-    name: Build and Check on Ubuntu 25.10${{matrix.variant.os}} with ${{matrix.variant.label}}
+    name: Build and Check on Ubuntu 25.10${{matrix.variant.isa}} with ${{matrix.variant.label}}
     strategy:
       fail-fast: FALSE
       matrix:
@@ -216,7 +216,7 @@ jobs:
         - { label: 'clang20-libcxx', gcc: 'clang',    gxx: 'clang++ -stdlib=libc++',    pkgs: 'clang libc++{,abi}-dev',       isa: '-arm' }
         - { label: 'clang21',        gcc: 'clang-21', gxx: 'clang++-21',                pkgs: 'clang-21',                     isa: '-arm' }
         - { label: 'clang21-libcxx', gcc: 'clang-21', gxx: 'clang++-21 -stdlib=libc++', pkgs: 'clang-21 libc++{,abi}-21-dev', isa: '-arm' }
-    runs-on: ubuntu-24.04${{matrix.variant.os}}
+    runs-on: ubuntu-24.04${{matrix.variant.isa}}
     container: ubuntu:25.10
 
     defaults:
