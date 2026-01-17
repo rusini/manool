@@ -22,7 +22,8 @@ jobs:
         - { label: 'gcc12',          os: '24.04',     gcc: 'gcc-12',   gxx: 'g++-12'                                                                   }
         - { label: 'gcc13',          os: '24.04',     gcc: 'gcc',      gxx: 'g++'                                                                      }
         - { label: 'gcc14',          os: '24.04',     gcc: 'gcc-14',   gxx: 'g++-14'                                                                   }
-        - { label: 'clang13',        os: '22.04',     gcc: 'clang-13', gxx: 'clang++-13',                pkgs: 'clang-13'                              } # *
+        #- { label: 'clang13',        os: '22.04',     gcc: 'clang-13', gxx: 'clang++-13',                pkgs: 'clang-13'                              } # *
+        - { label: 'clang13',        os: '22.04',     gcc: 'clang-13', gxx: 'clang++-13',                                                               }
         - { label: 'clang14',        os: '22.04',     gcc: 'clang',    gxx: 'clang++'                                                                  }
         - { label: 'clang14',        os: '24.04',     gcc: 'clang-14', gxx: 'clang++-14',                pkgs: 'clang-14'                              }
         - { label: 'clang15',        os: '22.04',     gcc: 'clang-15', gxx: 'clang++-15'                                                               }
@@ -41,7 +42,8 @@ jobs:
         - { label: 'gcc12-32',       os: '24.04',     gcc: 'gcc-12',   gxx: 'g++-12',                    pkgs: 'g++-12-multilib',       i686sse2: TRUE }
         - { label: 'gcc13-32',       os: '24.04',     gcc: 'gcc',      gxx: 'g++',                       pkgs: 'g++-multilib',          i686sse2: TRUE }
         - { label: 'gcc14-32',       os: '24.04',     gcc: 'gcc-14',   gxx: 'g++-14',                    pkgs: 'g++-14-multilib',       i686sse2: TRUE }
-        - { label: 'clang13-32',     os: '22.04',     gcc: 'clang-13', gxx: 'clang++-13',                pkgs: 'g++-multilib clang-13', i686sse2: TRUE } # *
+        #- { label: 'clang13-32',     os: '22.04',     gcc: 'clang-13', gxx: 'clang++-13',                pkgs: 'g++-multilib clang-13', i686sse2: TRUE } # *
+        - { label: 'clang13-32',     os: '22.04',     gcc: 'clang-13', gxx: 'clang++-13',                pkgs: 'g++-multilib',          i686sse2: TRUE }
         - { label: 'clang14-32',     os: '22.04',     gcc: 'clang',    gxx: 'clang++',                   pkgs: 'g++-multilib',          i686sse2: TRUE }
         - { label: 'clang14-32',     os: '24.04',     gcc: 'clang-14', gxx: 'clang++-14',                pkgs: 'g++-multilib clang-14', i686sse2: TRUE }
         - { label: 'clang15-32',     os: '22.04',     gcc: 'clang-15', gxx: 'clang++-15',                pkgs: 'g++-multilib',          i686sse2: TRUE }
@@ -50,7 +52,8 @@ jobs:
         - { label: 'clang17-32',     os: '24.04',     gcc: 'clang-17', gxx: 'clang++-17',                pkgs: 'g++-multilib',          i686sse2: TRUE }
         - { label: 'clang18-32',     os: '24.04',     gcc: 'clang',    gxx: 'clang++',                   pkgs: 'g++-multilib',          i686sse2: TRUE }
         - { label: 'clang19-32',     os: '24.04',     gcc: 'clang-19', gxx: 'clang++-19',                pkgs: 'g++-multilib clang-19', i686sse2: TRUE }
-        - { label: 'clang13-libcxx', os: '22.04',     gcc: 'clang-13', gxx: 'clang++-13 -stdlib=libc++', pkgs: 'clang-13 libc++{,abi}-13-dev'          } # *
+        #- { label: 'clang13-libcxx', os: '22.04',     gcc: 'clang-13', gxx: 'clang++-13 -stdlib=libc++', pkgs: 'clang-13 libc++{,abi}-13-dev'          } # *
+        - { label: 'clang13-libcxx', os: '22.04',     gcc: 'clang-13', gxx: 'clang++-13 -stdlib=libc++', pkgs:          'libc++{,abi}-13-dev'          }
         - { label: 'clang14-libcxx', os: '22.04',     gcc: 'clang',    gxx: 'clang++ -stdlib=libc++',    pkgs:          'libc++{,abi}-dev'             }
         - { label: 'clang14-libcxx', os: '24.04',     gcc: 'clang-14', gxx: 'clang++-14 -stdlib=libc++', pkgs: 'clang-14 libc++{,abi}-14-dev'          }
         - { label: 'clang15-libcxx', os: '22.04',     gcc: 'clang-15', gxx: 'clang++-15 -stdlib=libc++', pkgs:          'libc++{,abi}-15-dev'          }
