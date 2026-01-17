@@ -6,7 +6,7 @@ on:
   workflow_dispatch: NULL
 
 jobs:
-  normal-build:
+  ubuntu-build:
     name: Build and Check on Ubuntu ${{matrix.variant.os}} with ${{matrix.variant.label}}
     strategy:
       fail-fast: FALSE
