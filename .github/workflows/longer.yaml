@@ -7,7 +7,7 @@ on:
 
 jobs:
   host-build:
-    name: Ubuntu ${{matrix.variant.os}}, ${{matrix.variant.label}}
+    name: Build on ubuntu ${{matrix.variant.os}} with ${{matrix.variant.label}}
     strategy:
       fail-fast: FALSE
       matrix:
@@ -156,7 +156,7 @@ jobs:
         path: build
 
   container-build:
-    name: Ubuntu 25.10${{matrix.variant.os}}, ${{matrix.variant.label}}
+    name: Build on Ubuntu 25.10${{matrix.variant.os}} with ${{matrix.variant.label}}
     strategy:
       fail-fast: FALSE
       matrix:
