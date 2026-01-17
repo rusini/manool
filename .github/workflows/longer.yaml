@@ -133,7 +133,6 @@ jobs:
       if: (!matrix.variant.i686sse2)
       run: |
         exec 2>&1
-        set -x
         sudo apt-get install --no-install-recommends valgrind
     - name: Build Tools Information
       run: |
@@ -143,7 +142,6 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
       with: { ref: master }
-
     - name: Run Make and Check
       run: |
         exec 2>&1
@@ -151,7 +149,6 @@ jobs:
         make -j4 GCC='${{matrix.variant.gcc}}' GXX='${{matrix.variant.gxx}}' \
            MARCH='${{matrix.variant.i686sse2 && '-m32 -msse2 -mfpmath=sse' || ''}}' \
            run${{!matrix.variant.i686sse2 && '-valgrind' || ''}}
-
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
@@ -224,19 +221,21 @@ jobs:
         exec 2>&1
         set -x
         apt-get update
-    - name: Setup
+        apt-get -y install git
+    - name: Install Build Dependencies
       run: |
         exec 2>&1
         set -x
-        apt-get -y install git
         apt-get -y install make ${{matrix.variant.pkgs}}
-        make --version; ${{matrix.variant.gcc}} --version
-    - name: Setup
+    - name: Install Valgrind
       if: (!matrix.variant.i686sse2)
       run: |
         exec 2>&1
-        set -x
         apt-get -y install --no-install-recommends valgrind
+    - name: Build Tools Information
+      run: |
+        exec 2>&1
+        make --version; ${{matrix.variant.gcc}} --version
 
     - name: Checkout
       uses: actions/checkout@v4
@@ -323,7 +322,6 @@ jobs:
       if: (!matrix.variant.i686sse2)
       run: |
         exec 2>&1
-        set -x
         sudo apt-get install --no-install-recommends valgrind
     - name: Build Tools Information
       run: |
