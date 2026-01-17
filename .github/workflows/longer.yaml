@@ -174,6 +174,9 @@ jobs:
         - { label: 'clang14-64',     gcc: 'clang-14', gxx: 'clang++-14',                pkgs: 'clang-14'                              }
         - { label: 'clang14-32',     gcc: 'clang-14', gxx: 'clang++-14 ',               pkgs: 'clang-14 g++-multilib', i686sse2: TRUE }
         - { label: 'clang14-libcxx', gcc: 'clang-14', gxx: 'clang++-14 -stdlib=libc++', pkgs: 'clang-14 libc++{,abi}-14-dev'          }
+        - { label: 'clang16-64',     gcc: 'clang-14', gxx: 'clang++-14',                pkgs: 'clang-14'                              } #
+        - { label: 'clang16-32',     gcc: 'clang-14', gxx: 'clang++-14 ',               pkgs: 'clang-14 g++-multilib', i686sse2: TRUE } #
+        - { label: 'clang16-libcxx', gcc: 'clang-14', gxx: 'clang++-14 -stdlib=libc++', pkgs: 'clang-14 libc++{,abi}-14-dev'          } #
         - { label: 'clang17-64',     gcc: 'clang-17', gxx: 'clang++-17',                pkgs: 'clang-17'                              }
         - { label: 'clang17-32',     gcc: 'clang-17', gxx: 'clang++-17',                pkgs: 'clang-17 g++-multilib', i686sse2: TRUE }
         - { label: 'clang17-libcxx', gcc: 'clang-17', gxx: 'clang++-17 -stdlib=libc++', pkgs: 'clang-17 libc++{,abi}-17-dev'          }
@@ -196,6 +199,8 @@ jobs:
         - { label: 'gcc15-64',       gcc: 'gcc-15',   gxx: 'g++-15',                    pkgs: 'g++',                          os: '-arm' }
         - { label: 'clang14-64',     gcc: 'clang-14', gxx: 'clang++-14',                pkgs: 'clang-14',                     os: '-arm' }
         - { label: 'clang14-libcxx', gcc: 'clang-14', gxx: 'clang++-14 -stdlib=libc++', pkgs: 'clang-14 libc++{,abi}-14-dev', os: '-arm' }
+        - { label: 'clang16-64',     gcc: 'clang-14', gxx: 'clang++-14',                pkgs: 'clang-14',                     os: '-arm' } #
+        - { label: 'clang16-libcxx', gcc: 'clang-14', gxx: 'clang++-14 -stdlib=libc++', pkgs: 'clang-14 libc++{,abi}-14-dev', os: '-arm' } #
         - { label: 'clang17-64',     gcc: 'clang-17', gxx: 'clang++-17',                pkgs: 'clang-17',                     os: '-arm' }
         - { label: 'clang17-libcxx', gcc: 'clang-17', gxx: 'clang++-17 -stdlib=libc++', pkgs: 'clang-17 libc++{,abi}-17-dev', os: '-arm' }
         - { label: 'clang18-64',     gcc: 'clang-18', gxx: 'clang++-18',                pkgs: 'clang-18',                     os: '-arm' }
@@ -271,8 +276,8 @@ jobs:
         - { label: 'clang19',        gcc: 'clang-19', gxx: 'clang++-19',                pkgs: 'clang-19'                                  }
         - { label: 'clang19-32',     gcc: 'clang-19', gxx: 'clang++-19 ',               pkgs: 'clang-19 g++-multilib', i686sse2: TRUE     }
         - { label: 'clang19-libcxx', gcc: 'clang-19', gxx: 'clang++-19 -stdlib=libc++', pkgs: 'clang-19 libc++{,abi}-19-dev'              }
-        #- { label: 'clang20',        gcc: 'clang-20', gxx: 'clang++-20',                pkgs: 'clang-20'                                  }
-        #- { label: 'clang20-32',     gcc: 'clang-20', gxx: 'clang++-20 ',               pkgs: 'clang-20 g++-multilib', i686sse2: TRUE     }
+        - { label: 'clang20',        gcc: 'clang-20', gxx: 'clang++-20',                pkgs: 'clang-20'                                  }
+        - { label: 'clang20-32',     gcc: 'clang-20', gxx: 'clang++-20 ',               pkgs: 'clang-20 g++-multilib', i686sse2: TRUE     }
         #- { label: 'clang20-libcxx', gcc: 'clang-20', gxx: 'clang++-20 -stdlib=libc++', pkgs: 'clang-20 libc++{,abi}-20-dev'              }
         - { label: 'clang21',        gcc: 'clang-21', gxx: 'clang++-21',                pkgs: 'clang-21'                                  }
         - { label: 'clang21-32',     gcc: 'clang-21', gxx: 'clang++-21 ',               pkgs: 'clang-21 g++-multilib', i686sse2: TRUE     }
@@ -285,7 +290,7 @@ jobs:
         - { label: 'clang18-libcxx', gcc: 'clang-18', gxx: 'clang++-18 -stdlib=libc++', pkgs: 'clang-18 libc++{,abi}-18-dev', isa: '-arm' }
         - { label: 'clang19',        gcc: 'clang-19', gxx: 'clang++-19',                pkgs: 'clang-19',                     isa: '-arm' }
         - { label: 'clang19-libcxx', gcc: 'clang-19', gxx: 'clang++-19 -stdlib=libc++', pkgs: 'clang-19 libc++{,abi}-19-dev', isa: '-arm' }
-        #- { label: 'clang20',        gcc: 'clang-20', gxx: 'clang++-20',                pkgs: 'clang-20',                     isa: '-arm' }
+        - { label: 'clang20',        gcc: 'clang-20', gxx: 'clang++-20',                pkgs: 'clang-20',                     isa: '-arm' }
         #- { label: 'clang20-libcxx', gcc: 'clang-20', gxx: 'clang++-20 -stdlib=libc++', pkgs: 'clang-20 libc++{,abi}-20-dev', isa: '-arm' }
         - { label: 'clang21',        gcc: 'clang-21', gxx: 'clang++-21',                pkgs: 'clang-21',                     isa: '-arm' }
         - { label: 'clang21-libcxx', gcc: 'clang-21', gxx: 'clang++-21 -stdlib=libc++', pkgs: 'clang-21 libc++{,abi}-21-dev', isa: '-arm' }
