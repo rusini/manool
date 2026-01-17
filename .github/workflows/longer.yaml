@@ -254,7 +254,7 @@ jobs:
         path: build
 
   llvm-build:
-    name: On Ubuntu 22.04${{matrix.variant.isa}} with ${{matrix.variant.label}}
+    name: Build on Ubuntu 22.04${{matrix.variant.isa}} with ${{matrix.variant.label}}
     strategy:
       fail-fast: FALSE
       matrix:
