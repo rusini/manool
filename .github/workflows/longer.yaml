@@ -344,5 +344,5 @@ jobs:
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
-        name: llvm-${{matrix.variant.label}}${{matrix.variant.os}}
+        name: llvm-${{matrix.variant.label}}-22.04${{matrix.variant.isa}}
         path: build
