@@ -305,7 +305,7 @@ jobs:
         set -x
         sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
         sudo wget --no-show-progress -O/etc/apt/trusted.gpg.d/apt.llvm.org.asc https://apt.llvm.org/llvm-snapshot.gpg.key
-        sudo tee /etc/apt/sources.list.d/llvm.list >/dev/null <<END >/dev/null
+        sudo tee /etc/apt/sources.list.d/llvm.list <<'END' >/dev/null
         deb http://apt.llvm.org/jammy llvm-toolchain-jammy-16 main
         deb http://apt.llvm.org/jammy llvm-toolchain-jammy-17 main
         deb http://apt.llvm.org/jammy llvm-toolchain-jammy-18 main
@@ -319,13 +319,16 @@ jobs:
         exec 2>&1
         set -x
         sudo apt-get install ${{matrix.variant.pkgs}}
-        make --version; ${{matrix.variant.gcc}} --version
     - name: Install Valgrind
       if: (!matrix.variant.i686sse2)
       run: |
         exec 2>&1
         set -x
         sudo apt-get install --no-install-recommends valgrind
+    - name: Build Tools Information
+      run: |
+        exec 2>&1
+        make --version; ${{matrix.variant.gcc}} --version
 
     - name: Checkout
       uses: actions/checkout@v4
