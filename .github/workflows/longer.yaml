@@ -155,7 +155,7 @@ jobs:
         name: build-${{matrix.variant.label}}-${{matrix.variant.os}}
         path: build
 
-  ubuntu25.10-build:
+  ubuntu-2510-build:
     name: Build and Check on Ubuntu 25.10${{matrix.variant.isa}} with ${{matrix.variant.label}}
     strategy:
       fail-fast: FALSE
