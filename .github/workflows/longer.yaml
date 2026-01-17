@@ -142,7 +142,7 @@ jobs:
         exec 2>&1
         set -x
         sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
-        sudo wget -O/etc/apt/trusted.gpg.d/apt.llvm.org.asc https://apt.llvm.org/llvm-snapshot.gpg.key
+        sudo wget --no-show-progress -O/etc/apt/trusted.gpg.d/apt.llvm.org.asc https://apt.llvm.org/llvm-snapshot.gpg.key
         codename=$(. /etc/os-release; printf %s $VERSION_CODENAME)
         sudo tee /etc/apt/sources.list.d/llvm.list >/dev/null <<END >/dev/null
         deb http://apt.llvm.org/$codename llvm-toolchain-$codename-20 main
@@ -330,7 +330,7 @@ jobs:
         exec 2>&1
         set -x
         sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
-        sudo wget -O/etc/apt/trusted.gpg.d/apt.llvm.org.asc https://apt.llvm.org/llvm-snapshot.gpg.key
+        sudo wget --no-show-progress -O/etc/apt/trusted.gpg.d/apt.llvm.org.asc https://apt.llvm.org/llvm-snapshot.gpg.key
         sudo tee /etc/apt/sources.list.d/llvm.list >/dev/null <<END >/dev/null
         deb http://apt.llvm.org/jammy llvm-toolchain-jammy-16 main
         deb http://apt.llvm.org/jammy llvm-toolchain-jammy-17 main
