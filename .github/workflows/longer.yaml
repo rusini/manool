@@ -7,7 +7,7 @@ on:
 
 jobs:
   host-build:
-    name: Build/Check on Ubuntu ${{matrix.variant.os}} with ${{matrix.variant.label}}
+    name: Build and Check on Ubuntu ${{matrix.variant.os}} with ${{matrix.variant.label}}
     strategy:
       fail-fast: FALSE
       matrix:
