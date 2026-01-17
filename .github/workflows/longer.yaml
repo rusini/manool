@@ -145,6 +145,7 @@ jobs:
         sudo wget --no-show-progress -O/etc/apt/trusted.gpg.d/apt.llvm.org.asc https://apt.llvm.org/llvm-snapshot.gpg.key
         codename=$(. /etc/os-release; printf %s $VERSION_CODENAME)
         sudo tee /etc/apt/sources.list.d/llvm.list >/dev/null <<END >/dev/null
+        deb http://apt.llvm.org/$codename llvm-toolchain-$codename    main
         deb http://apt.llvm.org/$codename llvm-toolchain-$codename-20 main
         deb http://apt.llvm.org/$codename llvm-toolchain-$codename-21 main
         END
@@ -300,7 +301,7 @@ jobs:
         - { label: 'clang19-libcxx', os: '22.04',     gcc: 'clang-19', gxx: 'clang++-19 -stdlib=libc++', pkgs: 'clang-19 libc++{,abi}-19-dev'          }
         #- { label: 'clang20',        os: '22.04',     gcc: 'clang-20', gxx: 'clang++-20',                pkgs: 'clang-20'                              }
         #- { label: 'clang20-32',     os: '22.04',     gcc: 'clang-20', gxx: 'clang++-20 ',               pkgs: 'clang-20 g++-multilib', i686sse2: TRUE }
-        - { label: 'clang20-libcxx', os: '24.04',     gcc: 'clang-20', gxx: 'clang++-20 -stdlib=libc++', pkgs: 'clang-20 libc++{,abi}-20-dev'          }
+        #- { label: 'clang20-libcxx', os: '24.04',     gcc: 'clang-20', gxx: 'clang++-20 -stdlib=libc++', pkgs: 'clang-20 libc++{,abi}-20-dev'          }
         #- { label: 'clang21',        os: '22.04',     gcc: 'clang-21', gxx: 'clang++-21',                pkgs: 'clang-21'                              }
         #- { label: 'clang21-32',     os: '22.04',     gcc: 'clang-21', gxx: 'clang++-21 ',               pkgs: 'clang-21 g++-multilib', i686sse2: TRUE }
         #- { label: 'clang21-libcxx', os: '22.04',     gcc: 'clang-21', gxx: 'clang++-21 -stdlib=libc++', pkgs: 'clang-21 libc++{,abi}-21-dev'          }
