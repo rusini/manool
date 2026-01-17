@@ -161,56 +161,61 @@ jobs:
       fail-fast: FALSE
       matrix:
         variant:
-        - { label: 'gcc11-64',       gcc: 'gcc-11',   gxx: 'g++-11',                    pkgs: 'g++-11'                                }
-        - { label: 'gcc11-32',       gcc: 'gcc-11',   gxx: 'g++-11',                    pkgs: 'g++-11-multilib',       i686sse2: TRUE }
-        - { label: 'gcc12-64',       gcc: 'gcc-12',   gxx: 'g++-12',                    pkgs: 'g++-12'                                }
-        - { label: 'gcc12-32',       gcc: 'gcc-12',   gxx: 'g++-12',                    pkgs: 'g++-12-multilib',       i686sse2: TRUE }
-        - { label: 'gcc13-64',       gcc: 'gcc-13',   gxx: 'g++-13',                    pkgs: 'g++-13'                                }
-        - { label: 'gcc13-32',       gcc: 'gcc-13',   gxx: 'g++-13',                    pkgs: 'g++-13-multilib',       i686sse2: TRUE }
-        - { label: 'gcc14-64',       gcc: 'gcc',      gxx: 'g++',                       pkgs: 'g++'                                   }
-        - { label: 'gcc14-32',       gcc: 'gcc',      gxx: 'g++',                       pkgs: 'g++-multilib',          i686sse2: TRUE }
-        - { label: 'gcc15-64',       gcc: 'gcc-15',   gxx: 'g++-15',                    pkgs: 'g++'                                   }
-        - { label: 'gcc15-32',       gcc: 'gcc-15',   gxx: 'g++-15',                    pkgs: 'g++-multilib',          i686sse2: TRUE }
-        - { label: 'clang14-64',     gcc: 'clang-14', gxx: 'clang++-14',                pkgs: 'clang-14'                              }
-        - { label: 'clang14-32',     gcc: 'clang-14', gxx: 'clang++-14 ',               pkgs: 'clang-14 g++-multilib', i686sse2: TRUE }
-        - { label: 'clang14-libcxx', gcc: 'clang-14', gxx: 'clang++-14 -stdlib=libc++', pkgs: 'clang-14 libc++{,abi}-14-dev'          }
-        - { label: 'clang16-64',     gcc: 'clang-14', gxx: 'clang++-14',                pkgs: 'clang-14'                              } #
-        - { label: 'clang16-32',     gcc: 'clang-14', gxx: 'clang++-14 ',               pkgs: 'clang-14 g++-multilib', i686sse2: TRUE } #
-        - { label: 'clang16-libcxx', gcc: 'clang-14', gxx: 'clang++-14 -stdlib=libc++', pkgs: 'clang-14 libc++{,abi}-14-dev'          } #
-        - { label: 'clang17-64',     gcc: 'clang-17', gxx: 'clang++-17',                pkgs: 'clang-17'                              }
-        - { label: 'clang17-32',     gcc: 'clang-17', gxx: 'clang++-17',                pkgs: 'clang-17 g++-multilib', i686sse2: TRUE }
-        - { label: 'clang17-libcxx', gcc: 'clang-17', gxx: 'clang++-17 -stdlib=libc++', pkgs: 'clang-17 libc++{,abi}-17-dev'          }
-        - { label: 'clang18-64',     gcc: 'clang-18', gxx: 'clang++-18',                pkgs: 'clang-18'                              }
-        - { label: 'clang18-32',     gcc: 'clang-18', gxx: 'clang++-18',                pkgs: 'clang-18 g++-multilib', i686sse2: TRUE }
-        - { label: 'clang18-libcxx', gcc: 'clang-18', gxx: 'clang++-18 -stdlib=libc++', pkgs: 'clang-18 libc++{,abi}-18-dev'          }
-        - { label: 'clang19-64',     gcc: 'clang-19', gxx: 'clang++-19',                pkgs: 'clang-19'                              }
-        - { label: 'clang19-32',     gcc: 'clang-19', gxx: 'clang++-19',                pkgs: 'clang-19 g++-multilib', i686sse2: TRUE }
-        - { label: 'clang19-libcxx', gcc: 'clang-19', gxx: 'clang++-19 -stdlib=libc++', pkgs: 'clang-19 libc++{,abi}-19-dev'          }
-        - { label: 'clang20-64',     gcc: 'clang',    gxx: 'clang++',                   pkgs: 'clang'                                 }
-        - { label: 'clang20-32',     gcc: 'clang',    gxx: 'clang++',                   pkgs: 'clang g++-multilib',    i686sse2: TRUE }
-        - { label: 'clang20-libcxx', gcc: 'clang',    gxx: 'clang++ -stdlib=libc++',    pkgs: 'clang libc++{,abi}-dev'                }
-        - { label: 'clang21-64',     gcc: 'clang-21', gxx: 'clang++-21',                pkgs: 'clang-21'                              }
-        - { label: 'clang21-32',     gcc: 'clang-21', gxx: 'clang++-21',                pkgs: 'clang-21 g++-multilib', i686sse2: TRUE }
-        - { label: 'clang21-libcxx', gcc: 'clang-21', gxx: 'clang++-21 -stdlib=libc++', pkgs: 'clang-21 libc++{,abi}-21-dev'          }
-        - { label: 'gcc11-64',       gcc: 'gcc-11',   gxx: 'g++-11',                    pkgs: 'g++-11',                       os: '-arm' }
-        - { label: 'gcc12-64',       gcc: 'gcc-12',   gxx: 'g++-12',                    pkgs: 'g++-12',                       os: '-arm' }
-        - { label: 'gcc13-64',       gcc: 'gcc-13',   gxx: 'g++-13',                    pkgs: 'g++-13',                       os: '-arm' }
-        - { label: 'gcc14-64',       gcc: 'gcc',      gxx: 'g++',                       pkgs: 'g++',                          os: '-arm' }
-        - { label: 'gcc15-64',       gcc: 'gcc-15',   gxx: 'g++-15',                    pkgs: 'g++',                          os: '-arm' }
-        - { label: 'clang14-64',     gcc: 'clang-14', gxx: 'clang++-14',                pkgs: 'clang-14',                     os: '-arm' }
-        - { label: 'clang14-libcxx', gcc: 'clang-14', gxx: 'clang++-14 -stdlib=libc++', pkgs: 'clang-14 libc++{,abi}-14-dev', os: '-arm' }
-        - { label: 'clang16-64',     gcc: 'clang-14', gxx: 'clang++-14',                pkgs: 'clang-14',                     os: '-arm' } #
-        - { label: 'clang16-libcxx', gcc: 'clang-14', gxx: 'clang++-14 -stdlib=libc++', pkgs: 'clang-14 libc++{,abi}-14-dev', os: '-arm' } #
-        - { label: 'clang17-64',     gcc: 'clang-17', gxx: 'clang++-17',                pkgs: 'clang-17',                     os: '-arm' }
-        - { label: 'clang17-libcxx', gcc: 'clang-17', gxx: 'clang++-17 -stdlib=libc++', pkgs: 'clang-17 libc++{,abi}-17-dev', os: '-arm' }
-        - { label: 'clang18-64',     gcc: 'clang-18', gxx: 'clang++-18',                pkgs: 'clang-18',                     os: '-arm' }
-        - { label: 'clang18-libcxx', gcc: 'clang-18', gxx: 'clang++-18 -stdlib=libc++', pkgs: 'clang-18 libc++{,abi}-18-dev', os: '-arm' }
-        - { label: 'clang19-64',     gcc: 'clang-19', gxx: 'clang++-19',                pkgs: 'clang-19',                     os: '-arm' }
-        - { label: 'clang19-libcxx', gcc: 'clang-19', gxx: 'clang++-19 -stdlib=libc++', pkgs: 'clang-19 libc++{,abi}-19-dev', os: '-arm' }
-        - { label: 'clang20-64',     gcc: 'clang',    gxx: 'clang++',                   pkgs: 'clang',                        os: '-arm' }
-        - { label: 'clang20-libcxx', gcc: 'clang',    gxx: 'clang++ -stdlib=libc++',    pkgs: 'clang libc++{,abi}-dev',       os: '-arm' }
-        - { label: 'clang21-64',     gcc: 'clang-21', gxx: 'clang++-21',                pkgs: 'clang-21',                     os: '-arm' }
-        - { label: 'clang21-libcxx', gcc: 'clang-21', gxx: 'clang++-21 -stdlib=libc++', pkgs: 'clang-21 libc++{,abi}-21-dev', os: '-arm' }
+        - { label: 'gcc11',          gcc: 'gcc-11',   gxx: 'g++-11',                    pkgs: 'g++-11'                                    }
+        - { label: 'gcc11-32',       gcc: 'gcc-11',   gxx: 'g++-11',                    pkgs: 'g++-11-multilib',       i686sse2: TRUE     }
+        - { label: 'gcc12',          gcc: 'gcc-12',   gxx: 'g++-12',                    pkgs: 'g++-12'                                    }
+        - { label: 'gcc12-32',       gcc: 'gcc-12',   gxx: 'g++-12',                    pkgs: 'g++-12-multilib',       i686sse2: TRUE     }
+        - { label: 'gcc13',          gcc: 'gcc-13',   gxx: 'g++-13',                    pkgs: 'g++-13'                                    }
+        - { label: 'gcc13-32',       gcc: 'gcc-13',   gxx: 'g++-13',                    pkgs: 'g++-13-multilib',       i686sse2: TRUE     }
+        - { label: 'gcc14',          gcc: 'gcc',      gxx: 'g++',                       pkgs: 'g++'                                       }
+        - { label: 'gcc14-32',       gcc: 'gcc',      gxx: 'g++',                       pkgs: 'g++-multilib',          i686sse2: TRUE     }
+        - { label: 'gcc15',          gcc: 'gcc-15',   gxx: 'g++-15',                    pkgs: 'g++'                                       }
+        - { label: 'gcc15-32',       gcc: 'gcc-15',   gxx: 'g++-15',                    pkgs: 'g++-multilib',          i686sse2: TRUE     }
+        - { label: 'clang14',        gcc: 'clang-14', gxx: 'clang++-14',                pkgs: 'clang-14'                                  }
+        - { label: 'clang14-32',     gcc: 'clang-14', gxx: 'clang++-14 ',               pkgs: 'clang-14 g++-multilib', i686sse2: TRUE     }
+        - { label: 'clang14-libcxx', gcc: 'clang-14', gxx: 'clang++-14 -stdlib=libc++', pkgs: 'clang-14 libc++{,abi}-14-dev'              }
+        - { label: 'clang15',        gcc: 'clang-14', gxx: 'clang++-14',                pkgs: 'clang-14'                                  } #
+        - { label: 'clang15-32',     gcc: 'clang-14', gxx: 'clang++-14 ',               pkgs: 'clang-14 g++-multilib', i686sse2: TRUE     } #
+        - { label: 'clang15-libcxx', gcc: 'clang-14', gxx: 'clang++-14 -stdlib=libc++', pkgs: 'clang-14 libc++{,abi}-14-dev'              } #
+        - { label: 'clang16',        gcc: 'clang-14', gxx: 'clang++-14',                pkgs: 'clang-14'                                  } #
+        - { label: 'clang16-32',     gcc: 'clang-14', gxx: 'clang++-14 ',               pkgs: 'clang-14 g++-multilib', i686sse2: TRUE     } #
+        - { label: 'clang16-libcxx', gcc: 'clang-14', gxx: 'clang++-14 -stdlib=libc++', pkgs: 'clang-14 libc++{,abi}-14-dev'              } #
+        - { label: 'clang17',        gcc: 'clang-17', gxx: 'clang++-17',                pkgs: 'clang-17'                                  }
+        - { label: 'clang17-32',     gcc: 'clang-17', gxx: 'clang++-17',                pkgs: 'clang-17 g++-multilib', i686sse2: TRUE     }
+        - { label: 'clang17-libcxx', gcc: 'clang-17', gxx: 'clang++-17 -stdlib=libc++', pkgs: 'clang-17 libc++{,abi}-17-dev'              }
+        - { label: 'clang18',        gcc: 'clang-18', gxx: 'clang++-18',                pkgs: 'clang-18'                                  }
+        - { label: 'clang18-32',     gcc: 'clang-18', gxx: 'clang++-18',                pkgs: 'clang-18 g++-multilib', i686sse2: TRUE     }
+        - { label: 'clang18-libcxx', gcc: 'clang-18', gxx: 'clang++-18 -stdlib=libc++', pkgs: 'clang-18 libc++{,abi}-18-dev'              }
+        - { label: 'clang19',        gcc: 'clang-19', gxx: 'clang++-19',                pkgs: 'clang-19'                                  }
+        - { label: 'clang19-32',     gcc: 'clang-19', gxx: 'clang++-19',                pkgs: 'clang-19 g++-multilib', i686sse2: TRUE     }
+        - { label: 'clang19-libcxx', gcc: 'clang-19', gxx: 'clang++-19 -stdlib=libc++', pkgs: 'clang-19 libc++{,abi}-19-dev'              }
+        - { label: 'clang20',        gcc: 'clang',    gxx: 'clang++',                   pkgs: 'clang'                                     }
+        - { label: 'clang20-32',     gcc: 'clang',    gxx: 'clang++',                   pkgs: 'clang g++-multilib',    i686sse2: TRUE     }
+        - { label: 'clang20-libcxx', gcc: 'clang',    gxx: 'clang++ -stdlib=libc++',    pkgs: 'clang libc++{,abi}-dev'                    }
+        - { label: 'clang21',        gcc: 'clang-21', gxx: 'clang++-21',                pkgs: 'clang-21'                                  }
+        - { label: 'clang21-32',     gcc: 'clang-21', gxx: 'clang++-21',                pkgs: 'clang-21 g++-multilib', i686sse2: TRUE     }
+        - { label: 'clang21-libcxx', gcc: 'clang-21', gxx: 'clang++-21 -stdlib=libc++', pkgs: 'clang-21 libc++{,abi}-21-dev'              }
+        - { label: 'gcc11',          gcc: 'gcc-11',   gxx: 'g++-11',                    pkgs: 'g++-11',                       isa: '-arm' }
+        - { label: 'gcc12',          gcc: 'gcc-12',   gxx: 'g++-12',                    pkgs: 'g++-12',                       isa: '-arm' }
+        - { label: 'gcc13',          gcc: 'gcc-13',   gxx: 'g++-13',                    pkgs: 'g++-13',                       isa: '-arm' }
+        - { label: 'gcc14',          gcc: 'gcc',      gxx: 'g++',                       pkgs: 'g++',                          isa: '-arm' }
+        - { label: 'gcc15',          gcc: 'gcc-15',   gxx: 'g++-15',                    pkgs: 'g++',                          isa: '-arm' }
+        - { label: 'clang14',        gcc: 'clang-14', gxx: 'clang++-14',                pkgs: 'clang-14',                     isa: '-arm' }
+        - { label: 'clang14-libcxx', gcc: 'clang-14', gxx: 'clang++-14 -stdlib=libc++', pkgs: 'clang-14 libc++{,abi}-14-dev', isa: '-arm' }
+        - { label: 'clang15',        gcc: 'clang-14', gxx: 'clang++-14',                pkgs: 'clang-14',                     isa: '-arm' } #
+        - { label: 'clang15-libcxx', gcc: 'clang-14', gxx: 'clang++-14 -stdlib=libc++', pkgs: 'clang-14 libc++{,abi}-14-dev', isa: '-arm' } #
+        - { label: 'clang16',        gcc: 'clang-14', gxx: 'clang++-14',                pkgs: 'clang-14',                     isa: '-arm' } #
+        - { label: 'clang16-libcxx', gcc: 'clang-14', gxx: 'clang++-14 -stdlib=libc++', pkgs: 'clang-14 libc++{,abi}-14-dev', isa: '-arm' } #
+        - { label: 'clang17',        gcc: 'clang-17', gxx: 'clang++-17',                pkgs: 'clang-17',                     isa: '-arm' }
+        - { label: 'clang17-libcxx', gcc: 'clang-17', gxx: 'clang++-17 -stdlib=libc++', pkgs: 'clang-17 libc++{,abi}-17-dev', isa: '-arm' }
+        - { label: 'clang18',        gcc: 'clang-18', gxx: 'clang++-18',                pkgs: 'clang-18',                     isa: '-arm' }
+        - { label: 'clang18-libcxx', gcc: 'clang-18', gxx: 'clang++-18 -stdlib=libc++', pkgs: 'clang-18 libc++{,abi}-18-dev', isa: '-arm' }
+        - { label: 'clang19',        gcc: 'clang-19', gxx: 'clang++-19',                pkgs: 'clang-19',                     isa: '-arm' }
+        - { label: 'clang19-libcxx', gcc: 'clang-19', gxx: 'clang++-19 -stdlib=libc++', pkgs: 'clang-19 libc++{,abi}-19-dev', isa: '-arm' }
+        - { label: 'clang20',        gcc: 'clang',    gxx: 'clang++',                   pkgs: 'clang',                        isa: '-arm' }
+        - { label: 'clang20-libcxx', gcc: 'clang',    gxx: 'clang++ -stdlib=libc++',    pkgs: 'clang libc++{,abi}-dev',       isa: '-arm' }
+        - { label: 'clang21',        gcc: 'clang-21', gxx: 'clang++-21',                pkgs: 'clang-21',                     isa: '-arm' }
+        - { label: 'clang21-libcxx', gcc: 'clang-21', gxx: 'clang++-21 -stdlib=libc++', pkgs: 'clang-21 libc++{,abi}-21-dev', isa: '-arm' }
     runs-on: ubuntu-24.04${{matrix.variant.os}}
     container: ubuntu:25.10
 
