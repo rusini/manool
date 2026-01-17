@@ -148,7 +148,6 @@ jobs:
         deb http://apt.llvm.org/$codename llvm-toolchain-$codename-20 main
         deb http://apt.llvm.org/$codename llvm-toolchain-$codename-21 main
         END
-        done
         sudo apt-get update
     - name: Install Build Dependencies
       if: (matrix.variant.pkgs)
