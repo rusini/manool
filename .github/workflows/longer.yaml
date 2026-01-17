@@ -303,11 +303,10 @@ jobs:
         exec 2>&1
         set -x
         sudo wget -O /etc/apt/trusted.gpg.d/apt.llvm.org.asc https://apt.llvm.org/llvm-snapshot.gpg.key
-        (for v in {16..21}; do sudo tee -a /etc/apt/sources.list.d/llvm.list <<END >/dev/null
-        deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-$v main
-        deb-src http://apt.llvm.org/jammy/ llvm-toolchain-jammy-$v main
+        (for v in {16..21}; do cat <<END
+        deb http://apt.llvm.org/jammy llvm-toolchain-jammy-$v main
         END
-        done)
+        done) | sudo tee /etc/apt/sources.list.d/llvm.list >/dev/null
         cat /etc/apt/sources.list.d/llvm.list
         sudo apt-get update
     - name: Install Build Dependencies
