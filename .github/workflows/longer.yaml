@@ -260,7 +260,7 @@ jobs:
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
-        name: latest-${{matrix.variant.label}}${{matrix.variant.os}}
+        name: latest-${{matrix.variant.label}}-25.10${{matrix.variant.isa}}
         path: build
 
   llvm-build:
