@@ -254,42 +254,42 @@ jobs:
         path: build
 
   llvm-build:
-    name: LLVM ${{matrix.variant.label}}${{matrix.variant.isa}}
+    name: Ubuntu ${{matrix.variant.os}}, ${{matrix.variant.label}}
     strategy:
       fail-fast: FALSE
       matrix:
         variant:
-        - { label: 'clang16',        gcc: 'clang-16', gxx: 'clang++-16',                pkgs: 'clang-16'                              }
-        - { label: 'clang16-32',     gcc: 'clang-16', gxx: 'clang++-16 ',               pkgs: 'clang-16 g++-multilib', i686sse2: TRUE }
-        - { label: 'clang16-libcxx', gcc: 'clang-16', gxx: 'clang++-16 -stdlib=libc++', pkgs: 'clang-16 libc++{,abi}-16-dev'          }
-        - { label: 'clang17',        gcc: 'clang-17', gxx: 'clang++-17',                pkgs: 'clang-17'                              }
-        - { label: 'clang17-32',     gcc: 'clang-17', gxx: 'clang++-17 ',               pkgs: 'clang-17 g++-multilib', i686sse2: TRUE }
-        - { label: 'clang17-libcxx', gcc: 'clang-17', gxx: 'clang++-17 -stdlib=libc++', pkgs: 'clang-17 libc++{,abi}-17-dev'          }
-        - { label: 'clang18',        gcc: 'clang-18', gxx: 'clang++-18',                pkgs: 'clang-18'                              }
-        - { label: 'clang18-32',     gcc: 'clang-18', gxx: 'clang++-18 ',               pkgs: 'clang-18 g++-multilib', i686sse2: TRUE }
-        - { label: 'clang18-libcxx', gcc: 'clang-18', gxx: 'clang++-18 -stdlib=libc++', pkgs: 'clang-18 libc++{,abi}-18-dev'          }
-        - { label: 'clang19',        gcc: 'clang-19', gxx: 'clang++-19',                pkgs: 'clang-19'                              }
-        - { label: 'clang19-32',     gcc: 'clang-19', gxx: 'clang++-19 ',               pkgs: 'clang-19 g++-multilib', i686sse2: TRUE }
-        - { label: 'clang19-libcxx', gcc: 'clang-19', gxx: 'clang++-19 -stdlib=libc++', pkgs: 'clang-19 libc++{,abi}-19-dev'          }
-        - { label: 'clang20',        gcc: 'clang-20', gxx: 'clang++-20',                pkgs: 'clang-20'                              }
-        - { label: 'clang20-32',     gcc: 'clang-20', gxx: 'clang++-20 ',               pkgs: 'clang-20 g++-multilib', i686sse2: TRUE }
-        - { label: 'clang20-libcxx', gcc: 'clang-20', gxx: 'clang++-20 -stdlib=libc++', pkgs: 'clang-20 libc++{,abi}-20-dev'          }
-        - { label: 'clang21',        gcc: 'clang-21', gxx: 'clang++-21',                pkgs: 'clang-21'                              }
-        - { label: 'clang21-32',     gcc: 'clang-21', gxx: 'clang++-21 ',               pkgs: 'clang-21 g++-multilib', i686sse2: TRUE }
-        - { label: 'clang21-libcxx', gcc: 'clang-21', gxx: 'clang++-21 -stdlib=libc++', pkgs: 'clang-21 libc++{,abi}-21-dev'          }
-        - { label: 'clang16',        gcc: 'clang-16', gxx: 'clang++-16',                pkgs: 'clang-16',                     isa: '-arm' }
-        - { label: 'clang16-libcxx', gcc: 'clang-16', gxx: 'clang++-16 -stdlib=libc++', pkgs: 'clang-16 libc++{,abi}-16-dev', isa: '-arm' }
-        - { label: 'clang17',        gcc: 'clang-17', gxx: 'clang++-17',                pkgs: 'clang-17',                     isa: '-arm' }
-        - { label: 'clang17-libcxx', gcc: 'clang-17', gxx: 'clang++-17 -stdlib=libc++', pkgs: 'clang-17 libc++{,abi}-17-dev', isa: '-arm' }
-        - { label: 'clang18',        gcc: 'clang-18', gxx: 'clang++-18',                pkgs: 'clang-18',                     isa: '-arm' }
-        - { label: 'clang18-libcxx', gcc: 'clang-18', gxx: 'clang++-18 -stdlib=libc++', pkgs: 'clang-18 libc++{,abi}-18-dev', isa: '-arm' }
-        - { label: 'clang19',        gcc: 'clang-19', gxx: 'clang++-19',                pkgs: 'clang-19',                     isa: '-arm' }
-        - { label: 'clang19-libcxx', gcc: 'clang-19', gxx: 'clang++-19 -stdlib=libc++', pkgs: 'clang-19 libc++{,abi}-19-dev', isa: '-arm' }
-        - { label: 'clang20',        gcc: 'clang-20', gxx: 'clang++-20',                pkgs: 'clang-20',                     isa: '-arm' }
-        - { label: 'clang20-libcxx', gcc: 'clang-20', gxx: 'clang++-20 -stdlib=libc++', pkgs: 'clang-20 libc++{,abi}-20-dev', isa: '-arm' }
-        - { label: 'clang21',        gcc: 'clang-21', gxx: 'clang++-21',                pkgs: 'clang-21',                     isa: '-arm' }
-        - { label: 'clang21-libcxx', gcc: 'clang-21', gxx: 'clang++-21 -stdlib=libc++', pkgs: 'clang-21 libc++{,abi}-21-dev', isa: '-arm' }
-    runs-on: ubuntu-22.04${{matrix.variant.isa}}
+        - { label: 'clang16',        os: '22.04',     gcc: 'clang-16', gxx: 'clang++-16',                pkgs: 'clang-16'                              }
+        - { label: 'clang16-32',     os: '22.04',     gcc: 'clang-16', gxx: 'clang++-16 ',               pkgs: 'clang-16 g++-multilib', i686sse2: TRUE }
+        - { label: 'clang16-libcxx', os: '22.04',     gcc: 'clang-16', gxx: 'clang++-16 -stdlib=libc++', pkgs: 'clang-16 libc++{,abi}-16-dev'          }
+        - { label: 'clang17',        os: '22.04',     gcc: 'clang-17', gxx: 'clang++-17',                pkgs: 'clang-17'                              }
+        - { label: 'clang17-32',     os: '22.04',     gcc: 'clang-17', gxx: 'clang++-17 ',               pkgs: 'clang-17 g++-multilib', i686sse2: TRUE }
+        - { label: 'clang17-libcxx', os: '22.04',     gcc: 'clang-17', gxx: 'clang++-17 -stdlib=libc++', pkgs: 'clang-17 libc++{,abi}-17-dev'          }
+        - { label: 'clang18',        os: '22.04',     gcc: 'clang-18', gxx: 'clang++-18',                pkgs: 'clang-18'                              }
+        - { label: 'clang18-32',     os: '22.04',     gcc: 'clang-18', gxx: 'clang++-18 ',               pkgs: 'clang-18 g++-multilib', i686sse2: TRUE }
+        - { label: 'clang18-libcxx', os: '22.04',     gcc: 'clang-18', gxx: 'clang++-18 -stdlib=libc++', pkgs: 'clang-18 libc++{,abi}-18-dev'          }
+        - { label: 'clang19',        os: '22.04',     gcc: 'clang-19', gxx: 'clang++-19',                pkgs: 'clang-19'                              }
+        - { label: 'clang19-32',     os: '22.04',     gcc: 'clang-19', gxx: 'clang++-19 ',               pkgs: 'clang-19 g++-multilib', i686sse2: TRUE }
+        - { label: 'clang19-libcxx', os: '22.04',     gcc: 'clang-19', gxx: 'clang++-19 -stdlib=libc++', pkgs: 'clang-19 libc++{,abi}-19-dev'          }
+        - { label: 'clang20',        os: '22.04',     gcc: 'clang-20', gxx: 'clang++-20',                pkgs: 'clang-20'                              }
+        - { label: 'clang20-32',     os: '22.04',     gcc: 'clang-20', gxx: 'clang++-20 ',               pkgs: 'clang-20 g++-multilib', i686sse2: TRUE }
+        - { label: 'clang20-libcxx', os: '22.04',     gcc: 'clang-20', gxx: 'clang++-20 -stdlib=libc++', pkgs: 'clang-20 libc++{,abi}-20-dev'          }
+        - { label: 'clang21',        os: '22.04',     gcc: 'clang-21', gxx: 'clang++-21',                pkgs: 'clang-21'                              }
+        - { label: 'clang21-32',     os: '22.04',     gcc: 'clang-21', gxx: 'clang++-21 ',               pkgs: 'clang-21 g++-multilib', i686sse2: TRUE }
+        - { label: 'clang21-libcxx', os: '22.04',     gcc: 'clang-21', gxx: 'clang++-21 -stdlib=libc++', pkgs: 'clang-21 libc++{,abi}-21-dev'          }
+        - { label: 'clang16',        os: '22.04-arm', gcc: 'clang-16', gxx: 'clang++-16',                pkgs: 'clang-16'                              }
+        - { label: 'clang16-libcxx', os: '22.04-arm', gcc: 'clang-16', gxx: 'clang++-16 -stdlib=libc++', pkgs: 'clang-16 libc++{,abi}-16-dev'          }
+        - { label: 'clang17',        os: '22.04-arm', gcc: 'clang-17', gxx: 'clang++-17',                pkgs: 'clang-17'                              }
+        - { label: 'clang17-libcxx', os: '22.04-arm', gcc: 'clang-17', gxx: 'clang++-17 -stdlib=libc++', pkgs: 'clang-17 libc++{,abi}-17-dev'          }
+        - { label: 'clang18',        os: '22.04-arm', gcc: 'clang-18', gxx: 'clang++-18',                pkgs: 'clang-18'                              }
+        - { label: 'clang18-libcxx', os: '22.04-arm', gcc: 'clang-18', gxx: 'clang++-18 -stdlib=libc++', pkgs: 'clang-18 libc++{,abi}-18-dev'          }
+        - { label: 'clang19',        os: '22.04-arm', gcc: 'clang-19', gxx: 'clang++-19',                pkgs: 'clang-19'                              }
+        - { label: 'clang19-libcxx', os: '22.04-arm', gcc: 'clang-19', gxx: 'clang++-19 -stdlib=libc++', pkgs: 'clang-19 libc++{,abi}-19-dev'          }
+        - { label: 'clang20',        os: '22.04-arm', gcc: 'clang-20', gxx: 'clang++-20',                pkgs: 'clang-20'                              }
+        - { label: 'clang20-libcxx', os: '22.04-arm', gcc: 'clang-20', gxx: 'clang++-20 -stdlib=libc++', pkgs: 'clang-20 libc++{,abi}-20-dev'          }
+        - { label: 'clang21',        os: '22.04-arm', gcc: 'clang-21', gxx: 'clang++-21',                pkgs: 'clang-21'                              }
+        - { label: 'clang21-libcxx', os: '22.04-arm', gcc: 'clang-21', gxx: 'clang++-21 -stdlib=libc++', pkgs: 'clang-21 libc++{,abi}-21-dev'          }
+    runs-on: ubuntu-${{matrix.variant.os}}
 
     defaults:
       run: { shell: bash }
@@ -336,5 +336,5 @@ jobs:
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
-        name: llvm-${{matrix.variant.label}}${{matrix.variant.isa}}
+        name: llvm-${{matrix.variant.label}}${{matrix.variant.os}}
         path: build
