@@ -6,7 +6,7 @@ on:
   workflow_dispatch: NULL
 
 jobs:
-  host-build:
+  normal-build:
     name: Build and Check on Ubuntu ${{matrix.variant.os}} with ${{matrix.variant.label}}
     strategy:
       fail-fast: FALSE
@@ -22,8 +22,7 @@ jobs:
         - { label: 'gcc12',          os: '24.04',     gcc: 'gcc-12',   gxx: 'g++-12'                                                                   }
         - { label: 'gcc13',          os: '24.04',     gcc: 'gcc',      gxx: 'g++'                                                                      }
         - { label: 'gcc14',          os: '24.04',     gcc: 'gcc-14',   gxx: 'g++-14'                                                                   }
-        #- { label: 'clang13',        os: '22.04',     gcc: 'clang-13', gxx: 'clang++-13',                pkgs: 'clang-13'                              } # *
-        - { label: 'clang13',        os: '22.04',     gcc: 'clang-13', gxx: 'clang++-13',                                                               }
+        - { label: 'clang13',        os: '22.04',     gcc: 'clang-13', gxx: 'clang++-13',                                                              }
         - { label: 'clang14',        os: '22.04',     gcc: 'clang',    gxx: 'clang++'                                                                  }
         - { label: 'clang14',        os: '24.04',     gcc: 'clang-14', gxx: 'clang++-14',                pkgs: 'clang-14'                              }
         - { label: 'clang15',        os: '22.04',     gcc: 'clang-15', gxx: 'clang++-15'                                                               }
@@ -42,7 +41,6 @@ jobs:
         - { label: 'gcc12-32',       os: '24.04',     gcc: 'gcc-12',   gxx: 'g++-12',                    pkgs: 'g++-12-multilib',       i686sse2: TRUE }
         - { label: 'gcc13-32',       os: '24.04',     gcc: 'gcc',      gxx: 'g++',                       pkgs: 'g++-multilib',          i686sse2: TRUE }
         - { label: 'gcc14-32',       os: '24.04',     gcc: 'gcc-14',   gxx: 'g++-14',                    pkgs: 'g++-14-multilib',       i686sse2: TRUE }
-        #- { label: 'clang13-32',     os: '22.04',     gcc: 'clang-13', gxx: 'clang++-13',                pkgs: 'g++-multilib clang-13', i686sse2: TRUE } # *
         - { label: 'clang13-32',     os: '22.04',     gcc: 'clang-13', gxx: 'clang++-13',                pkgs: 'g++-multilib',          i686sse2: TRUE }
         - { label: 'clang14-32',     os: '22.04',     gcc: 'clang',    gxx: 'clang++',                   pkgs: 'g++-multilib',          i686sse2: TRUE }
         - { label: 'clang14-32',     os: '24.04',     gcc: 'clang-14', gxx: 'clang++-14',                pkgs: 'g++-multilib clang-14', i686sse2: TRUE }
@@ -52,7 +50,6 @@ jobs:
         - { label: 'clang17-32',     os: '24.04',     gcc: 'clang-17', gxx: 'clang++-17',                pkgs: 'g++-multilib',          i686sse2: TRUE }
         - { label: 'clang18-32',     os: '24.04',     gcc: 'clang',    gxx: 'clang++',                   pkgs: 'g++-multilib',          i686sse2: TRUE }
         - { label: 'clang19-32',     os: '24.04',     gcc: 'clang-19', gxx: 'clang++-19',                pkgs: 'g++-multilib clang-19', i686sse2: TRUE }
-        #- { label: 'clang13-libcxx', os: '22.04',     gcc: 'clang-13', gxx: 'clang++-13 -stdlib=libc++', pkgs: 'clang-13 libc++{,abi}-13-dev'          } # *
         - { label: 'clang13-libcxx', os: '22.04',     gcc: 'clang-13', gxx: 'clang++-13 -stdlib=libc++', pkgs:          'libc++{,abi}-13-dev'          }
         - { label: 'clang14-libcxx', os: '22.04',     gcc: 'clang',    gxx: 'clang++ -stdlib=libc++',    pkgs:          'libc++{,abi}-dev'             }
         - { label: 'clang14-libcxx', os: '24.04',     gcc: 'clang-14', gxx: 'clang++-14 -stdlib=libc++', pkgs: 'clang-14 libc++{,abi}-14-dev'          }
@@ -158,7 +155,7 @@ jobs:
         name: build-${{matrix.variant.label}}-${{matrix.variant.os}}
         path: build
 
-  container-build:
+  ubuntu25.10-build:
     name: Build and Check on Ubuntu 25.10${{matrix.variant.isa}} with ${{matrix.variant.label}}
     strategy:
       fail-fast: FALSE
@@ -274,9 +271,8 @@ jobs:
         - { label: 'clang19',        gcc: 'clang-19', gxx: 'clang++-19',                pkgs: 'clang-19'                                  }
         - { label: 'clang19-32',     gcc: 'clang-19', gxx: 'clang++-19 ',               pkgs: 'clang-19 g++-multilib', i686sse2: TRUE     }
         - { label: 'clang19-libcxx', gcc: 'clang-19', gxx: 'clang++-19 -stdlib=libc++', pkgs: 'clang-19 libc++{,abi}-19-dev'              }
-        - { label: 'clang20',        gcc: 'clang-20', gxx: 'clang++-20',                pkgs: 'clang-20'                                  }
+        - { label: 'clang20',        gcc: 'clang-20', gxx: 'clang++-20',                pkgs: 'clang-20'                                  } # no -libcxx due to a bug
         - { label: 'clang20-32',     gcc: 'clang-20', gxx: 'clang++-20 ',               pkgs: 'clang-20 g++-multilib', i686sse2: TRUE     }
-        #- { label: 'clang20-libcxx', gcc: 'clang-20', gxx: 'clang++-20 -stdlib=libc++', pkgs: 'clang-20 libc++{,abi}-20-dev'              }
         - { label: 'clang21',        gcc: 'clang-21', gxx: 'clang++-21',                pkgs: 'clang-21'                                  }
         - { label: 'clang21-32',     gcc: 'clang-21', gxx: 'clang++-21 ',               pkgs: 'clang-21 g++-multilib', i686sse2: TRUE     }
         - { label: 'clang21-libcxx', gcc: 'clang-21', gxx: 'clang++-21 -stdlib=libc++', pkgs: 'clang-21 libc++{,abi}-21-dev'              }
@@ -288,8 +284,7 @@ jobs:
         - { label: 'clang18-libcxx', gcc: 'clang-18', gxx: 'clang++-18 -stdlib=libc++', pkgs: 'clang-18 libc++{,abi}-18-dev', isa: '-arm' }
         - { label: 'clang19',        gcc: 'clang-19', gxx: 'clang++-19',                pkgs: 'clang-19',                     isa: '-arm' }
         - { label: 'clang19-libcxx', gcc: 'clang-19', gxx: 'clang++-19 -stdlib=libc++', pkgs: 'clang-19 libc++{,abi}-19-dev', isa: '-arm' }
-        - { label: 'clang20',        gcc: 'clang-20', gxx: 'clang++-20',                pkgs: 'clang-20',                     isa: '-arm' }
-        #- { label: 'clang20-libcxx', gcc: 'clang-20', gxx: 'clang++-20 -stdlib=libc++', pkgs: 'clang-20 libc++{,abi}-20-dev', isa: '-arm' }
+        - { label: 'clang20',        gcc: 'clang-20', gxx: 'clang++-20',                pkgs: 'clang-20',                     isa: '-arm' } # *
         - { label: 'clang21',        gcc: 'clang-21', gxx: 'clang++-21',                pkgs: 'clang-21',                     isa: '-arm' }
         - { label: 'clang21-libcxx', gcc: 'clang-21', gxx: 'clang++-21 -stdlib=libc++', pkgs: 'clang-21 libc++{,abi}-21-dev', isa: '-arm' }
     runs-on: ubuntu-22.04${{matrix.variant.isa}}
