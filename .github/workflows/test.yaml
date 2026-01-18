@@ -23,11 +23,13 @@ jobs:
         exec 2>&1
         set -x
         sudo sed -i /azure/d /etc/apt/apt-mirrors.txt; sudo apt-get update
-        sudo apt-get install g++-arm-linux-gnueabihf
+        sudo apt-get install g++-{arm-linux-gnueabihf,i686-linux-gnu}
         #find /usr/arm-linux-gnueabihf -exec ls -ld -- {} +
-        make -j4 GCC=arm-linux-gnueabihf-gcc GXX=arm-linux-gnueabihf-g++ \
-           MARCH='-Wl,-I/usr/arm-linux-gnueabihf/lib/ld-linux-armhf.so.3 -Wl,-rpath=/usr/arm-linux-gnueabihf/lib'
-        #LD_LIBRARY_PATH=/usr/arm-linux-gnueabihf/lib
-        #make run
-        LD_DEBUG=libs MNL_PATH=build/lib build/mnlexec test.mnl
+        #make -j4 GCC=arm-linux-gnueabihf-gcc GXX=arm-linux-gnueabihf-g++ \
+        #   MARCH='-Wl,-I/usr/arm-linux-gnueabihf/lib/ld-linux-armhf.so.3 -Wl,-rpath=/usr/arm-linux-gnueabihf/lib'
+        #MNL_PATH=build/lib build/mnlexec test.mnl
+        #make clean
+        make -j4 GCC=i686-linux-gnu-gcc GXX=i686-linux-gnu-g++ \
+           MARCH='-Wl,-I/usr/i686-linux-gnu/lib/ld-linux.so.2 -Wl,-rpath=/usr/i686-linux-gnu/lib'
+        MNL_PATH=build/lib build/mnlexec test.mnl
 
