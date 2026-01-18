@@ -4,17 +4,6 @@ name: Quick Build
 
 on:
   workflow_dispatch: NULL
-  #workflow_dispatch:
-  #  inputs:
-  #    valgrind:
-  #      description: Use Valgrind
-  #      type: boolean
-  #    aarch64:
-  #      description: Run on AArch64
-  #      type: boolean
-  #    install:
-  #      description: Install Allowed
-  #      type: boolean
 
 jobs:
   quick-build:
@@ -22,9 +11,8 @@ jobs:
     strategy:
       fail-fast: FALSE
       matrix:
-        arch:
-        - ''
-        - '-arm'
+        arch: [
+          '', '-arm' ]
         compiler:
         - { label: 'gcc10',   os: '22.04', gcc: 'gcc-10',   gxx: 'g++-10'     }
         - { label: 'gcc11',   os: '22.04', gcc: 'gcc',      gxx: 'g++'        }
@@ -62,24 +50,6 @@ jobs:
         set -x
         pwd
         ps -e --sort ppid,pid -o ppid,pid,user:12,group:12,comm:24,rsz:11,vsz:11,thcount,bsdstart,state,tname
-
-    #- name: Update Package DB
-    #  if: (matrix.compiler.pkgs || inputs.valgrind)
-    #  run: |
-    #    exec 2>&1
-    #    sudo apt-get update
-    #- name: Install Build Dependencies
-    #  if: (matrix.compiler.pkgs)
-    #  run: |
-    #    exec 2>&1
-    #    set -x
-    #    sudo apt-get install ${{matrix.compiler.pkgs}}
-    #- name: Install Valgrind
-    #  if: (inputs.valgrind)
-    #  run: |
-    #    exec 2>&1
-    #    set -x
-    #    sudo apt-get install --no-install-recommends valgrind
     - name: Build Tools Information
       run: |
         exec 2>&1
@@ -98,11 +68,6 @@ jobs:
       run: |
         exec 2>&1
         make GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}' run
-    #- name: Check with Valgrind
-    #  if: (inputs.valgrind)
-    #  run: |
-    #    exec 2>&1
-    #    make GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}' run-valgrind
 
     - name: Upload Results
       uses: actions/upload-artifact@v4
