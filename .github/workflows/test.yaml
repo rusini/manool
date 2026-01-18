@@ -24,5 +24,6 @@ jobs:
         set -x
         sudo apt-get update
         sudo apt-get install g++-arm-linux-gnueabihf
+        find /usr/arm-linux-gnueabihf
         make -j4 GCC=arm-linux-gnueabihf-gcc GXX=arm-linux-gnueabihf-g++
 
