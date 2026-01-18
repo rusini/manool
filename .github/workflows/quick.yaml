@@ -7,7 +7,7 @@ on:
 
 jobs:
   quick-build:
-    name: Compile and Check on Ubuntu ${{matrix.compiler.os}}${{matrix.isa}} with ${{matrix.compiler.label}}
+    name: Build and Check on Ubuntu ${{matrix.compiler.os}}${{matrix.isa}} with ${{matrix.compiler.label}}
     strategy:
       fail-fast: FALSE
       matrix:
