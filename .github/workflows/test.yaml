@@ -26,7 +26,7 @@ jobs:
         sudo apt-get install g++-arm-linux-gnueabihf
         #find /usr/arm-linux-gnueabihf -exec ls -ld -- {} +
         make -j4 GCC=arm-linux-gnueabihf-gcc GXX=arm-linux-gnueabihf-g++ \
-           MARCH='-Wl,-I/usr/arm-linux-gnueabihf/lib/ld-linux-armhf.so.3'
+           MARCH='-Wl,-I/usr/arm-linux-gnueabihf/lib/ld-linux-armhf.so.3 -Wl,-rpath=/usr/arm-linux-gnueabihf/lib'
         #LD_LIBRARY_PATH=/usr/arm-linux-gnueabihf/lib
         make run
 
