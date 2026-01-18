@@ -1,48 +1,28 @@
 # .github/workflows/test.yaml
 
-'name': 'Test GitHub Actions'
+name: Test Workflow
 
-'on':
-  'workflow_dispatch':
-#   inputs:
-#     foo2:
-#       description: 'Enable Job Group 2'
-#       required: true
-#       default: true
-#       type: boolean
-  push:
-    branches: [ "test" ]
+on:
+  workflow_dispatch: NULL
 
-'jobs':
-  'test':
-    'name': 'Build'
-    'runs-on': 'ubuntu-latest'
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-20.04-arm
 
-    'defaults':
-      'run': { 'shell': 'bash' }
+    defaults:
+      run: { shell: bash }
+    steps:
 
-    'steps':
+    - name: Checkout
+      uses: actions/checkout@v4
+      with: { ref: master }
 
-    - 'name': 'Machine Information'
-      'run': |
-        lscpu; free -h; df -h .
-    - 'name': 'System Information'
-      'run': |
-        date; uname -a; uptime; cat /etc/os-release; ls -C /boot || :
-    - 'name': 'Context Information'
-      'run': |
-        tty || :; id; printf %s\\n "$SHELL"; printf %s\\n "$PATH"; pwd
-
-    - 'name': 'Checkout'
-      'uses': 'actions/checkout@v4'
-
-    - 'name': 'Test'
-      'run': |
-        ls -la
-
-    - name: Set up Lima
-      uses: lima-vm/lima-actions/setup@v1
-
-    - name: Start Ubuntu 20.04 VM
+    - name: Test
       run: |
-        limactl start --name=ci --cpus=2 --memory=2 template://ubuntu-20.04
+        exec 2>&1
+        set -x
+        sudo apt-get update
+        sudo apt-get install g++-arm-linux-gnueabihf
+        make GCC=arm-linux-gnueabihf-gcc GXX=arm-linux-gnueabihf-g++
+
