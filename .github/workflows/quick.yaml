@@ -3,46 +3,40 @@
 name: Quick Build
 
 on:
-  workflow_dispatch:
-    inputs:
-      valgrind:
-        description: Use Valgrind
-        type: boolean
-      aarch64:
-        description: Run on AArch64
-        type: boolean
-      install:
-        description: Install Allowed
-        type: boolean
+  workflow_dispatch: NULL
+  #workflow_dispatch:
+  #  inputs:
+  #    valgrind:
+  #      description: Use Valgrind
+  #      type: boolean
+  #    aarch64:
+  #      description: Run on AArch64
+  #      type: boolean
+  #    install:
+  #      description: Install Allowed
+  #      type: boolean
 
 jobs:
   quick-build:
-    name: On Ubuntu ${{matrix.compiler.osver}} with ${{matrix.compiler.label}}
+    name: Compile and Check on Ubuntu ${{matrix.compiler.os}}${{matrix.arch}} with ${{matrix.compiler.label}}
     strategy:
       fail-fast: FALSE
       matrix:
         compiler:
-        - { label: 'gcc9',    osver: '22.04', gcc: 'gcc-9',    gxx: 'g++-9',      pkgs: 'g++-9'    }
-        - { label: 'gcc9',    osver: '24.04', gcc: 'gcc-9',    gxx: 'g++-9',      pkgs: 'g++-9'    }
-        - { label: 'gcc10',   osver: '22.04', gcc: 'gcc-10',   gxx: 'g++-10'                       }
-        - { label: 'gcc10',   osver: '24.04', gcc: 'gcc-10',   gxx: 'g++-10',     pkgs: 'g++-10'   }
-        - { label: 'gcc11',   osver: '22.04', gcc: 'gcc',      gxx: 'g++'                          }
-        - { label: 'gcc11',   osver: '24.04', gcc: 'gcc-11',   gxx: 'g++-11',     pkgs: 'g++-11'   }
-        - { label: 'gcc12',   osver: '22.04', gcc: 'gcc-12',   gxx: 'g++-12'                       }
-        - { label: 'gcc12',   osver: '24.04', gcc: 'gcc-12',   gxx: 'g++-12'                       }
-        - { label: 'gcc13',   osver: '24.04', gcc: 'gcc',      gxx: 'g++'                          }
-        - { label: 'gcc14',   osver: '24.04', gcc: 'gcc-14',   gxx: 'g++-14'                       }
-        - { label: 'clang13', osver: '22.04', gcc: 'clang-13', gxx: 'clang++-13', pkgs: 'clang-13' } # pkgs needed due to a bug in ARM image
-        - { label: 'clang14', osver: '22.04', gcc: 'clang',    gxx: 'clang++'                      }
-        - { label: 'clang14', osver: '24.04', gcc: 'clang-14', gxx: 'clang++-14', pkgs: 'clang-14' }
-        - { label: 'clang15', osver: '22.04', gcc: 'clang-15', gxx: 'clang++-15'                   }
-        - { label: 'clang15', osver: '24.04', gcc: 'clang-15', gxx: 'clang++-15', pkgs: 'clang-15' }
-        - { label: 'clang16', osver: '24.04', gcc: 'clang-16', gxx: 'clang++-16'                   }
-        - { label: 'clang17', osver: '24.04', gcc: 'clang-17', gxx: 'clang++-17'                   }
-        - { label: 'clang18', osver: '24.04', gcc: 'clang',    gxx: 'clang++'                      }
-        - { label: 'clang19', osver: '24.04', gcc: 'clang-19', gxx: 'clang++-19', pkgs: 'clang-19' }
-    runs-on: ubuntu-${{matrix.compiler.osver}}${{inputs.aarch64 && '-arm' || ''}}
-    if: (inputs.install || !matrix.compiler.pkgs)
+        - { label: 'gcc10',   os: '22.04', gcc: 'gcc-10',   gxx: 'g++-10'     }
+        - { label: 'gcc11',   os: '22.04', gcc: 'gcc',      gxx: 'g++'        }
+        - { label: 'gcc12',   os: '24.04', gcc: 'gcc-12',   gxx: 'g++-12'     }
+        - { label: 'gcc13',   os: '24.04', gcc: 'gcc',      gxx: 'g++'        }
+        - { label: 'gcc14',   os: '24.04', gcc: 'gcc-14',   gxx: 'g++-14'     }
+        - { label: 'clang14', os: '22.04', gcc: 'clang',    gxx: 'clang++'    }
+        - { label: 'clang15', os: '22.04', gcc: 'clang-15', gxx: 'clang++-15' }
+        - { label: 'clang16', os: '24.04', gcc: 'clang-16', gxx: 'clang++-16' }
+        - { label: 'clang17', os: '24.04', gcc: 'clang-17', gxx: 'clang++-17' }
+        - { label: 'clang18', os: '24.04', gcc: 'clang',    gxx: 'clang++'    }
+        arch:
+        - ''
+        - '-arm'
+    runs-on: ubuntu-${{matrix.compiler.ver}}${{matrix.arch}}
 
     defaults:
       run: { shell: bash }
@@ -67,25 +61,25 @@ jobs:
         tty || :; id; printf %s\\n SHELL="$SHELL" PATH="$PATH"
         set -x
         pwd
-        ps -eH --sort pid -o pid,user:12,group:12,comm:24,rsz,vsz,thcount,bsdstart,state,tname
+        ps -e --sort ppid,pid -o ppid,pid,user:12,group:12,comm:24,rsz:11,vsz:11,thcount,bsdstart,state,tname
 
-    - name: Update Package DB
-      if: (matrix.compiler.pkgs || inputs.valgrind)
-      run: |
-        exec 2>&1
-        sudo apt-get update
-    - name: Install Build Dependencies
-      if: (matrix.compiler.pkgs)
-      run: |
-        exec 2>&1
-        set -x
-        sudo apt-get install ${{matrix.compiler.pkgs}}
-    - name: Install Valgrind
-      if: (inputs.valgrind)
-      run: |
-        exec 2>&1
-        set -x
-        sudo apt-get install --no-install-recommends valgrind
+    #- name: Update Package DB
+    #  if: (matrix.compiler.pkgs || inputs.valgrind)
+    #  run: |
+    #    exec 2>&1
+    #    sudo apt-get update
+    #- name: Install Build Dependencies
+    #  if: (matrix.compiler.pkgs)
+    #  run: |
+    #    exec 2>&1
+    #    set -x
+    #    sudo apt-get install ${{matrix.compiler.pkgs}}
+    #- name: Install Valgrind
+    #  if: (inputs.valgrind)
+    #  run: |
+    #    exec 2>&1
+    #    set -x
+    #    sudo apt-get install --no-install-recommends valgrind
     - name: Build Tools Information
       run: |
         exec 2>&1
@@ -95,22 +89,23 @@ jobs:
       uses: actions/checkout@v4
       with: { ref: master }
 
-    - name: Run Make
+    - name: Make
       run: |
         exec 2>&1
+        set -x
         make -j4 GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}'
     - name: Check
       run: |
         exec 2>&1
         make GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}' run
-    - name: Check with Valgrind
-      if: (inputs.valgrind)
-      run: |
-        exec 2>&1
-        make GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}' run-valgrind
+    #- name: Check with Valgrind
+    #  if: (inputs.valgrind)
+    #  run: |
+    #    exec 2>&1
+    #    make GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}' run-valgrind
 
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
-        name: build-${{matrix.compiler.label}}-${{matrix.compiler.osver}}
+        name: build-${{matrix.compiler.label}}-${{matrix.compiler.os}}${{matrix.arch}}
         path: build
