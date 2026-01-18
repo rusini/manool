@@ -36,7 +36,7 @@ jobs:
         arch:
         - ''
         - '-arm'
-    runs-on: ubuntu-${{matrix.compiler.ver}}${{matrix.arch}}
+    runs-on: ubuntu-${{matrix.compiler.os}}${{matrix.arch}}
 
     defaults:
       run: { shell: bash }
