@@ -1,6 +1,6 @@
 # .github/workflows/quick.yaml
 
-name: Quick "Normal" Build
+name: Quick Build
 
 on:
   workflow_dispatch:
