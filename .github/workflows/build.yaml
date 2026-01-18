@@ -216,7 +216,7 @@ jobs:
     - *minfo
     - *sinfo
     - *cinfo
-    - name: Setup
+    - name: Basic Setup
       run: |
         exec 2>&1
         set -x
@@ -250,7 +250,7 @@ jobs:
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
-        name: latest-${{matrix.variant.label}}-25.10${{matrix.variant.isa}}
+        name: build-${{matrix.variant.label}}-25.10${{matrix.variant.isa}}
         path: build
 
   llvm-build:
@@ -358,5 +358,5 @@ jobs:
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
-        name: llvm-${{matrix.variant.label}}-${{matrix.variant.os}}
+        name: build-${{matrix.variant.label}}-${{matrix.variant.os}}
         path: build
