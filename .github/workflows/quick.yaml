@@ -7,11 +7,11 @@ on:
 
 jobs:
   quick-build:
-    name: Compile and Check on Ubuntu ${{matrix.compiler.os}}${{matrix.arch}} with ${{matrix.compiler.label}}
+    name: Compile and Check on Ubuntu ${{matrix.compiler.os}}${{matrix.isa}} with ${{matrix.compiler.label}}
     strategy:
       fail-fast: FALSE
       matrix:
-        arch: [
+        isa: [
           '', '-arm' ]
         compiler:
         - { label: 'gcc10',   os: '22.04', gcc: 'gcc-10',   gxx: 'g++-10'     }
@@ -24,7 +24,7 @@ jobs:
         - { label: 'clang16', os: '24.04', gcc: 'clang-16', gxx: 'clang++-16' }
         - { label: 'clang17', os: '24.04', gcc: 'clang-17', gxx: 'clang++-17' }
         - { label: 'clang18', os: '24.04', gcc: 'clang',    gxx: 'clang++'    }
-    runs-on: ubuntu-${{matrix.compiler.os}}${{matrix.arch}}
+    runs-on: ubuntu-${{matrix.compiler.os}}${{matrix.isa}}
 
     defaults:
       run: { shell: bash }
@@ -72,5 +72,5 @@ jobs:
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
-        name: build-${{matrix.compiler.label}}-${{matrix.compiler.os}}${{matrix.arch}}
+        name: build-${{matrix.compiler.label}}-${{matrix.compiler.os}}${{matrix.isa}}
         path: build
