@@ -27,5 +27,6 @@ jobs:
         #find /usr/arm-linux-gnueabihf -exec ls -ld -- {} +
         make -j4 GCC=arm-linux-gnueabihf-gcc GXX=arm-linux-gnueabihf-g++ \
            MARCH='-Wl,-I/usr/arm-linux-gnueabihf/lib/ld-linux-armhf.so.3'
-        LD_LIBRARY_PATH=/usr/arm-linux-gnueabihf/lib make run
+        #LD_LIBRARY_PATH=/usr/arm-linux-gnueabihf/lib
+        make run
 
