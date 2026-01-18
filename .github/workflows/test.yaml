@@ -29,5 +29,5 @@ jobs:
            MARCH='-Wl,-I/usr/arm-linux-gnueabihf/lib/ld-linux-armhf.so.3 -Wl,-rpath=/usr/arm-linux-gnueabihf/lib'
         #LD_LIBRARY_PATH=/usr/arm-linux-gnueabihf/lib
         #make run
-        MNL_PATH=build/lib build/mnlexec
+        MNL_PATH=build/lib build/mnlexec test.mnl
 
