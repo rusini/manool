@@ -11,6 +11,9 @@ on:
       aarch64:
         description: Run on AArch64
         type: boolean
+      install:
+        description: Install Allowed
+        type: boolean
 
 jobs:
   quick-build:
@@ -39,6 +42,7 @@ jobs:
         - { label: 'clang18', osver: '24.04', gcc: 'clang',    gxx: 'clang++'                      }
         - { label: 'clang19', osver: '24.04', gcc: 'clang-19', gxx: 'clang++-19', pkgs: 'clang-19' }
     runs-on: ubuntu-${{matrix.compiler.osver}}${{inputs.aarch64 && '-arm' || ''}}
+    if: (inputs.install || !matrix.compiler.pkgs)
 
     defaults:
       run: { shell: bash }
