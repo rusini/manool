@@ -22,6 +22,9 @@ jobs:
     strategy:
       fail-fast: FALSE
       matrix:
+        arch:
+        - ''
+        - '-arm'
         compiler:
         - { label: 'gcc10',   os: '22.04', gcc: 'gcc-10',   gxx: 'g++-10'     }
         - { label: 'gcc11',   os: '22.04', gcc: 'gcc',      gxx: 'g++'        }
@@ -33,9 +36,6 @@ jobs:
         - { label: 'clang16', os: '24.04', gcc: 'clang-16', gxx: 'clang++-16' }
         - { label: 'clang17', os: '24.04', gcc: 'clang-17', gxx: 'clang++-17' }
         - { label: 'clang18', os: '24.04', gcc: 'clang',    gxx: 'clang++'    }
-        arch:
-        - ''
-        - '-arm'
     runs-on: ubuntu-${{matrix.compiler.os}}${{matrix.arch}}
 
     defaults:
