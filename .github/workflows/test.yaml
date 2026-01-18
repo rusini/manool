@@ -22,10 +22,10 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        sudo apt-get update
+        sudo sed -i /azure/d /etc/apt/apt-mirrors.txt; sudo apt-get update
         sudo apt-get install g++-arm-linux-gnueabihf
         find /usr/arm-linux-gnueabihf -exec ls -ld -- {} +
         make -j4 GCC=arm-linux-gnueabihf-gcc GXX=arm-linux-gnueabihf-g++ \
            MARCH='-Wl,--dynamic-linker=/usr/arm-linux-gnueabihf/lib/ld-linux-armhf.so.3'
-        LD_LIBRARY_PATH=/usr/arm-linux-gnueabihf/lib build/mnlexec
+        LD_LIBRARY_PATH=/usr/arm-linux-gnueabihf/lib make run
 
