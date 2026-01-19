@@ -7,10 +7,7 @@ on:
 
 jobs:
   cross-build:
-    name: ${{matrix.compiler.osver}}/${{matrix.target.triple}}/${{matrix.compiler.ver}}
-    runs-on: ubuntu-${{matrix.compiler.os}}
-    timeout-minutes: 20
-
+    name: ${{matrix.compiler.os}}/${{matrix.target.triple}}/${{matrix.compiler.ver}}
     strategy:
       fail-fast: FALSE
       matrix:
@@ -173,6 +170,8 @@ jobs:
           compiler: { os: '22.04' }
         - target:   { triple: sparc64-linux-gnu }
           compiler: { os: '22.04' }
+    runs-on: ubuntu-${{matrix.compiler.os}}
+    timeout-minutes: 20
 
     defaults:
       run: { shell: bash }
@@ -219,9 +218,9 @@ jobs:
       run: |
         make --version; ${{matrix.target.triple}}-gcc-${{matrix.compiler.ver}} --version
 
-    #- name: Checkout
-    #  uses: actions/checkout@v4
-    #  with: { ref: master }
+    - name: Checkout
+      uses: actions/checkout@v4
+      #with: { ref: master }
 
     - name: Run Make and Check
       run: |
