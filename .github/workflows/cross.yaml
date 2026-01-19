@@ -238,3 +238,4 @@ jobs:
            -include prelude.cc -Werror \
            ${{matrix.target.march}} -Wl,-I/usr/${{matrix.target.triple}}/lib/${{matrix.target.ld}} -Wl,-rpath=/usr/${{matrix.target.triple}}/lib \
            hi.cc
+        ./a.out
