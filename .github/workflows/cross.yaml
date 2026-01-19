@@ -15,150 +15,227 @@ jobs:
       fail-fast: FALSE
       matrix:
         target:
-        - { triple: aarch64-linux-gnu }
-        - { triple: arm-linux-gnueabihf }
-        - { triple: powerpc64le-linux-gnu }
-        - { triple: riscv64-linux-gnu }
-        - { triple: mipsel-linux-gnu }
-        - { triple: mips64el-linux-gnuabi64 }
-        - { triple: mipsisa64r6el-linux-gnuabi64 }
-        - { triple: alpha-linux-gnu }
+        - { triple: aarch64-linux-gnu,            ld: ld-linux-aarch64.so.1 }
+        - { triple: arm-linux-gnueabihf,          ld: ld-linux-armhf.so.3 }
+        - { triple: powerpc64le-linux-gnu,        ld: ld64.so.2 }
+        - { triple: riscv64-linux-gnu,            ld: ld-linux-riscv64-lp64d.so.1 }
+        - { triple: mipsel-linux-gnu,             ld: ld.so.1 }
+        - { triple: mips64el-linux-gnuabi64,      ld: ld.so.1 }
+        - { triple: mipsisa64r6el-linux-gnuabi64, ld: ld.so.1 }
+        - { triple: alpha-linux-gnu,              ld: ld.so.1 }
 
-        - { triple: arm-linux-gnueabi, flags: '-march=armv7-a' }
-        #- { triple: sh4-linux-gnu,     flags: '-O1' }
+        - { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
+
+        #- { triple: sh4-linux-gnu, ld: ld-linux.so.2,    flags: '-O1' }
         # BE:
-        #- { triple: m68k-linux-gnu,    flags: '-msoft-float' }
-        #- { triple: hppa-linux-gnu }
-        #- { triple: mips-linux-gnu }
-        #- { triple: mips64-linux-gnuabi64 }
-        #- { triple: mipsisa32r6-linux-gnu }
-        - { triple: mipsisa32r6el-linux-gnu }
-        #- { triple: mipsisa64r6-linux-gnuabi64 }
-        #- { triple: powerpc-linux-gnu }
-        #- { triple: powerpc64-linux-gnu }
-        #- { triple: s390x-linux-gnu }
-        #- { triple: sparc64-linux-gnu }
+        #- { triple: m68k-linux-gnu, ld: ld.so.1,   flags: '-msoft-float' }
+        #- { triple: hppa-linux-gnu, ld: ld.so.1 }
+        #- { triple: mips-linux-gnu, ld: ld.so.1 }
+        #- { triple: mips64-linux-gnuabi64, ld: ld.so.1 }
+        #- { triple: mipsisa32r6-linux-gnu, ld: ld.so.1 }
+        - { triple: mipsisa32r6el-linux-gnu, ld: ld.so.1 }
+        #- { triple: mipsisa64r6-linux-gnuabi64, ld: ld.so.1 }
+        #- { triple: powerpc-linux-gnu, ld: ld.so.1 }
+        #- { triple: powerpc64-linux-gnu, ld: ld64.so.1 }
+        #- { triple: s390x-linux-gnu, ld: ld64.so.1 }
+        #- { triple: sparc64-linux-gnu, ld: ld-linux.so.2 }
 
         compiler:
-        - { ver:  '9', osver: '22.04' }
-        - { ver: '10', osver: '22.04' }
-        - { ver: '11', osver: '22.04' }
-        - { ver: '12', osver: '22.04' }
-        - { ver:  '9', osver: '24.04' }
-        - { ver: '10', osver: '24.04' }
-        - { ver: '11', osver: '24.04' }
-        - { ver: '12', osver: '24.04' }
-        - { ver: '13', osver: '24.04' }
-        - { ver: '14', osver: '24.04' }
+        - { ver:  '9', os: '22.04' }
+        - { ver: '10', os: '22.04' }
+        - { ver: '11', os: '22.04' }
+        - { ver: '12', os: '22.04' }
+        - { ver:  '9', os: '24.04' }
+        - { ver: '10', os: '24.04' }
+        - { ver: '11', os: '24.04' }
+        - { ver: '12', os: '24.04' }
+        - { ver: '13', os: '24.04' }
+        - { ver: '14', os: '24.04' }
+
+        include:
+
+        - target:   { triple: i686-linux-gnu, ld: ld-linux.so.2 }
+          compiler: { ver:  '9', os: '22.04', noqemu: TRUE }
+        - target:   { triple: i686-linux-gnu, ld: ld-linux.so.2 }
+          compiler: { ver: '10', os: '22.04', noqemu: TRUE }
+        - target:   { triple: i686-linux-gnu, ld: ld-linux.so.2 }
+          compiler: { ver: '11', os: '22.04', noqemu: TRUE }
+        - target:   { triple: i686-linux-gnu, ld: ld-linux.so.2 }
+          compiler: { ver: '12', os: '22.04', noqemu: TRUE }
+        - target:   { triple: i686-linux-gnu, ld: ld-linux.so.2 }
+          compiler: { ver:  '9', os: '24.04', noqemu: TRUE }
+        - target:   { triple: i686-linux-gnu, ld: ld-linux.so.2 }
+          compiler: { ver: '10', os: '24.04', noqemu: TRUE }
+        - target:   { triple: i686-linux-gnu, ld: ld-linux.so.2 }
+          compiler: { ver: '11', os: '24.04', noqemu: TRUE }
+        - target:   { triple: i686-linux-gnu, ld: ld-linux.so.2 }
+          compiler: { ver: '12', os: '24.04', noqemu: TRUE }
+        - target:   { triple: i686-linux-gnu, ld: ld-linux.so.2 }
+          compiler: { ver: '13', os: '24.04', noqemu: TRUE }
+        - target:   { triple: i686-linux-gnu, ld: ld-linux.so.2 }
+          compiler: { ver: '14', os: '24.04', noqemu: TRUE }
+
+        - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
+          compiler: { ver:  '9', os: '22.04-arm', noqemu: TRUE }
+        - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
+          compiler: { ver: '10', os: '22.04-arm', noqemu: TRUE }
+        - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
+          compiler: { ver: '11', os: '22.04-arm', noqemu: TRUE }
+        - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
+          compiler: { ver: '12', os: '22.04-arm', noqemu: TRUE }
+        - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
+          compiler: { ver:  '9', os: '24.04-arm', noqemu: TRUE }
+        - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
+          compiler: { ver: '10', os: '24.04-arm', noqemu: TRUE }
+        - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
+          compiler: { ver: '11', os: '24.04-arm', noqemu: TRUE }
+        - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
+          compiler: { ver: '12', os: '24.04-arm', noqemu: TRUE }
+        - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
+          compiler: { ver: '13', os: '24.04-arm', noqemu: TRUE }
+        - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
+          compiler: { ver: '14', os: '24.04-arm', noqemu: TRUE }
+
+        - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
+          compiler: { ver:  '9', os: '22.04-arm', noqemu: TRUE }
+        - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
+          compiler: { ver: '10', os: '22.04-arm', noqemu: TRUE }
+        - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
+          compiler: { ver: '11', os: '22.04-arm', noqemu: TRUE }
+        - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
+          compiler: { ver: '12', os: '22.04-arm', noqemu: TRUE }
+        - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
+          compiler: { ver:  '9', os: '24.04-arm', noqemu: TRUE }
+        - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
+          compiler: { ver: '10', os: '24.04-arm', noqemu: TRUE }
+        - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
+          compiler: { ver: '11', os: '24.04-arm', noqemu: TRUE }
+        - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
+          compiler: { ver: '12', os: '24.04-arm', noqemu: TRUE }
+        - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
+          compiler: { ver: '13', os: '24.04-arm', noqemu: TRUE }
+        - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
+          compiler: { ver: '14', os: '24.04-arm', noqemu: TRUE }
+
+        - target:   { triple: loongarch64-linux-gnu, ld: ld-linux-loongarch-lp64d.so.1 }
+          compiler: { ver:  '9', os: '24.04' }
+        - target:   { triple: loongarch64-linux-gnu, ld: ld-linux-loongarch-lp64d.so.1 }
+          compiler: { ver: '10', os: '24.04' }
+        - target:   { triple: loongarch64-linux-gnu, ld: ld-linux-loongarch-lp64d.so.1 }
+          compiler: { ver: '11', os: '24.04' }
+        - target:   { triple: loongarch64-linux-gnu, ld: ld-linux-loongarch-lp64d.so.1 }
+          compiler: { ver: '12', os: '24.04' }
+        - target:   { triple: loongarch64-linux-gnu, ld: ld-linux-loongarch-lp64d.so.1 }
+          compiler: { ver: '13', os: '24.04' }
+        - target:   { triple: loongarch64-linux-gnu, ld: ld-linux-loongarch-lp64d.so.1 }
+          compiler: { ver: '14', os: '24.04' }
+
+        - target:   { triple: sh4-linux-gnu, march: '-O1' }
+          compiler: { ver: '13', os: '24.04' }
+        - target:   { triple: sh4-linux-gnu, march: '-O1' }
+          compiler: { ver: '14', os: '24.04' }
 
         exclude:
 
         - target:   { triple: mipsel-linux-gnu }
-          compiler: { ver: '11', osver: '22.04' }
+          compiler: { ver: '11', os: '22.04' }
         - target:   { triple: mipsel-linux-gnu }
-          compiler: { ver: '12', osver: '22.04' }
+          compiler: { ver: '12', os: '22.04' }
         - target:   { triple: mips64el-linux-gnuabi64 }
-          compiler: { ver: '11', osver: '22.04' }
+          compiler: { ver: '11', os: '22.04' }
         - target:   { triple: mips64el-linux-gnuabi64 }
-          compiler: { ver: '12', osver: '22.04' }
+          compiler: { ver: '12', os: '22.04' }
         - target:   { triple: mipsisa64r6el-linux-gnuabi64 }
-          compiler: { ver: '11', osver: '22.04' }
+          compiler: { ver: '11', os: '22.04' }
         - target:   { triple: mipsisa64r6el-linux-gnuabi64 }
-          compiler: { ver: '12', osver: '22.04' }
+          compiler: { ver: '12', os: '22.04' }
 
         - target:   { triple: mips-linux-gnu }
-          compiler: { ver: '11', osver: '22.04' }
+          compiler: { ver: '11', os: '22.04' }
         - target:   { triple: mips-linux-gnu }
-          compiler: { ver: '12', osver: '22.04' }
+          compiler: { ver: '12', os: '22.04' }
         - target:   { triple: mips64-linux-gnuabi64 }
-          compiler: { ver: '11', osver: '22.04' }
+          compiler: { ver: '11', os: '22.04' }
         - target:   { triple: mips64-linux-gnuabi64 }
-          compiler: { ver: '12', osver: '22.04' }
+          compiler: { ver: '12', os: '22.04' }
 
         - target:   { triple: mipsisa64r6-linux-gnuabi64 }
-          compiler: { ver: '11', osver: '22.04' }
+          compiler: { ver: '11', os: '22.04' }
         - target:   { triple: mipsisa64r6-linux-gnuabi64 }
-          compiler: { ver: '12', osver: '22.04' }
+          compiler: { ver: '12', os: '22.04' }
 
         - target:   { triple: mipsisa32r6-linux-gnu }
-          compiler: { osver: '22.04' }
+          compiler: { os: '22.04' }
         - target:   { triple: mipsisa32r6el-linux-gnu }
-          compiler: { osver: '22.04' }
+          compiler: { os: '22.04' }
 
         - target:   { triple: m68k-linux-gnu }
-          compiler: { osver: '22.04' }
+          compiler: { os: '22.04' }
         - target:   { triple: sparc64-linux-gnu }
-          compiler: { osver: '22.04' }
-
-        include:
-        - target:   { triple: sh4-linux-gnu, flags: '-O1' }
-          compiler: { ver: '13', osver: '24.04' }
-        - target:   { triple: sh4-linux-gnu, flags: '-O1' }
-          compiler: { ver: '14', osver: '24.04' }
+          compiler: { os: '22.04' }
 
     defaults:
       run: { shell: bash }
     steps:
 
-    #- name: Machine Information
-    #  run: |
-    #    # Bash Script
-    #    exec 2>&1; set -x
-    #    lscpu; free -h; df -H .
-    #- name: System Information
-    #  run: |
-    #    # Bash Script
-    #    date; uname -a; uptime
-    #    exec 2>&1; set -x
-    #    systemd-detect-virt; cat /etc/os-release; ls -C /boot || :
-    #- name: Context Information
-    #  run: |
-    #    # Bash Script
-    #    tty || :; id; printf %s\\n "SHELL=$SHELL" "PATH=$PATH"
-    #    exec 2>&1; set -x
-    #    pwd
-
-    - name: Setup
+    - name: Machine Information
       run: |
-        # Bash Script
-        exec 2>&1; set -x
-        sudo apt-get update
-        sudo apt-get install g++-${{matrix.compiler.ver}}-${{matrix.target.triple}} qemu-user
+        exec 2>&1
+        set -x
+        lscpu; free -h; df -H .
+    - name: System Information
+      run: |
+        exec 2>&1
+        date; uname -a; uptime
+        set -x
+        systemd-detect-virt || :
+        cat /etc/os-release
+        ls -C /boot || :
+    - name: Context Information
+      run: |
+        exec 2>&1
+        tty || :; id; printf %s\\n SHELL="$SHELL" PATH="$PATH"
+        set -x
+        pwd
+        ps -e --sort ppid,pid -o ppid,pid,user:12,group:12,comm:24,rsz:11,vsz:11,thcount,bsdstart,state,tname
 
+    - name: Update Package DB
+      run: |
+        exec 2>&1
+        set -x
+        sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
+        sudo apt-get update
+    - name: Install Build Dependencies
+      run: |
+        exec 2>&1
+        set -x
+        sudo apt-get install g++-${{matrix.compiler.ver}}-${{matrix.target.triple}} qemu-user
+    - name: Install QEMU
+      if: (!matrix.target.noqemu)
+      run: |
+        exec 2>&1
+        sudo apt-get install qemu-user
     - name: Build Tools Information
       run: |
         make --version; ${{matrix.target.triple}}-gcc-${{matrix.compiler.ver}} --version
 
-    - name: Checkout
-      uses: actions/checkout@v4
-      with: { ref: master }
+    #- name: Checkout
+    #  uses: actions/checkout@v4
+    #  with: { ref: master }
 
-    - name: Test
+    - name: Run Make and Check
       run: |
-        # Bash Script
-
-        exec 2>&1; set -x
-        #tee hi.cc <<'END'
-        ## include <cstdio>
-        #int main() {
-        #   std::puts("Hi");
-        #   return 0;
-        #}
-        #END
-        #${{matrix.target.triple}}-g++-${{matrix.compiler.ver}} ${{matrix.target.flags}} -std=c++17 -Wno-psabi \
-        #   -O3 -{fno-stack-protector,fcf-protection=none,fno-stack-clash-protection,U_FORTIFY_SOURCE} \
-        #   -include prelude.cc -Werror hi.cc
-        #QEMU_LD_PREFIX=/usr/${{matrix.target.triple}} ./a.out
-
-        QEMU_LD_PREFIX=/usr/${{matrix.target.triple}} \
-        make -j5 run \
-           GCC='${{matrix.target.triple}}-gcc-${{matrix.compiler.ver}}' \
-           GXX='${{matrix.target.triple}}-g++-${{matrix.compiler.ver}}' \
-           CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE ${{matrix.target.flags}}' \
-           MARCH=''
-
-#    - name: Upload Results
-#      uses: actions/upload-artifact@v4
-#      with:
-#        name: build-gcc-${{matrix.compiler.ver}}-${{matrix.target.triple}}
-#        path: build
+        exec 2>&1
+        set -x
+        tee hi.cc <<'END'
+        # include <cstdio>
+        int main() {
+           std::puts("Hi");
+           return 0;
+        }
+        END
+        ${{matrix.target.triple}}-g++-${{matrix.compiler.ver}} ${{matrix.target.flags}} -std=c++17 -Wno-psabi \
+           -O3 -{fno-stack-protector,fcf-protection=none,fno-stack-clash-protection,U_FORTIFY_SOURCE} \
+           -include prelude.cc -Werror \
+           ${{matrix.target.march}} -Wl,-I/usr/${{matrix.target.triple}}/lib/${{matrix.target.ld}} -Wl,-rpath=/usr/${{matrix.target.triple}}/lib \
+           hi.cc
