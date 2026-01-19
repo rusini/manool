@@ -210,7 +210,7 @@ jobs:
         set -x
         sudo apt-get install g++-${{matrix.compiler.ver}}-${{matrix.target.triple}} qemu-user
     - name: Remove QEMU
-      if: (matrix.target.noqemu)
+      if: (matrix.compiler.noqemu)
       run: |
         exec 2>&1
         sudo apt-get purge qemu-user
