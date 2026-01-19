@@ -209,11 +209,11 @@ jobs:
         exec 2>&1
         set -x
         sudo apt-get install g++-${{matrix.compiler.ver}}-${{matrix.target.triple}} qemu-user
-    - name: Install QEMU
-      if: (!matrix.target.noqemu)
+    - name: Remove QEMU
+      if: (matrix.target.noqemu)
       run: |
         exec 2>&1
-        sudo apt-get install qemu-user
+        sudo apt-get purge qemu-user
     - name: Build Tools Information
       run: |
         make --version; ${{matrix.target.triple}}-gcc-${{matrix.compiler.ver}} --version
