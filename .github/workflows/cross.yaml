@@ -29,16 +29,16 @@ jobs:
         - { triple: sh4-linux-gnu, ld: ld-linux.so.2 }
 
         # BE:
-        #- { triple: m68k-linux-gnu, ld: ld.so.1,   march: '-msoft-float' } # but only on 24.04, else segfault
-        #- { triple: hppa-linux-gnu, ld: ld.so.1 }
-        #- { triple: mips-linux-gnu, ld: ld.so.1 }
-        #- { triple: mips64-linux-gnuabi64, ld: ../lib64/ld.so.1 }
-        #- { triple: mipsisa32r6-linux-gnu, ld: ld-linux-mipsn8.so.1 }
-        #- { triple: mipsisa64r6-linux-gnuabi64, ld: ../lib64/ld-linux-mipsn8.so.1 }
-        #- { triple: powerpc-linux-gnu, ld: ld.so.1 }
-        #- { triple: powerpc64-linux-gnu, ld: ld64.so.1 } # ld64.so.1 -> ../lib/ld64.so.1
-        #- { triple: s390x-linux-gnu, ld: ld64.so.1 }
-        #- { triple: sparc64-linux-gnu, ld: ../lib64/ld-linux.so.2 } # /lib64/ld-linux.so.2, 24.04 only?
+        - { triple: m68k-linux-gnu, ld: ld.so.1,   march: '-msoft-float' } # but only on 24.04, else segfault
+        - { triple: hppa-linux-gnu, ld: ld.so.1 }
+        - { triple: mips-linux-gnu, ld: ld.so.1 }
+        - { triple: mips64-linux-gnuabi64, ld: ../lib64/ld.so.1 }
+        - { triple: mipsisa32r6-linux-gnu, ld: ld-linux-mipsn8.so.1 }
+        - { triple: mipsisa64r6-linux-gnuabi64, ld: ../lib64/ld-linux-mipsn8.so.1 }
+        - { triple: powerpc-linux-gnu, ld: ld.so.1 }
+        - { triple: powerpc64-linux-gnu, ld: ld64.so.1 } # ld64.so.1 -> ../lib/ld64.so.1
+        - { triple: s390x-linux-gnu, ld: ld64.so.1 }
+        - { triple: sparc64-linux-gnu, ld: ../lib64/ld-linux.so.2 } # /lib64/ld-linux.so.2, 24.04 only?
 
         compiler:
         - { ver:  '9', os: '22.04' }
@@ -225,23 +225,23 @@ jobs:
         set -x
         #ls -l /usr/${{matrix.target.triple}}/lib
         #ls -l /usr/${{matrix.target.triple}}/lib64 || :
-        #tee hi.cc <<'END'
-        ## include <cstdio>
-        #int main() {
-        #   std::puts("Hi");
-        #   return 0;
-        #}
-        #END
-        #${{matrix.target.triple}}-g++-${{matrix.compiler.ver}} ${{matrix.target.flags}} -std=c++17 -Wno-psabi \
-        #   -O3 -{fno-stack-protector,fcf-protection=none,fno-stack-clash-protection,U_FORTIFY_SOURCE} -fno-math-errno \
-        #   -include prelude.cc -Werror \
-        #   ${{matrix.target.march}} -Wl,-I/usr/${{matrix.target.triple}}/lib/${{matrix.target.ld}} -Wl,-rpath=/usr/${{matrix.target.triple}}/lib \
-        #   hi.cc
-        #./a.out
+        tee hi.cc <<'END'
+        # include <cstdio>
+        int main() {
+           std::puts("Hi");
+           return 0;
+        }
+        END
+        ${{matrix.target.triple}}-g++-${{matrix.compiler.ver}} ${{matrix.target.flags}} -std=c++17 -Wno-psabi \
+           -O3 -{fno-stack-protector,fcf-protection=none,fno-stack-clash-protection,U_FORTIFY_SOURCE} -fno-math-errno \
+           -include prelude.cc -Werror \
+           ${{matrix.target.march}} -Wl,-I/usr/${{matrix.target.triple}}/lib/${{matrix.target.ld}} -Wl,-rpath=/usr/${{matrix.target.triple}}/lib \
+           hi.cc
+        ./a.out
         
-        make -j4 \
-           GCC='${{matrix.target.triple}}-gcc-${{matrix.compiler.ver}}' \
-           GXX='${{matrix.target.triple}}-g++-${{matrix.compiler.ver}}' \
-           MARCH='${{matrix.target.march}} -Wl,-I/usr/${{matrix.target.triple}}/lib/${{matrix.target.ld}} -Wl,-rpath=/usr/${{matrix.target.triple}}/lib' \
-           run
+        #make -j4 \
+        #   GCC='${{matrix.target.triple}}-gcc-${{matrix.compiler.ver}}' \
+        #   GXX='${{matrix.target.triple}}-g++-${{matrix.compiler.ver}}' \
+        #   MARCH='${{matrix.target.march}} -Wl,-I/usr/${{matrix.target.triple}}/lib/${{matrix.target.ld}} -Wl,-rpath=/usr/${{matrix.target.triple}}/lib' \
+        #   run
 
