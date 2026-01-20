@@ -14,7 +14,7 @@ jobs:
         target:
         - { triple: aarch64-linux-gnu,            ld: ld-linux-aarch64.so.1 }
         - { triple: arm-linux-gnueabihf,          ld: ld-linux-armhf.so.3 }
-        - { triple: powerpc64le-linux-gnu,        ld: ld64.so.2 }
+        - { triple: powerpc64le-linux-gnu,        ld: ld64.so.2 } # ld64.so.2 -> ../lib/ld64.so.2
         - { triple: riscv64-linux-gnu,            ld: ld-linux-riscv64-lp64d.so.1 }
         #- { triple: mipsel-linux-gnu,             ld: ld.so.1 }
         #- { triple: mips64el-linux-gnuabi64,      ld: ld.so.1 }
@@ -33,9 +33,9 @@ jobs:
         #- { triple: mipsisa32r6el-linux-gnu, ld: ld-linux-mipsn8.so.1 }
         #- { triple: mipsisa64r6-linux-gnuabi64, ld: ld.so.1 }
         - { triple: powerpc-linux-gnu, ld: ld.so.1 }
-        - { triple: powerpc64-linux-gnu, ld: ld64.so.1 }
+        - { triple: powerpc64-linux-gnu, ld: ld64.so.1 } # ld64.so.1 -> ../lib/ld64.so.1
         - { triple: s390x-linux-gnu, ld: ld64.so.1 }
-        - { triple: sparc64-linux-gnu, ld: ld-linux.so.2 } # no loader?
+        - { triple: sparc64-linux-gnu, ld: ../lib64/ld-linux.so.2 } # /lib64/ld-linux.so.2
 
         compiler:
         - { ver:  '9', os: '22.04' }
@@ -114,7 +114,7 @@ jobs:
         - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
           compiler: { ver: '14', os: '24.04-arm', noqemu: TRUE }
 
-        - target:   { triple: loongarch64-linux-gnu, ld: ld-linux-loongarch-lp64d.so.1 }
+        - target:   { triple: loongarch64-linux-gnu, ld: ld-linux-loongarch-lp64d.so.1 } # lib64 is empty
           compiler: { ver: '13', os: '24.04' }
         - target:   { triple: loongarch64-linux-gnu, ld: ld-linux-loongarch-lp64d.so.1 }
           compiler: { ver: '14', os: '24.04' }
@@ -230,7 +230,6 @@ jobs:
         ${{matrix.target.triple}}-g++-${{matrix.compiler.ver}} ${{matrix.target.flags}} -std=c++17 -Wno-psabi \
            -O3 -{fno-stack-protector,fcf-protection=none,fno-stack-clash-protection,U_FORTIFY_SOURCE} -fno-math-errno \
            -include prelude.cc -Werror \
+           ${{matrix.target.march}} -Wl,-I/usr/${{matrix.target.triple}}/lib/${{matrix.target.ld}} -Wl,-rpath=/usr/${{matrix.target.triple}}/lib \
            hi.cc
-           #${{matrix.target.march}} -Wl,-I/usr/${{matrix.target.triple}}/lib/${{matrix.target.ld}} -Wl,-rpath=/usr/${{matrix.target.triple}}/lib \
-
-        QEMU_LD_PREFIX=/usr/${{matrix.target.triple}} ./a.out
+        ./a.out
