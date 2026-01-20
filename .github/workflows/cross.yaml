@@ -25,8 +25,6 @@ jobs:
 
         - { triple: mipsisa32r6el-linux-gnu, ld: ld-linux-mipsn8.so.1 } # qemu only on 24.04
 
-        - { triple: loongarch64-linux-gnu, ld: ld-linux-loongarch-lp64d.so.1 }
-
         #- { triple: sh4-linux-gnu, ld: ld-linux.so.2,    march: '-O1' }
         # BE:
         #- { triple: m68k-linux-gnu, ld: ld.so.1,   march: '-msoft-float' } # but only on 24.04, else segfault
@@ -117,10 +115,10 @@ jobs:
         - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
           compiler: { ver: '14', os: '24.04-arm', noqemu: TRUE }
 
-        #- target:   { triple: loongarch64-linux-gnu, ld: ld-linux-loongarch-lp64d.so.1 } # lib64 is empty
-        #  compiler: { ver: '13', os: '24.04' }
-        #- target:   { triple: loongarch64-linux-gnu, ld: ld-linux-loongarch-lp64d.so.1 }
-        #  compiler: { ver: '14', os: '24.04' }
+        - target:   { triple: loongarch64-linux-gnu, ld: ld-linux-loongarch-lp64d.so.1 } # lib64 is empty
+          compiler: { ver: '13', os: '24.04' }
+        - target:   { triple: loongarch64-linux-gnu, ld: ld-linux-loongarch-lp64d.so.1 }
+          compiler: { ver: '14', os: '24.04' }
 
         #- target:   { triple: sh4-linux-gnu, ld: ld-linux.so.2, march: '-O1' }
         #  compiler: { ver: '13', os: '24.04' }
@@ -158,9 +156,9 @@ jobs:
           compiler: { ver: '12', os: '22.04' }
 
         - target:   { triple: mipsisa32r6-linux-gnu }
-          compiler: { os: '22.04' }
+          compiler: { ver: '11', os: '22.04' }
         - target:   { triple: mipsisa32r6el-linux-gnu } # no QEMU or compiler
-          compiler: { os: '22.04' }
+          compiler: { ver: '12', os: '22.04' }
 
         - target:   { triple: m68k-linux-gnu }
           compiler: { os: '22.04' }
