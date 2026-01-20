@@ -23,7 +23,7 @@ jobs:
 
         - { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
 
-        #- { triple: sh4-linux-gnu, ld: ld-linux.so.2,    flags: '-O1' }
+        - { triple: sh4-linux-gnu, ld: ld-linux.so.2,    march: '-O1' }
         # BE:
         - { triple: m68k-linux-gnu, ld: ld.so.1,   march: '-msoft-float' } # but only on 24.04, else segfault
         - { triple: hppa-linux-gnu, ld: ld.so.1 }
@@ -119,18 +119,12 @@ jobs:
         - target:   { triple: loongarch64-linux-gnu, ld: ld-linux-loongarch-lp64d.so.1 }
           compiler: { ver: '14', os: '24.04' }
 
-        - target:   { triple: sh4-linux-gnu, ld: ld-linux.so.2, march: '-O1' }
-          compiler: { ver: '13', os: '24.04' }
-        - target:   { triple: sh4-linux-gnu, ld: ld-linux.so.2, march: '-O1' }
-          compiler: { ver: '14', os: '24.04' }
+        #- target:   { triple: sh4-linux-gnu, ld: ld-linux.so.2, march: '-O1' }
+        #  compiler: { ver: '13', os: '24.04' }
+        #- target:   { triple: sh4-linux-gnu, ld: ld-linux.so.2, march: '-O1' }
+        #  compiler: { ver: '14', os: '24.04' }
 
         exclude:
-
-        - target:   { triple: m68k-linux-gnu }
-          compiler: { os: '22.04' }
-        - target:   { triple: sparc64-linux-gnu }
-          compiler: { os: '22.04' }
-
 
         #- target:   { triple: mipsel-linux-gnu }
         #  compiler: { ver: '11', os: '22.04' }
@@ -164,10 +158,10 @@ jobs:
         #- target:   { triple: mipsisa32r6el-linux-gnu }
         #  compiler: { os: '22.04' }
 
-        #- target:   { triple: m68k-linux-gnu }
-        #  compiler: { os: '22.04' }
-        #- target:   { triple: sparc64-linux-gnu }
-        #  compiler: { os: '22.04' }
+        - target:   { triple: m68k-linux-gnu }
+          compiler: { os: '22.04' }
+        - target:   { triple: sparc64-linux-gnu }
+          compiler: { os: '22.04' }
     runs-on: ubuntu-${{matrix.compiler.os}}
     timeout-minutes: 20
 
@@ -224,8 +218,8 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        ls -l /usr/${{matrix.target.triple}}/lib
-        ls -l /usr/${{matrix.target.triple}}/lib64 || :
+        #ls -l /usr/${{matrix.target.triple}}/lib
+        #ls -l /usr/${{matrix.target.triple}}/lib64 || :
         tee hi.cc <<'END'
         # include <cstdio>
         int main() {
