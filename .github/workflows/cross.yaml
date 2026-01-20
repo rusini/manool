@@ -120,10 +120,10 @@ jobs:
         - target:   { triple: loongarch64-linux-gnu, ld: ld-linux-loongarch-lp64d.so.1 }
           compiler: { ver: '14', os: '24.04' }
 
-        #- target:   { triple: sh4-linux-gnu, ld: ld-linux.so.2, march: '-O1' }
-        #  compiler: { ver: '13', os: '24.04' }
-        #- target:   { triple: sh4-linux-gnu, ld: ld-linux.so.2, march: '-O1' }
-        #  compiler: { ver: '14', os: '24.04' }
+        - target:   { triple: sh4-linux-gnu, ld: ld-linux.so.2, march: '-O1' }
+          compiler: { ver: '13', os: '24.04' }
+        - target:   { triple: sh4-linux-gnu, ld: ld-linux.so.2, march: '-O1' }
+          compiler: { ver: '14', os: '24.04' }
 
         exclude:
 
@@ -156,9 +156,9 @@ jobs:
           compiler: { ver: '12', os: '22.04' }
 
         - target:   { triple: mipsisa32r6-linux-gnu }
-          compiler: { ver: '11', os: '22.04' }
+          compiler: { os: '22.04' }
         - target:   { triple: mipsisa32r6el-linux-gnu } # no QEMU or compiler
-          compiler: { ver: '12', os: '22.04' }
+          compiler: { os: '22.04' }
 
         - target:   { triple: m68k-linux-gnu }
           compiler: { os: '22.04' }
