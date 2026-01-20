@@ -225,9 +225,9 @@ jobs:
     - name: Install Build Dependencies
       run: |
         exec 2>&1
-        pkg=g++-${{matrix.compiler.ver}}-${{matrix.target.triple}}
+        triple=${{matrix.target.triple}}
         set -x
-        sudo apt-get install ${pkg//_/-}
+        sudo apt-get install g++-${{matrix.compiler.ver}}-${triple//_/-}
     - name: Install QEMU
       if: (!matrix.compiler.noqemu)
       run: |
