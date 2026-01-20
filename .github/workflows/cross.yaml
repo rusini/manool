@@ -231,4 +231,4 @@ jobs:
            -include prelude.cc -Werror \
            hi.cc
            #${{matrix.target.march}} -Wl,-I/usr/${{matrix.target.triple}}/lib/${{matrix.target.ld}} -Wl,-rpath=/usr/${{matrix.target.triple}}/lib \
-        QEMU_LD_PREFIX=/usr/${{matrix.target.triple}}/lib ./a.out
+        QEMU_LD_PREFIX=/usr/${{matrix.target.triple}} ./a.out
