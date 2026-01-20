@@ -30,7 +30,7 @@ jobs:
         - { triple: mips-linux-gnu, ld: ld.so.1 }
         - { triple: mips64-linux-gnuabi64, ld: ../lib64/ld.so.1 }
         #- { triple: mipsisa32r6-linux-gnu, ld: ld.so.1 }
-        #- { triple: mipsisa32r6el-linux-gnu, ld: ld-linux-mipsn8.so.1 }
+        - { triple: mipsisa32r6el-linux-gnu, ld: ld-linux-mipsn8.so.1 }
         #- { triple: mipsisa64r6-linux-gnuabi64, ld: ld.so.1 }
         - { triple: powerpc-linux-gnu, ld: ld.so.1 }
         - { triple: powerpc64-linux-gnu, ld: ld64.so.1 } # ld64.so.1 -> ../lib/ld64.so.1
