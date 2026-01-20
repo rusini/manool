@@ -229,6 +229,6 @@ jobs:
         ${{matrix.target.triple}}-g++-${{matrix.compiler.ver}} ${{matrix.target.flags}} -std=c++17 -Wno-psabi \
            -O3 -{fno-stack-protector,fcf-protection=none,fno-stack-clash-protection,U_FORTIFY_SOURCE} -fno-math-errno \
            -include prelude.cc -Werror \
-           ${{matrix.target.march}} -Wl,-I/usr/${{matrix.target.triple}}/lib/${{matrix.target.ld}} -Wl,-rpath=/usr/${{matrix.target.triple}}/lib \
            hi.cc
+           #${{matrix.target.march}} -Wl,-I/usr/${{matrix.target.triple}}/lib/${{matrix.target.ld}} -Wl,-rpath=/usr/${{matrix.target.triple}}/lib \
         QEMU_LD_PREFIX=/usr/${{matrix.target.triple}}/lib ./a.out
