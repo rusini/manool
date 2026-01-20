@@ -219,6 +219,7 @@ jobs:
         exec 2>&1
         set -x
         ls -l /usr/${{matrix.target.triple}}/lib
+        ls -l /usr/${{matrix.target.triple}}/lib64 || :
         tee hi.cc <<'END'
         # include <cstdio>
         int main() {
@@ -231,4 +232,5 @@ jobs:
            -include prelude.cc -Werror \
            hi.cc
            #${{matrix.target.march}} -Wl,-I/usr/${{matrix.target.triple}}/lib/${{matrix.target.ld}} -Wl,-rpath=/usr/${{matrix.target.triple}}/lib \
+
         QEMU_LD_PREFIX=/usr/${{matrix.target.triple}} ./a.out
