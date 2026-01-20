@@ -143,6 +143,27 @@ jobs:
         - target:   { triple: x86_64-linux-gnu, ld: ld-linux-x86-64.so.2 }
           compiler: { ver: '14', os: '24.04-arm' }
 
+        - target:   { triple: x86-64-linux-gnux32, ld: ld-linux-x32.so.2 }
+          compiler: { ver:  '9', os: '22.04-arm' }
+        - target:   { triple: x86_64-linux-gnux32, ld: ld-linux-x32.so.2 }
+          compiler: { ver: '10', os: '22.04-arm' }
+        - target:   { triple: x86_64-linux-gnux32, ld: ld-linux-x32.so.2 }
+          compiler: { ver: '11', os: '22.04-arm' }
+        - target:   { triple: x86_64-linux-gnux32, ld: ld-linux-x32.so.2 }
+          compiler: { ver: '12', os: '22.04-arm' }
+        - target:   { triple: x86_64-linux-gnux32, ld: ld-linux-x32.so.2 }
+          compiler: { ver:  '9', os: '24.04-arm' }
+        - target:   { triple: x86_64-linux-gnux32, ld: ld-linux-x32.so.2 }
+          compiler: { ver: '10', os: '24.04-arm' }
+        - target:   { triple: x86_64-linux-gnux32, ld: ld-linux-x32.so.2 }
+          compiler: { ver: '11', os: '24.04-arm' }
+        - target:   { triple: x86_64-linux-gnux32, ld: ld-linux-x32.so.2 }
+          compiler: { ver: '12', os: '24.04-arm' }
+        - target:   { triple: x86_64-linux-gnux32, ld: ld-linux-x32.so.2 }
+          compiler: { ver: '13', os: '24.04-arm' }
+        - target:   { triple: x86_64-linux-gnux32, ld: ld-linux-x32.so.2 }
+          compiler: { ver: '14', os: '24.04-arm' }
+
         exclude:
 
         - target:   { triple: mipsel-linux-gnu } # package not shipped
@@ -246,8 +267,8 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        ls -l /usr/${{matrix.target.triple}}/lib
-        ls -l /usr/${{matrix.target.triple}}/lib64 || :
+        #ls -l /usr/${{matrix.target.triple}}/lib
+        #ls -l /usr/${{matrix.target.triple}}/lib64 || :
         tee hi.cc <<'END'
         # include <cstdio>
         int main() {
