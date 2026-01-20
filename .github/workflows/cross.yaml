@@ -17,8 +17,8 @@ jobs:
         - { triple: powerpc64le-linux-gnu,        ld: ld64.so.2 } # ld64.so.2 -> ../lib/ld64.so.2
         - { triple: riscv64-linux-gnu,            ld: ld-linux-riscv64-lp64d.so.1 }
         - { triple: mipsel-linux-gnu,             ld: ld.so.1 }
-        - { triple: mips64el-linux-gnuabi64,      ld: ld.so.1 }
-        - { triple: mipsisa64r6el-linux-gnuabi64, ld: ld-linux-mipsn8.so.1 }
+        - { triple: mips64el-linux-gnuabi64,      ld: ../lib64/ld.so.1 }
+        #- { triple: mipsisa64r6el-linux-gnuabi64, ld: ../lib64/ld-linux-mipsn8.so.1 }
         - { triple: alpha-linux-gnu,              ld: ld-linux.so.2 }
 
         - { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
@@ -126,14 +126,15 @@ jobs:
 
         exclude:
 
-        #- target:   { triple: mipsel-linux-gnu }
-        #  compiler: { ver: '11', os: '22.04' }
-        #- target:   { triple: mipsel-linux-gnu }
-        #  compiler: { ver: '12', os: '22.04' }
-        #- target:   { triple: mips64el-linux-gnuabi64 }
-        #  compiler: { ver: '11', os: '22.04' }
-        #- target:   { triple: mips64el-linux-gnuabi64 }
-        #  compiler: { ver: '12', os: '22.04' }
+        - target:   { triple: mipsel-linux-gnu }
+          compiler: { ver: '11', os: '22.04' }
+        - target:   { triple: mipsel-linux-gnu }
+          compiler: { ver: '12', os: '22.04' }
+        - target:   { triple: mips64el-linux-gnuabi64 }
+          compiler: { ver: '11', os: '22.04' }
+        - target:   { triple: mips64el-linux-gnuabi64 }
+          compiler: { ver: '12', os: '22.04' }
+
         #- target:   { triple: mipsisa64r6el-linux-gnuabi64 }
         #  compiler: { ver: '11', os: '22.04' }
         #- target:   { triple: mipsisa64r6el-linux-gnuabi64 }
