@@ -219,18 +219,25 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        ls -l /usr/${{matrix.target.triple}}/lib
-        ls -l /usr/${{matrix.target.triple}}/lib64 || :
-        tee hi.cc <<'END'
-        # include <cstdio>
-        int main() {
-           std::puts("Hi");
-           return 0;
-        }
-        END
-        ${{matrix.target.triple}}-g++-${{matrix.compiler.ver}} ${{matrix.target.flags}} -std=c++17 -Wno-psabi \
-           -O3 -{fno-stack-protector,fcf-protection=none,fno-stack-clash-protection,U_FORTIFY_SOURCE} -fno-math-errno \
-           -include prelude.cc -Werror \
-           ${{matrix.target.march}} -Wl,-I/usr/${{matrix.target.triple}}/lib/${{matrix.target.ld}} -Wl,-rpath=/usr/${{matrix.target.triple}}/lib \
-           hi.cc
-        ./a.out
+        #ls -l /usr/${{matrix.target.triple}}/lib
+        #ls -l /usr/${{matrix.target.triple}}/lib64 || :
+        #tee hi.cc <<'END'
+        ## include <cstdio>
+        #int main() {
+        #   std::puts("Hi");
+        #   return 0;
+        #}
+        #END
+        #${{matrix.target.triple}}-g++-${{matrix.compiler.ver}} ${{matrix.target.flags}} -std=c++17 -Wno-psabi \
+        #   -O3 -{fno-stack-protector,fcf-protection=none,fno-stack-clash-protection,U_FORTIFY_SOURCE} -fno-math-errno \
+        #   -include prelude.cc -Werror \
+        #   ${{matrix.target.march}} -Wl,-I/usr/${{matrix.target.triple}}/lib/${{matrix.target.ld}} -Wl,-rpath=/usr/${{matrix.target.triple}}/lib \
+        #   hi.cc
+        #./a.out
+        
+        make -j4 \
+           GCC='${{matrix.target.triple}}-gcc-${{matrix.compiler.ver}}' \
+           GXX='${{matrix.target.triple}}-g++-${{matrix.compiler.ver}}' \
+           MARCH='${{matrix.target.march}} -Wl,-I/usr/${{matrix.target.triple}}/lib/${{matrix.target.ld}} -Wl,-rpath=/usr/${{matrix.target.triple}}/lib' \
+           run
+
