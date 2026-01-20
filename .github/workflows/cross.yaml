@@ -227,7 +227,7 @@ jobs:
         exec 2>&1
         pkg=g++-${{matrix.compiler.ver}}-${{matrix.target.triple}}
         set -x
-        sudo apt-get install $${pkg//_/-}
+        sudo apt-get install ${pkg//_/-}
     - name: Install QEMU
       if: (!matrix.compiler.noqemu)
       run: |
