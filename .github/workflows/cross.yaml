@@ -218,8 +218,8 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        #ls -l /usr/${{matrix.target.triple}}/lib
-        #ls -l /usr/${{matrix.target.triple}}/lib64 || :
+        ls -l /usr/${{matrix.target.triple}}/lib
+        ls -l /usr/${{matrix.target.triple}}/lib64 || :
         tee hi.cc <<'END'
         # include <cstdio>
         int main() {
