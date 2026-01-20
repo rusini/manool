@@ -16,9 +16,9 @@ jobs:
         - { triple: arm-linux-gnueabihf,          ld: ld-linux-armhf.so.3 }
         - { triple: powerpc64le-linux-gnu,        ld: ld64.so.2 } # ld64.so.2 -> ../lib/ld64.so.2
         - { triple: riscv64-linux-gnu,            ld: ld-linux-riscv64-lp64d.so.1 }
-        #- { triple: mipsel-linux-gnu,             ld: ld.so.1 }
-        #- { triple: mips64el-linux-gnuabi64,      ld: ld.so.1 }
-        #- { triple: mipsisa64r6el-linux-gnuabi64, ld: ld-linux-mipsn8.so.1 }
+        - { triple: mipsel-linux-gnu,             ld: ld.so.1 }
+        - { triple: mips64el-linux-gnuabi64,      ld: ld.so.1 }
+        - { triple: mipsisa64r6el-linux-gnuabi64, ld: ld-linux-mipsn8.so.1 }
         - { triple: alpha-linux-gnu,              ld: ld-linux.so.2 }
 
         - { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
