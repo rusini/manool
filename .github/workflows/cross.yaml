@@ -124,44 +124,44 @@ jobs:
         - target:   { triple: sh4-linux-gnu, ld: ld-linux.so.2, march: '-O1' }
           compiler: { ver: '14', os: '24.04' }
 
-        exclude:
+        #exclude:
 
-        - target:   { triple: mipsel-linux-gnu }
-          compiler: { ver: '11', os: '22.04' }
-        - target:   { triple: mipsel-linux-gnu }
-          compiler: { ver: '12', os: '22.04' }
-        - target:   { triple: mips64el-linux-gnuabi64 }
-          compiler: { ver: '11', os: '22.04' }
-        - target:   { triple: mips64el-linux-gnuabi64 }
-          compiler: { ver: '12', os: '22.04' }
-        - target:   { triple: mipsisa64r6el-linux-gnuabi64 }
-          compiler: { ver: '11', os: '22.04' }
-        - target:   { triple: mipsisa64r6el-linux-gnuabi64 }
-          compiler: { ver: '12', os: '22.04' }
+        #- target:   { triple: mipsel-linux-gnu }
+        #  compiler: { ver: '11', os: '22.04' }
+        #- target:   { triple: mipsel-linux-gnu }
+        #  compiler: { ver: '12', os: '22.04' }
+        #- target:   { triple: mips64el-linux-gnuabi64 }
+        #  compiler: { ver: '11', os: '22.04' }
+        #- target:   { triple: mips64el-linux-gnuabi64 }
+        #  compiler: { ver: '12', os: '22.04' }
+        #- target:   { triple: mipsisa64r6el-linux-gnuabi64 }
+        #  compiler: { ver: '11', os: '22.04' }
+        #- target:   { triple: mipsisa64r6el-linux-gnuabi64 }
+        #  compiler: { ver: '12', os: '22.04' }
 
-        - target:   { triple: mips-linux-gnu }
-          compiler: { ver: '11', os: '22.04' }
-        - target:   { triple: mips-linux-gnu }
-          compiler: { ver: '12', os: '22.04' }
-        - target:   { triple: mips64-linux-gnuabi64 }
-          compiler: { ver: '11', os: '22.04' }
-        - target:   { triple: mips64-linux-gnuabi64 }
-          compiler: { ver: '12', os: '22.04' }
+        #- target:   { triple: mips-linux-gnu }
+        #  compiler: { ver: '11', os: '22.04' }
+        #- target:   { triple: mips-linux-gnu }
+        #  compiler: { ver: '12', os: '22.04' }
+        #- target:   { triple: mips64-linux-gnuabi64 }
+        #  compiler: { ver: '11', os: '22.04' }
+        #- target:   { triple: mips64-linux-gnuabi64 }
+        #  compiler: { ver: '12', os: '22.04' }
 
-        - target:   { triple: mipsisa64r6-linux-gnuabi64 }
-          compiler: { ver: '11', os: '22.04' }
-        - target:   { triple: mipsisa64r6-linux-gnuabi64 }
-          compiler: { ver: '12', os: '22.04' }
+        #- target:   { triple: mipsisa64r6-linux-gnuabi64 }
+        #  compiler: { ver: '11', os: '22.04' }
+        #- target:   { triple: mipsisa64r6-linux-gnuabi64 }
+        #  compiler: { ver: '12', os: '22.04' }
 
-        - target:   { triple: mipsisa32r6-linux-gnu }
-          compiler: { os: '22.04' }
-        - target:   { triple: mipsisa32r6el-linux-gnu }
-          compiler: { os: '22.04' }
+        #- target:   { triple: mipsisa32r6-linux-gnu }
+        #  compiler: { os: '22.04' }
+        #- target:   { triple: mipsisa32r6el-linux-gnu }
+        #  compiler: { os: '22.04' }
 
-        - target:   { triple: m68k-linux-gnu }
-          compiler: { os: '22.04' }
-        - target:   { triple: sparc64-linux-gnu }
-          compiler: { os: '22.04' }
+        #- target:   { triple: m68k-linux-gnu }
+        #  compiler: { os: '22.04' }
+        #- target:   { triple: sparc64-linux-gnu }
+        #  compiler: { os: '22.04' }
     runs-on: ubuntu-${{matrix.compiler.os}}
     timeout-minutes: 20
 
