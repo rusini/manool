@@ -16,26 +16,26 @@ jobs:
         - { triple: arm-linux-gnueabihf,          ld: ld-linux-armhf.so.3 }
         - { triple: powerpc64le-linux-gnu,        ld: ld64.so.2 }
         - { triple: riscv64-linux-gnu,            ld: ld-linux-riscv64-lp64d.so.1 }
-        - { triple: mipsel-linux-gnu,             ld: ld.so.1 }
-        - { triple: mips64el-linux-gnuabi64,      ld: ld.so.1 }
-        - { triple: mipsisa64r6el-linux-gnuabi64, ld: ld-linux-mipsn8.so.1 }
+        #- { triple: mipsel-linux-gnu,             ld: ld.so.1 }
+        #- { triple: mips64el-linux-gnuabi64,      ld: ld.so.1 }
+        #- { triple: mipsisa64r6el-linux-gnuabi64, ld: ld-linux-mipsn8.so.1 }
         - { triple: alpha-linux-gnu,              ld: ld-linux.so.2 }
 
         - { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
 
         #- { triple: sh4-linux-gnu, ld: ld-linux.so.2,    flags: '-O1' }
         # BE:
-        #- { triple: m68k-linux-gnu, ld: ld.so.1,   flags: '-msoft-float' }
-        #- { triple: hppa-linux-gnu, ld: ld.so.1 }
+        - { triple: m68k-linux-gnu, ld: ld.so.1,   march: '-msoft-float' }
+        - { triple: hppa-linux-gnu, ld: ld.so.1 }
         #- { triple: mips-linux-gnu, ld: ld.so.1 }
         #- { triple: mips64-linux-gnuabi64, ld: ld.so.1 }
         #- { triple: mipsisa32r6-linux-gnu, ld: ld.so.1 }
-        - { triple: mipsisa32r6el-linux-gnu, ld: ld-linux-mipsn8.so.1 }
+        #- { triple: mipsisa32r6el-linux-gnu, ld: ld-linux-mipsn8.so.1 }
         #- { triple: mipsisa64r6-linux-gnuabi64, ld: ld.so.1 }
-        #- { triple: powerpc-linux-gnu, ld: ld.so.1 }
-        #- { triple: powerpc64-linux-gnu, ld: ld64.so.1 }
-        #- { triple: s390x-linux-gnu, ld: ld64.so.1 }
-        #- { triple: sparc64-linux-gnu, ld: ld-linux.so.2 }
+        - { triple: powerpc-linux-gnu, ld: ld.so.1 }
+        - { triple: powerpc64-linux-gnu, ld: ld64.so.1 }
+        - { triple: s390x-linux-gnu, ld: ld64.so.1 }
+        - { triple: sparc64-linux-gnu, ld: ld-linux.so.2 }
 
         compiler:
         - { ver:  '9', os: '22.04' }
