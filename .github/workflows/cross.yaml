@@ -35,7 +35,7 @@ jobs:
         - { triple: powerpc-linux-gnu, ld: ld.so.1 }
         - { triple: powerpc64-linux-gnu, ld: ld64.so.1 } # ld64.so.1 -> ../lib/ld64.so.1
         - { triple: s390x-linux-gnu, ld: ld64.so.1 }
-        - { triple: sparc64-linux-gnu, ld: lib64/ld-linux.so.2 } # /lib64/ld-linux.so.2
+        - { triple: sparc64-linux-gnu, ld: ../lib64/ld-linux.so.2 } # /lib64/ld-linux.so.2, 24.04 only?
 
         compiler:
         - { ver:  '9', os: '22.04' }
@@ -124,7 +124,13 @@ jobs:
         - target:   { triple: sh4-linux-gnu, ld: ld-linux.so.2, march: '-O1' }
           compiler: { ver: '14', os: '24.04' }
 
-        #exclude:
+        exclude:
+
+        - target:   { triple: m68k-linux-gnu }
+          compiler: { os: '22.04' }
+        - target:   { triple: sparc64-linux-gnu }
+          compiler: { os: '22.04' }
+
 
         #- target:   { triple: mipsel-linux-gnu }
         #  compiler: { ver: '11', os: '22.04' }
@@ -230,6 +236,6 @@ jobs:
         ${{matrix.target.triple}}-g++-${{matrix.compiler.ver}} ${{matrix.target.flags}} -std=c++17 -Wno-psabi \
            -O3 -{fno-stack-protector,fcf-protection=none,fno-stack-clash-protection,U_FORTIFY_SOURCE} -fno-math-errno \
            -include prelude.cc -Werror \
-           ${{matrix.target.march}} -Wl,-I/usr/${{matrix.target.triple}}/${{matrix.target.ld}} -Wl,-rpath=/usr/${{matrix.target.triple}}/lib \
+           ${{matrix.target.march}} -Wl,-I/usr/${{matrix.target.triple}}/lib/${{matrix.target.ld}} -Wl,-rpath=/usr/${{matrix.target.triple}}/lib \
            hi.cc
         ./a.out
