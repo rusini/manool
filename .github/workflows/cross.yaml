@@ -28,7 +28,7 @@ jobs:
         - { triple: m68k-linux-gnu, ld: ld.so.1,   march: '-msoft-float' } # but only on 24.04, else segfault
         - { triple: hppa-linux-gnu, ld: ld.so.1 }
         - { triple: mips-linux-gnu, ld: ld.so.1 }
-        - { triple: mips64-linux-gnuabi64, ld: ld.so.1 }
+        - { triple: mips64-linux-gnuabi64, ld: ../lib64/ld.so.1 }
         #- { triple: mipsisa32r6-linux-gnu, ld: ld.so.1 }
         #- { triple: mipsisa32r6el-linux-gnu, ld: ld-linux-mipsn8.so.1 }
         #- { triple: mipsisa64r6-linux-gnuabi64, ld: ld.so.1 }
@@ -133,6 +133,15 @@ jobs:
         - target:   { triple: mips64el-linux-gnuabi64 }
           compiler: { ver: '11', os: '22.04' }
         - target:   { triple: mips64el-linux-gnuabi64 }
+          compiler: { ver: '12', os: '22.04' }
+
+        - target:   { triple: mips-linux-gnu } # package not shipped
+          compiler: { ver: '11', os: '22.04' }
+        - target:   { triple: mips-linux-gnu }
+          compiler: { ver: '12', os: '22.04' }
+        - target:   { triple: mips64-linux-gnuabi64 }
+          compiler: { ver: '11', os: '22.04' }
+        - target:   { triple: mips64-linux-gnuabi64 }
           compiler: { ver: '12', os: '22.04' }
 
         #- target:   { triple: mipsisa64r6el-linux-gnuabi64 }
