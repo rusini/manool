@@ -143,7 +143,7 @@ jobs:
         - target:   { triple: x86_64-linux-gnu, ld: ld-linux-x86-64.so.2 }
           compiler: { ver: '14', os: '24.04-arm' }
 
-        - target:   { triple: x86-64-linux-gnux32, ld: ld-linux-x32.so.2 }
+        - target:   { triple: x86_64-linux-gnux32, ld: ld-linux-x32.so.2 }
           compiler: { ver:  '9', os: '22.04-arm' }
         - target:   { triple: x86_64-linux-gnux32, ld: ld-linux-x32.so.2 }
           compiler: { ver: '10', os: '22.04-arm' }
