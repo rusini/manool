@@ -19,25 +19,25 @@ jobs:
         - { triple: riscv64-linux-gnu,            ld: ld-linux-riscv64-lp64d.so.1   }
         - { triple: mipsel-linux-gnu,             ld: ld.so.1                       }
         - { triple: mips64el-linux-gnuabi64,      ld: ../lib64/ld.so.1              }
-        - { triple: mipsisa64r6el-linux-gnuabi64, ld: ../lib64/ld-linux-mipsn8.so.1 }
+        - { triple: mipsisa32r6el-linux-gnu,      ld: ld-linux-mipsn8.so.1          } # qemu only on 24.04
         - { triple: alpha-linux-gnu,              ld: ld-linux.so.2                 }
 
         - { triple: arm-linux-gnueabi,            ld: ld-linux.so.3, march: '-march=armv7-a' }
-        - { triple: mipsisa32r6el-linux-gnu,      ld: ld-linux-mipsn8.so.1                   } # qemu only on 24.04
+        - { triple: mipsisa64r6el-linux-gnuabi64, ld: ../lib64/ld-linux-mipsn8.so.1          }
         - { triple: loongarch64-linux-gnu,        ld: ld-linux-loongarch-lp64d.so.1          }
         - { triple: sh4-linux-gnu,                ld: ld-linux.so.2                          }
 
         # BE:
+        - { triple: s390x-linux-gnu,            ld: ld64.so.1                      }
+        - { triple: powerpc64-linux-gnu,        ld: ld64.so.1                      } # ld64.so.1 -> ../lib/ld64.so.1
+        - { triple: powerpc-linux-gnu,          ld: ld.so.1                        }
+        - { triple: sparc64-linux-gnu,          ld: ../lib64/ld-linux.so.2         } # /lib64/ld-linux.so.2, 24.04 only?
+        - { triple: mips-linux-gnu,             ld: ld.so.1                        }
+        - { triple: mips64-linux-gnuabi64,      ld: ../lib64/ld.so.1               }
+        - { triple: mipsisa32r6-linux-gnu,      ld: ld-linux-mipsn8.so.1           }
+        - { triple: mipsisa64r6-linux-gnuabi64, ld: ../lib64/ld-linux-mipsn8.so.1  }
         - { triple: m68k-linux-gnu,             ld: ld.so.1, march: '-msoft-float' } # but only on 24.04, else segfault
         - { triple: hppa-linux-gnu,             ld: ld.so.1 }
-        - { triple: mips-linux-gnu,             ld: ld.so.1 }
-        - { triple: mips64-linux-gnuabi64,      ld: ../lib64/ld.so.1 }
-        - { triple: mipsisa32r6-linux-gnu,      ld: ld-linux-mipsn8.so.1 }
-        - { triple: mipsisa64r6-linux-gnuabi64, ld: ../lib64/ld-linux-mipsn8.so.1 }
-        - { triple: powerpc-linux-gnu,          ld: ld.so.1 }
-        - { triple: powerpc64-linux-gnu,        ld: ld64.so.1 } # ld64.so.1 -> ../lib/ld64.so.1
-        - { triple: s390x-linux-gnu,            ld: ld64.so.1 }
-        - { triple: sparc64-linux-gnu,          ld: ../lib64/ld-linux.so.2 } # /lib64/ld-linux.so.2, 24.04 only?
 
         compiler:
         - { ver:  '9', os: '22.04' }
@@ -50,6 +50,51 @@ jobs:
         - { ver: '12', os: '24.04' }
         - { ver: '13', os: '24.04' }
         - { ver: '14', os: '24.04' }
+
+        exclude:
+
+        - target:   { triple: mipsel-linux-gnu } # package not shipped
+          compiler: { ver: '11', os: '22.04' }
+        - target:   { triple: mipsel-linux-gnu }
+          compiler: { ver: '12', os: '22.04' }
+        - target:   { triple: mips64el-linux-gnuabi64 }
+          compiler: { ver: '11', os: '22.04' }
+        - target:   { triple: mips64el-linux-gnuabi64 }
+          compiler: { ver: '12', os: '22.04' }
+
+        - target:   { triple: mips-linux-gnu } # package not shipped
+          compiler: { ver: '11', os: '22.04' }
+        - target:   { triple: mips-linux-gnu }
+          compiler: { ver: '12', os: '22.04' }
+        - target:   { triple: mips64-linux-gnuabi64 }
+          compiler: { ver: '11', os: '22.04' }
+        - target:   { triple: mips64-linux-gnuabi64 }
+          compiler: { ver: '12', os: '22.04' }
+
+        - target:   { triple: mipsisa64r6el-linux-gnuabi64 }
+          compiler: { ver: '11', os: '22.04' }
+        - target:   { triple: mipsisa64r6el-linux-gnuabi64 }
+          compiler: { ver: '12', os: '22.04' }
+
+        - target:   { triple: mipsisa64r6-linux-gnuabi64 }
+          compiler: { ver: '11', os: '22.04' }
+        - target:   { triple: mipsisa64r6-linux-gnuabi64 }
+          compiler: { ver: '12', os: '22.04' }
+
+        - target:   { triple: mipsisa32r6-linux-gnu }
+          compiler: { os: '22.04' }
+        - target:   { triple: mipsisa32r6el-linux-gnu } # no QEMU or compiler
+          compiler: { os: '22.04' }
+
+        - target:   { triple: m68k-linux-gnu }
+          compiler: { os: '22.04' }
+        - target:   { triple: sparc64-linux-gnu }
+          compiler: { os: '22.04' }
+
+        - target:   { triple: loongarch64-linux-gnu } # only using explicit includes
+          #compiler: {}
+        - target:   { triple: sh4-linux-gnu } # seems to be bugs in compiler or QEMU
+          #compiler: {}
 
         include:
 
@@ -171,51 +216,6 @@ jobs:
           compiler: { ver: '13', os: '24.04-arm' }
         - target:   { triple: x86_64-linux-gnu, ld: ld-linux-x86-64.so.2 }
           compiler: { ver: '14', os: '24.04-arm' }
-
-        exclude:
-
-        - target:   { triple: mipsel-linux-gnu } # package not shipped
-          compiler: { ver: '11', os: '22.04' }
-        - target:   { triple: mipsel-linux-gnu }
-          compiler: { ver: '12', os: '22.04' }
-        - target:   { triple: mips64el-linux-gnuabi64 }
-          compiler: { ver: '11', os: '22.04' }
-        - target:   { triple: mips64el-linux-gnuabi64 }
-          compiler: { ver: '12', os: '22.04' }
-
-        - target:   { triple: mips-linux-gnu } # package not shipped
-          compiler: { ver: '11', os: '22.04' }
-        - target:   { triple: mips-linux-gnu }
-          compiler: { ver: '12', os: '22.04' }
-        - target:   { triple: mips64-linux-gnuabi64 }
-          compiler: { ver: '11', os: '22.04' }
-        - target:   { triple: mips64-linux-gnuabi64 }
-          compiler: { ver: '12', os: '22.04' }
-
-        - target:   { triple: mipsisa64r6el-linux-gnuabi64 }
-          compiler: { ver: '11', os: '22.04' }
-        - target:   { triple: mipsisa64r6el-linux-gnuabi64 }
-          compiler: { ver: '12', os: '22.04' }
-
-        - target:   { triple: mipsisa64r6-linux-gnuabi64 }
-          compiler: { ver: '11', os: '22.04' }
-        - target:   { triple: mipsisa64r6-linux-gnuabi64 }
-          compiler: { ver: '12', os: '22.04' }
-
-        - target:   { triple: mipsisa32r6-linux-gnu }
-          compiler: { os: '22.04' }
-        - target:   { triple: mipsisa32r6el-linux-gnu } # no QEMU or compiler
-          compiler: { os: '22.04' }
-
-        - target:   { triple: m68k-linux-gnu }
-          compiler: { os: '22.04' }
-        - target:   { triple: sparc64-linux-gnu }
-          compiler: { os: '22.04' }
-
-        - target:   { triple: loongarch64-linux-gnu } # only using explicit includes
-          compiler: {}
-        - target:   { triple: sh4-linux-gnu } # seems to be bugs in compiler or QEMU
-          compiler: {}
 
     runs-on: ubuntu-${{matrix.compiler.os}}
     timeout-minutes: 20
