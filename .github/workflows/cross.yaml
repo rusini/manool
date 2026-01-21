@@ -8,7 +8,7 @@ on:
 jobs:
   cross-build:
     #name: ${{matrix.compiler.os}}/${{matrix.target.triple}}/${{matrix.compiler.ver}}
-    name: Build on Ubuntu ${{matrix.compiler.os}} with gcc-${{matrix.compiler.ver}} for ${{matrix.target.triple}}
+    name: Build on Ubuntu ${{matrix.compiler.os}} for ${{matrix.target.triple}} with gcc-${{matrix.compiler.ver}}
     strategy:
       fail-fast: FALSE
       matrix:
