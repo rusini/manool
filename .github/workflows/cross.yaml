@@ -222,13 +222,6 @@ jobs:
       run: { shell: bash }
     steps:
 
-    - name: Target Is Big-Endian!
-      if: (matrix.target.be)
-      run: ''
-    - name: Target Is Little-Endian!
-      if: (!matrix.target.be)
-      run: ''
-
     - name: Machine Information
       run: |
         exec 2>&1
@@ -287,7 +280,7 @@ jobs:
            return 0;
         }
         END
-        ${{matrix.target.triple}}-g++-${{matrix.compiler.ver}} ${{matrix.target.flags}} -std=c++17 -Wno-psabi \
+        ${{matrix.target.triple}}-g++-${{matrix.compiler.ver}} -pipe -std=c++17 -Wno-psabi \
            -O3 -{fno-stack-protector,fcf-protection=none,fno-stack-clash-protection,U_FORTIFY_SOURCE} -fno-math-errno \
            -include prelude.cc -Werror \
            ${{matrix.target.march}} -Wl,-I/usr/${{matrix.target.triple}}/lib/${{matrix.target.ld}} -Wl,-rpath=/usr/${{matrix.target.triple}}/lib \
