@@ -7,7 +7,7 @@ on:
 
 jobs:
   cross-build:
-    name: Ubuntu ${{matrix.compiler.os}}, gcc-${{matrix.compiler.ver}} => ${{matrix.target.triple}}${{matrix.target.be && '(BE)' || ''}}
+    name: Ubuntu ${{matrix.compiler.os}}, gcc-${{matrix.compiler.ver}} => ${{matrix.target.triple}}(${{matrix.target.be && 'B' || 'L'}}E)
     strategy:
       fail-fast: FALSE
       matrix:
