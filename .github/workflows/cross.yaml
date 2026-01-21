@@ -56,67 +56,97 @@ jobs:
         include:
 
         - target:   { triple: i686-linux-gnu, ld: ld-linux.so.2, march: '-msse2 -mfpmath=sse' }
-          compiler: { ver:  '9', os: '22.04', noqemu: TRUE }
+          compiler: { ver:  '9', os: '22.04' }
+          noqemu:   TRUE
         - target:   { triple: i686-linux-gnu, ld: ld-linux.so.2, march: '-msse2 -mfpmath=sse' }
-          compiler: { ver: '10', os: '22.04', noqemu: TRUE }
+          compiler: { ver: '10', os: '22.04' }
+          noqemu:   TRUE
         - target:   { triple: i686-linux-gnu, ld: ld-linux.so.2, march: '-msse2 -mfpmath=sse' }
-          compiler: { ver: '11', os: '22.04', noqemu: TRUE }
+          compiler: { ver: '11', os: '22.04' }
+          noqemu:   TRUE
         - target:   { triple: i686-linux-gnu, ld: ld-linux.so.2, march: '-msse2 -mfpmath=sse' }
-          compiler: { ver: '12', os: '22.04', noqemu: TRUE }
+          compiler: { ver: '12', os: '22.04' }
+          noqemu:   TRUE
         - target:   { triple: i686-linux-gnu, ld: ld-linux.so.2, march: '-msse2 -mfpmath=sse' }
-          compiler: { ver:  '9', os: '24.04', noqemu: TRUE }
+          compiler: { ver:  '9', os: '24.04' }
+          noqemu:   TRUE
         - target:   { triple: i686-linux-gnu, ld: ld-linux.so.2, march: '-msse2 -mfpmath=sse' }
-          compiler: { ver: '10', os: '24.04', noqemu: TRUE }
+          compiler: { ver: '10', os: '24.04' }
+          noqemu:   TRUE
         - target:   { triple: i686-linux-gnu, ld: ld-linux.so.2, march: '-msse2 -mfpmath=sse' }
-          compiler: { ver: '11', os: '24.04', noqemu: TRUE }
+          compiler: { ver: '11', os: '24.04' }
+          noqemu:   TRUE
         - target:   { triple: i686-linux-gnu, ld: ld-linux.so.2, march: '-msse2 -mfpmath=sse' }
-          compiler: { ver: '12', os: '24.04', noqemu: TRUE }
+          compiler: { ver: '12', os: '24.04' }
+          noqemu:   TRUE
         - target:   { triple: i686-linux-gnu, ld: ld-linux.so.2, march: '-msse2 -mfpmath=sse' }
-          compiler: { ver: '13', os: '24.04', noqemu: TRUE }
+          compiler: { ver: '13', os: '24.04' }
+          noqemu:   TRUE
         - target:   { triple: i686-linux-gnu, ld: ld-linux.so.2, march: '-msse2 -mfpmath=sse' }
-          compiler: { ver: '14', os: '24.04', noqemu: TRUE }
+          compiler: { ver: '14', os: '24.04' }
+          noqemu:   TRUE
 
         - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
-          compiler: { ver:  '9', os: '22.04-arm', noqemu: TRUE }
+          compiler: { ver:  '9', os: '22.04-arm' }
+          noqemu:   TRUE
         - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
-          compiler: { ver: '10', os: '22.04-arm', noqemu: TRUE }
+          compiler: { ver: '10', os: '22.04-arm' }
+          noqemu:   TRUE
         - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
-          compiler: { ver: '11', os: '22.04-arm', noqemu: TRUE }
+          compiler: { ver: '11', os: '22.04-arm' }
+          noqemu:   TRUE
         - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
-          compiler: { ver: '12', os: '22.04-arm', noqemu: TRUE }
+          compiler: { ver: '12', os: '22.04-arm' }
+          noqemu:   TRUE
         - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
-          compiler: { ver:  '9', os: '24.04-arm', noqemu: TRUE }
+          compiler: { ver:  '9', os: '24.04-arm' }
+          noqemu:   TRUE
         - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
-          compiler: { ver: '10', os: '24.04-arm', noqemu: TRUE }
+          compiler: { ver: '10', os: '24.04-arm' }
+          noqemu:   TRUE
         - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
-          compiler: { ver: '11', os: '24.04-arm', noqemu: TRUE }
+          compiler: { ver: '11', os: '24.04-arm' }
+          noqemu:   TRUE
         - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
-          compiler: { ver: '12', os: '24.04-arm', noqemu: TRUE }
+          compiler: { ver: '12', os: '24.04-arm' }
+          noqemu:   TRUE
         - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
-          compiler: { ver: '13', os: '24.04-arm', noqemu: TRUE }
+          compiler: { ver: '13', os: '24.04-arm' }
+          noqemu:   TRUE
         - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
-          compiler: { ver: '14', os: '24.04-arm', noqemu: TRUE }
+          compiler: { ver: '14', os: '24.04-arm' }
+          noqemu:   TRUE
 
         - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
-          compiler: { ver:  '9', os: '22.04-arm', noqemu: TRUE }
+          compiler: { ver:  '9', os: '22.04-arm' }
+          noqemu:   TRUE
         - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
-          compiler: { ver: '10', os: '22.04-arm', noqemu: TRUE }
+          compiler: { ver: '10', os: '22.04-arm' }
+          noqemu:   TRUE
         - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
-          compiler: { ver: '11', os: '22.04-arm', noqemu: TRUE }
+          compiler: { ver: '11', os: '22.04-arm' }
+          noqemu:   TRUE
         - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
-          compiler: { ver: '12', os: '22.04-arm', noqemu: TRUE }
+          compiler: { ver: '12', os: '22.04-arm' }
+          noqemu:   TRUE
         - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
-          compiler: { ver:  '9', os: '24.04-arm', noqemu: TRUE }
+          compiler: { ver:  '9', os: '24.04-arm' }
+          noqemu:   TRUE
         - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
-          compiler: { ver: '10', os: '24.04-arm', noqemu: TRUE }
+          compiler: { ver: '10', os: '24.04-arm' }
+          noqemu:   TRUE
         - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
-          compiler: { ver: '11', os: '24.04-arm', noqemu: TRUE }
+          compiler: { ver: '11', os: '24.04-arm' }
+          noqemu:   TRUE
         - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
-          compiler: { ver: '12', os: '24.04-arm', noqemu: TRUE }
+          compiler: { ver: '12', os: '24.04-arm' }
+          noqemu:   TRUE
         - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
-          compiler: { ver: '13', os: '24.04-arm', noqemu: TRUE }
+          compiler: { ver: '13', os: '24.04-arm' }
+          noqemu:   TRUE
         - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
-          compiler: { ver: '14', os: '24.04-arm', noqemu: TRUE }
+          compiler: { ver: '14', os: '24.04-arm' }
+          noqemu:   TRUE
 
         - target:   { triple: loongarch64-linux-gnu, ld: ld-linux-loongarch-lp64d.so.1 } # lib64 is empty
           compiler: { ver: '13', os: '24.04' }
@@ -230,7 +260,7 @@ jobs:
         set -x
         sudo apt-get install g++-${{matrix.compiler.ver}}-${triple//_/-}
     - name: Install QEMU
-      if: (!matrix.compiler.noqemu)
+      if: (!matrix.noqemu)
       run: |
         exec 2>&1
         sudo apt-get install qemu-user
