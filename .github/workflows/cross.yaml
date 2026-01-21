@@ -7,7 +7,7 @@ on:
 
 jobs:
   cross-build:
-    name: Ubuntu ${{matrix.compiler.os}}, gcc-${{matrix.compiler.ver}} -> ${{matrix.target.triple}}
+    name: Ubuntu ${{matrix.compiler.os}}, gcc-${{matrix.compiler.ver}} => ${{matrix.target.triple}}
     strategy:
       fail-fast: FALSE
       matrix:
@@ -16,11 +16,11 @@ jobs:
 
         - { triple: aarch64-linux-gnu,            ld: ld-linux-aarch64.so.1         }
         - { triple: arm-linux-gnueabihf,          ld: ld-linux-armhf.so.3           }
-        - { triple: powerpc64le-linux-gnu,        ld: ld64.so.2                     } # ld64.so.2 -> ../lib/ld64.so.2
+        - { triple: powerpc64le-linux-gnu,        ld: ld64.so.2                     }
         - { triple: riscv64-linux-gnu,            ld: ld-linux-riscv64-lp64d.so.1   }
         - { triple: mipsel-linux-gnu,             ld: ld.so.1                       }
         - { triple: mips64el-linux-gnuabi64,      ld: ../lib64/ld.so.1              }
-        - { triple: mipsisa32r6el-linux-gnu,      ld: ld-linux-mipsn8.so.1          } # qemu only on 24.04
+        - { triple: mipsisa32r6el-linux-gnu,      ld: ld-linux-mipsn8.so.1          }
         - { triple: alpha-linux-gnu,              ld: ld-linux.so.2                 }
 
         - { triple: arm-linux-gnueabi,            ld: ld-linux.so.3, march: '-march=armv7-a' }
@@ -29,14 +29,14 @@ jobs:
         - { triple: sh4-linux-gnu,                ld: ld-linux.so.2                          }
 
         - { be: TRUE, triple: s390x-linux-gnu,            ld: ld64.so.1                      }
-        - { be: TRUE, triple: powerpc64-linux-gnu,        ld: ld64.so.1                      } # ld64.so.1 -> ../lib/ld64.so.1
+        - { be: TRUE, triple: powerpc64-linux-gnu,        ld: ld64.so.1                      }
         - { be: TRUE, triple: powerpc-linux-gnu,          ld: ld.so.1                        }
-        - { be: TRUE, triple: sparc64-linux-gnu,          ld: ../lib64/ld-linux.so.2         } # /lib64/ld-linux.so.2, 24.04 only?
+        - { be: TRUE, triple: sparc64-linux-gnu,          ld: ../lib64/ld-linux.so.2         }
         - { be: TRUE, triple: mips-linux-gnu,             ld: ld.so.1                        }
         - { be: TRUE, triple: mips64-linux-gnuabi64,      ld: ../lib64/ld.so.1               }
         - { be: TRUE, triple: mipsisa32r6-linux-gnu,      ld: ld-linux-mipsn8.so.1           }
         - { be: TRUE, triple: mipsisa64r6-linux-gnuabi64, ld: ../lib64/ld-linux-mipsn8.so.1  }
-        - { be: TRUE, triple: m68k-linux-gnu,             ld: ld.so.1, march: '-msoft-float' } # but only on 24.04, else segfault
+        - { be: TRUE, triple: m68k-linux-gnu,             ld: ld.so.1, march: '-msoft-float' }
         - { be: TRUE, triple: hppa-linux-gnu,             ld: ld.so.1 }
 
         compiler:
@@ -53,7 +53,7 @@ jobs:
 
         exclude:
 
-        - target:   { triple: mipsel-linux-gnu } # package not shipped
+        - target:   { triple: mipsel-linux-gnu }
           compiler: { ver: '11', os: '22.04' }
         - target:   { triple: mipsel-linux-gnu }
           compiler: { ver: '12', os: '22.04' }
@@ -62,7 +62,7 @@ jobs:
         - target:   { triple: mips64el-linux-gnuabi64 }
           compiler: { ver: '12', os: '22.04' }
 
-        - target:   { triple: mips-linux-gnu } # package not shipped
+        - target:   { triple: mips-linux-gnu }
           compiler: { ver: '11', os: '22.04' }
         - target:   { triple: mips-linux-gnu }
           compiler: { ver: '12', os: '22.04' }
@@ -83,7 +83,7 @@ jobs:
 
         - target:   { triple: mipsisa32r6-linux-gnu }
           compiler: { os: '22.04' }
-        - target:   { triple: mipsisa32r6el-linux-gnu } # no QEMU or compiler
+        - target:   { triple: mipsisa32r6el-linux-gnu }
           compiler: { os: '22.04' }
 
         - target:   { triple: sparc64-linux-gnu }
@@ -91,8 +91,8 @@ jobs:
         - target:   { triple: m68k-linux-gnu }
           compiler: { os: '22.04' }
 
-        - target:   { triple: loongarch64-linux-gnu } # only using explicit includes
-        - target:   { triple: sh4-linux-gnu } # seems to be bugs in compiler or QEMU
+        - target:   { triple: loongarch64-linux-gnu }
+        - target:   { triple: sh4-linux-gnu }
 
         include:
 
@@ -189,7 +189,7 @@ jobs:
           compiler: { ver: '14', os: '24.04' }
           noqemu:   TRUE
 
-        - target:   { triple: loongarch64-linux-gnu, ld: ld-linux-loongarch-lp64d.so.1 } # lib64 is empty
+        - target:   { triple: loongarch64-linux-gnu, ld: ld-linux-loongarch-lp64d.so.1 }
           compiler: { ver: '13', os: '24.04' }
         - target:   { triple: loongarch64-linux-gnu, ld: ld-linux-loongarch-lp64d.so.1 }
           compiler: { ver: '14', os: '24.04' }
