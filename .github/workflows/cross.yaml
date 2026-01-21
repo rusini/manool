@@ -7,7 +7,7 @@ on:
 
 jobs:
   cross-build:
-    name: Ubuntu ${{matrix.compiler.os}}, gcc-${{matrix.compiler.ver}} -> ${{matrix.target.triple}}
+    name: Ubuntu ${{matrix.compiler.os}}, gcc-${{matrix.compiler.ver}} => ${{matrix.target.triple}}
     strategy:
       fail-fast: FALSE
       matrix:
@@ -221,6 +221,13 @@ jobs:
     defaults:
       run: { shell: bash }
     steps:
+
+    - name: Target Is Big-Endian!
+      if: (matrix.target.be)
+      run: ''
+    - name: Target Is Little-Endian!
+      if: (!matrix.target.be)
+      run: ''
 
     - name: Machine Information
       run: |
