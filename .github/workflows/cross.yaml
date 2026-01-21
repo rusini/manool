@@ -3,11 +3,7 @@
 name: GCC-Based Cross Building
 
 on:
-  workflow_dispatch:
-    inputs:
-      be:
-        description: Include BE Targets
-        type: boolean
+  workflow_dispatch: NULL
 
 jobs:
   cross-build:
@@ -221,7 +217,6 @@ jobs:
         - target:   { triple: x86_64-linux-gnu, ld: ld-linux-x86-64.so.2 }
           compiler: { ver: '14', os: '24.04-arm' }
 
-    if: (!matrix.target.be || input.be)
     runs-on: ubuntu-${{matrix.compiler.os}}
     timeout-minutes: 20
 
