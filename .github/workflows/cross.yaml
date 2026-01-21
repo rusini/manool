@@ -8,38 +8,36 @@ on:
 jobs:
   cross-build:
     #name: ${{matrix.compiler.os}}/${{matrix.target.triple}}/${{matrix.compiler.ver}}
-    name: Build on Ubuntu ${{matrix.compiler.os}} with gcc-${{matrix.compiler.ver}} for ${{matrix.target.triple}}
+    name: On Ubuntu ${{matrix.compiler.os}} with gcc-${{matrix.compiler.ver}} for ${{matrix.target.triple}}
     strategy:
       fail-fast: FALSE
       matrix:
         target:
-        - { triple: aarch64-linux-gnu,            ld: ld-linux-aarch64.so.1 }
-        - { triple: arm-linux-gnueabihf,          ld: ld-linux-armhf.so.3 }
-        - { triple: powerpc64le-linux-gnu,        ld: ld64.so.2 } # ld64.so.2 -> ../lib/ld64.so.2
-        - { triple: riscv64-linux-gnu,            ld: ld-linux-riscv64-lp64d.so.1 }
-        - { triple: mipsel-linux-gnu,             ld: ld.so.1 }
-        - { triple: mips64el-linux-gnuabi64,      ld: ../lib64/ld.so.1 }
+        - { triple: aarch64-linux-gnu,            ld: ld-linux-aarch64.so.1         }
+        - { triple: arm-linux-gnueabihf,          ld: ld-linux-armhf.so.3           }
+        - { triple: powerpc64le-linux-gnu,        ld: ld64.so.2                     } # ld64.so.2 -> ../lib/ld64.so.2
+        - { triple: riscv64-linux-gnu,            ld: ld-linux-riscv64-lp64d.so.1   }
+        - { triple: mipsel-linux-gnu,             ld: ld.so.1                       }
+        - { triple: mips64el-linux-gnuabi64,      ld: ../lib64/ld.so.1              }
         - { triple: mipsisa64r6el-linux-gnuabi64, ld: ../lib64/ld-linux-mipsn8.so.1 }
-        - { triple: alpha-linux-gnu,              ld: ld-linux.so.2 }
+        - { triple: alpha-linux-gnu,              ld: ld-linux.so.2                 }
 
-        - { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
-
-        - { triple: mipsisa32r6el-linux-gnu, ld: ld-linux-mipsn8.so.1 } # qemu only on 24.04
-
-        - { triple: loongarch64-linux-gnu, ld: ld-linux-loongarch-lp64d.so.1 }
-        - { triple: sh4-linux-gnu, ld: ld-linux.so.2 }
+        - { triple: arm-linux-gnueabi,            ld: ld-linux.so.3, march: '-march=armv7-a' }
+        - { triple: mipsisa32r6el-linux-gnu,      ld: ld-linux-mipsn8.so.1                   } # qemu only on 24.04
+        - { triple: loongarch64-linux-gnu,        ld: ld-linux-loongarch-lp64d.so.1          }
+        - { triple: sh4-linux-gnu,                ld: ld-linux.so.2                          }
 
         # BE:
-        - { triple: m68k-linux-gnu, ld: ld.so.1,   march: '-msoft-float' } # but only on 24.04, else segfault
-        - { triple: hppa-linux-gnu, ld: ld.so.1 }
-        - { triple: mips-linux-gnu, ld: ld.so.1 }
-        - { triple: mips64-linux-gnuabi64, ld: ../lib64/ld.so.1 }
-        - { triple: mipsisa32r6-linux-gnu, ld: ld-linux-mipsn8.so.1 }
+        - { triple: m68k-linux-gnu,             ld: ld.so.1, march: '-msoft-float' } # but only on 24.04, else segfault
+        - { triple: hppa-linux-gnu,             ld: ld.so.1 }
+        - { triple: mips-linux-gnu,             ld: ld.so.1 }
+        - { triple: mips64-linux-gnuabi64,      ld: ../lib64/ld.so.1 }
+        - { triple: mipsisa32r6-linux-gnu,      ld: ld-linux-mipsn8.so.1 }
         - { triple: mipsisa64r6-linux-gnuabi64, ld: ../lib64/ld-linux-mipsn8.so.1 }
-        - { triple: powerpc-linux-gnu, ld: ld.so.1 }
-        - { triple: powerpc64-linux-gnu, ld: ld64.so.1 } # ld64.so.1 -> ../lib/ld64.so.1
-        - { triple: s390x-linux-gnu, ld: ld64.so.1 }
-        - { triple: sparc64-linux-gnu, ld: ../lib64/ld-linux.so.2 } # /lib64/ld-linux.so.2, 24.04 only?
+        - { triple: powerpc-linux-gnu,          ld: ld.so.1 }
+        - { triple: powerpc64-linux-gnu,        ld: ld64.so.1 } # ld64.so.1 -> ../lib/ld64.so.1
+        - { triple: s390x-linux-gnu,            ld: ld64.so.1 }
+        - { triple: sparc64-linux-gnu,          ld: ../lib64/ld-linux.so.2 } # /lib64/ld-linux.so.2, 24.04 only?
 
         compiler:
         - { ver:  '9', os: '22.04' }
@@ -54,6 +52,68 @@ jobs:
         - { ver: '14', os: '24.04' }
 
         include:
+
+        - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
+          compiler: { ver:  '9', os: '22.04-arm' }
+          noqemu:   TRUE
+        - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
+          compiler: { ver: '10', os: '22.04-arm' }
+          noqemu:   TRUE
+        - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
+          compiler: { ver: '11', os: '22.04-arm' }
+          noqemu:   TRUE
+        - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
+          compiler: { ver: '12', os: '22.04-arm' }
+          noqemu:   TRUE
+        - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
+          compiler: { ver:  '9', os: '24.04-arm' }
+          noqemu:   TRUE
+        - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
+          compiler: { ver: '10', os: '24.04-arm' }
+          noqemu:   TRUE
+        - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
+          compiler: { ver: '11', os: '24.04-arm' }
+          noqemu:   TRUE
+        - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
+          compiler: { ver: '12', os: '24.04-arm' }
+          noqemu:   TRUE
+        - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
+          compiler: { ver: '13', os: '24.04-arm' }
+          noqemu:   TRUE
+        - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
+          compiler: { ver: '14', os: '24.04-arm' }
+          noqemu:   TRUE
+
+        - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
+          compiler: { ver:  '9', os: '22.04-arm' }
+          noqemu:   TRUE
+        - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
+          compiler: { ver: '10', os: '22.04-arm' }
+          noqemu:   TRUE
+        - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
+          compiler: { ver: '11', os: '22.04-arm' }
+          noqemu:   TRUE
+        - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
+          compiler: { ver: '12', os: '22.04-arm' }
+          noqemu:   TRUE
+        - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
+          compiler: { ver:  '9', os: '24.04-arm' }
+          noqemu:   TRUE
+        - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
+          compiler: { ver: '10', os: '24.04-arm' }
+          noqemu:   TRUE
+        - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
+          compiler: { ver: '11', os: '24.04-arm' }
+          noqemu:   TRUE
+        - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
+          compiler: { ver: '12', os: '24.04-arm' }
+          noqemu:   TRUE
+        - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
+          compiler: { ver: '13', os: '24.04-arm' }
+          noqemu:   TRUE
+        - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
+          compiler: { ver: '14', os: '24.04-arm' }
+          noqemu:   TRUE
 
         - target:   { triple: i686-linux-gnu, ld: ld-linux.so.2, march: '-msse2 -mfpmath=sse' }
           compiler: { ver:  '9', os: '22.04' }
@@ -84,68 +144,6 @@ jobs:
           noqemu:   TRUE
         - target:   { triple: i686-linux-gnu, ld: ld-linux.so.2, march: '-msse2 -mfpmath=sse' }
           compiler: { ver: '14', os: '24.04' }
-          noqemu:   TRUE
-
-        - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
-          compiler: { ver:  '9', os: '22.04-arm' }
-          noqemu:   TRUE
-        - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
-          compiler: { ver: '10', os: '22.04-arm' }
-          noqemu:   TRUE
-        - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
-          compiler: { ver: '11', os: '22.04-arm' }
-          noqemu:   TRUE
-        - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
-          compiler: { ver: '12', os: '22.04-arm' }
-          noqemu:   TRUE
-        - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
-          compiler: { ver:  '9', os: '24.04-arm' }
-          noqemu:   TRUE
-        - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
-          compiler: { ver: '10', os: '24.04-arm' }
-          noqemu:   TRUE
-        - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
-          compiler: { ver: '11', os: '24.04-arm' }
-          noqemu:   TRUE
-        - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
-          compiler: { ver: '12', os: '24.04-arm' }
-          noqemu:   TRUE
-        - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
-          compiler: { ver: '13', os: '24.04-arm' }
-          noqemu:   TRUE
-        - target:   { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3 }
-          compiler: { ver: '14', os: '24.04-arm' }
-          noqemu:   TRUE
-
-        - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
-          compiler: { ver:  '9', os: '22.04-arm' }
-          noqemu:   TRUE
-        - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
-          compiler: { ver: '10', os: '22.04-arm' }
-          noqemu:   TRUE
-        - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
-          compiler: { ver: '11', os: '22.04-arm' }
-          noqemu:   TRUE
-        - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
-          compiler: { ver: '12', os: '22.04-arm' }
-          noqemu:   TRUE
-        - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
-          compiler: { ver:  '9', os: '24.04-arm' }
-          noqemu:   TRUE
-        - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
-          compiler: { ver: '10', os: '24.04-arm' }
-          noqemu:   TRUE
-        - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
-          compiler: { ver: '11', os: '24.04-arm' }
-          noqemu:   TRUE
-        - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
-          compiler: { ver: '12', os: '24.04-arm' }
-          noqemu:   TRUE
-        - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
-          compiler: { ver: '13', os: '24.04-arm' }
-          noqemu:   TRUE
-        - target:   { triple: arm-linux-gnueabi, ld: ld-linux.so.3, march: '-march=armv7-a' }
-          compiler: { ver: '14', os: '24.04-arm' }
           noqemu:   TRUE
 
         - target:   { triple: loongarch64-linux-gnu, ld: ld-linux-loongarch-lp64d.so.1 } # lib64 is empty
