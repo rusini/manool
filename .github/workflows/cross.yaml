@@ -39,6 +39,9 @@ jobs:
         - { be: TRUE, triple: m68k-linux-gnu,             ld: ld.so.1, march: '-msoft-float' }
         - { be: TRUE, triple: hppa-linux-gnu,             ld: ld.so.1 }
 
+        - { triple: arm-linux-gnueabi,            ld: ld-linux.so.3, march: '-march=armv7-a -mthumb' }
+        - { triple: arm-linux-gnueabihf,          ld: ld-linux-armhf.so.3, march: '-mthumb'           }
+
         compiler:
         - { ver:  '9', os: '22.04' }
         - { ver: '10', os: '22.04' }
