@@ -7,12 +7,13 @@ on:
 
 jobs:
   cross-build:
-    #name: ${{matrix.compiler.os}}/${{matrix.target.triple}}/${{matrix.compiler.ver}}
     name: Ubuntu ${{matrix.compiler.os}}, gcc-${{matrix.compiler.ver}} -> ${{matrix.target.triple}}
     strategy:
       fail-fast: FALSE
       matrix:
+
         target:
+
         - { triple: aarch64-linux-gnu,            ld: ld-linux-aarch64.so.1         }
         - { triple: arm-linux-gnueabihf,          ld: ld-linux-armhf.so.3           }
         - { triple: powerpc64le-linux-gnu,        ld: ld64.so.2                     } # ld64.so.2 -> ../lib/ld64.so.2
@@ -27,7 +28,6 @@ jobs:
         - { triple: loongarch64-linux-gnu,        ld: ld-linux-loongarch-lp64d.so.1          }
         - { triple: sh4-linux-gnu,                ld: ld-linux.so.2                          }
 
-        # BE:
         - { be: TRUE, triple: s390x-linux-gnu,            ld: ld64.so.1                      }
         - { be: TRUE, triple: powerpc64-linux-gnu,        ld: ld64.so.1                      } # ld64.so.1 -> ../lib/ld64.so.1
         - { be: TRUE, triple: powerpc-linux-gnu,          ld: ld.so.1                        }
@@ -86,15 +86,13 @@ jobs:
         - target:   { triple: mipsisa32r6el-linux-gnu } # no QEMU or compiler
           compiler: { os: '22.04' }
 
-        - target:   { triple: m68k-linux-gnu }
-          compiler: { os: '22.04' }
         - target:   { triple: sparc64-linux-gnu }
+          compiler: { os: '22.04' }
+        - target:   { triple: m68k-linux-gnu }
           compiler: { os: '22.04' }
 
         - target:   { triple: loongarch64-linux-gnu } # only using explicit includes
-          #compiler: {}
         - target:   { triple: sh4-linux-gnu } # seems to be bugs in compiler or QEMU
-          #compiler: {}
 
         include:
 
