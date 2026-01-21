@@ -1,14 +1,18 @@
 # .github/workflows/cross.yaml
 
-name: Cross-Building
+name: GCC-Based Cross Building
 
 on:
-  workflow_dispatch: NULL
+  workflow_dispatch:
+    inputs:
+      be:
+        description: Include BE Targets
+        type: boolean
 
 jobs:
   cross-build:
     #name: ${{matrix.compiler.os}}/${{matrix.target.triple}}/${{matrix.compiler.ver}}
-    name: On Ubuntu ${{matrix.compiler.os}} with gcc-${{matrix.compiler.ver}} for ${{matrix.target.triple}}
+    name: Ubuntu ${{matrix.compiler.os}}, gcc-${{matrix.compiler.ver}}, ${{matrix.target.triple}}
     strategy:
       fail-fast: FALSE
       matrix:
@@ -28,16 +32,16 @@ jobs:
         - { triple: sh4-linux-gnu,                ld: ld-linux.so.2                          }
 
         # BE:
-        - { triple: s390x-linux-gnu,            ld: ld64.so.1                      }
-        - { triple: powerpc64-linux-gnu,        ld: ld64.so.1                      } # ld64.so.1 -> ../lib/ld64.so.1
-        - { triple: powerpc-linux-gnu,          ld: ld.so.1                        }
-        - { triple: sparc64-linux-gnu,          ld: ../lib64/ld-linux.so.2         } # /lib64/ld-linux.so.2, 24.04 only?
-        - { triple: mips-linux-gnu,             ld: ld.so.1                        }
-        - { triple: mips64-linux-gnuabi64,      ld: ../lib64/ld.so.1               }
-        - { triple: mipsisa32r6-linux-gnu,      ld: ld-linux-mipsn8.so.1           }
-        - { triple: mipsisa64r6-linux-gnuabi64, ld: ../lib64/ld-linux-mipsn8.so.1  }
-        - { triple: m68k-linux-gnu,             ld: ld.so.1, march: '-msoft-float' } # but only on 24.04, else segfault
-        - { triple: hppa-linux-gnu,             ld: ld.so.1 }
+        - { be: TRUE, triple: s390x-linux-gnu,            ld: ld64.so.1                      }
+        - { be: TRUE, triple: powerpc64-linux-gnu,        ld: ld64.so.1                      } # ld64.so.1 -> ../lib/ld64.so.1
+        - { be: TRUE, triple: powerpc-linux-gnu,          ld: ld.so.1                        }
+        - { be: TRUE, triple: sparc64-linux-gnu,          ld: ../lib64/ld-linux.so.2         } # /lib64/ld-linux.so.2, 24.04 only?
+        - { be: TRUE, triple: mips-linux-gnu,             ld: ld.so.1                        }
+        - { be: TRUE, triple: mips64-linux-gnuabi64,      ld: ../lib64/ld.so.1               }
+        - { be: TRUE, triple: mipsisa32r6-linux-gnu,      ld: ld-linux-mipsn8.so.1           }
+        - { be: TRUE, triple: mipsisa64r6-linux-gnuabi64, ld: ../lib64/ld-linux-mipsn8.so.1  }
+        - { be: TRUE, triple: m68k-linux-gnu,             ld: ld.so.1, march: '-msoft-float' } # but only on 24.04, else segfault
+        - { be: TRUE, triple: hppa-linux-gnu,             ld: ld.so.1 }
 
         compiler:
         - { ver:  '9', os: '22.04' }
@@ -217,6 +221,7 @@ jobs:
         - target:   { triple: x86_64-linux-gnu, ld: ld-linux-x86-64.so.2 }
           compiler: { ver: '14', os: '24.04-arm' }
 
+    if: (!matrix.target.be || input.be)
     runs-on: ubuntu-${{matrix.compiler.os}}
     timeout-minutes: 20
 
@@ -269,8 +274,6 @@ jobs:
 
     - name: Checkout
       uses: actions/checkout@v4
-      #with: { ref: master }
-
     - name: Run Make and Check
       run: |
         exec 2>&1
@@ -290,10 +293,18 @@ jobs:
            ${{matrix.target.march}} -Wl,-I/usr/${{matrix.target.triple}}/lib/${{matrix.target.ld}} -Wl,-rpath=/usr/${{matrix.target.triple}}/lib \
            hi.cc
         ./a.out
-        
-        #make -j4 \
-        #   GCC='${{matrix.target.triple}}-gcc-${{matrix.compiler.ver}}' \
-        #   GXX='${{matrix.target.triple}}-g++-${{matrix.compiler.ver}}' \
-        #   MARCH='${{matrix.target.march}} -Wl,-I/usr/${{matrix.target.triple}}/lib/${{matrix.target.ld}} -Wl,-rpath=/usr/${{matrix.target.triple}}/lib' \
-        #   run
 
+    - name: Checkout
+      if: (!matrix.target.be)
+      uses: actions/checkout@v4
+      with: { ref: master }
+    - name: Run Make and Check
+      if: (!matrix.target.be)
+      run: |
+        exec 2>&1
+        set -x
+        make -j4 \
+           GCC='${{matrix.target.triple}}-gcc-${{matrix.compiler.ver}}' \
+           GXX='${{matrix.target.triple}}-g++-${{matrix.compiler.ver}}' \
+           MARCH='${{matrix.target.march}} -Wl,-I/usr/${{matrix.target.triple}}/lib/${{matrix.target.ld}} -Wl,-rpath=/usr/${{matrix.target.triple}}/lib' \
+           run
