@@ -46,7 +46,7 @@ jobs:
     - name: System Information
       run: |
         date; uname -a; w | head -1; cat /etc/os-release
-      name: Context Information
+    - name: Context Information
       run: |
         exec 2>&1
         tty || :; id; printf %s\\n SHELL="$SHELL" PATH="$PATH"
