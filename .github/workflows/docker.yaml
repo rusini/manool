@@ -32,8 +32,6 @@ jobs:
       run: { shell: bash }
     steps:
 
-    steps:
-
     - name: Pre-Setup
       run:
         exec 2>&1
