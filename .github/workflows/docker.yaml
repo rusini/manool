@@ -19,6 +19,9 @@ jobs:
         - { label: "debian12", os: "debian:12",
             preinstall: "apt-get update; apt-get -y upgrade; apt-get -y install procps",
             install:    "apt-get -y install make g++" }
+        - { label: "debian11", os: "debian:11",
+            preinstall: "apt-get update; apt-get -y upgrade; apt-get -y install procps",
+            install:    "apt-get -y install make g++" }
         - { label: "rhel",   os: "almalinux",
           preinstall: "dnf -y update; dnf -y install procps-ng util-linux",
           install:    "dnf -y install make g++" }
