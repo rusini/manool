@@ -38,6 +38,7 @@ jobs:
         set -x
         ${{matrix.target.preinstall}}
 
+    - name: Machine Information
       run: |
         exec 2>&1
         set -x
