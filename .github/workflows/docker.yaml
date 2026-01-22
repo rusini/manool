@@ -13,10 +13,10 @@ jobs:
       fail-fast: FALSE
       matrix:
         target:
-        - { label: "debian", os: "debian:13",
+        - { label: "debian13", os: "debian:13",
             preinstall: "apt-get update; apt-get -y upgrade; apt-get -y install procps",
             install:    "apt-get -y install make g++" }
-        - { label: "debian", os: "debian:12",
+        - { label: "debian12", os: "debian:12",
             preinstall: "apt-get update; apt-get -y upgrade; apt-get -y install procps",
             install:    "apt-get -y install make g++" }
         - { label: "rhel",   os: "almalinux",
