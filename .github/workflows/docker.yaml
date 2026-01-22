@@ -49,12 +49,9 @@ jobs:
         - { label: "arch",   os: "archlinux",
           preinstall: "pacman --noconfirm -Syu",
           install:    "pacman --noconfirm -S git make gcc" }
-    runs-on: ubuntu-22.04
-    #container: ${{matrix.target.os}}
-
-    container:
-      image: ${{matrix.target.os}}
-      options: --platform=linux/i386
+      isa: [ '', '-arm' ]
+    runs-on: ubuntu-22.04${{isa}}
+    container: ${{matrix.target.os}}
 
     defaults:
       run: { shell: bash }
