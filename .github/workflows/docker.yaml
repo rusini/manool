@@ -55,7 +55,7 @@ jobs:
         ps -e --sort ppid,pid -o ppid,pid,user:12,group:12,comm:24,rsz:11,vsz:11,thcount,bsdstart,state,tname
 
     - name: Setup
-      run:
+      run: |
         exec 2>&1
         set -x
         ${{matrix.target.install}}
