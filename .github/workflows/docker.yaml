@@ -15,40 +15,40 @@ jobs:
         target:
         - { label: "debian13", os: "debian:13",
             preinstall: "apt-get update; apt-get -y upgrade; apt-get -y install procps",
-            install:    "apt-get -y install make g++" }
+            install:    "apt-get -y install git make g++" }
         - { label: "debian12", os: "debian:12",
             preinstall: "apt-get update; apt-get -y upgrade; apt-get -y install procps",
-            install:    "apt-get -y install make g++" }
+            install:    "apt-get -y install git make g++" }
         - { label: "debian11", os: "debian:11",
             preinstall: "apt-get update; apt-get -y upgrade; apt-get -y install procps",
-            install:    "apt-get -y install make g++" }
+            install:    "apt-get -y install git make g++" }
         - { label: "debians", os: "debian:stable",
             preinstall: "apt-get update; apt-get -y upgrade; apt-get -y install procps",
-            install:    "apt-get -y install make g++" }
+            install:    "apt-get -y install git make g++" }
         - { label: "debiano", os: "debian:oldstable",
             preinstall: "apt-get update; apt-get -y upgrade; apt-get -y install procps",
-            install:    "apt-get -y install make g++" }
+            install:    "apt-get -y install git make g++" }
         - { label: "debianoo", os: "debian:oldoldstable",
             preinstall: "apt-get update; apt-get -y upgrade; apt-get -y install procps",
-            install:    "apt-get -y install make g++" }
+            install:    "apt-get -y install git make g++" }
         - { label: "debian", os: "debian:latest",
             preinstall: "apt-get update; apt-get -y upgrade; apt-get -y install procps",
-            install:    "apt-get -y install make g++" }
+            install:    "apt-get -y install git make g++" }
         - { label: "debianu", os: "debian:unstable",
             preinstall: "apt-get update; apt-get -y upgrade; apt-get -y install procps",
-            install:    "apt-get -y install make g++" }
+            install:    "apt-get -y install git make g++" }
         - { label: "debiansid", os: "debian:sid",
             preinstall: "apt-get update; apt-get -y upgrade; apt-get -y install procps",
-            install:    "apt-get -y install make g++" }
+            install:    "apt-get -y install git make g++" }
         - { label: "rhel",   os: "almalinux",
           preinstall: "dnf -y update; dnf -y install procps-ng util-linux",
-          install:    "dnf -y install make g++" }
+          install:    "dnf -y install git make g++" }
         - { label: "suse",   os: "opensuse/tumbleweed",
           preinstall: "zypper update -y",
-          install:    "zypper install -y make gcc-c++" }
+          install:    "zypper install -y git make gcc-c++" }
         - { label: "arch",   os: "archlinux",
           preinstall: "pacman --noconfirm -Syu",
-          install:    "pacman --noconfirm -S make gcc" }
+          install:    "pacman --noconfirm -S git make gcc" }
     runs-on: ubuntu-22.04
     #container: ${{matrix.target.os}}
 
