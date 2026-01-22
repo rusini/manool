@@ -28,8 +28,8 @@ jobs:
         - { triple: loongarch64-linux-gnu,        ld: ld-linux-loongarch-lp64d.so.1          }
         - { triple: sh4-linux-gnu,                ld: ld-linux.so.2                          }
 
-        - { triple: arm-linux-gnueabi,   ld: ld-linux.so.3,       xlabel: ':thumb', march: '-march=armv7-a -mthumb' }
-        - { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3, xlabel: ':thumb', march: '-mthumb'                }
+        - { triple: arm-linux-gnueabi,   ld: ld-linux.so.3,       xlabel: '[thumb]', march: '-march=armv7-a -mthumb' }
+        - { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3, xlabel: '[thumb]', march: '-mthumb'                }
 
         - { be: TRUE, triple: s390x-linux-gnu,            ld: ld64.so.1                      }
         - { be: TRUE, triple: powerpc64-linux-gnu,        ld: ld64.so.1                      }
