@@ -54,7 +54,7 @@ jobs:
 
     container:
       image: ${{matrix.target.os}}
-      options: --platform=linux/arm64
+      options: --platform=linux/i386
 
     defaults:
       run: { shell: bash }
