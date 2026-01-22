@@ -7,7 +7,7 @@ on:
 
 jobs:
   cross-build:
-    name: Ubuntu ${{matrix.compiler.os}}, gcc-${{matrix.compiler.ver}} => ${{matrix.target.triple}}${{matrix.target.xlabel}} (${{matrix.target.be && 'B' || 'L'}}E)
+    name: Ubuntu ${{matrix.compiler.os}}, gcc-${{matrix.compiler.ver}} => ${{matrix.target.triple}} (${{matrix.target.be && 'B' || 'L'}}E)
     strategy:
       fail-fast: FALSE
       matrix:
@@ -23,13 +23,10 @@ jobs:
         - { triple: mipsisa32r6el-linux-gnu,      ld: ld-linux-mipsn8.so.1          }
         - { triple: alpha-linux-gnu,              ld: ld-linux.so.2                 }
 
-        - { triple: arm-linux-gnueabi,            ld: ld-linux.so.3, march: '-march=armv7-a' }
-        - { triple: mipsisa64r6el-linux-gnuabi64, ld: ../lib64/ld-linux-mipsn8.so.1          }
-        - { triple: loongarch64-linux-gnu,        ld: ld-linux-loongarch-lp64d.so.1          }
-        - { triple: sh4-linux-gnu,                ld: ld-linux.so.2                          }
-
-        - { triple: arm-linux-gnueabi,   ld: ld-linux.so.3,       xlabel: '[thumb]', march: '-march=armv7-a -mthumb' }
-        - { triple: arm-linux-gnueabihf, ld: ld-linux-armhf.so.3, xlabel: '[thumb]', march: '-mthumb'                }
+        - { triple: arm-linux-gnueabi,            ld: ld-linux.so.3, march: '-march=armv7-a -mthumb' }
+        - { triple: mipsisa64r6el-linux-gnuabi64, ld: ../lib64/ld-linux-mipsn8.so.1                  }
+        - { triple: loongarch64-linux-gnu,        ld: ld-linux-loongarch-lp64d.so.1                  }
+        - { triple: sh4-linux-gnu,                ld: ld-linux.so.2                                  }
 
         - { be: TRUE, triple: s390x-linux-gnu,            ld: ld64.so.1                      }
         - { be: TRUE, triple: powerpc64-linux-gnu,        ld: ld64.so.1                      }
