@@ -8,8 +8,8 @@ on:
 jobs:
   build:
 
+    name: Build under ${{matrix.target.os}}
     strategy:
-      name: Build under ${{matrix.target.os}}
       fail-fast: FALSE
       matrix:
         target:
