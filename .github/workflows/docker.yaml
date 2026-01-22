@@ -50,7 +50,7 @@ jobs:
           preinstall: "pacman --noconfirm -Syu",
           install:    "pacman --noconfirm -S git make gcc" }
       isa: [ '', '-arm' ]
-    runs-on: ubuntu-22.04${{isa}}
+    runs-on: ubuntu-22.04${{matrix.isa}}
     container: ${{matrix.target.os}}
 
     defaults:
