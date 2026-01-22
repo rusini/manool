@@ -50,7 +50,11 @@ jobs:
           preinstall: "pacman --noconfirm -Syu",
           install:    "pacman --noconfirm -S make gcc" }
     runs-on: ubuntu-22.04
-    container: ${{matrix.target.os}}
+    #container: ${{matrix.target.os}}
+
+    container:
+      image: ${{matrix.target.os}}
+      options: --platform=linux/arm64
 
     defaults:
       run: { shell: bash }
