@@ -22,7 +22,16 @@ jobs:
         - { label: "debian11", os: "debian:11",
             preinstall: "apt-get update; apt-get -y upgrade; apt-get -y install procps",
             install:    "apt-get -y install make g++" }
-        - { label: "debian10", os: "debian:10",
+        - { label: "debians", os: "debian:stable",
+            preinstall: "apt-get update; apt-get -y upgrade; apt-get -y install procps",
+            install:    "apt-get -y install make g++" }
+        - { label: "debiano", os: "debian:oldstable",
+            preinstall: "apt-get update; apt-get -y upgrade; apt-get -y install procps",
+            install:    "apt-get -y install make g++" }
+        - { label: "debian", os: "debian:latest",
+            preinstall: "apt-get update; apt-get -y upgrade; apt-get -y install procps",
+            install:    "apt-get -y install make g++" }
+        - { label: "debianu", os: "debian:unstable",
             preinstall: "apt-get update; apt-get -y upgrade; apt-get -y install procps",
             install:    "apt-get -y install make g++" }
         - { label: "rhel",   os: "almalinux",
