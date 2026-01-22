@@ -3,15 +3,14 @@
 name: Build in Docker Containers
 
 on:
-  workflow_dispatch:
-  push:
-    branches: [ "test" ]
+  workflow_dispatch: NULL
 
 jobs:
   build:
 
     strategy:
-      fail-fast: false
+      name: Build under ${{matrix.target.os}}
+      fail-fast: FALSE
       matrix:
         target:
         - { label: "debian", os: "debian",
@@ -26,31 +25,41 @@ jobs:
         - { label: "arch",   os: "archlinux",
           preinstall: "pacman --noconfirm -Syu",
           install:    "pacman --noconfirm -S make gcc" }
-    name: Build under ${{matrix.target.os}}
     runs-on: ubuntu-22.04
     container: ${{matrix.target.os}}
 
     defaults:
-      run:
-        shell: bash
+      run: { shell: bash }
+    steps:
 
     steps:
 
     - name: Pre-Setup
-      run: ${{matrix.target.preinstall}}
+      run:
+        exec 2>&1
+        set -x
+        ${{matrix.target.preinstall}}
 
-    - name: Machine Information
       run: |
-        lscpu; free -h; df -h .
+        exec 2>&1
+        set -x
+        lscpu; free -h; df -H .
     - name: System Information
       run: |
         date; uname -a; w | head -1; cat /etc/os-release
-    - name: Context Information
+      name: Context Information
       run: |
-        tty || :; id; printf %s\\n "$SHELL"; printf %s\\n "$PATH"; pwd
+        exec 2>&1
+        tty || :; id; printf %s\\n SHELL="$SHELL" PATH="$PATH"
+        set -x
+        pwd
+        ps -e --sort ppid,pid -o ppid,pid,user:12,group:12,comm:24,rsz:11,vsz:11,thcount,bsdstart,state,tname
 
     - name: Setup
-      run: ${{matrix.target.install}}
+      run:
+        exec 2>&1
+        set -x
+        ${{matrix.target.install}}
 
     - name: Build Tools Information
       run: |
@@ -58,14 +67,13 @@ jobs:
 
     - name: Checkout
       uses: actions/checkout@v4
+      with: { ref: master }
 
     - name: Run Make (and Check)
       run: |
-        make -j3 run \
-           GCC='gcc' \
-           GXX='g++' \
-           CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none' \
-           MARCH=
+        exec 2>&1
+        set -x
+        make -j4 run
 
     - name: Upload Results
       uses: actions/upload-artifact@v4
