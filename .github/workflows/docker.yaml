@@ -33,7 +33,7 @@ jobs:
     steps:
 
     - name: Pre-Setup
-      run:
+      run: |
         exec 2>&1
         set -x
         ${{matrix.target.preinstall}}
