@@ -8,7 +8,7 @@ on:
 jobs:
   build:
 
-    name: Build under ${{matrix.target.label}}
+    name: Using ${{matrix.target.label}}
     strategy:
       fail-fast: FALSE
       matrix:
@@ -128,8 +128,8 @@ jobs:
     - name: Pre-Setup
       run: |
         exec 2>&1
+        set -x
         ${{matrix.target.presetup}}
-
     - name: Machine Information
       run: |
         exec 2>&1
@@ -138,7 +138,6 @@ jobs:
     - name: System Information
       run: |
         exec 2>&1
-        #date; uname -a; w | head -1
         date; uname -a; uptime
         set -x
         cat /etc/os-release
@@ -155,7 +154,6 @@ jobs:
         exec 2>&1
         set -x
         ${{matrix.target.setup}}
-
     - name: Build Tools Information
       run: |
         exec 2>&1
@@ -164,13 +162,11 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
       with: { ref: master }
-
     - name: Run Make (and Check)
       run: |
         exec 2>&1
         set -x
         make -j4 run
-
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
