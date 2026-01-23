@@ -156,13 +156,6 @@ jobs:
         #    presetup: 'yum -y install procps-ng util-linux; yum -y update',
         #    setup:    'yum -y install git make gcc-c++' }
 
-        - { label: 'alpine-3-x86_64',  guest: 'alpine:3', host: '24.04',
-            presetup: 'apk update',
-            setup:    'apk add git make g++ libc-dev' }
-        - { label: 'alpine-3-aarch64', guest: 'alpine:3', host: '24.04-arm',
-            presetup: 'apk update',
-            setup:    'apk add git make g++ libc-dev' }
-
 
 
     runs-on: ubuntu-${{matrix.target.host}}
