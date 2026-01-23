@@ -49,7 +49,7 @@ jobs:
     - name: Build under FreeBSD
       uses: vmactions/freebsd-vm@v1
       with:
-        release: '13.3'
+        release: '12.4'
         mem:     '8192'
         usesh:   TRUE
         prepare: |
