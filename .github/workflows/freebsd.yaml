@@ -3,9 +3,7 @@
 name: Build on a FreeBSD VM
 
 on:
-  workflow_dispatch:
-  push:
-    branches: [ "test" ]
+  workflow_dispatch: NULL
 
 jobs:
   build:
@@ -14,38 +12,50 @@ jobs:
     runs-on: ubuntu-latest
 
     defaults:
-      run:
-        shell: bash
-
+      run: { shell: bash }
     steps:
 
     - name: Machine Information
       run: |
-        lscpu; free -h; df -h .
+        exec 2>&1
+        set -x
+        lscpu; free -h; df -H .
     - name: System Information
       run: |
-        date; uname -a; uptime; cat /etc/os-release; ls -C /boot || :
+        exec 2>&1
+        date; uname -a; uptime
+        set -x
+        systemd-detect-virt || :
+        cat /etc/os-release
+        ls -C /boot || :
     - name: Context Information
       run: |
-        tty || :; id; printf %s\\n "$SHELL"; printf %s\\n "$PATH"; pwd
+        exec 2>&1
+        tty || :; id; printf %s\\n SHELL="$SHELL" PATH="$PATH"
+        set -x
+        pwd
+        ps -e --sort ppid,pid -o ppid,pid,user:12,group:12,comm:24,rsz:11,vsz:11,thcount,bsdstart,state,tname
 
     - name: Checkout
       uses: actions/checkout@v4
+      with: { ref: master }
 
     - name: Build under FreeBSD
       uses: vmactions/freebsd-vm@v1
       with:
-        usesh: true
+        usesh: TRUE
         prepare: |
+          exec 2>&1
           set -x
-          sysctl hw.physmem; df -h .; uname -a
+          sysctl hw.physmem; df -H .; uname -a
           pkg install -y gmake
-          gmake --version
-          clang++ --version
+          gmake --version; clang --version
         run: |
+          exec 2>&1
+          tty || :; id; printf %s\\n SHELL="$SHELL" PATH="$PATH"
           set -x
-          tty || :; id; printf %s\\n "$SHELL"; printf %s\\n "$PATH"; pwd
-          gmake -j3 run GCC=clang GXX=clang++ CFLAGS='-Wno-psabi -O3 -fno-stack-protector -fcf-protection=none' MARCH=
+          pwd
+          gmake -j4 run GCC=clang GXX=clang++
 
     - name: Upload Results
       uses: actions/upload-artifact@v4
