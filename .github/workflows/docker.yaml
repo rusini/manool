@@ -14,7 +14,7 @@ jobs:
       matrix:
         target:
 
-        - { label: 'debian-sid-x86_64', guest: 'debian:sid', host: '24.04',
+        - { label: 'debian-sid-x86_64', guest: debian:sid, host: '24.04',
             presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
             setup:    'apt-get -y install git make g++' }
         - { label: 'debian-13-x86-64',  guest: 'debian:13',  host: '24.04',
@@ -72,9 +72,6 @@ jobs:
         - { label: 'rhel-9-x86_64',  guest: 'almalinux:9',  host: '22.04',
             presetup: 'dnf -y install procps-ng; dnf -y update',
             setup:    'dnf -y install git make gcc-c++' }
-        #- { label: 'rhel-8-x86_64',  guest: 'almalinux:8',  host: '22.04', # too old default gcc!
-        #    presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
-        #    setup:    'dnf -y install git make gcc-c++' }
 
         - { label: 'rhel-10-aarch64', guest: 'almalinux:10', host: '24.04',
             presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
@@ -82,35 +79,6 @@ jobs:
         - { label: 'rhel-9-aarch64',  guest: 'almalinux:9',  host: '22.04',
             presetup: 'dnf -y install procps-ng; dnf -y update',
             setup:    'dnf -y install git make gcc-c++' }
-        #- { label: 'rhel-8-aarch64',  guest: 'almalinux:8',  host: '22.04',
-        #    presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
-        #    setup:    'dnf -y install git make gcc-c++' }
-
-#        - { label: 'opensuse-tumbleweed-x86_64', guest: 'opensuse/tumbleweed', host: '24.04',
-#          presetup: 'zypper install -y procps util-linux; zypper update -y',
-#          setup:    'zypper install -y git make gcc-c++' }
-#        - { label: 'opensuse-leap16-x86_64',     guest: 'opensuse/leap:16.0',    host: '24.04',
-#          presetup: 'zypper update -y',
-#          setup:    'zypper install -y git make gcc-c++' }
-#        - { label: 'opensuse-leap15-x86_64',     guest: 'opensuse/leap:15',    host: '22.04',
-#          presetup: 'zypper update -y',
-#          setup:    'zypper install -y git make gcc9-c++' }
-        #- { label: 'opensuse-leap42-x86_64',     guest: 'opensuse/leap:42',    host: '22.04',
-        #  presetup: 'zypper update -y',
-        #  setup:    'zypper install -y git make gcc-c++' }
-
-#        - { label: 'opensuse-tumbleweed-aarch64', guest: 'opensuse/tumbleweed', host: '24.04-arm',
-#          presetup: 'zypper install -y procps util-linux; zypper update -y',
-#          setup:    'zypper install -y git make gcc-c++' }
-#        - { label: 'opensuse-leap16-aarch64',     guest: 'opensuse/leap:16.0',    host: '24.04-arm',
-#          presetup: 'zypper update -y',
-#          setup:    'zypper install -y git make gcc-c++' }
-#        - { label: 'opensuse-leap15-aarch64',     guest: 'opensuse/leap:15',    host: '22.04-arm',
-#          presetup: 'zypper update -y',
-#          setup:    'zypper install -y git make gcc9-c++' }
-        #- { label: 'opensuse-leap42-aarch64',     guest: 'opensuse/leap:42',    host: '22.04-arm',
-        #  presetup: 'zypper update -y',
-        #  setup:    'zypper install -y git make gcc-c++' }
 
         - { label: 'arch-x-x86_64', guest: 'archlinux', host: '24.04',
             presetup: 'pacman --noconfirm -Syu',
@@ -145,18 +113,10 @@ jobs:
         - { label: 'amzn-2023-x86_64', guest: 'amazonlinux:2023', host: '24.04',
             presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
             setup:    'dnf -y install git make gcc-c++' }
-        #- { label: 'amzn-2-x86_64',    guest: 'amazonlinux:2',    host: '24.04',
-        #    presetup: 'yum -y install procps-ng util-linux; yum -y update',
-        #    setup:    'yum -y install git make gcc-c++' }
 
         - { label: 'amzn-2023-aarch64', guest: 'amazonlinux:2023', host: '24.04-arm',
             presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
             setup:    'dnf -y install git make gcc-c++' }
-        #- { label: 'amzn-2-aarch64',    guest: 'amazonlinux:2',    host: '24.04-arm',
-        #    presetup: 'yum -y install procps-ng util-linux; yum -y update',
-        #    setup:    'yum -y install git make gcc-c++' }
-
-
 
     runs-on: ubuntu-${{matrix.target.host}}
     container: ${{matrix.target.guest}}
