@@ -81,7 +81,7 @@ jobs:
             setup:    'dnf -y install git make gcc-c++' }
 
         - { label: 'opensuse-tumbleweed-x86_64', guest: 'opensuse/tumbleweed', host: '24.04',
-          presetup: 'zypper update -y',
+          presetup: 'zypper install -y procps; zypper update -y',
           setup:    'zypper install -y git make gcc-c++' }
         - { label: 'opensuse-leap16-x86_64',     guest: 'opensuse/leap:16.0',    host: '24.04',
           presetup: 'zypper update -y',
@@ -94,7 +94,7 @@ jobs:
         #  setup:    'zypper install -y git make gcc-c++' }
 
         - { label: 'opensuse-tumbleweed-aarch64', guest: 'opensuse/tumbleweed', host: '24.04-arm',
-          presetup: 'zypper update -y',
+          presetup: 'zypper install -y procps; zypper update -y',
           setup:    'zypper install -y git make gcc-c++' }
         - { label: 'opensuse-leap16-aarch64',     guest: 'opensuse/leap:16.0',    host: '24.04-arm',
           presetup: 'zypper update -y',
@@ -191,7 +191,7 @@ jobs:
     - name: Build Tools Information
       run: |
         exec 2>&1
-        make --version; gcc --version
+        #make --version; gcc --version
 
     - name: Checkout
       uses: actions/checkout@v4
