@@ -18,7 +18,7 @@ jobs:
             presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
             setup:    'apt-get -y install git make g++' }
         - { label: 'debian-13-x86-64',  guest: 'debian:13',  host: '24.04',
-            presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
+            presetup: 'apt-get update; apt-get -y install procps-ng; apt-get -y upgrade',
             setup:    'apt-get -y install git make g++' }
         - { label: 'debian-12-x86-64',  guest: 'debian:12',  host: '22.04',
             presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
@@ -41,29 +41,29 @@ jobs:
             setup:    'apt-get -y install git make g++' }
 
         - { label: 'ubuntu-current-x86_64', guest: 'ubuntu:rolling', host: '24.04',
-            presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
+            presetup: 'apt-get update; apt-get -y upgrade',
             setup:    'apt-get -y install git make g++' }
         - { label: 'ubuntu-24.04-x86_64',   guest: 'ubuntu:24.04',   host: '24.04',
             presetup: 'apt-get update; apt-get -y upgrade',
             setup:    'apt-get -y install git make g++' }
         - { label: 'ubuntu-22.04-x86_64',   guest: 'ubuntu:22.04',   host: '22.04',
-            presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
+            presetup: 'apt-get update; apt-get -y upgrade',
             setup:    'apt-get -y install git make g++' }
         - { label: 'ubuntu-20.04-x86_64',   guest: 'ubuntu:22.04',   host: '22.04',
-            presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
+            presetup: 'apt-get update; apt-get -y upgrade',
             setup:    'apt-get -y install git make g++' }
 
         - { label: 'ubuntu-current-aarch64', guest: 'ubuntu:rolling', host: '24.04-arm',
-            presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
+            presetup: 'apt-get update; apt-get -y upgrade',
             setup:    'apt-get -y install git make g++' }
         - { label: 'ubuntu-24.04-aarch64',   guest: 'ubuntu:24.04',   host: '24.04-arm',
-            presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
+            presetup: 'apt-get update; apt-get -y upgrade',
             setup:    'apt-get -y install git make g++' }
         - { label: 'ubuntu-22.04-aarch64',   guest: 'ubuntu:22.04',   host: '22.04-arm',
-            presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
+            presetup: 'apt-get update; apt-get -y upgrade',
             setup:    'apt-get -y install git make g++' }
         - { label: 'ubuntu-20.04-aarch64',   guest: 'ubuntu:22.04',   host: '22.04-arm',
-            presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
+            presetup: 'apt-get update; apt-get -y upgrade',
             setup:    'apt-get -y install git make g++' }
 
         - { label: 'rhel-10-x86_64', guest: 'almalinux:10', host: '22.04',
