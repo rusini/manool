@@ -83,7 +83,7 @@ jobs:
         - { label: 'opensuse-tumbleweed-x86_64', guest: 'opensuse/tumbleweed', host: '24.04',
           presetup: 'zypper update -y',
           setup:    'zypper install -y git make gcc-c++' }
-        - { label: 'opensuse-leap16-x86_64',     guest: 'opensuse/leap:16',    host: '24.04',
+        - { label: 'opensuse-leap16-x86_64',     guest: 'opensuse/leap:16.0',    host: '24.04',
           presetup: 'zypper update -y',
           setup:    'zypper install -y git make gcc-c++' }
         - { label: 'opensuse-leap15-x86_64',     guest: 'opensuse/leap:15',    host: '22.04',
@@ -96,7 +96,7 @@ jobs:
         - { label: 'opensuse-tumbleweed-aarch64', guest: 'opensuse/tumbleweed', host: '24.04-arm',
           presetup: 'zypper update -y',
           setup:    'zypper install -y git make gcc-c++' }
-        - { label: 'opensuse-leap16-aarch64',     guest: 'opensuse/leap:16',    host: '24.04-arm',
+        - { label: 'opensuse-leap16-aarch64',     guest: 'opensuse/leap:16.0',    host: '24.04-arm',
           presetup: 'zypper update -y',
           setup:    'zypper install -y git make gcc-c++' }
         - { label: 'opensuse-leap15-aarch64',     guest: 'opensuse/leap:15',    host: '22.04-arm',
