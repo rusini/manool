@@ -68,17 +68,17 @@ jobs:
 
         - { label: 'rhel-9-x86_64',  guest: 'almalinux:9', host: '22.04',
             presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
-            setup:    'dnf -y install git make gcc-g++' }
+            setup:    'dnf -y install git make gcc-c++' }
         - { label: 'rhel-8-x86_64',  guest: 'almalinux:8', host: '22.04',
             presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
-            setup:    'dnf -y install git make gcc-g++' }
+            setup:    'dnf -y install git make gcc-c++' }
 
         - { label: 'rhel-9-aarch64',  guest: 'almalinux:9', host: '22.04',
             presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
-            setup:    'dnf -y install git make gcc-g++' }
+            setup:    'dnf -y install git make gcc-c++' }
         - { label: 'rhel-8-aarch64',  guest: 'almalinux:8', host: '22.04',
             presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
-            setup:    'dnf -y install git make gcc-g++' }
+            setup:    'dnf -y install git make gcc-c++' }
 
         - { label: 'opensuse-tumbleweed-x86_64', guest: 'opensuse/tumbleweed', host: '24.04',
           presetup: 'zypper update -y',
