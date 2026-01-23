@@ -8,8 +8,12 @@ on:
 jobs:
   build:
 
-    name: Build
-    runs-on: ubuntu-24.04
+    name: Build on FreeBSD ${{matrix.os}}
+    strategy:
+      fail-fast: FALSE
+      matrix:
+        os: [ '15.0', '14.3', '14.2', '14.1', '14.0', '13.5', '13.4', '13.3', '13.2' ]
+    runs-on: ubuntu-latest
 
     defaults:
       run: { shell: bash }
@@ -49,16 +53,14 @@ jobs:
     - name: Build under FreeBSD
       uses: vmactions/freebsd-vm@v1
       with:
-        release: '13.3'
+        release: ${{matrix.os}}
         mem:     '8192'
         usesh:   TRUE
         prepare: |
           exec 2>&1
           set -x
           sysctl hw.physmem; df -H .; uname -a
-          vmstat -m
-          vmstat -s
-          pkg -f update
+          pkg update
           pkg install -y gmake
           gmake --version; clang --version
         run: |
