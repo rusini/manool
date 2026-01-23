@@ -170,7 +170,8 @@ jobs:
     - name: System Information
       run: |
         exec 2>&1
-        date; uname -a; w | head -1
+        #date; uname -a; w | head -1
+        date; uname -a; uptime
         set -x
         cat /etc/os-release
     - name: Context Information
