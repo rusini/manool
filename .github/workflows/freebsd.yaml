@@ -9,7 +9,7 @@ jobs:
   build:
 
     name: Build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
 
     defaults:
       run: { shell: bash }
@@ -50,6 +50,7 @@ jobs:
       uses: vmactions/freebsd-vm@v1
       with:
         usesh: TRUE
+        mem:   8192
         arch:  aarch64
         prepare: |
           exec 2>&1
