@@ -88,10 +88,10 @@ jobs:
           setup:    'zypper install -y git make gcc-c++' }
         - { label: 'opensuse-leap15-x86_64',     guest: 'opensuse/leap:15',    host: '22.04',
           presetup: 'zypper update -y',
-          setup:    'zypper install -y git make gcc-c++' }
-        - { label: 'opensuse-leap42-x86_64',     guest: 'opensuse/leap:42',    host: '22.04',
-          presetup: 'zypper update -y',
-          setup:    'zypper install -y git make gcc-c++' }
+          setup:    'zypper install -y git make gcc9-c++' }
+        #- { label: 'opensuse-leap42-x86_64',     guest: 'opensuse/leap:42',    host: '22.04',
+        #  presetup: 'zypper update -y',
+        #  setup:    'zypper install -y git make gcc-c++' }
 
         - { label: 'opensuse-tumbleweed-aarch64', guest: 'opensuse/tumbleweed', host: '24.04-arm',
           presetup: 'zypper update -y',
@@ -101,10 +101,10 @@ jobs:
           setup:    'zypper install -y git make gcc-c++' }
         - { label: 'opensuse-leap15-aarch64',     guest: 'opensuse/leap:15',    host: '22.04-arm',
           presetup: 'zypper update -y',
-          setup:    'zypper install -y git make gcc-c++' }
-        - { label: 'opensuse-leap42-aarch64',     guest: 'opensuse/leap:42',    host: '22.04-arm',
-          presetup: 'zypper update -y',
-          setup:    'zypper install -y git make gcc-c++' }
+          setup:    'zypper install -y git make gcc9-c++' }
+        #- { label: 'opensuse-leap42-aarch64',     guest: 'opensuse/leap:42',    host: '22.04-arm',
+        #  presetup: 'zypper update -y',
+        #  setup:    'zypper install -y git make gcc-c++' }
 
         - { label: 'arch-x-x86_64', guest: 'archlinux', host: '24.04',
             presetup: 'pacman --noconfirm -Syu',
