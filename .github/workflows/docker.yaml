@@ -13,45 +13,145 @@ jobs:
       fail-fast: FALSE
       matrix:
         target:
-        - { label: "debian13", os: "debian:13",
-            preinstall: "apt-get update; apt-get -y upgrade; apt-get -y install procps",
-            install:    "apt-get -y install git make g++" }
-        - { label: "debian12", os: "debian:12",
-            preinstall: "apt-get update; apt-get -y upgrade; apt-get -y install procps",
-            install:    "apt-get -y install git make g++" }
-        - { label: "debian11", os: "debian:11",
-            preinstall: "apt-get update; apt-get -y upgrade; apt-get -y install procps",
-            install:    "apt-get -y install git make g++" }
-        - { label: "debians", os: "debian:stable",
-            preinstall: "apt-get update; apt-get -y upgrade; apt-get -y install procps",
-            install:    "apt-get -y install git make g++" }
-        - { label: "debiano", os: "debian:oldstable",
-            preinstall: "apt-get update; apt-get -y upgrade; apt-get -y install procps",
-            install:    "apt-get -y install git make g++" }
-        - { label: "debianoo", os: "debian:oldoldstable",
-            preinstall: "apt-get update; apt-get -y upgrade; apt-get -y install procps",
-            install:    "apt-get -y install git make g++" }
-        - { label: "debian", os: "debian:latest",
-            preinstall: "apt-get update; apt-get -y upgrade; apt-get -y install procps",
-            install:    "apt-get -y install git make g++" }
-        - { label: "debianu", os: "debian:unstable",
-            preinstall: "apt-get update; apt-get -y upgrade; apt-get -y install procps",
-            install:    "apt-get -y install git make g++" }
-        - { label: "debiansid", os: "debian:sid",
-            preinstall: "apt-get update; apt-get -y upgrade; apt-get -y install procps",
-            install:    "apt-get -y install git make g++" }
-        - { label: "rhel",   os: "almalinux",
-          preinstall: "dnf -y update; dnf -y install procps-ng util-linux",
-          install:    "dnf -y install git make g++" }
-        - { label: "suse",   os: "opensuse/tumbleweed",
-          preinstall: "zypper update -y",
-          install:    "zypper install -y git make gcc-c++" }
-        - { label: "arch",   os: "archlinux",
-          preinstall: "pacman --noconfirm -Syu",
-          install:    "pacman --noconfirm -S git make gcc" }
-        isa: [ '', '-arm' ]
-    runs-on: ubuntu-22.04${{matrix.isa}}
-    container: ${{matrix.target.os}}
+
+        - { label: 'debian-sid-x86_64', guest: 'debian:sid', host: '24.04',
+            presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
+            setup:    'apt-get -y install git make g++' }
+        - { label: 'debian-13-x86-64',  guest: 'debian:13',  host: '24.04',
+            presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
+            setup:    'apt-get -y install git make g++' }
+        - { label: 'debian-12-x86-64',  guest: 'debian:12',  host: '22.04',
+            presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
+            setup:    'apt-get -y install git make g++' }
+        - { label: 'debian-11-x86-64',  guest: 'debian:11',  host: '22.04',
+            presetup: 'apt-get update; apt-get -y upgrade; apt-get -y install procps',
+            setup:    'apt-get -y install git make g++' }
+
+        - { label: 'debian-sid-aarch64', guest: 'debian:sid', host: '24.04-arm',
+            presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
+            setup:    'apt-get -y install git make g++' }
+        - { label: 'debian-13-aarch64',  guest: 'debian:13',  host: '24.04-arm',
+            presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
+            setup:    'apt-get -y install git make g++' }
+        - { label: 'debian-12-aarch64',  guest: 'debian:12',  host: '22.04-arm',
+            presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
+            setup:    'apt-get -y install git make g++' }
+        - { label: 'debian-11-aarch64',  guest: 'debian:11',  host: '22.04-arm',
+            presetup: 'apt-get update; apt-get -y upgrade; apt-get -y install procps',
+            setup:    'apt-get -y install git make g++' }
+
+        - { label: 'ubuntu-current-x86_64', guest: 'ubuntu:rolling', host: '24.04',
+            presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
+            setup:    'apt-get -y install git make g++' }
+        - { label: 'ubuntu-24.04-x86_64',   guest: 'ubuntu:24.04',   host: '24.04',
+            presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
+            setup:    'apt-get -y install git make g++' }
+        - { label: 'ubuntu-22.04-x86_64',   guest: 'ubuntu:22.04',   host: '22.04',
+            presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
+            setup:    'apt-get -y install git make g++' }
+        - { label: 'ubuntu-20.04-x86_64',   guest: 'ubuntu:22.04',   host: '22.04',
+            presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
+            setup:    'apt-get -y install git make g++' }
+
+        - { label: 'ubuntu-current-aarch64', guest: 'ubuntu:rolling', host: '24.04-arm',
+            presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
+            setup:    'apt-get -y install git make g++' }
+        - { label: 'ubuntu-24.04-aarch64',   guest: 'ubuntu:24.04',   host: '24.04-arm',
+            presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
+            setup:    'apt-get -y install git make g++' }
+        - { label: 'ubuntu-22.04-aarch64',   guest: 'ubuntu:22.04',   host: '22.04-arm',
+            presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
+            setup:    'apt-get -y install git make g++' }
+        - { label: 'ubuntu-20.04-aarch64',   guest: 'ubuntu:22.04',   host: '22.04-arm',
+            presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
+            setup:    'apt-get -y install git make g++' }
+
+        - { label: 'rhel-9-x86_64',  guest: 'almalinux:9', host: '22.04',
+            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
+            setup:    'dnf -y install git make g++' }
+        - { label: 'rhel-8-x86_64',  guest: 'almalinux:8', host: '22.04',
+            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
+            setup:    'dnf -y install git make g++' }
+
+        - { label: 'rhel-9-aarch64',  guest: 'almalinux:9', host: '22.04',
+            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
+            setup:    'dnf -y install git make g++' }
+        - { label: 'rhel-8-aarch64',  guest: 'almalinux:8', host: '22.04',
+            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
+            setup:    'dnf -y install git make g++' }
+
+        - { label: 'opensuse-tumbleweed-x86_64', guest: 'opensuse/tumbleweed', host: '24.04',
+          preinstall: 'zypper update -y',
+          install:    'zypper install -y git make gcc-c++' }
+        - { label: 'opensuse-leap16-x86_64',     guest: 'opensuse/16',         host: '24.04',
+          preinstall: 'zypper update -y',
+          install:    'zypper install -y git make gcc-c++' }
+        - { label: 'opensuse-leap15-x86_64',     guest: 'opensuse/15',         host: '22.04',
+          preinstall: 'zypper update -y',
+          install:    'zypper install -y git make gcc-c++' }
+        - { label: 'opensuse-leap42-x86_64',     guest: 'opensuse/42',         host: '22.04',
+          preinstall: 'zypper update -y',
+          install:    'zypper install -y git make gcc-c++' }
+
+        - { label: 'opensuse-tumbleweed-aarch64', guest: 'opensuse/tumbleweed', host: '24.04-arm',
+          preinstall: 'zypper update -y',
+          install:    'zypper install -y git make gcc-c++' }
+        - { label: 'opensuse-leap16-aarch64',     guest: 'opensuse/16',         host: '24.04-arm',
+          preinstall: 'zypper update -y',
+          install:    'zypper install -y git make gcc-c++' }
+        - { label: 'opensuse-leap15-aarch64',     guest: 'opensuse/15',         host: '22.04-arm',
+          preinstall: 'zypper update -y',
+          install:    'zypper install -y git make gcc-c++' }
+        - { label: 'opensuse-leap42-aarch64',     guest: 'opensuse/42',         host: '22.04-arm',
+          preinstall: 'zypper update -y',
+          install:    'zypper install -y git make gcc-c++' }
+
+        - { label: 'arch-x-x86_64', guest: 'archlinux', host: '24.04',
+            presetup: 'pacman --noconfirm -Syu',
+            setup:    'pacman --noconfirm -S git make gcc' }
+
+        - { label: 'fedora-rawhide-x86_64', guest: 'fedora:rawhide', host: '24.04',
+            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
+            setup:    'dnf -y install git make g++' }
+        - { label: 'fedora-43-x86_64',      guest: 'fedora:43',      host: '24.04',
+            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
+            setup:    'dnf -y install git make g++' }
+        - { label: 'fedora-42-x86_64',      guest: 'fedora:42',      host: '22.04',
+            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
+            setup:    'dnf -y install git make g++' }
+        - { label: 'fedora-41-x86_64',      guest: 'fedora:41',      host: '22.04',
+            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
+            setup:    'dnf -y install git make g++' }
+
+        - { label: 'fedora-rawhide-aarch64', guest: 'fedora:rawhide', host: '24.04-arm',
+            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
+            setup:    'dnf -y install git make g++' }
+        - { label: 'fedora-43-aarch64',      guest: 'fedora:43',      host: '24.04-arm',
+            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
+            setup:    'dnf -y install git make g++' }
+        - { label: 'fedora-42-aarch64',      guest: 'fedora:42',      host: '22.04-arm',
+            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
+            setup:    'dnf -y install git make g++' }
+        - { label: 'fedora-41-aarch64',      guest: 'fedora:41',      host: '22.04-arm',
+            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
+            setup:    'dnf -y install git make g++' }
+
+        - { label: 'amzn-2023-x86_64', guest: 'amazonlinux:2023', host: '24.04',
+            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
+            setup:    'dnf -y install git make g++' }
+        - { label: 'amzn-2-x86_64',    guest: 'amazonlinux:2',    host: '24.04',
+            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
+            setup:    'dnf -y install git make g++' }
+
+        - { label: 'amzn-2023-aarch64', guest: 'amazonlinux:2023', host: '24.04-arm',
+            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
+            setup:    'dnf -y install git make g++' }
+        - { label: 'amzn-2-aarch64',    guest: 'amazonlinux:2',    host: '24.04-arm',
+            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
+            setup:    'dnf -y install git make g++' }
+
+    runs-on: ubuntu-${{matrix.target.host}}
+    container: ${{matrix.target.guest}}
 
     defaults:
       run: { shell: bash }
@@ -60,8 +160,7 @@ jobs:
     - name: Pre-Setup
       run: |
         exec 2>&1
-        set -x
-        ${{matrix.target.preinstall}}
+        ${{matrix.target.presetup}}
 
     - name: Machine Information
       run: |
@@ -70,7 +169,10 @@ jobs:
         lscpu; free -h; df -H .
     - name: System Information
       run: |
-        date; uname -a; w | head -1; cat /etc/os-release
+        exec 2>&1
+        date; uname -a; w | head -1
+        set -x
+        cat /etc/os-release
     - name: Context Information
       run: |
         exec 2>&1
@@ -83,10 +185,11 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        ${{matrix.target.install}}
+        ${{matrix.target.setup}}
 
     - name: Build Tools Information
       run: |
+        exec 2>&1
         make --version; gcc --version
 
     - name: Checkout
