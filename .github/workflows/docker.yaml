@@ -141,14 +141,14 @@ jobs:
             setup:    'dnf -y install git make g++' }
         - { label: 'amzn-2-x86_64',    guest: 'amazonlinux:2',    host: '24.04',
             presetup: 'yum -y install procps-ng util-linux; yum -y update',
-            setup:    'yum -y install git make g++' }
+            setup:    'yum -y install git make gcc-c++' }
 
         - { label: 'amzn-2023-aarch64', guest: 'amazonlinux:2023', host: '24.04-arm',
             presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
             setup:    'dnf -y install git make g++' }
         - { label: 'amzn-2-aarch64',    guest: 'amazonlinux:2',    host: '24.04-arm',
             presetup: 'yum -y install procps-ng util-linux; yum -y update',
-            setup:    'yum -y install git make g++' }
+            setup:    'yum -y install git make gcc-c++' }
 
     runs-on: ubuntu-${{matrix.target.host}}
     container: ${{matrix.target.guest}}
