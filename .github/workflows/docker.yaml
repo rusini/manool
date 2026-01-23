@@ -14,7 +14,7 @@ jobs:
       matrix:
         target:
 
-        - { label: 'debian-sid-x86_64', guest: debian:sid, host: '24.04',
+        - { label: debian-sid-x86_64, guest: debian:sid, host: '24.04',
             presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
             setup:    'apt-get -y install git make g++' }
         - { label: 'debian-13-x86-64',  guest: 'debian:13',  host: '24.04',
