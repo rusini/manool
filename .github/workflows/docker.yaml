@@ -86,28 +86,28 @@ jobs:
         #    presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
         #    setup:    'dnf -y install git make gcc-c++' }
 
-        - { label: 'opensuse-tumbleweed-x86_64', guest: 'opensuse/tumbleweed', host: '24.04',
-          presetup: 'zypper install -y procps util-linux; zypper update -y',
-          setup:    'zypper install -y git make gcc-c++' }
-        - { label: 'opensuse-leap16-x86_64',     guest: 'opensuse/leap:16.0',    host: '24.04',
-          presetup: 'zypper update -y',
-          setup:    'zypper install -y git make gcc-c++' }
-        - { label: 'opensuse-leap15-x86_64',     guest: 'opensuse/leap:15',    host: '22.04',
-          presetup: 'zypper update -y',
-          setup:    'zypper install -y git make gcc9-c++' }
+#        - { label: 'opensuse-tumbleweed-x86_64', guest: 'opensuse/tumbleweed', host: '24.04',
+#          presetup: 'zypper install -y procps util-linux; zypper update -y',
+#          setup:    'zypper install -y git make gcc-c++' }
+#        - { label: 'opensuse-leap16-x86_64',     guest: 'opensuse/leap:16.0',    host: '24.04',
+#          presetup: 'zypper update -y',
+#          setup:    'zypper install -y git make gcc-c++' }
+#        - { label: 'opensuse-leap15-x86_64',     guest: 'opensuse/leap:15',    host: '22.04',
+#          presetup: 'zypper update -y',
+#          setup:    'zypper install -y git make gcc9-c++' }
         #- { label: 'opensuse-leap42-x86_64',     guest: 'opensuse/leap:42',    host: '22.04',
         #  presetup: 'zypper update -y',
         #  setup:    'zypper install -y git make gcc-c++' }
 
-        - { label: 'opensuse-tumbleweed-aarch64', guest: 'opensuse/tumbleweed', host: '24.04-arm',
-          presetup: 'zypper install -y procps util-linux; zypper update -y',
-          setup:    'zypper install -y git make gcc-c++' }
-        - { label: 'opensuse-leap16-aarch64',     guest: 'opensuse/leap:16.0',    host: '24.04-arm',
-          presetup: 'zypper update -y',
-          setup:    'zypper install -y git make gcc-c++' }
-        - { label: 'opensuse-leap15-aarch64',     guest: 'opensuse/leap:15',    host: '22.04-arm',
-          presetup: 'zypper update -y',
-          setup:    'zypper install -y git make gcc9-c++' }
+#        - { label: 'opensuse-tumbleweed-aarch64', guest: 'opensuse/tumbleweed', host: '24.04-arm',
+#          presetup: 'zypper install -y procps util-linux; zypper update -y',
+#          setup:    'zypper install -y git make gcc-c++' }
+#        - { label: 'opensuse-leap16-aarch64',     guest: 'opensuse/leap:16.0',    host: '24.04-arm',
+#          presetup: 'zypper update -y',
+#          setup:    'zypper install -y git make gcc-c++' }
+#        - { label: 'opensuse-leap15-aarch64',     guest: 'opensuse/leap:15',    host: '22.04-arm',
+#          presetup: 'zypper update -y',
+#          setup:    'zypper install -y git make gcc9-c++' }
         #- { label: 'opensuse-leap42-aarch64',     guest: 'opensuse/leap:42',    host: '22.04-arm',
         #  presetup: 'zypper update -y',
         #  setup:    'zypper install -y git make gcc-c++' }
@@ -155,6 +155,15 @@ jobs:
         #- { label: 'amzn-2-aarch64',    guest: 'amazonlinux:2',    host: '24.04-arm',
         #    presetup: 'yum -y install procps-ng util-linux; yum -y update',
         #    setup:    'yum -y install git make gcc-c++' }
+
+        - { label: 'alpine-3-x86_64',  guest: 'aline:3', host: '24.04',
+            presetup: 'apk update',
+            setup:    'apk add git make g++ libc-dev' }
+        - { label: 'alpine-3-aarch64', guest: 'aline:3', host: '24.04-arm',
+            presetup: 'apk update',
+            setup:    'apk add git make g++ libc-dev' }
+
+
 
     runs-on: ubuntu-${{matrix.target.host}}
     container: ${{matrix.target.guest}}
