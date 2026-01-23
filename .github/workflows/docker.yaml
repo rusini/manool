@@ -180,7 +180,7 @@ jobs:
         tty || :; id; printf %s\\n SHELL="$SHELL" PATH="$PATH"
         set -x
         pwd
-        ps -e --sort ppid,pid -o ppid,pid,user:12,group:12,comm:24,rsz:11,vsz:11,thcount,bsdstart,state,tname
+        #ps -e --sort ppid,pid -o ppid,pid,user:12,group:12,comm:24,rsz:11,vsz:11,thcount,bsdstart,state,tname
 
     - name: Setup
       run: |
