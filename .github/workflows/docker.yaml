@@ -66,17 +66,23 @@ jobs:
             presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
             setup:    'apt-get -y install git make g++' }
 
-        - { label: 'rhel-9-x86_64',  guest: 'almalinux:9', host: '22.04',
+        - { label: 'rhel-10-x86_64', guest: 'almalinux:10', host: '22.04',
             presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
             setup:    'dnf -y install git make gcc-c++' }
-        - { label: 'rhel-8-x86_64',  guest: 'almalinux:8', host: '22.04',
+        - { label: 'rhel-9-x86_64',  guest: 'almalinux:9',  host: '22.04',
+            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
+            setup:    'dnf -y install git make gcc-c++' }
+        - { label: 'rhel-8-x86_64',  guest: 'almalinux:8',  host: '22.04',
             presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
             setup:    'dnf -y install git make gcc-c++' }
 
-        - { label: 'rhel-9-aarch64',  guest: 'almalinux:9', host: '22.04',
+        - { label: 'rhel-10-aarch64', guest: 'almalinux:10', host: '22.04',
             presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
             setup:    'dnf -y install git make gcc-c++' }
-        - { label: 'rhel-8-aarch64',  guest: 'almalinux:8', host: '22.04',
+        - { label: 'rhel-9-aarch64',  guest: 'almalinux:9',  host: '22.04',
+            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
+            setup:    'dnf -y install git make gcc-c++' }
+        - { label: 'rhel-8-aarch64',  guest: 'almalinux:8',  host: '22.04',
             presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
             setup:    'dnf -y install git make gcc-c++' }
 
