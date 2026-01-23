@@ -117,29 +117,29 @@ jobs:
             setup:    'pacman --noconfirm -S git make gcc' }
 
         - { label: 'fedora-rawhide-x86_64', guest: 'fedora:rawhide', host: '24.04',
-            presetup: 'dnf -y install procps-ng; dnf -y update',
+            presetup: 'dnf -y install util-linux; dnf -y update',
             setup:    'dnf -y install git make g++' }
         - { label: 'fedora-43-x86_64',      guest: 'fedora:43',      host: '24.04',
-            presetup: 'dnf -y install procps-ng; dnf -y update',
+            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
             setup:    'dnf -y install git make g++' }
         - { label: 'fedora-42-x86_64',      guest: 'fedora:42',      host: '22.04',
-            presetup: 'dnf -y install procps-ng; dnf -y update',
+            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
             setup:    'dnf -y install git make g++' }
         - { label: 'fedora-41-x86_64',      guest: 'fedora:41',      host: '22.04',
-            presetup: 'dnf -y install procps-ng; dnf -y update',
+            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
             setup:    'dnf -y install git make g++' }
 
         - { label: 'fedora-rawhide-aarch64', guest: 'fedora:rawhide', host: '24.04-arm',
-            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
+            presetup: 'dnf -y install procps-ng; dnf -y update',
             setup:    'dnf -y install git make g++' }
         - { label: 'fedora-43-aarch64',      guest: 'fedora:43',      host: '24.04-arm',
-            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
+            presetup: 'dnf -y install procps-ng; dnf -y update',
             setup:    'dnf -y install git make g++' }
         - { label: 'fedora-42-aarch64',      guest: 'fedora:42',      host: '22.04-arm',
-            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
+            presetup: 'dnf -y install procps-ng; dnf -y update',
             setup:    'dnf -y install git make g++' }
         - { label: 'fedora-41-aarch64',      guest: 'fedora:41',      host: '22.04-arm',
-            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
+            presetup: 'dnf -y install procps-ng; dnf -y update',
             setup:    'dnf -y install git make g++' }
 
         - { label: 'amzn-2023-x86_64', guest: 'amazonlinux:2023', host: '24.04',
