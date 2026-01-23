@@ -17,104 +17,104 @@ jobs:
         - { label: debian-sid-x86_64, guest: debian:sid, host: '24.04',
             presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
             setup:    'apt-get -y install git make g++' }
-        - { label: 'debian-13-x86-64',  guest: 'debian:13',  host: '24.04',
+        - { label: debian-13-x86-64,  guest: debian:13,  host: '24.04',
             presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
             setup:    'apt-get -y install git make g++' }
-        - { label: 'debian-12-x86-64',  guest: 'debian:12',  host: '24.04',
+        - { label: debian-12-x86-64,  guest: debian:12,  host: '24.04',
             presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
             setup:    'apt-get -y install git make g++' }
-        - { label: 'debian-11-x86-64',  guest: 'debian:11',  host: '22.04',
-            presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
-            setup:    'apt-get -y install git make g++' }
-
-        - { label: 'debian-sid-aarch64', guest: 'debian:sid', host: '24.04-arm',
-            presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
-            setup:    'apt-get -y install git make g++' }
-        - { label: 'debian-13-aarch64',  guest: 'debian:13',  host: '24.04-arm',
-            presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
-            setup:    'apt-get -y install git make g++' }
-        - { label: 'debian-12-aarch64',  guest: 'debian:12',  host: '24.04-arm',
-            presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
-            setup:    'apt-get -y install git make g++' }
-        - { label: 'debian-11-aarch64',  guest: 'debian:11',  host: '22.04-arm',
+        - { label: debian-11-x86-64,  guest: debian:11,  host: '22.04',
             presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
             setup:    'apt-get -y install git make g++' }
 
-        - { label: 'ubuntu-current-x86_64', guest: 'ubuntu:rolling', host: '24.04',
+        - { label: debian-sid-aarch64, guest: debian:sid, host: '24.04-arm',
+            presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
+            setup:    'apt-get -y install git make g++' }
+        - { label: debian-13-aarch64,  guest: debian:13,  host: '24.04-arm',
+            presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
+            setup:    'apt-get -y install git make g++' }
+        - { label: debian-12-aarch64,  guest: debian:12,  host: '24.04-arm',
+            presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
+            setup:    'apt-get -y install git make g++' }
+        - { label: debian-11-aarch64,  guest: debian:11,  host: '22.04-arm',
+            presetup: 'apt-get update; apt-get -y install procps; apt-get -y upgrade',
+            setup:    'apt-get -y install git make g++' }
+
+        - { label: ubuntu-current-x86_64, guest: ubuntu:rolling, host: '24.04',
             presetup: 'apt-get update; apt-get -y upgrade',
             setup:    'apt-get -y install git make g++' }
-        - { label: 'ubuntu-24.04-x86_64',   guest: 'ubuntu:24.04',   host: '24.04',
+        - { label: ubuntu-24.04-x86_64,   guest: ubuntu:24.04,   host: '24.04',
             presetup: 'apt-get update; apt-get -y upgrade',
             setup:    'apt-get -y install git make g++' }
-        - { label: 'ubuntu-22.04-x86_64',   guest: 'ubuntu:22.04',   host: '22.04',
+        - { label: ubuntu-22.04-x86_64,   guest: ubuntu:22.04,   host: '22.04',
             presetup: 'apt-get update; apt-get -y upgrade',
             setup:    'apt-get -y install git make g++' }
-        - { label: 'ubuntu-20.04-x86_64',   guest: 'ubuntu:22.04',   host: '22.04',
+        - { label: ubuntu-20.04-x86_64,   guest: ubuntu:22.04,   host: '22.04',
             presetup: 'apt-get update; apt-get -y upgrade',
             setup:    'apt-get -y install git make g++' }
 
-        - { label: 'ubuntu-current-aarch64', guest: 'ubuntu:rolling', host: '24.04-arm',
+        - { label: ubuntu-current-aarch64, guest: ubuntu:rolling, host: '24.04-arm',
             presetup: 'apt-get update; apt-get -y upgrade',
             setup:    'apt-get -y install git make g++' }
-        - { label: 'ubuntu-24.04-aarch64',   guest: 'ubuntu:24.04',   host: '24.04-arm',
+        - { label: ubuntu-24.04-aarch64,   guest: ubuntu:24.04,   host: '24.04-arm',
             presetup: 'apt-get update; apt-get -y upgrade',
             setup:    'apt-get -y install git make g++' }
-        - { label: 'ubuntu-22.04-aarch64',   guest: 'ubuntu:22.04',   host: '22.04-arm',
+        - { label: ubuntu-22.04-aarch64,   guest: ubuntu:22.04,   host: '22.04-arm',
             presetup: 'apt-get update; apt-get -y upgrade',
             setup:    'apt-get -y install git make g++' }
-        - { label: 'ubuntu-20.04-aarch64',   guest: 'ubuntu:22.04',   host: '22.04-arm',
+        - { label: ubuntu-20.04-aarch64,   guest: ubuntu:22.04,   host: '22.04-arm',
             presetup: 'apt-get update; apt-get -y upgrade',
             setup:    'apt-get -y install git make g++' }
 
-        - { label: 'rhel-10-x86_64', guest: 'almalinux:10', host: '24.04',
+        - { label: rhel-10-x86_64, guest: almalinux:10, host: '24.04',
             presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
             setup:    'dnf -y install git make gcc-c++' }
-        - { label: 'rhel-9-x86_64',  guest: 'almalinux:9',  host: '22.04',
+        - { label: rhel-9-x86_64,  guest: almalinux:9,  host: '22.04',
             presetup: 'dnf -y install procps-ng; dnf -y update',
             setup:    'dnf -y install git make gcc-c++' }
 
-        - { label: 'rhel-10-aarch64', guest: 'almalinux:10', host: '24.04',
+        - { label: rhel-10-aarch64, guest: almalinux:10, host: '24.04',
             presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
             setup:    'dnf -y install git make gcc-c++' }
-        - { label: 'rhel-9-aarch64',  guest: 'almalinux:9',  host: '22.04',
+        - { label: rhel-9-aarch64,  guest: almalinux:9,  host: '22.04',
             presetup: 'dnf -y install procps-ng; dnf -y update',
             setup:    'dnf -y install git make gcc-c++' }
 
-        - { label: 'arch-x-x86_64', guest: 'archlinux', host: '24.04',
+        - { label: arch-x-x86_64, guest: archlinux, host: '24.04',
             presetup: 'pacman --noconfirm -Syu',
             setup:    'pacman --noconfirm -S git make gcc' }
 
-        - { label: 'fedora-rawhide-x86_64', guest: 'fedora:rawhide', host: '24.04',
+        - { label: fedora-rawhide-x86_64, guest: fedora:rawhide, host: '24.04',
             presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
             setup:    'dnf -y install git make g++' }
-        - { label: 'fedora-43-x86_64',      guest: 'fedora:43',      host: '24.04',
+        - { label: fedora-43-x86_64,      guest: fedora:43,      host: '24.04',
             presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
             setup:    'dnf -y install git make g++' }
-        - { label: 'fedora-42-x86_64',      guest: 'fedora:42',      host: '24.04',
+        - { label: fedora-42-x86_64,      guest: fedora:42,      host: '24.04',
             presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
             setup:    'dnf -y install git make g++' }
-        - { label: 'fedora-41-x86_64',      guest: 'fedora:41',      host: '24.04',
-            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
-            setup:    'dnf -y install git make g++' }
-
-        - { label: 'fedora-rawhide-aarch64', guest: 'fedora:rawhide', host: '24.04-arm',
-            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
-            setup:    'dnf -y install git make g++' }
-        - { label: 'fedora-43-aarch64',      guest: 'fedora:43',      host: '24.04-arm',
-            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
-            setup:    'dnf -y install git make g++' }
-        - { label: 'fedora-42-aarch64',      guest: 'fedora:42',      host: '24.04-arm',
-            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
-            setup:    'dnf -y install git make g++' }
-        - { label: 'fedora-41-aarch64',      guest: 'fedora:41',      host: '24.04-arm',
+        - { label: fedora-41-x86_64,      guest: fedora:41,      host: '24.04',
             presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
             setup:    'dnf -y install git make g++' }
 
-        - { label: 'amzn-2023-x86_64', guest: 'amazonlinux:2023', host: '24.04',
+        - { label: fedora-rawhide-aarch64, guest: fedora:rawhide, host: '24.04-arm',
+            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
+            setup:    'dnf -y install git make g++' }
+        - { label: fedora-43-aarch64,      guest: fedora:43,      host: '24.04-arm',
+            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
+            setup:    'dnf -y install git make g++' }
+        - { label: fedora-42-aarch64,      guest: fedora:42,      host: '24.04-arm',
+            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
+            setup:    'dnf -y install git make g++' }
+        - { label: fedora-41-aarch64,      guest: fedora:41,      host: '24.04-arm',
+            presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
+            setup:    'dnf -y install git make g++' }
+
+        - { label: amzn-2023-x86_64, guest: amazonlinux:2023, host: '24.04',
             presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
             setup:    'dnf -y install git make gcc-c++' }
 
-        - { label: 'amzn-2023-aarch64', guest: 'amazonlinux:2023', host: '24.04-arm',
+        - { label: amzn-2023-aarch64, guest: amazonlinux:2023, host: '24.04-arm',
             presetup: 'dnf -y install procps-ng util-linux; dnf -y update',
             setup:    'dnf -y install git make gcc-c++' }
 
