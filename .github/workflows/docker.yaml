@@ -197,7 +197,7 @@ jobs:
     - name: Build Tools Information
       run: |
         exec 2>&1
-        #make --version; gcc --version
+        make --version; gcc --version
 
     - name: Checkout
       uses: actions/checkout@v4
