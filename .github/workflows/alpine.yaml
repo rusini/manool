@@ -52,6 +52,7 @@ jobs:
       run: |
         exec 2>&1
         set -x
+        sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
         sudo apt-get update
         sudo apt-get install qemu-user-static
 
