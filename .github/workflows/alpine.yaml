@@ -107,7 +107,8 @@ jobs:
         ${{matrix.compiler.gxx}} -pipe -w -pthread -std=c++17 -fPIC -fno-math-errno -Wno-psabi -O3 \
            -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE \
            -include prelude.cc main.cc
-        readelf -h a.out
+        #readelf -h a.out
+        ./a.out
         #make -j4 run GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}'
         END
     - name: Upload Results
