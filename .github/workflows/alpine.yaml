@@ -7,22 +7,22 @@ on:
 
 jobs:
   alpine-build:
+
     name: Build on Alpine Linux for ${{matrix.target}} with ${{matrix.compiler.GCC}}
     strategy:
       fail-fast: FALSE
       matrix:
         target: [ # empty MARCH is always sufficient (just by chance)
-          'x86_64', 'x86', 'aarch64', 'armhf', 'ppc64le', 'armv7', 'riscv64', 'loongarch64', 's390x'
+          x86_64, x86, aarch64, armhf, ppc64le, armv7, riscv64, loongarch64, s390x
         ]
         compiler:
-        - { label: 'gcc',     apk: 'g++',     gcc: 'gcc',      gxx: 'g++'        }
-        - { label: 'clang16', apk: 'clang16', gcc: 'clang-16', gxx: 'clang++-16' }
-        - { label: 'clang18', apk: 'clang18', gcc: 'clang-18', gxx: 'clang++-18' }
-        - { label: 'clang19', apk: 'clang19', gcc: 'clang-19', gxx: 'clang++-19' }
-        - { label: 'clang20', apk: 'clang20', gcc: 'clang-20', gxx: 'clang++-20' }
+        - { label: gcc,     apk: g++,     gcc: gcc,      gxx: g++        }
+        - { label: clang16, apk: clang16, gcc: clang-16, gxx: clang++-16 }
+        - { label: clang18, apk: clang18, gcc: clang-18, gxx: clang++-18 }
+        - { label: clang19, apk: clang19, gcc: clang-19, gxx: clang++-19 }
+        - { label: clang20, apk: clang20, gcc: clang-20, gxx: clang++-20 }
         # clang15 (partial), clang17
-
-    runs-on: ubuntu-${{matrix.target == 'loongarch64' && '24' || '22'}}.04
+    runs-on: ubuntu-2${{matrix.target == 'loongarch64' && '4' || '2'}}.04
 
     defaults:
       run: { shell: bash }
@@ -108,7 +108,7 @@ jobs:
            -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE \
            -include prelude.cc main.cc
         readelf -h a.out
-        #make -j4 run GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}' MARCH=
+        make -j4 run GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}' MARCH=
         END
     - name: Upload Results
       if: matrix.target != 's390x'
