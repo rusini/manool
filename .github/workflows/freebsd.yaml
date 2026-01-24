@@ -8,7 +8,7 @@ on:
 jobs:
   build:
 
-    name: Build and Check on FreeBSD ${{matrix.os}}
+    name: Build on FreeBSD ${{matrix.os}}
     strategy:
       fail-fast: FALSE
       matrix:
@@ -57,6 +57,7 @@ jobs:
         mem:     '8192'
         usesh:   TRUE
         prepare: |
+          set -e -o pipefail
           exec 2>&1
           set -x
           sysctl hw.physmem; df -H .; uname -a
@@ -64,6 +65,7 @@ jobs:
           pkg install -y gmake
           gmake --version; clang --version
         run: |
+          set -e -o pipefail
           exec 2>&1
           tty || :; id; printf %s\\n SHELL="$SHELL" PATH="$PATH"
           set -x
@@ -73,5 +75,5 @@ jobs:
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
-        name: build${{matrix.os}}
+        name: build-${{matrix.os}}
         path: build
