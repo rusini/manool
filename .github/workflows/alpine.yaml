@@ -22,7 +22,7 @@ jobs:
         #- { guest: aarch64,     host: -arm                   }
         #- { guest: armhf,       host: -arm                   }
         #- { guest: ppc64le,     qemu: TRUE                   }
-        - { guest: armv7,       host: -arm, march: '-mthumb' }
+        - { guest: armv7,       host: -arm, march: '' }
         #- { guest: riscv64,     qemu: TRUE                   }
         #- { guest: loongarch64, qemu: TRUE                   }
         #- { guest: s390x,       qemu: TRUE                   }
