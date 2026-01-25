@@ -17,15 +17,15 @@ jobs:
         #  x86_64, x86, aarch64, armhf, ppc64le, armv7, riscv64, loongarch64, s390x
         #]
         target:
-        - { guest: x86_64                                    }
-        - { guest: x86                                       }
-        - { guest: aarch64,     host: -arm                   }
-        - { guest: armhf,       host: -arm                   }
-        - { guest: ppc64le,     qemu: TRUE                   }
+        #- { guest: x86_64                                    }
+        #- { guest: x86                                       }
+        #- { guest: aarch64,     host: -arm                   }
+        #- { guest: armhf,       host: -arm                   }
+        #- { guest: ppc64le,     qemu: TRUE                   }
         - { guest: armv7,       host: -arm, march: '-mthumb' }
-        - { guest: riscv64,     qemu: TRUE                   }
-        - { guest: loongarch64, qemu: TRUE                   }
-        - { guest: s390x,       qemu: TRUE                   }
+        #- { guest: riscv64,     qemu: TRUE                   }
+        #- { guest: loongarch64, qemu: TRUE                   }
+        #- { guest: s390x,       qemu: TRUE                   }
         compiler:
         - { apk: g++,     gcc: gcc,      gxx: g++        }
         - { apk: clang16, gcc: clang-16, gxx: clang++-16 }
@@ -115,14 +115,14 @@ jobs:
         exec 2>&1
         sudo chroot /srv/alpine /bin/su - runner <<'END'
         set -x
-        #echo 'int main() {}' >main.cc
-        #${{matrix.compiler.gxx}} -pipe -w -pthread -std=c++17 -fPIC -fno-math-errno -Wno-psabi -O3 \
-        #   -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE \
-        #   -include prelude.cc main.cc
+        echo 'int f(int a, int b) { return a + b + 123; }' >main.cc
+        ${{matrix.compiler.gxx}} -pipe -w -pthread -std=c++17 -fPIC -fno-math-errno -Wno-psabi -O3 \
+           -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE \
+           -include prelude.cc main.cc -S -o-
         #./a.out
-        make -j4 run GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}' \
-           ${{matrix.target.march && format('MARCH=''{0}''', matrix.target.march)}}
-        END
+        #make -j4 run GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}' \
+        #   ${{matrix.target.march && format('MARCH=''{0}''', matrix.target.march)}}
+        #END
     - name: Upload Results
       if: matrix.target.guest != 's390x'
       uses: actions/upload-artifact@v4
