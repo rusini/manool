@@ -8,7 +8,7 @@ on:
 jobs:
   alpine-build:
 
-    name: Build on Alpine Linux for ${{matrix.target}} with ${{matrix.compiler.GCC}}
+    name: Build on Alpine Linux for ${{matrix.target.guest}} with ${{matrix.compiler.GCC}}
     strategy:
       fail-fast: FALSE
       matrix:
