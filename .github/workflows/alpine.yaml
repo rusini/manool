@@ -12,9 +12,19 @@ jobs:
     strategy:
       fail-fast: FALSE
       matrix:
-        target: [ # empty MARCH is always sufficient (just by chance)
-          x86_64, x86, aarch64, armhf, ppc64le, armv7, riscv64, loongarch64, s390x
-        ]
+        #target: [ # empty MARCH is always sufficient (just by chance) --- TODO: add using -arm host!
+        #  x86_64, x86, aarch64, armhf, ppc64le, armv7, riscv64, loongarch64, s390x
+        #]
+        target:
+        - { guest: x86_64                    }
+        - { guest: x86                       }
+        - { guest: aarch64,     host: '-arm' }
+        - { guest: armhf,       host: '-arm' }
+        - { guest: ppc64le,     qemu: TRUE   }
+        - { guest: armv7,       host: '-arm' }
+        - { guest: riscv64,     qemu: TRUE   }
+        - { guest: loongarch64, qemu: TRUE   }
+        - { guest: s390x,       qemu: TRUE   }
         compiler:
         - { label: gcc,     apk: g++,     gcc: gcc,      gxx: g++        }
         - { label: clang16, apk: clang16, gcc: clang-16, gxx: clang++-16 }
@@ -22,7 +32,7 @@ jobs:
         - { label: clang19, apk: clang19, gcc: clang-19, gxx: clang++-19 }
         - { label: clang20, apk: clang20, gcc: clang-20, gxx: clang++-20 }
         # clang15 (partial), clang17
-    runs-on: ubuntu-2${{matrix.target == 'loongarch64' && '4' || '2'}}.04
+    runs-on: ubuntu-2${{matrix.target.guest == 'loongarch64' && '4' || '2'}}.04${{matrix.target.host}}
 
     defaults:
       run: { shell: bash }
@@ -49,6 +59,7 @@ jobs:
         pwd
         ps -eH --sort pid -o pid,user:12,group:12,comm:24,rsz,vsz,thcount,bsdstart,state,tname
     - name: Host Setup
+      if: (matrix.target.qemu)
       run: |
         exec 2>&1
         set -x
@@ -61,7 +72,7 @@ jobs:
         exec 2>&1
 
         (set -x; wget --no-show-progress -O- \
-           https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/${{matrix.target}}/alpine-minirootfs-3.22.2-${{matrix.target}}.tar.gz) |
+           https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/${{matrix.target.guest}}/alpine-minirootfs-3.22.2-${{matrix.target.guest}}.tar.gz) |
            (set -x; sudo mkdir /srv/alpine; sudo tar xz -C /srv/alpine)
         (for d in dev proc sys; do (set -x; sudo mount -R -r {,/srv/alpine}/"$d") done)
         (for d in run tmp; do (set -x; sudo mount {-t,}tmpfs /srv/alpine/"$d") done; set -x; sudo chmod 1777 /srv/alpine/tmp)
@@ -98,7 +109,7 @@ jobs:
       uses: actions/checkout@v4
       with: { ref: master }
     - name: Run Make (and Check)
-      if: matrix.target != 's390x'
+      if: matrix.target.guest != 's390x'
       run: |
         exec 2>&1
         sudo chroot /srv/alpine /bin/su - runner <<'END'
@@ -111,8 +122,8 @@ jobs:
         make -j4 run GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}'
         END
     - name: Upload Results
-      if: matrix.target != 's390x'
+      if: matrix.target.guest != 's390x'
       uses: actions/upload-artifact@v4
       with:
-        name: build-${{matrix.target}}-${{matrix.compiler.label}}
+        name: build-${{matrix.target.guest}}-${{matrix.compiler.label}}
         path: build
