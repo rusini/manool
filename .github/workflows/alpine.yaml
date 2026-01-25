@@ -9,7 +9,7 @@ jobs:
   alpine-build:
 
     #name: Build on Alpine Linux for ${{matrix.target.guest}} with ${{matrix.compiler.GCC}}
-    name: On ${{matrix.target.guest}} with ${{matrix.compiler.apk}}
+    name: On ${{matrix.target.guest}} with ${{matrix.compiler.gcc}}
     strategy:
       fail-fast: FALSE
       matrix:
@@ -127,5 +127,5 @@ jobs:
       if: matrix.target.guest != 's390x'
       uses: actions/upload-artifact@v4
       with:
-        name: build-${{matrix.target.guest}}-${{matrix.compiler.apk}}
+        name: build-${{matrix.target.guest}}-${{matrix.compiler.gcc}}
         path: build
