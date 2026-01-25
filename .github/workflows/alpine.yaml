@@ -21,7 +21,7 @@ jobs:
         - { guest: aarch64,     host: '-arm' }
         - { guest: armhf,       host: '-arm' }
         - { guest: ppc64le,     qemu: TRUE   }
-        - { guest: armv7,       host: -arm }
+        - { guest: armv7,       host: -arm, march: '-mthumb' }
         - { guest: riscv64,     qemu: TRUE   }
         - { guest: loongarch64, qemu: TRUE   }
         - { guest: s390x,       qemu: TRUE   }
@@ -119,7 +119,8 @@ jobs:
         #   -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE \
         #   -include prelude.cc main.cc
         #./a.out
-        make -j4 run GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}'
+        make -j4 run GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}' \
+           ${{matrix.target.march && format('MARCH=''{0}''', matrix.target.march) || ''}}
         END
     - name: Upload Results
       if: matrix.target.guest != 's390x'
