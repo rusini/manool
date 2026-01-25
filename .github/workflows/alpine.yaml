@@ -22,7 +22,7 @@ jobs:
         #- { guest: aarch64,     host: -arm                   }
         - { guest: armhf,       host: -arm                   }
         #- { guest: ppc64le,     qemu: TRUE                   }
-        - { guest: armv7,       host: -arm, march: '' }
+        - { guest: armv7,       host: -arm, march: '-mthumb' }
         #- { guest: riscv64,     qemu: TRUE                   }
         #- { guest: loongarch64, qemu: TRUE                   }
         #- { guest: s390x,       qemu: TRUE                   }
@@ -118,7 +118,7 @@ jobs:
         echo 'int f(int a, int b) { return a + b + 123; }' >main.cc
         ${{matrix.compiler.gxx}} -pipe -w -pthread -std=c++17 -fPIC -fno-math-errno -Wno-psabi -O3 \
            -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE \
-           main.cc -S -o-
+           main.cc -S -o- -mthumb
            #-include prelude.cc main.cc -S -o-
         #./a.out
         #make -j4 run GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}' \
