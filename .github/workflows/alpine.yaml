@@ -9,7 +9,7 @@ jobs:
   alpine-build:
 
     #name: Build on Alpine Linux for ${{matrix.target.guest}} with ${{matrix.compiler.GCC}}
-    name: On ${{matrix.target.guest}} with ${{matrix.compiler.gcc}}
+    name: On ${{matrix.target.guest}} with ${{matrix.compiler.apk}}
     strategy:
       fail-fast: FALSE
       matrix:
@@ -27,11 +27,11 @@ jobs:
         - { guest: loongarch64, qemu: TRUE                   }
         - { guest: s390x,       qemu: TRUE                   }
         compiler:
-        - { label: gcc,     apk: g++,     gcc: gcc,      gxx: g++        }
-        - { label: clang16, apk: clang16, gcc: clang-16, gxx: clang++-16 }
-        - { label: clang18, apk: clang18, gcc: clang-18, gxx: clang++-18 }
-        - { label: clang19, apk: clang19, gcc: clang-19, gxx: clang++-19 }
-        - { label: clang20, apk: clang20, gcc: clang-20, gxx: clang++-20 }
+        - { apk: g++,     gcc: gcc,      gxx: g++        }
+        - { apk: clang16, gcc: clang-16, gxx: clang++-16 }
+        - { apk: clang18, gcc: clang-18, gxx: clang++-18 }
+        - { apk: clang19, gcc: clang-19, gxx: clang++-19 }
+        - { apk: clang20, gcc: clang-20, gxx: clang++-20 }
         # clang15 (partial), clang17
     runs-on: ubuntu-2${{matrix.target.guest == 'loongarch64' && '4' || '2'}}.04${{matrix.target.host}}
 
@@ -127,5 +127,5 @@ jobs:
       if: matrix.target.guest != 's390x'
       uses: actions/upload-artifact@v4
       with:
-        name: build-${{matrix.target.guest}}-${{matrix.compiler.label}}
+        name: build-${{matrix.target.guest}}-${{matrix.compiler.apk}}
         path: build
