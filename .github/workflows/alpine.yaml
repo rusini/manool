@@ -120,7 +120,7 @@ jobs:
         #   -include prelude.cc main.cc
         #./a.out
         make -j4 run GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}' \
-           ${{matrix.target.march && format('MARCH=''{0}''', matrix.target.march) || ''}}
+           ${{matrix.target.march && format('MARCH=''{0}''', matrix.target.march)}}
         END
     - name: Upload Results
       if: matrix.target.guest != 's390x'
