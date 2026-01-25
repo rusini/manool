@@ -16,15 +16,15 @@ jobs:
         #  x86_64, x86, aarch64, armhf, ppc64le, armv7, riscv64, loongarch64, s390x
         #]
         target:
-        - { guest: x86_64                    }
-        - { guest: x86                       }
-        - { guest: aarch64,     host: '-arm' }
-        - { guest: armhf,       host: '-arm' }
-        - { guest: ppc64le,     qemu: TRUE   }
+        - { guest: x86_64                                    }
+        - { guest: x86                                       }
+        - { guest: aarch64,     host: -arm                   }
+        - { guest: armhf,       host: -arm                   }
+        - { guest: ppc64le,     qemu: TRUE                   }
         - { guest: armv7,       host: -arm, march: '-mthumb' }
-        - { guest: riscv64,     qemu: TRUE   }
-        - { guest: loongarch64, qemu: TRUE   }
-        - { guest: s390x,       qemu: TRUE   }
+        - { guest: riscv64,     qemu: TRUE                   }
+        - { guest: loongarch64, qemu: TRUE                   }
+        - { guest: s390x,       qemu: TRUE                   }
         compiler:
         - { label: gcc,     apk: g++,     gcc: gcc,      gxx: g++        }
         - { label: clang16, apk: clang16, gcc: clang-16, gxx: clang++-16 }
