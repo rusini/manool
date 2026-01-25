@@ -20,7 +20,7 @@ jobs:
         #- { guest: x86_64                                    }
         #- { guest: x86                                       }
         #- { guest: aarch64,     host: -arm                   }
-        #- { guest: armhf,       host: -arm                   }
+        - { guest: armhf,       host: -arm                   }
         #- { guest: ppc64le,     qemu: TRUE                   }
         - { guest: armv7,       host: -arm, march: '' }
         #- { guest: riscv64,     qemu: TRUE                   }
