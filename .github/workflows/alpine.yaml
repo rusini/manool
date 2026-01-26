@@ -28,6 +28,9 @@ jobs:
         - { apk: clang18, gcc: clang-18, gxx: clang++-18 }
         - { apk: clang19, gcc: clang-19, gxx: clang++-19 }
         - { apk: clang20, gcc: clang-20, gxx: clang++-20 }
+
+        - { apk: clang15, gcc: clang-15, gxx: clang++-15 }
+        - { apk: clang17, gcc: clang-17, gxx: clang++-17 }
     runs-on: ubuntu-24.04${{matrix.target.host}}
 
     defaults:
