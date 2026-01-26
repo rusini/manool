@@ -86,7 +86,7 @@ jobs:
 
         sudo chroot /srv/alpine /bin/su - <<'END'
         set -x
-        apk update && apk add make ${{matrix.compiler.apk}} libc-dev
+        apk update && apk add make libc-dev
         #apk update && apk add make ${{matrix.compiler.apk}}
         END
 
