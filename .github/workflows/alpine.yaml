@@ -13,19 +13,16 @@ jobs:
     strategy:
       fail-fast: FALSE
       matrix:
-        #target: [ # empty MARCH is always sufficient (just by chance) --- TODO: add using -arm host!
-        #  x86_64, x86, aarch64, armhf, ppc64le, armv7, riscv64, loongarch64, s390x
-        #]
-        target: # default MARCH is sufficient and should be preferred on Alpine
-        - { guest: x86_64                                    }
-        - { guest: x86                                       } # -msse2 -mfpmath=sse is assumed
-        - { guest: aarch64,     host: -arm                   }
-        - { guest: armv7,       host: -arm } # -mthumb default in spec for gcc, but not for clang, -march=armv7-a is assumed
-        - { guest: ppc64le,     qemu: TRUE                   }
-        - { guest: riscv64,     qemu: TRUE                   }
-        - { guest: armhf,       host: -arm                   }
-        - { guest: loongarch64, qemu: TRUE                   }
-        - { guest: s390x,       qemu: TRUE                   }
+        target: # default ISA options are sufficient and should be preferred on Alpine
+        - { guest: x86_64                  }
+        - { guest: x86                     }
+        - { guest: aarch64,     host: -arm }
+        - { guest: armv7,       host: -arm }
+        - { guest: ppc64le,     qemu: TRUE }
+        - { guest: riscv64,     qemu: TRUE }
+        - { guest: armhf,       host: -arm }
+        - { guest: loongarch64, qemu: TRUE }
+        - { guest: s390x,       qemu: TRUE }
         compiler:
         - { apk: g++,     gcc: gcc,      gxx: g++        }
         - { apk: clang16, gcc: clang-16, gxx: clang++-16 }
@@ -33,7 +30,7 @@ jobs:
         - { apk: clang19, gcc: clang-19, gxx: clang++-19 }
         - { apk: clang20, gcc: clang-20, gxx: clang++-20 }
         # clang15 (partial), clang17
-    runs-on: ubuntu-2${{matrix.target.guest == 'loongarch64' && '4' || '2'}}.04${{matrix.target.host}}
+    runs-on: ubuntu-22.04${{matrix.target.host}}
 
     defaults:
       run: { shell: bash }
@@ -108,24 +105,23 @@ jobs:
 
     - name: Checkout
       uses: actions/checkout@v4
-      #with: { ref: master }
+      with: { ref: master }
     - name: Run Make (and Check)
-      #if: matrix.target.guest != 's390x'
+      if: matrix.target.guest != 's390x'
       run: |
         exec 2>&1
         sudo chroot /srv/alpine /bin/su - runner <<'END'
         set -x
-        echo 'double f(double a, double b) { return a + b; }' >main.cc
-        ${{matrix.compiler.gxx}} -pipe -v -w -pthread -std=c++17 -fPIC -fno-math-errno -Wno-psabi -O3 \
-           -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE \
-           -include prelude.cc main.cc -S -o-
+        #echo 'double f(double a, double b) { return a + b; }' >main.cc
+        #${{matrix.compiler.gxx}} -pipe -v -w -pthread -std=c++17 -fPIC -fno-math-errno -Wno-psabi -O3 \
+        #   -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE \
+        #   -include prelude.cc main.cc -S -o-
         #./a.out
-        #make -j4 run GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}' \
-        #   ${{matrix.target.march && format('MARCH=''{0}''', matrix.target.march)}}
+        make -j4 run GCC=${{matrix.compiler.gcc}} GXX=${{matrix.compiler.gxx}}
         END
-    - name: Upload Results
-      if: matrix.target.guest != 's390x'
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-${{matrix.target.guest}}-${{matrix.compiler.gcc}}
-        path: build
+    #- name: Upload Results
+    #  if: matrix.target.guest != 's390x'
+    #  uses: actions/upload-artifact@v4
+    #  with:
+    #    name: build-${{matrix.target.guest}}-${{matrix.compiler.gcc}}
+    #    path: build
