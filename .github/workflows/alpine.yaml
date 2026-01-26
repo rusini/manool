@@ -23,11 +23,11 @@ jobs:
         - { guest: loongarch64, qemu: TRUE }
         - { guest: s390x,       qemu: TRUE }
         compiler: # omitted: clang15 (partial), clang17
-        - { apk: g++,     gcc: gcc,      gxx: g++        }
-        - { apk: clang16, gcc: clang-16, gxx: clang++-16 }
-        - { apk: clang18, gcc: clang-18, gxx: clang++-18 }
-        - { apk: clang19, gcc: clang-19, gxx: clang++-19 }
-        - { apk: clang20, gcc: clang-20, gxx: clang++-20 }
+        - { pkg: g++,     gcc: gcc,      gxx: g++        }
+        - { pkg: clang16, gcc: clang-16, gxx: clang++-16 }
+        - { pkg: clang18, gcc: clang-18, gxx: clang++-18 }
+        - { pkg: clang19, gcc: clang-19, gxx: clang++-19 }
+        - { pkg: clang20, gcc: clang-20, gxx: clang++-20 }
     runs-on: ubuntu-24.04${{matrix.target.host}}
 
     defaults:
@@ -86,8 +86,7 @@ jobs:
 
         sudo chroot /srv/alpine /bin/su - <<'END'
         set -x
-        apk update && apk add make libc-dev
-        #apk update && apk add make ${{matrix.compiler.apk}}
+        apk update && apk add make ${{matrix.compiler.pkg}}
         END
 
     - name: Context Information
