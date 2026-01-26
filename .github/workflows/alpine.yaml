@@ -20,10 +20,10 @@ jobs:
         - { guest: x86_64                                    }
         - { guest: x86                                       } # -msse2 -mfpmath=sse is assumed
         - { guest: aarch64,     host: -arm                   }
-        - { guest: armhf,       host: -arm                   }
+        - { guest: armv7,       host: -arm } # -mthumb default in spec for gcc, but not for clang, -march=armv7-a is assumed
         - { guest: ppc64le,     qemu: TRUE                   }
-        - { guest: armv7,       host: -arm, march: '-mthumb' } # -mthumb default in spec for gcc, but not for clang, -march=armv7-a is assumed
         - { guest: riscv64,     qemu: TRUE                   }
+        - { guest: armhf,       host: -arm                   }
         - { guest: loongarch64, qemu: TRUE                   }
         - { guest: s390x,       qemu: TRUE                   }
         compiler:
@@ -118,7 +118,7 @@ jobs:
         echo 'int main() {}' >main.cc
         ${{matrix.compiler.gxx}} -pipe -v -w -pthread -std=c++17 -fPIC -fno-math-errno -Wno-psabi -O3 \
            -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE \
-           -include prelude.cc main.cc ${{matrix.target.march}}
+           -include prelude.cc main.cc -S -o-
         #./a.out
         #make -j4 run GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}' \
         #   ${{matrix.target.march && format('MARCH=''{0}''', matrix.target.march)}}
