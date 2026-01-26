@@ -6,9 +6,8 @@ on:
   workflow_dispatch: NULL
 
 jobs:
-  alpine-build:
+  build:
 
-    #name: Build on Alpine Linux for ${{matrix.target.guest}} with ${{matrix.compiler.GCC}}
     name: On ${{matrix.target.guest}} with ${{matrix.compiler.gcc}}
     strategy:
       fail-fast: FALSE
@@ -23,13 +22,12 @@ jobs:
         - { guest: armhf,       host: -arm }
         - { guest: loongarch64, qemu: TRUE }
         - { guest: s390x,       qemu: TRUE }
-        compiler:
+        compiler: # clang15 (partial), clang17
         - { apk: g++,     gcc: gcc,      gxx: g++        }
         - { apk: clang16, gcc: clang-16, gxx: clang++-16 }
         - { apk: clang18, gcc: clang-18, gxx: clang++-18 }
         - { apk: clang19, gcc: clang-19, gxx: clang++-19 }
         - { apk: clang20, gcc: clang-20, gxx: clang++-20 }
-        # clang15 (partial), clang17
     runs-on: ubuntu-24.04${{matrix.target.host}}
 
     defaults:
@@ -55,14 +53,18 @@ jobs:
         tty || :; id; printf %s\\n SHELL="$SHELL" PATH="$PATH"
         set -x
         pwd
-        ps -eH --sort pid -o pid,user:12,group:12,comm:24,rsz,vsz,thcount,bsdstart,state,tname
-    - name: Host Setup
+        ps -e --sort ppid,pid -o ppid,pid,user:12,group:12,comm:24,rsz:11,vsz:11,thcount,bsdstart,state,tname
+    - name: Update Package DB
       if: (matrix.target.qemu)
       run: |
         exec 2>&1
         set -x
         sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
         sudo apt-get update
+    - name: Install QEMU
+      if: (matrix.target.qemu)
+      run: |
+        exec 2>&1
         sudo apt-get install qemu-user-static
 
     - name: Chroot Setup
@@ -119,9 +121,3 @@ jobs:
         #./a.out
         make -j4 run GCC=${{matrix.compiler.gcc}} GXX=${{matrix.compiler.gxx}}
         END
-    #- name: Upload Results
-    #  if: matrix.target.guest != 's390x'
-    #  uses: actions/upload-artifact@v4
-    #  with:
-    #    name: build-${{matrix.target.guest}}-${{matrix.compiler.gcc}}
-    #    path: build
