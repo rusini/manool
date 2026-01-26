@@ -16,7 +16,7 @@ jobs:
         #target: [ # empty MARCH is always sufficient (just by chance) --- TODO: add using -arm host!
         #  x86_64, x86, aarch64, armhf, ppc64le, armv7, riscv64, loongarch64, s390x
         #]
-        target:
+        target: # default MARCH is sufficient and should be preferred on Alpine
         - { guest: x86_64                                    }
         - { guest: x86                                       } # -msse2 -mfpmath=sse is assumed
         - { guest: aarch64,     host: -arm                   }
