@@ -115,7 +115,7 @@ jobs:
         exec 2>&1
         sudo chroot /srv/alpine /bin/su - runner <<'END'
         set -x
-        echo 'int main() {}' >main.cc
+        echo 'double f(double a, double b) { return a + b; }' >main.cc
         ${{matrix.compiler.gxx}} -pipe -v -w -pthread -std=c++17 -fPIC -fno-math-errno -Wno-psabi -O3 \
            -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE \
            -include prelude.cc main.cc -S -o-
