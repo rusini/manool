@@ -18,7 +18,7 @@ jobs:
         #]
         target:
         - { guest: x86_64                                    }
-        - { guest: x86, march: '-mfpmath=i387'                                       }
+        - { guest: x86, march: '-mfpmath=387'                                       }
         - { guest: aarch64,     host: -arm                   }
         - { guest: armhf,       host: -arm                   }
         - { guest: ppc64le,     qemu: TRUE                   }
