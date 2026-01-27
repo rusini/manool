@@ -116,7 +116,7 @@ jobs:
         #echo 'double f(double a, double b) { return a + b; }' >main.cc
         #${{matrix.compiler.gxx}} -pipe -v -w -pthread -std=c++17 -fPIC -fno-math-errno -Wno-psabi -O3 \
         #   -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE \
-        #   -include prelude.cc main.cc -S -o-
+        #   -include prelude.cc main.cc
         #./a.out
         make -Cmanool -j4 run GCC=${{matrix.compiler.gcc}} GXX=${{matrix.compiler.gxx}}
         END
