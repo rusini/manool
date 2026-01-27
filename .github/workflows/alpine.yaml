@@ -121,6 +121,7 @@ jobs:
            -fno-math-errno -O3 -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE \
            -include manool/prelude.cc main.cc -s -Wl,--as-needed -lm -ldl -lrt
         ./a.out
+        END
     - name: Checkout
       uses: actions/checkout@v4
       with: { ref: master }
