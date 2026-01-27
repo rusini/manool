@@ -106,6 +106,24 @@ jobs:
 
     - name: Checkout
       uses: actions/checkout@v4
+    - name: Quick Test
+      run: |
+        exec 2>&1
+        sudo chroot /srv/alpine /bin/su - runner <<'END'
+        set -x
+        tee main.cc <<'END' >/dev/null
+        # include <cstdio.h>
+        int main() {
+           std::puts("Hi");
+        }
+        END
+        ${{matrix.compiler.gxx}} -pipe -w -Wno-psabi -pthread -std=c++17 \
+           -fno-math-errno -O3 -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE \
+           -include prelude.cc main.cc -s -Wl,--as-needed -lm -ldl -lrt
+        file a.out
+        ./a.out
+    - name: Checkout
+      uses: actions/checkout@v4
       with: { ref: master }
     - name: Run Make (and Check)
       if: matrix.target.guest != 's390x'
