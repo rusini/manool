@@ -65,7 +65,7 @@ jobs:
         exec 2>&1
         set -x
         make -j4 GCC=${{matrix.compiler.gcc}} GXX=${{matrix.compiler.gxx}}
-    - name: Quick Check
+    - name: Run Quick Check
       run: |
         exec 2>&1
         make GCC=${{matrix.compiler.gcc}} GXX=${{matrix.compiler.gxx}} run
