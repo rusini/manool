@@ -132,7 +132,7 @@ jobs:
         sudo chroot /srv/alpine /bin/su - runner <<'END'
         set -x
         tee main.cc <<'EOF' >/dev/null
-        # include <cstdio.h>
+        # include <cstdio>
         int main() {
            std::puts("Hi");
         }
