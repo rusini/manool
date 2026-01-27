@@ -76,8 +76,9 @@ jobs:
            (set -x; sudo mkdir /srv/alpine; sudo tar xz -C /srv/alpine)
         #(for d in dev proc sys; do (set -x; sudo mount -R -r {,/srv/alpine}/"$d") done)
         #(for d in run tmp; do (set -x; sudo mount {-t,}tmpfs /srv/alpine/"$d") done; set -x; sudo chmod 1777 /srv/alpine/tmp)
-        (for d in dev proc sys; do (set -x; sudo mount -v -R -r {,/srv/alpine}/"$d" --make-rprivate) done)
-        (for d in run tmp; do (set -x; sudo mount -v -R {,/srv/alpine}/"$d" --make-rprivate) done)
+        #(for d in dev proc sys; do (set -x; sudo mount -v -R -r {,/srv/alpine}/"$d" --make-rprivate) done)
+        #(for d in run tmp; do (set -x; sudo mount -v -R {,/srv/alpine}/"$d" --make-rprivate) done)
+        (for d in dev proc sys run tmp; do (set -x; sudo mount -v -R {,/srv/alpine}/"$d") done)
         (set -x; sudo cp -L /etc/resolv.conf /srv/alpine/etc)
 
         sudo chroot /srv/alpine /bin/su - <<'END'
