@@ -124,7 +124,7 @@ jobs:
     #    ./a.out
     - name: Checkout
       uses: actions/checkout@v4
-      with: { ref: master }
+      #with: { ref: master }
     - name: Run Make (and Check)
       if: matrix.target.guest != 's390x'
       run: |
