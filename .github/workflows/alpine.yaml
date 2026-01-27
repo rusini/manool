@@ -75,12 +75,7 @@ jobs:
         (set -x; wget --no-show-progress -O- \
            https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/${{matrix.target.guest}}/alpine-minirootfs-3.22.2-${{matrix.target.guest}}.tar.gz) |
            (set -x; sudo mkdir /srv/alpine; sudo tar xz -C /srv/alpine)
-        #(for d in dev proc sys; do (set -x; sudo mount -R -r {,/srv/alpine}/"$d") done)
-        #(for d in run tmp; do (set -x; sudo mount {-t,}tmpfs /srv/alpine/"$d") done; set -x; sudo chmod 1777 /srv/alpine/tmp)
-        #(for d in dev proc sys; do (set -x; sudo mount -v -R -r {,/srv/alpine}/"$d" --make-rprivate) done)
-        #(for d in run tmp; do (set -x; sudo mount -v -R {,/srv/alpine}/"$d" --make-rprivate) done)
-        (for d in dev proc sys run tmp; do (set -x; sudo mount -v -R {,/srv/alpine}/"$d") done)
-        #(set -x; sudo cp -L /etc/resolv.conf /srv/alpine/etc)
+        (for d in dev proc sys run tmp; do (set -x; sudo mount -R {,/srv/alpine}/"$d") done)
         (set -x; sudo ln -s ../run/systemd/resolve/stub-resolv.conf /srv/alpine/etc/resolv.conf)
 
         sudo chroot /srv/alpine /bin/su - <<'END'
@@ -123,5 +118,5 @@ jobs:
         #   -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE \
         #   -include prelude.cc main.cc -S -o-
         #./a.out
-        make -C manool -j4 run GCC=${{matrix.compiler.gcc}} GXX=${{matrix.compiler.gxx}}
+        make -Cmanool -j4 run GCC=${{matrix.compiler.gcc}} GXX=${{matrix.compiler.gxx}}
         END
