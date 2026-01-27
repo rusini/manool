@@ -64,11 +64,11 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        make -j4 GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}'
+        make -j4 GCC=${{matrix.compiler.gcc}} GXX=${{matrix.compiler.gxx}}
     - name: Quick Check
       run: |
         exec 2>&1
-        make GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}' run
+        make GCC=${{matrix.compiler.gcc}} GXX=${{matrix.compiler.gxx}} run
 
     - name: Upload Results
       uses: actions/upload-artifact@v4
