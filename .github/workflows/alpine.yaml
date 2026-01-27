@@ -131,7 +131,12 @@ jobs:
         exec 2>&1
         sudo chroot /srv/alpine /bin/su - runner <<'END'
         set -x
-        echo 'int main() {}' >main.cc
+        tee main.cc <<'END' >/dev/null
+        # include <cstdio.h>
+        int main() {
+           std::puts("Hi");
+        }
+        END
         ${{matrix.compiler.gxx}} -pipe -w -pthread -std=c++17 -fPIC -fno-math-errno -Wno-psabi -O3 \
            -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE \
            -include manool/prelude.cc main.cc
