@@ -65,6 +65,7 @@ jobs:
       if: (matrix.target.qemu)
       run: |
         exec 2>&1
+        set -x
         sudo apt-get -o=Dpkg::Use-Pty=0 install qemu-user-static
 
     - name: Chroot Setup
@@ -85,7 +86,7 @@ jobs:
         set -x
         adduser -D -u1001 -s/bin/ash runner
         END
-        (set -x; sudo mount -R . /srv/alpine/home/runner)
+        (set -x; sudo mkdir /srv/alpine/home/runner/manool; sudo mount -R . /srv/alpine/home/runner/manool)
 
         sudo chroot /srv/alpine /bin/su - <<'END'
         set -x
@@ -121,5 +122,5 @@ jobs:
         #   -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE \
         #   -include prelude.cc main.cc -S -o-
         #./a.out
-        make -j4 run GCC=${{matrix.compiler.gcc}} GXX=${{matrix.compiler.gxx}}
+        make -C manool -j4 run GCC=${{matrix.compiler.gcc}} GXX=${{matrix.compiler.gxx}}
         END
