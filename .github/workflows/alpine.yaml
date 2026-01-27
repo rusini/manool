@@ -81,7 +81,7 @@ jobs:
         #(for d in run tmp; do (set -x; sudo mount -v -R {,/srv/alpine}/"$d" --make-rprivate) done)
         (for d in dev proc sys run tmp; do (set -x; sudo mount -v -R {,/srv/alpine}/"$d") done)
         #(set -x; sudo cp -L /etc/resolv.conf /srv/alpine/etc)
-        (set -x; sudo ln -s ../run/systemd/resolve/stub-resolv.conf /srv/alpine/etc)
+        (set -x; sudo ln -s ../run/systemd/resolve/stub-resolv.conf /srv/alpine/etc/resolv.conf)
 
         sudo chroot /srv/alpine /bin/su - <<'END'
         set -x
