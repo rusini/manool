@@ -6,7 +6,7 @@ on:
   workflow_dispatch: NULL
 
 jobs:
-  quick-build:
+  build:
 
     name: Build and Check on Ubuntu ${{matrix.compiler.os}}${{matrix.isa}} with ${{matrix.compiler.label}}
     strategy:
