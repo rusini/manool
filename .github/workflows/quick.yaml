@@ -7,23 +7,24 @@ on:
 
 jobs:
   quick-build:
+
     name: Build and Check on Ubuntu ${{matrix.compiler.os}}${{matrix.isa}} with ${{matrix.compiler.label}}
     strategy:
       fail-fast: FALSE
       matrix:
         isa: [
-          '', '-arm' ]
+          '', -arm ]
         compiler:
-        - { label: 'gcc10',   os: '22.04', gcc: 'gcc-10',   gxx: 'g++-10'     }
-        - { label: 'gcc11',   os: '22.04', gcc: 'gcc',      gxx: 'g++'        }
-        - { label: 'gcc12',   os: '24.04', gcc: 'gcc-12',   gxx: 'g++-12'     }
-        - { label: 'gcc13',   os: '24.04', gcc: 'gcc',      gxx: 'g++'        }
-        - { label: 'gcc14',   os: '24.04', gcc: 'gcc-14',   gxx: 'g++-14'     }
-        - { label: 'clang14', os: '22.04', gcc: 'clang',    gxx: 'clang++'    }
-        - { label: 'clang15', os: '22.04', gcc: 'clang-15', gxx: 'clang++-15' }
-        - { label: 'clang16', os: '24.04', gcc: 'clang-16', gxx: 'clang++-16' }
-        - { label: 'clang17', os: '24.04', gcc: 'clang-17', gxx: 'clang++-17' }
-        - { label: 'clang18', os: '24.04', gcc: 'clang',    gxx: 'clang++'    }
+        - { label: gcc10,   os: '22.04', gcc: gcc-10,   gxx: g++-10     }
+        - { label: gcc11,   os: '22.04', gcc: gcc,      gxx: g++        }
+        - { label: gcc12,   os: '24.04', gcc: gcc-12,   gxx: g++-12     }
+        - { label: gcc13,   os: '24.04', gcc: gcc,      gxx: g++        }
+        - { label: gcc14,   os: '24.04', gcc: gcc-14,   gxx: g++-14     }
+        - { label: clang14, os: '22.04', gcc: clang,    gxx: clang++    }
+        - { label: clang15, os: '22.04', gcc: clang-15, gxx: clang++-15 }
+        - { label: clang16, os: '24.04', gcc: clang-16, gxx: clang++-16 }
+        - { label: clang17, os: '24.04', gcc: clang-17, gxx: clang++-17 }
+        - { label: clang18, os: '24.04', gcc: clang,    gxx: clang++    }
     runs-on: ubuntu-${{matrix.compiler.os}}${{matrix.isa}}
 
     defaults:
@@ -59,12 +60,12 @@ jobs:
       uses: actions/checkout@v4
       with: { ref: master }
 
-    - name: Make
+    - name: Run Make
       run: |
         exec 2>&1
         set -x
         make -j4 GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}'
-    - name: Check
+    - name: Quick Check
       run: |
         exec 2>&1
         make GCC='${{matrix.compiler.gcc}}' GXX='${{matrix.compiler.gxx}}' run
