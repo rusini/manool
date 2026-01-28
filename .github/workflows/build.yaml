@@ -366,7 +366,7 @@ jobs:
     - *co
     - *make
 
-  llvm-delay:
+  delay:
     steps:
-    - run: sleep 3
+    - run: sleep 1
     runs-on: ubuntu-latest
