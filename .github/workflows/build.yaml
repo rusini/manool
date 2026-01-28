@@ -123,6 +123,14 @@ jobs:
       run: |
         exec 2>&1
         set -x
+        sudo tee /etc/apt/apt.conf.d/99ci-hardening <<'END'
+        Acquire::Retries "5";
+        Acquire::http::Timeout "20";
+        Acquire::https::Timeout "20";
+        Acquire::ftp::Timeout "20";
+        Acquire::ForceIPv4 "true";
+        Acquire::http::Pipeline-Depth "0";
+        END
         #cat /etc/apt/apt-mirrors.txt
         #cat /etc/apt/sources.list
         #sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
@@ -224,6 +232,14 @@ jobs:
       run: |
         exec 2>&1
         set -x
+        sudo tee /etc/apt/apt.conf.d/99ci-hardening <<'END'
+        Acquire::Retries "5";
+        Acquire::http::Timeout "20";
+        Acquire::https::Timeout "20";
+        Acquire::ftp::Timeout "20";
+        Acquire::ForceIPv4 "true";
+        Acquire::http::Pipeline-Depth "0";
+        END
         apt-get -oDpkg::Use-Pty=0 update
         apt-get -oDpkg::Use-Pty=0 -y install git
     - name: Install Build Dependencies
@@ -295,8 +311,14 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        host ports.ubuntu.com
-        host us.ports.ubuntu.com
+        sudo tee /etc/apt/apt.conf.d/99ci-hardening <<'END'
+        Acquire::Retries "5";
+        Acquire::http::Timeout "20";
+        Acquire::https::Timeout "20";
+        Acquire::ftp::Timeout "20";
+        Acquire::ForceIPv4 "true";
+        Acquire::http::Pipeline-Depth "0";
+        END
         #sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
         sudo wget --no-show-progress -O/etc/apt/trusted.gpg.d/apt.llvm.org.asc https://apt.llvm.org/llvm-snapshot.gpg.key
         sudo tee /etc/apt/sources.list.d/llvm.list <<'END' >/dev/null
@@ -313,6 +335,14 @@ jobs:
       run: |
         exec 2>&1
         set -x
+        sudo tee /etc/apt/apt.conf.d/99ci-hardening <<'END'
+        Acquire::Retries "5";
+        Acquire::http::Timeout "20";
+        Acquire::https::Timeout "20";
+        Acquire::ftp::Timeout "20";
+        Acquire::ForceIPv4 "true";
+        Acquire::http::Pipeline-Depth "0";
+        END
         #sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
         sudo wget --no-show-progress -O/etc/apt/trusted.gpg.d/apt.llvm.org.asc https://apt.llvm.org/llvm-snapshot.gpg.key
         sudo tee /etc/apt/sources.list.d/llvm.list <<'END' >/dev/null
