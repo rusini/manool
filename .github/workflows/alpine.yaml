@@ -60,7 +60,7 @@ jobs:
         exec 2>&1
         set -x
         sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
-        sudo apt-get -o=Dpkg::Use-Pty=0 update
+        sudo apt-get -oDpkg::Use-Pty=0 update
     - name: Install QEMU
       if: (matrix.target.qemu)
       run: |
