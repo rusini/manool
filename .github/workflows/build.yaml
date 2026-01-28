@@ -136,15 +136,18 @@ jobs:
       run: |
         exec 2>&1
         sudo apt-get -oDpkg::Use-Pty=0 install --no-install-recommends valgrind
-    - name: Build Tools Information
+    - &tinfo
+      name: Build Tools Information
       run: |
         exec 2>&1
         make --version; ${{matrix.variant.gcc}} --version
 
-    - name: Checkout
+    - &co
+      name: Checkout
       uses: actions/checkout@v4
       with: { ref: master }
-    - name: Run Make (and Check)
+    - &make
+      name: Run Make (and Check)
       run: |
         exec 2>&1
         set -x
@@ -230,21 +233,9 @@ jobs:
       run: |
         exec 2>&1
         apt-get -oDpkg::Use-Pty=0 -y install --no-install-recommends valgrind
-    - name: Build Tools Information
-      run: |
-        exec 2>&1
-        make --version; ${{matrix.variant.gcc}} --version
-
-    - name: Checkout
-      uses: actions/checkout@v4
-      with: { ref: master }
-    - name: Run Make (and Check)
-      run: |
-        exec 2>&1
-        set -x
-        make -j4 GCC='${{matrix.variant.gcc}}' GXX='${{matrix.variant.gxx}}' \
-           ${{matrix.variant.i686sse2 && 'MARCH=-m32\ -msse2\ -mfpmath=sse' || ''}} \
-           run${{!matrix.variant.i686sse2 && '-valgrind' || ''}}
+    - *tinfo
+    - *co
+    - *make
 
   llvm-build:
 
@@ -334,18 +325,6 @@ jobs:
       run: |
         exec 2>&1
         sudo apt-get -oDpkg::Use-Pty=0 install --no-install-recommends valgrind
-    - name: Build Tools Information
-      run: |
-        exec 2>&1
-        make --version; ${{matrix.variant.gcc}} --version
-
-    - name: Checkout
-      uses: actions/checkout@v4
-      with: { ref: master }
-    - name: Run Make (and Check)
-      run: |
-        exec 2>&1
-        set -x
-        make -j4 GCC='${{matrix.variant.gcc}}' GXX='${{matrix.variant.gxx}}' \
-           ${{matrix.variant.i686sse2 && 'MARCH=-m32\ -msse2\ -mfpmath=sse' || ''}} \
-           run${{!matrix.variant.i686sse2 && '-valgrind' || ''}}
+    - *tinfo
+    - *co
+    - *make

@@ -54,13 +54,14 @@ jobs:
       uses: vmactions/freebsd-vm@v1
       with:
         release: ${{matrix.os}}
-        mem:     '8192'
+        mem:     10240
         usesh:   TRUE
         prepare: |
           set -e -o pipefail
           exec 2>&1
+          uname -a; sysctl hw.physmem
           set -x
-          sysctl hw.physmem; df -H .; uname -a
+          df -H .
           pkg update
           pkg install -y gmake
           gmake --version; clang --version
@@ -70,7 +71,7 @@ jobs:
           tty || :; id; printf %s\\n SHELL="$SHELL" PATH="$PATH"
           set -x
           pwd
-          gmake -j4 run GCC=clang GXX=clang++
+          gmake -j4 GCC=clang GXX=clang++ run
 
     - name: Upload Results
       uses: actions/upload-artifact@v4
