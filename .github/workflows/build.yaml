@@ -123,13 +123,9 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        sudo tee /etc/apt/apt.conf.d/99ci-hardening <<'END'
-        Acquire::Retries "5";
-        Acquire::http::Timeout "20";
-        Acquire::https::Timeout "20";
-        Acquire::ftp::Timeout "20";
-        Acquire::ForceIPv4 "true";
-        Acquire::http::Pipeline-Depth "0";
+        sudo tee -a /etc/hosts <<'END'
+        91.189.91.103 ports.ubuntu.com
+        91.189.91.106 ports.ubuntu.com
         END
         #cat /etc/apt/apt-mirrors.txt
         #cat /etc/apt/sources.list
@@ -233,13 +229,9 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        tee /etc/apt/apt.conf.d/99ci-hardening <<'END'
-        Acquire::Retries "5";
-        Acquire::http::Timeout "20";
-        Acquire::https::Timeout "20";
-        Acquire::ftp::Timeout "20";
-        Acquire::ForceIPv4 "true";
-        Acquire::http::Pipeline-Depth "0";
+        sudo tee -a /etc/hosts <<'END'
+        91.189.91.103 ports.ubuntu.com
+        91.189.91.106 ports.ubuntu.com
         END
         apt-get -oDpkg::Use-Pty=0 update
         apt-get -oDpkg::Use-Pty=0 -y install git
@@ -313,13 +305,9 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        sudo tee /etc/apt/apt.conf.d/99ci-hardening <<'END'
-        Acquire::Retries "5";
-        Acquire::http::Timeout "20";
-        Acquire::https::Timeout "20";
-        Acquire::ftp::Timeout "20";
-        Acquire::ForceIPv4 "true";
-        Acquire::http::Pipeline-Depth "0";
+        sudo tee -a /etc/hosts <<'END'
+        91.189.91.103 ports.ubuntu.com
+        91.189.91.106 ports.ubuntu.com
         END
         #sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
         sudo wget --no-show-progress -O/etc/apt/trusted.gpg.d/apt.llvm.org.asc https://apt.llvm.org/llvm-snapshot.gpg.key
@@ -337,13 +325,9 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        sudo tee /etc/apt/apt.conf.d/99ci-hardening <<'END'
-        Acquire::Retries "5";
-        Acquire::http::Timeout "20";
-        Acquire::https::Timeout "20";
-        Acquire::ftp::Timeout "20";
-        Acquire::ForceIPv4 "true";
-        Acquire::http::Pipeline-Depth "0";
+        sudo tee -a /etc/hosts <<'END'
+        91.189.91.103 ports.ubuntu.com
+        91.189.91.106 ports.ubuntu.com
         END
         #sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
         sudo wget --no-show-progress -O/etc/apt/trusted.gpg.d/apt.llvm.org.asc https://apt.llvm.org/llvm-snapshot.gpg.key
