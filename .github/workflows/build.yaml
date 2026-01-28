@@ -144,7 +144,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
       with: { ref: master }
-    - name: Run Make and Check
+    - name: Run Make (and Check)
       run: |
         exec 2>&1
         set -x
@@ -238,7 +238,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
       with: { ref: master }
-    - name: Build and Test
+    - name: Run Make (and Check)
       run: |
         exec 2>&1
         set -x
@@ -342,7 +342,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
       with: { ref: master }
-    - name: Build and Test
+    - name: Run Make (and Check)
       run: |
         exec 2>&1
         set -x

@@ -6,7 +6,8 @@ on:
   workflow_dispatch: NULL
 
 jobs:
-  cross-build:
+  build:
+
     name: Ubuntu ${{matrix.compiler.os}}, gcc-${{matrix.compiler.ver}} => ${{matrix.target.triple}} (${{matrix.target.be && 'B' || 'L'}}E)
     strategy:
       fail-fast: FALSE
@@ -248,18 +249,18 @@ jobs:
         exec 2>&1
         set -x
         sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
-        sudo apt-get update
+        sudo apt-get -oDpkg::Use-Pty=0 update
     - name: Install Build Dependencies
       run: |
         exec 2>&1
         triple=${{matrix.target.triple}}
         set -x
-        sudo apt-get install g++-${{matrix.compiler.ver}}-${triple//_/-}
+        sudo apt-get -oDpkg::Use-Pty=0 install g++-${{matrix.compiler.ver}}-${triple//_/-}
     - name: Install QEMU
       if: (!matrix.noqemu)
       run: |
         exec 2>&1
-        sudo apt-get install qemu-user
+        sudo apt-get -oDpkg::Use-Pty=0 install qemu-user
     - name: Build Tools Information
       run: |
         exec 2>&1
@@ -297,7 +298,7 @@ jobs:
         exec 2>&1
         set -x
         make -j4 \
-           GCC='${{matrix.target.triple}}-gcc-${{matrix.compiler.ver}}' \
-           GXX='${{matrix.target.triple}}-g++-${{matrix.compiler.ver}}' \
+           GCC=${{matrix.target.triple}}-gcc-${{matrix.compiler.ver}} \
+           GXX=${{matrix.target.triple}}-g++-${{matrix.compiler.ver}} \
            MARCH='${{matrix.target.march}} -Wl,-I/usr/${{matrix.target.triple}}/lib/${{matrix.target.ld}} -Wl,-rpath=/usr/${{matrix.target.triple}}/lib' \
            run

@@ -12,7 +12,6 @@ jobs:
     strategy:
       fail-fast: FALSE
       matrix:
-        #os: [ '15.0', '14.3', '14.2', '14.1', '14.0', '13.5', '13.4', '13.3', '13.2' ]
         os: [ '15.0', '14.3', '13.5' ]
     runs-on: ubuntu-latest
 
@@ -45,7 +44,7 @@ jobs:
         exec 2>&1
         set -x
         sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
-        sudo apt-get update
+        sudo apt-get -oDpkg::Use-Pty=0 update
 
     - name: Checkout
       uses: actions/checkout@v4
