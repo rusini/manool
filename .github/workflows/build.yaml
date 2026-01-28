@@ -338,5 +338,5 @@ jobs:
 
   delay:
     steps:
-    - run: sleep 1
-    runs-on: ubuntu-latest
+    - run: sleep 3m
+    runs-on: ubuntu-slim
