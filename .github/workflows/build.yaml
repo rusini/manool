@@ -123,9 +123,10 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        cat /etc/apt/apt-mirrors.txt
-        cat /etc/apt/sources.list
-        sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
+        #cat /etc/apt/apt-mirrors.txt
+        #cat /etc/apt/sources.list
+        #sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
+        #sudo sed -i s!'http\:\/\/ports\.ubuntu\.com\/'!http://us.ports.ubuntu.com/! /etc/apt/sources.list
         sudo apt-get -oDpkg::Use-Pty=0 update
     - name: Install Build Dependencies
       if: (matrix.variant.pkgs)
@@ -294,7 +295,9 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
+        host ports.ubuntu.com
+        host us.ports.ubuntu.com
+        #sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
         sudo wget --no-show-progress -O/etc/apt/trusted.gpg.d/apt.llvm.org.asc https://apt.llvm.org/llvm-snapshot.gpg.key
         sudo tee /etc/apt/sources.list.d/llvm.list <<'END' >/dev/null
         deb http://apt.llvm.org/jammy llvm-toolchain-jammy-16 main
@@ -310,7 +313,7 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
+        #sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
         sudo wget --no-show-progress -O/etc/apt/trusted.gpg.d/apt.llvm.org.asc https://apt.llvm.org/llvm-snapshot.gpg.key
         sudo tee /etc/apt/sources.list.d/llvm.list <<'END' >/dev/null
         deb http://apt.llvm.org/noble llvm-toolchain-noble-20 main
