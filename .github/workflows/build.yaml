@@ -150,7 +150,7 @@ jobs:
         exec 2>&1
         set -x
         make -j4 GCC='${{matrix.variant.gcc}}' GXX='${{matrix.variant.gxx}}' \
-           ${{matrix.variant.i686sse2 && 'MARCH=-m32\ -msse2\ -mfpmath=sse'}} \
+           ${{matrix.variant.i686sse2 && 'MARCH=-m32\ -msse2\ -mfpmath=sse' || ''}} \
            run${{!matrix.variant.i686sse2 && '-valgrind' || ''}}
     - name: Upload Results
       uses: actions/upload-artifact@v4
@@ -212,6 +212,7 @@ jobs:
         - { label: clang21-libcxx, gcc: 'clang-21', gxx: 'clang++-21 -stdlib=libc++', pkgs: 'clang-21 libc++{,abi}-21-dev', isa: '-arm' }
     runs-on: ubuntu-24.04${{matrix.variant.isa}}
     container: ubuntu:25.10
+    timeout-minutes: 5
 
     defaults:
       run: { shell: bash }
@@ -249,7 +250,7 @@ jobs:
         exec 2>&1
         set -x
         make -j4 GCC='${{matrix.variant.gcc}}' GXX='${{matrix.variant.gxx}}' \
-           ${{matrix.variant.i686sse2 && 'MARCH=-m32\ -msse2\ -mfpmath=sse'}} \
+           ${{matrix.variant.i686sse2 && 'MARCH=-m32\ -msse2\ -mfpmath=sse' || ''}} \
            run${{!matrix.variant.i686sse2 && '-valgrind' || ''}}
           #MARCH='${{matrix.variant.i686sse2 && '-m32 -msse2 -mfpmath=sse' || ''}}' \
           #run${{!matrix.variant.i686sse2 && '-valgrind' || ''}}
@@ -301,6 +302,7 @@ jobs:
         - { label: clang20,        os: '24.04-arm', gcc: 'clang-20', gxx: 'clang++-20',                pkgs: 'clang-20'                              } # *
         - { label: clang21,        os: '24.04-arm', gcc: 'clang-21', gxx: 'clang++-21',                pkgs: 'clang-21'                              }
     runs-on: ubuntu-${{matrix.variant.os}}
+    timeout-minutes: 5
 
     defaults:
       run: { shell: bash }
@@ -360,7 +362,7 @@ jobs:
         exec 2>&1
         set -x
         make -j4 GCC='${{matrix.variant.gcc}}' GXX='${{matrix.variant.gxx}}' \
-           ${{matrix.variant.i686sse2 && 'MARCH=-m32\ -msse2\ -mfpmath=sse'}} \
+           ${{matrix.variant.i686sse2 && 'MARCH=-m32\ -msse2\ -mfpmath=sse' || ''}} \
            run${{!matrix.variant.i686sse2 && '-valgrind' || ''}}
           #MARCH='${{matrix.variant.i686sse2 && '-m32 -msse2 -mfpmath=sse' || ''}}' \
           #run${{!matrix.variant.i686sse2 && '-valgrind' || ''}}
