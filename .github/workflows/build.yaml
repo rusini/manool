@@ -299,7 +299,7 @@ jobs:
         sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
         printf -- %s' ports.ubuntu.com\n' 91.189.91.{103,106} | sudo tee -a /etc/hosts >/dev/null
         sudo wget --no-show-progress -O/etc/apt/trusted.gpg.d/apt.llvm.org.asc https://apt.llvm.org/llvm-snapshot.gpg.key
-        printf 'deb http://apt.llvm.org/jammy llvm-toolchain-jammy-%s main\n' {16..21} | sudo tee /etc/apt/sources.list.d/llvm.list >/dev/null
+        printf -- 'deb http://apt.llvm.org/jammy llvm-toolchain-jammy-%s main\n' {16..21} | sudo tee /etc/apt/sources.list.d/llvm.list >/dev/null
         sudo apt-get -oDpkg::Use-Pty=0 update
     - name: Update Package DB
       if: (startsWith(matrix.variant.os, '24.04'))
@@ -309,7 +309,7 @@ jobs:
         sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
         printf -- '%s ports.ubuntu.com\n' 91.189.91.{103,106} | sudo tee -a /etc/hosts >/dev/null
         sudo wget --no-show-progress -O/etc/apt/trusted.gpg.d/apt.llvm.org.asc https://apt.llvm.org/llvm-snapshot.gpg.key
-        printf 'deb http://apt.llvm.org/noble llvm-toolchain-noble-%s main\n' {20..21} | sudo tee /etc/apt/sources.list.d/llvm.list >/dev/null
+        printf -- 'deb http://apt.llvm.org/noble llvm-toolchain-noble-%s main\n' {20..21} | sudo tee /etc/apt/sources.list.d/llvm.list >/dev/null
         sudo apt-get -oDpkg::Use-Pty=0 update
     - name: Install Build Dependencies
       run: |
