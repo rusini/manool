@@ -10,6 +10,7 @@ jobs:
   ubuntu-delay:
     steps:
     - run: sleep 1
+    runs-on: ubuntu-latest
   ubuntu-build:
 
     needs: [ ubuntu-delay ]
@@ -173,6 +174,7 @@ jobs:
   ubuntu-2510-delay:
     steps:
     - run: sleep 2
+    runs-on: ubuntu-latest
   ubuntu-2510-build:
 
     needs: [ ubuntu-2510-delay ]
@@ -267,6 +269,7 @@ jobs:
   llvm-delay:
     steps:
     - run: sleep 3
+    runs-on: ubuntu-latest
   llvm-build:
 
     needs: [ llvm-delay ]
