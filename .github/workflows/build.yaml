@@ -149,8 +149,8 @@ jobs:
         exec 2>&1
         set -x
         make -j4 GCC='${{matrix.variant.gcc}}' GXX='${{matrix.variant.gxx}}' \
-           ${{matrix.variant.i686sse2 && 'MARCH=-m32\ -msse2\ -mfpmath=sse' || ''}} \
-           run${{!matrix.variant.i686sse2 && '-valgrind' || ''}}
+           ${{matrix.variant.i686sse2 && 'MARCH=-m32\ -msse2\ -mfpmath=sse'}} \
+           run${{!matrix.variant.i686sse2 && '-valgrind'}}
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
@@ -248,8 +248,10 @@ jobs:
         exec 2>&1
         set -x
         make -j4 GCC='${{matrix.variant.gcc}}' GXX='${{matrix.variant.gxx}}' \
-          MARCH='${{matrix.variant.i686sse2 && '-m32 -msse2 -mfpmath=sse' || ''}}' \
-          run${{!matrix.variant.i686sse2 && '-valgrind' || ''}}
+           ${{matrix.variant.i686sse2 && 'MARCH=-m32\ -msse2\ -mfpmath=sse'}} \
+           run${{!matrix.variant.i686sse2 && '-valgrind'}}
+          #MARCH='${{matrix.variant.i686sse2 && '-m32 -msse2 -mfpmath=sse' || ''}}' \
+          #run${{!matrix.variant.i686sse2 && '-valgrind' || ''}}
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
@@ -357,8 +359,10 @@ jobs:
         exec 2>&1
         set -x
         make -j4 GCC='${{matrix.variant.gcc}}' GXX='${{matrix.variant.gxx}}' \
-          MARCH='${{matrix.variant.i686sse2 && '-m32 -msse2 -mfpmath=sse' || ''}}' \
-          run${{!matrix.variant.i686sse2 && '-valgrind' || ''}}
+           ${{matrix.variant.i686sse2 && 'MARCH=-m32\ -msse2\ -mfpmath=sse'}} \
+           run${{!matrix.variant.i686sse2 && '-valgrind'}}
+          #MARCH='${{matrix.variant.i686sse2 && '-m32 -msse2 -mfpmath=sse' || ''}}' \
+          #run${{!matrix.variant.i686sse2 && '-valgrind' || ''}}
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
