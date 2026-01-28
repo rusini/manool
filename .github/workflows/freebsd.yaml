@@ -8,7 +8,7 @@ on:
 jobs:
   build:
 
-    name: Build on FreeBSD ${{matrix.os}}
+    name: Build and Check on FreeBSD ${{matrix.os}}
     strategy:
       fail-fast: FALSE
       matrix:
