@@ -229,7 +229,7 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        sudo tee -a /etc/hosts <<'END'
+        tee -a /etc/hosts <<'END'
         91.189.91.103 ports.ubuntu.com
         91.189.91.106 ports.ubuntu.com
         END
