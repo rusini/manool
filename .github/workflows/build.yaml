@@ -220,6 +220,7 @@ jobs:
         - { label: clang21-libcxx, gcc: 'clang-21', gxx: 'clang++-21 -stdlib=libc++', pkgs: 'clang-21 libc++{,abi}-21-dev', arch: -arm }
     runs-on: ubuntu-24.04${{matrix.variant.arch}}
     container: ubuntu:25.10
+    needs: [ delay ]
 
     defaults:
       run: { shell: bash }
@@ -298,6 +299,7 @@ jobs:
         - { label: clang20,        os: '24.04-arm', gcc: 'clang-20', gxx: 'clang++-20',                pkgs: 'clang-20'                              } # *
         - { label: clang21,        os: '24.04-arm', gcc: 'clang-21', gxx: 'clang++-21',                pkgs: 'clang-21'                              }
     runs-on: ubuntu-${{matrix.variant.os}}
+    needs: [ delay ]
 
     defaults:
       run: { shell: bash }
@@ -363,3 +365,8 @@ jobs:
     - *tinfo
     - *co
     - *make
+
+  llvm-delay:
+    steps:
+    - run: sleep 3
+    runs-on: ubuntu-latest
