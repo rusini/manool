@@ -65,7 +65,7 @@ jobs:
       if: (matrix.target.qemu)
       run: |
         exec 2>&1
-        sudo apt-get -o=Dpkg::Use-Pty=0 install qemu-user-static
+        sudo apt-get -oDpkg::Use-Pty=0 install qemu-user-static
 
     - name: Chroot Setup
       run: |
