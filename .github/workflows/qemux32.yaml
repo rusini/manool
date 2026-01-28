@@ -14,15 +14,15 @@ jobs:
       fail-fast: FALSE
       matrix:
         compiler:
-        - { label: 'gcc9',    gcc: 'gcc',      gxx: 'g++'        }
-        - { label: 'gcc10',   gcc: 'gcc-10',   gxx: 'g++-10'     }
-        - { label: 'clang18', gcc: 'clang-18', gxx: 'clang++-18' }
+        - { label: gcc9,    gcc: 'gcc',      gxx: 'g++'        }
+        - { label: gcc10,   gcc: 'gcc-10',   gxx: 'g++-10'     }
+        - { label: clang18, gcc: 'clang-18', gxx: 'clang++-18' }
         march:
         - { label: '64'                                     }
         - { label: '32',  flags: '-m32 -msse2 -mfpmath=sse' }
         - { label: 'x32', flags: '-mx32'                    }
         include:
-        - compiler: { label: 'clang18-libcxx', gcc: 'clang-18', gxx: 'clang++-18 -stdlib=libc++' }
+        - compiler: { label: clang18-libcxx, gcc: 'clang-18', gxx: 'clang++-18 -stdlib=libc++' }
           march:    { label: '64' }
     runs-on: ubuntu-latest
     needs: [ cache ]
@@ -59,8 +59,8 @@ jobs:
         exec 2>&1
         set -x
         sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
-        sudo apt-get update
-        sudo apt-get install --no-install-recommends qemu-system-x86
+        sudo apt-get -oDpkg::Use-Pty=0 update
+        sudo apt-get -oDpkg::Use-Pty=0 install --no-install-recommends qemu-system-x86
     - name: QEMU Information
       run: |
         exec 2>&1
@@ -151,8 +151,8 @@ jobs:
         exec 2>&1
         set -x
         sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
-        sudo apt-get update
-        sudo apt-get install --no-install-recommends qemu-system-x86 cloud-image-utils
+        sudo apt-get -oDpkg::Use-Pty=0 update
+        sudo apt-get -oDpkg::Use-Pty=0 install --no-install-recommends qemu-system-x86 cloud-image-utils
     - name: QEMU Information
       if: steps.cache.outputs.cache-hit != 'true'
       run: |
@@ -209,8 +209,8 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        apt-get update
-        apt-get -y install make g++{,-10}-multilib clang-18 libc++{,abi}-18-dev
+        apt-get -oDpkg::Use-Pty=0 update
+        apt-get -oDpkg::Use-Pty=0 -y install make g++{,-10}-multilib clang-18 libc++{,abi}-18-dev
         df -H .
         
     - name: Guest Shutdown
