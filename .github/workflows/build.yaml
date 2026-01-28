@@ -232,7 +232,7 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        sudo tee /etc/apt/apt.conf.d/99ci-hardening <<'END'
+        tee /etc/apt/apt.conf.d/99ci-hardening <<'END'
         Acquire::Retries "5";
         Acquire::http::Timeout "20";
         Acquire::https::Timeout "20";
