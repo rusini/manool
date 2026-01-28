@@ -7,13 +7,8 @@ on:
 
 jobs:
 
-  ubuntu-delay:
-    steps:
-    - run: sleep 1
-    runs-on: ubuntu-latest
   ubuntu-build:
 
-    needs: [ ubuntu-delay ]
     name: Build and Check on Ubuntu ${{matrix.variant.os}} with ${{matrix.variant.label}}
     strategy:
       fail-fast: FALSE
@@ -171,13 +166,8 @@ jobs:
            ${{matrix.variant.i686sse2 && 'MARCH=-m32\ -msse2\ -mfpmath=sse' || ''}} \
            run${{!matrix.variant.i686sse2 && '-valgrind' || ''}}
 
-  ubuntu-2510-delay:
-    steps:
-    - run: sleep 2
-    runs-on: ubuntu-latest
   ubuntu-2510-build:
 
-    needs: [ ubuntu-2510-delay ]
     name: Build and Check on Ubuntu 25.10${{matrix.variant.arch}} with ${{matrix.variant.label}}
     strategy:
       fail-fast: FALSE
@@ -266,13 +256,8 @@ jobs:
     - *co
     - *make
 
-  llvm-delay:
-    steps:
-    - run: sleep 3
-    runs-on: ubuntu-latest
   llvm-build:
 
-    needs: [ llvm-delay ]
     name: Build and Check on Ubuntu ${{matrix.variant.os}} with ${{matrix.variant.label}}
     strategy:
       fail-fast: FALSE
