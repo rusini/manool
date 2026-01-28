@@ -214,7 +214,7 @@ jobs:
     - *minfo
     - *sinfo
     - *cinfo
-    - name: Basic Setup
+    - name: Baseline Setup
       run: |
         exec 2>&1
         set -x
