@@ -90,6 +90,7 @@ jobs:
         - { label: clang18-libcxx, os: '24.04-arm', gcc: 'clang',    gxx: 'clang++ -stdlib=libc++',    pkgs:          'libc++{,abi}-dev'             }
         - { label: clang19-libcxx, os: '24.04-arm', gcc: 'clang-19', gxx: 'clang++-19 -stdlib=libc++', pkgs: 'clang-19 libc++{,abi}-19-dev'          }
     runs-on: ubuntu-${{matrix.variant.os}}
+    timeout-minutes: 5
 
     defaults:
       run: { shell: bash }
@@ -150,7 +151,7 @@ jobs:
         set -x
         make -j4 GCC='${{matrix.variant.gcc}}' GXX='${{matrix.variant.gxx}}' \
            ${{matrix.variant.i686sse2 && 'MARCH=-m32\ -msse2\ -mfpmath=sse'}} \
-           run${{!matrix.variant.i686sse2 && '-valgrind'}}
+           run${{!matrix.variant.i686sse2 && '-valgrind' || ''}}
     - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
@@ -249,7 +250,7 @@ jobs:
         set -x
         make -j4 GCC='${{matrix.variant.gcc}}' GXX='${{matrix.variant.gxx}}' \
            ${{matrix.variant.i686sse2 && 'MARCH=-m32\ -msse2\ -mfpmath=sse'}} \
-           run${{!matrix.variant.i686sse2 && '-valgrind'}}
+           run${{!matrix.variant.i686sse2 && '-valgrind' || ''}}
           #MARCH='${{matrix.variant.i686sse2 && '-m32 -msse2 -mfpmath=sse' || ''}}' \
           #run${{!matrix.variant.i686sse2 && '-valgrind' || ''}}
     - name: Upload Results
@@ -360,7 +361,7 @@ jobs:
         set -x
         make -j4 GCC='${{matrix.variant.gcc}}' GXX='${{matrix.variant.gxx}}' \
            ${{matrix.variant.i686sse2 && 'MARCH=-m32\ -msse2\ -mfpmath=sse'}} \
-           run${{!matrix.variant.i686sse2 && '-valgrind'}}
+           run${{!matrix.variant.i686sse2 && '-valgrind' || ''}}
           #MARCH='${{matrix.variant.i686sse2 && '-m32 -msse2 -mfpmath=sse' || ''}}' \
           #run${{!matrix.variant.i686sse2 && '-valgrind' || ''}}
     - name: Upload Results
