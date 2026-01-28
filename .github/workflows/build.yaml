@@ -123,15 +123,8 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        host azure.archive.ubuntu.com
-        sudo tee -a /etc/hosts <<'END'
-        91.189.91.103 ports.ubuntu.com
-        91.189.91.106 ports.ubuntu.com
-        END
-        #cat /etc/apt/apt-mirrors.txt
-        #cat /etc/apt/sources.list
-        #sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
-        #sudo sed -i s!'http\:\/\/ports\.ubuntu\.com\/'!http://us.ports.ubuntu.com/! /etc/apt/sources.list
+        sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
+        printf '%s ports.ubuntu.com\n' 91.189.91.{103,106} | sudo tee -a /etc/hosts >/dev/null
         sudo apt-get -oDpkg::Use-Pty=0 update
     - name: Install Build Dependencies
       if: (matrix.variant.pkgs)
@@ -230,10 +223,8 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        tee -a /etc/hosts <<'END'
-        91.189.91.103 ports.ubuntu.com
-        91.189.91.106 ports.ubuntu.com
-        END
+        sed -i /azure/d /etc/apt/apt-mirrors.txt
+        printf '%s ports.ubuntu.com\n' 91.189.91.{103,106} | tee -a /etc/hosts >/dev/null
         apt-get -oDpkg::Use-Pty=0 update
         apt-get -oDpkg::Use-Pty=0 -y install git
     - name: Install Build Dependencies
@@ -306,11 +297,8 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        sudo tee -a /etc/hosts <<'END'
-        91.189.91.103 ports.ubuntu.com
-        91.189.91.106 ports.ubuntu.com
-        END
-        #sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
+        sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
+        printf '%s ports.ubuntu.com\n' 91.189.91.{103,106} | sudo tee -a /etc/hosts >/dev/null
         sudo wget --no-show-progress -O/etc/apt/trusted.gpg.d/apt.llvm.org.asc https://apt.llvm.org/llvm-snapshot.gpg.key
         sudo tee /etc/apt/sources.list.d/llvm.list <<'END' >/dev/null
         deb http://apt.llvm.org/jammy llvm-toolchain-jammy-16 main
@@ -326,11 +314,8 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        sudo tee -a /etc/hosts <<'END'
-        91.189.91.103 ports.ubuntu.com
-        91.189.91.106 ports.ubuntu.com
-        END
-        #sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
+        sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
+        printf '%s ports.ubuntu.com\n' 91.189.91.{103,106} | sudo tee -a /etc/hosts >/dev/null
         sudo wget --no-show-progress -O/etc/apt/trusted.gpg.d/apt.llvm.org.asc https://apt.llvm.org/llvm-snapshot.gpg.key
         sudo tee /etc/apt/sources.list.d/llvm.list <<'END' >/dev/null
         deb http://apt.llvm.org/noble llvm-toolchain-noble-20 main
