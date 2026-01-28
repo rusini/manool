@@ -223,7 +223,6 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        sed -i /azure/d /etc/apt/apt-mirrors.txt
         printf '%s ports.ubuntu.com\n' 91.189.91.{103,106} | tee -a /etc/hosts >/dev/null
         apt-get -oDpkg::Use-Pty=0 update
         apt-get -oDpkg::Use-Pty=0 -y install git
@@ -338,5 +337,5 @@ jobs:
 
   delay:
     steps:
-    - run: sleep 3m
+    - run: sleep 5m
     runs-on: ubuntu-slim
