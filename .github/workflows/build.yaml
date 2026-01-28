@@ -124,6 +124,7 @@ jobs:
         exec 2>&1
         set -x
         cat /etc/apt/apt-mirrors.txt
+        cat /etc/apt/sources.list
         sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
         sudo apt-get -oDpkg::Use-Pty=0 update
     - name: Install Build Dependencies
