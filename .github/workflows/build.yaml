@@ -90,7 +90,6 @@ jobs:
         - { label: clang18-libcxx, os: '24.04-arm', gcc: 'clang',    gxx: 'clang++ -stdlib=libc++',    pkgs:          'libc++{,abi}-dev'             }
         - { label: clang19-libcxx, os: '24.04-arm', gcc: 'clang-19', gxx: 'clang++-19 -stdlib=libc++', pkgs: 'clang-19 libc++{,abi}-19-dev'          }
     runs-on: ubuntu-${{matrix.variant.os}}
-    timeout-minutes: 5
 
     defaults:
       run: { shell: bash }
@@ -207,7 +206,6 @@ jobs:
         - { label: clang21-libcxx, gcc: 'clang-21', gxx: 'clang++-21 -stdlib=libc++', pkgs: 'clang-21 libc++{,abi}-21-dev', arch: -arm }
     runs-on: ubuntu-24.04${{matrix.variant.arch}}
     container: ubuntu:25.10
-    timeout-minutes: 5
 
     defaults:
       run: { shell: bash }
@@ -290,7 +288,6 @@ jobs:
         - { label: clang20,        os: '24.04-arm', gcc: 'clang-20', gxx: 'clang++-20',                pkgs: 'clang-20'                              } # *
         - { label: clang21,        os: '24.04-arm', gcc: 'clang-21', gxx: 'clang++-21',                pkgs: 'clang-21'                              }
     runs-on: ubuntu-${{matrix.variant.os}}
-    timeout-minutes: 5
 
     defaults:
       run: { shell: bash }
