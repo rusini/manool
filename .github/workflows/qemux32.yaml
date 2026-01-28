@@ -1,6 +1,6 @@
 # .github/workflows/qemux32.yaml
 
-name: Build Under QEMU (incl. x32)
+name: Build Under QEMU (+ x32 ABI)
 
 on:
   workflow_dispatch: NULL
