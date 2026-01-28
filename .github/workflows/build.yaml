@@ -5,6 +5,8 @@ name: Normal Build and Check
 on:
   workflow_dispatch: NULL
 
+defaults:
+  run: { shell: bash }
 jobs:
 
   ubuntu-build:
@@ -91,8 +93,6 @@ jobs:
         - { label: clang19-libcxx, os: '24.04-arm', gcc: 'clang-19', gxx: 'clang++-19 -stdlib=libc++', pkgs: 'clang-19 libc++{,abi}-19-dev'          }
     runs-on: ubuntu-${{matrix.variant.os}}
 
-    defaults:
-      run: { shell: bash }
     steps:
 
     - &minfo
@@ -212,8 +212,6 @@ jobs:
     container: ubuntu:25.10
     needs: [ delay ]
 
-    defaults:
-      run: { shell: bash }
     steps:
 
     - *minfo
@@ -284,8 +282,6 @@ jobs:
     runs-on: ubuntu-${{matrix.variant.os}}
     needs: [ delay ]
 
-    defaults:
-      run: { shell: bash }
     steps:
 
     - *minfo
