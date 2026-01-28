@@ -5,8 +5,8 @@ name: Quick Build and Check
 on:
   workflow_dispatch:
     inputs:
-      upload:
-        description: Upload Results
+      save:
+        description: Save Results
         type: boolean
 
 jobs:
@@ -75,7 +75,7 @@ jobs:
         make GCC=${{matrix.compiler.gcc}} GXX=${{matrix.compiler.gxx}} run
 
     - name: Upload Results
-      if: (inputs.upload)
+      if: (inputs.save)
       uses: actions/upload-artifact@v4
       with:
         name: build-${{matrix.compiler.label}}-${{matrix.compiler.os}}${{matrix.isa}}
