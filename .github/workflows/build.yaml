@@ -152,7 +152,7 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        make -{j4,Oline} GCC='${{matrix.variant.gcc}}' GXX='${{matrix.variant.gxx}}' \
+        make -{j4,Otarget} GCC='${{matrix.variant.gcc}}' GXX='${{matrix.variant.gxx}}' \
            ${{matrix.variant.i686sse2 && 'MARCH=-m32\ -msse2\ -mfpmath=sse' || ''}} \
            run${{!matrix.variant.i686sse2 && '-valgrind' || ''}}
 
