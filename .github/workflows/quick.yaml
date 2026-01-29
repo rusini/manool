@@ -68,11 +68,11 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        make -j4 GCC=${{matrix.compiler.gcc}} GXX=${{matrix.compiler.gxx}}
+        make -{j4,Otarget} GCC=${{matrix.compiler.gcc}} GXX=${{matrix.compiler.gxx}}
     - name: Run Quick Check
       run: |
         exec 2>&1
-        make GCC=${{matrix.compiler.gcc}} GXX=${{matrix.compiler.gxx}} run
+        make -{j4,Otarget} GCC=${{matrix.compiler.gcc}} GXX=${{matrix.compiler.gxx}} run
 
     - name: Upload Results
       if: (inputs.save)
