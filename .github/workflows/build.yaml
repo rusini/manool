@@ -278,8 +278,13 @@ jobs:
         - { label: clang20-32,     os: '24.04',     gcc: 'clang-20', gxx: 'clang++-20',                pkgs: 'clang-20 g++-multilib', i686sse2: TRUE }
         - { label: clang21,        os: '24.04',     gcc: 'clang-21', gxx: 'clang++-21',                pkgs: 'clang-21'                              } # *
         - { label: clang21-32,     os: '24.04',     gcc: 'clang-21', gxx: 'clang++-21',                pkgs: 'clang-21 g++-multilib', i686sse2: TRUE }
+
+        - { label: clang21-libcxx, os: '24.04',     gcc: 'clang-21', gxx: 'clang++-21 -stdlib=libc++', pkgs: 'clang-21 libc++{,abi}-21-dev'          }
+
         - { label: clang20,        os: '24.04-arm', gcc: 'clang-20', gxx: 'clang++-20',                pkgs: 'clang-20'                              } # *
         - { label: clang21,        os: '24.04-arm', gcc: 'clang-21', gxx: 'clang++-21',                pkgs: 'clang-21'                              }
+
+        - { label: clang21-libcxx, os: '24.04-arm', gcc: 'clang-21', gxx: 'clang++-21 -stdlib=libc++', pkgs: 'clang-21 libc++{,abi}-21-dev'          }
     runs-on: ubuntu-${{matrix.variant.os}}
     needs: [ delay-2 ]
 
