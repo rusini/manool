@@ -9,6 +9,8 @@ on:
         description: Save Results
         type: boolean
 
+defaults:
+  run: { shell: bash }
 jobs:
   build:
 
@@ -31,8 +33,6 @@ jobs:
         - { label: clang18, os: '24.04', gcc: clang,    gxx: clang++    }
     runs-on: ubuntu-${{matrix.compiler.os}}${{matrix.arch}}
 
-    defaults:
-      run: { shell: bash }
     steps:
 
     - name: Machine Information
