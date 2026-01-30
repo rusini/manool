@@ -286,13 +286,13 @@ jobs:
            ${{matrix.target.march}} -Wl,-{I/usr/${{matrix.target.triple}}/lib/${{matrix.target.ld}},R/usr/${{matrix.target.triple}}/lib} \
            -pthread --std=c++17 \
            -{O3,f{no-{math-errno,stack-protector},cf-protection=none,no-stack-clash-protection},U_FORTIFY_SOURCE} \
-           -include prelude.cc -Werror \
-           -S hi.cc
+           -include prelude.cc \
+           -{S,o-} -Werror hi.cc
         ${{matrix.target.triple}}-g++-${{matrix.compiler.ver}} -pipe -Wno-psabi \
            ${{matrix.target.march}} -Wl,-{I/usr/${{matrix.target.triple}}/lib/${{matrix.target.ld}},R/usr/${{matrix.target.triple}}/lib} \
            -pthread --std=c++17 \
            -{O3,f{no-{math-errno,stack-protector},cf-protection=none,no-stack-clash-protection},U_FORTIFY_SOURCE} \
-           -include prelude.cc -Werror \
+           -include prelude.cc \
            hi.cc
         file a.out
         ./a.out
