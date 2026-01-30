@@ -248,6 +248,7 @@ jobs:
         exec 2>&1
         set -x
         sudo sed -i /azure/d /etc/apt/apt-mirrors.txt
+        printf -- %s' ports.ubuntu.com\n' ${{vars.ip_ports_ubuntu_com}} | sudo tee -a /etc/hosts >/dev/null
         sudo apt-get -oDpkg::Use-Pty=0 update
     - name: Install Build Dependencies
       run: |
@@ -274,18 +275,26 @@ jobs:
         set -x
         #ls -l /usr/${{matrix.target.triple}}/lib
         #ls -l /usr/${{matrix.target.triple}}/lib64 || :
-        tee hi.cc <<'END'
+        tee hi.cc <<'END' >/dev/null
         # include <cstdio>
         int main() {
            std::puts("Hi");
            return 0;
         }
         END
-        ${{matrix.target.triple}}-g++-${{matrix.compiler.ver}} -pipe -std=c++17 -Wno-psabi \
-           -O3 -{fno-stack-protector,fcf-protection=none,fno-stack-clash-protection,U_FORTIFY_SOURCE} -fno-math-errno \
+        ${{matrix.target.triple}}-g++-${{matrix.compiler.ver}} -pipe -Wno-psabi \
+           ${{matrix.target.march}} -Wl,-{I/usr/${{matrix.target.triple}}/lib/${{matrix.target.ld}},R/usr/${{matrix.target.triple}}/lib} \
+           -pthread --std=c++17 \
+           -O3 -{O3,no-math-errno,fno-stack-protector,fcf-protection=none,fno-stack-clash-protection,U_FORTIFY_SOURCE} \
            -include prelude.cc -Werror \
-           ${{matrix.target.march}} -Wl,-I/usr/${{matrix.target.triple}}/lib/${{matrix.target.ld}} -Wl,-rpath=/usr/${{matrix.target.triple}}/lib \
+           -S hi.cc
+        ${{matrix.target.triple}}-g++-${{matrix.compiler.ver}} -pipe -Wno-psabi \
+           ${{matrix.target.march}} -Wl,-{I/usr/${{matrix.target.triple}}/lib/${{matrix.target.ld}},R/usr/${{matrix.target.triple}}/lib} \
+           -pthread --std=c++17 \
+           -O3 -{O3,no-math-errno,fno-stack-protector,fcf-protection=none,fno-stack-clash-protection,U_FORTIFY_SOURCE} \
+           -include prelude.cc -Werror \
            hi.cc
+        file a.out
         ./a.out
 
     - name: Checkout
