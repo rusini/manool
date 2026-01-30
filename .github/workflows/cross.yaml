@@ -5,6 +5,8 @@ name: GCC-Based Cross Building
 on:
   workflow_dispatch: NULL
 
+defaults:
+  run: { shell: bash }
 jobs:
   build:
 
@@ -217,10 +219,7 @@ jobs:
           compiler: { ver: '14', os: '24.04-arm' }
 
     runs-on: ubuntu-${{matrix.compiler.os}}
-    timeout-minutes: 20
 
-    defaults:
-      run: { shell: bash }
     steps:
 
     - name: Machine Information
@@ -269,6 +268,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
     - name: Run Make and Check
+      timeout-minutes: 20
       run: |
         exec 2>&1
         set -x

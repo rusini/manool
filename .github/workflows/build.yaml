@@ -150,6 +150,7 @@ jobs:
       with: { ref: master }
     - &make
       name: Run Make (and Check)
+      timeout-minutes: 20
       run: |
         exec 2>&1
         set -x

@@ -70,6 +70,7 @@ jobs:
         set -x
         make -{j4,Otarget} GCC=${{matrix.compiler.gcc}} GXX=${{matrix.compiler.gxx}}
     - name: Run Quick Check
+      timeout-minutes: 20
       run: |
         exec 2>&1
         make -{j4,Otarget} GCC=${{matrix.compiler.gcc}} GXX=${{matrix.compiler.gxx}} run
