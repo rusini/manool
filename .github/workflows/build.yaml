@@ -329,3 +329,16 @@ jobs:
     steps:
     - run: sleep 5
     runs-on: ubuntu-slim
+
+# References:
+# https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax
+# https://docs.github.com/en/actions/reference/workflows-and-actions/expressions
+# https://docs.github.com/en/actions/reference/workflows-and-actions/contexts
+# https://github.com/actions/checkout
+# https://documentation.ubuntu.com/ubuntu-for-developers/reference/availability/gcc/
+# https://documentation.ubuntu.com/ubuntu-for-developers/reference/availability/llvm/
+# https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md
+# https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md
+# https://github.com/actions/partner-runner-images/blob/main/images/arm-ubuntu-22-image.md
+# https://github.com/actions/partner-runner-images/blob/main/images/arm-ubuntu-24-image.md
+# https://apt.llvm.org
