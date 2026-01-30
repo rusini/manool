@@ -218,18 +218,17 @@ jobs:
     - *minfo
     - *sinfo
     - *cinfo
-    - name: Baseline Setup
+    - name: Update Package DB
       run: |
         exec 2>&1
         set -x
         printf -- %s' ports.ubuntu.com\n' 91.189.92.19 | tee -a /etc/hosts >/dev/null
         apt-get -oDpkg::Use-Pty=0 update
-        apt-get -oDpkg::Use-Pty=0 -y install git
     - name: Install Build Dependencies
       run: |
         exec 2>&1
         set -x
-        apt-get -oDpkg::Use-Pty=0 -y install make ${{matrix.variant.pkgs}}
+        apt-get -oDpkg::Use-Pty=0 -y install git make ${{matrix.variant.pkgs}}
     - name: Install Valgrind
       if: (!matrix.variant.i686sse2)
       run: |
