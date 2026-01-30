@@ -73,7 +73,7 @@ jobs:
         - { label: gcc12,          os: '24.04-arm', gcc: 'gcc-12',   gxx: 'g++-12'                                                                   }
         - { label: gcc13,          os: '24.04-arm', gcc: 'gcc',      gxx: 'g++'                                                                      }
         - { label: gcc14,          os: '24.04-arm', gcc: 'gcc-14',   gxx: 'g++-14'                                                                   }
-        - { label: clang13,        os: '22.04-arm', gcc: 'clang-13', gxx: 'clang++-13',                pkgs: 'clang-13' } # pkgs needed due to a bug in ARM image
+        - { label: clang13,        os: '22.04-arm', gcc: 'clang-13', gxx: 'clang++-13',                pkgs: 'clang-13' } # pkgs needed for ARM (unlike x86)
         - { label: clang14,        os: '22.04-arm', gcc: 'clang',    gxx: 'clang++'                                                                  }
         - { label: clang14,        os: '24.04-arm', gcc: 'clang-14', gxx: 'clang++-14',                pkgs: 'clang-14'                              }
         - { label: clang15,        os: '22.04-arm', gcc: 'clang-15', gxx: 'clang++-15'                                                               }

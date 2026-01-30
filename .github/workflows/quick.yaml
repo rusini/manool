@@ -17,7 +17,7 @@ jobs:
     name: Build and Check on Ubuntu ${{matrix.compiler.os}}${{matrix.arch}} with ${{matrix.compiler.label}}
     strategy:
       fail-fast: FALSE
-      matrix:
+      matrix: # exactly 20 variants
         arch: [
           '', -arm ]
         compiler:
@@ -80,3 +80,15 @@ jobs:
       with:
         name: build-${{matrix.compiler.label}}-${{matrix.compiler.os}}${{matrix.arch}}
         path: build
+
+
+# References:
+# https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax
+# https://docs.github.com/en/actions/reference/workflows-and-actions/expressions
+# https://docs.github.com/en/actions/reference/workflows-and-actions/contexts
+# https://github.com/actions/checkout
+# https://github.com/actions/upload-artifact
+# https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md
+# https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md
+# https://github.com/actions/partner-runner-images/blob/main/images/arm-ubuntu-22-image.md
+# https://github.com/actions/partner-runner-images/blob/main/images/arm-ubuntu-24-image.md
