@@ -259,9 +259,6 @@ jobs:
         - { label: clang19-32,     os: '22.04',     gcc: 'clang-19', gxx: 'clang++-19',                pkgs: 'clang-19 g++-multilib', i686sse2: TRUE }
         - { label: clang19-libcxx, os: '22.04',     gcc: 'clang-19', gxx: 'clang++-19 -stdlib=libc++', pkgs: 'clang-19 libc++{,abi}-19-dev'          }
         - { label: clang20,        os: '22.04',     gcc: 'clang-20', gxx: 'clang++-20',                pkgs: 'clang-20' } # no -libcxx due to a bug in LLVM repo
-
-        - { label: clang20-libcxx, os: '22.04',     gcc: 'clang-20', gxx: 'clang++-20 -stdlib=libc++', pkgs: 'clang-20 libc++{,abi}-20-dev' }
-
         - { label: clang20-32,     os: '22.04',     gcc: 'clang-20', gxx: 'clang++-20',                pkgs: 'clang-20 g++-multilib', i686sse2: TRUE }
         - { label: clang21,        os: '22.04',     gcc: 'clang-21', gxx: 'clang++-21',                pkgs: 'clang-21'                              }
         - { label: clang21-32,     os: '22.04',     gcc: 'clang-21', gxx: 'clang++-21',                pkgs: 'clang-21 g++-multilib', i686sse2: TRUE }
@@ -275,14 +272,17 @@ jobs:
         - { label: clang19,        os: '22.04-arm', gcc: 'clang-19', gxx: 'clang++-19',                pkgs: 'clang-19'                              }
         - { label: clang19-libcxx, os: '22.04-arm', gcc: 'clang-19', gxx: 'clang++-19 -stdlib=libc++', pkgs: 'clang-19 libc++{,abi}-19-dev'          }
         - { label: clang20,        os: '22.04-arm', gcc: 'clang-20', gxx: 'clang++-20',                pkgs: 'clang-20'                              } # *
-
-        - { label: clang20-libcxx, os: '22.04-arm', gcc: 'clang-20', gxx: 'clang++-20 -stdlib=libc++', pkgs: 'clang-20 libc++{,abi}-20-dev' }
-
         - { label: clang21,        os: '22.04-arm', gcc: 'clang-21', gxx: 'clang++-21',                pkgs: 'clang-21'                              }
         - { label: clang21-libcxx, os: '22.04-arm', gcc: 'clang-21', gxx: 'clang++-21 -stdlib=libc++', pkgs: 'clang-21 libc++{,abi}-21-dev'          }
         - { label: clang20,        os: '24.04',     gcc: 'clang-20', gxx: 'clang++-20',                pkgs: 'clang-20'                              } # *
+
+        - { label: clang20-libcxx, os: '24.04',     gcc: 'clang-20', gxx: 'clang++-20 -stdlib=libc++', pkgs: 'clang-20 libc++{,abi}-20-dev' }
+
         - { label: clang20-32,     os: '24.04',     gcc: 'clang-20', gxx: 'clang++-20',                pkgs: 'clang-20 g++-multilib', i686sse2: TRUE }
         - { label: clang21,        os: '24.04',     gcc: 'clang-21', gxx: 'clang++-21',                pkgs: 'clang-21'                              } # *
+
+        - { label: clang21-libcxx, os: '24.04',     gcc: 'clang-21', gxx: 'clang++-21 -stdlib=libc++', pkgs: 'clang-21 libc++{,abi}-21-dev' }
+
         - { label: clang21-32,     os: '24.04',     gcc: 'clang-21', gxx: 'clang++-21',                pkgs: 'clang-21 g++-multilib', i686sse2: TRUE }
         - { label: clang20,        os: '24.04-arm', gcc: 'clang-20', gxx: 'clang++-20',                pkgs: 'clang-20'                              } # *
         - { label: clang21,        os: '24.04-arm', gcc: 'clang-21', gxx: 'clang++-21',                pkgs: 'clang-21'                              } # *
