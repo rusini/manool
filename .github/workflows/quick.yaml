@@ -81,7 +81,6 @@ jobs:
         name: build-${{matrix.compiler.label}}-${{matrix.compiler.os}}${{matrix.arch}}
         path: build
 
-
 # References:
 # https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax
 # https://docs.github.com/en/actions/reference/workflows-and-actions/expressions
