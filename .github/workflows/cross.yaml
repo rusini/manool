@@ -293,6 +293,7 @@ jobs:
            -pthread --std=c++17 \
            -{O3,f{no-{math-errno,stack-protector},cf-protection=none,no-stack-clash-protection},U_FORTIFY_SOURCE} \
            -include prelude.cc \
+           -rdynamic -s -Wl,--as-needed -l{m,dl,rt} \
            hi.cc
         file a.out
         ./a.out
