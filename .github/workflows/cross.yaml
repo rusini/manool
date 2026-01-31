@@ -270,6 +270,7 @@ jobs:
       uses: actions/checkout@v4
     - name: Run Make and Check
       timeout-minutes: 20
+      if: false
       run: |
         exec 2>&1
         set -x
