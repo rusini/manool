@@ -49,6 +49,7 @@ run-valgrind : build/mnlexec
 
 # Final Stuff ##################################################################################################################################################
 mnl_config = $(patsubst %,-DMNL_%, \
+   STRICT \
    WITH_OPTIMIZE \
    WITH_IDENT_OPT \
    WITH_MULTITHREADING \
