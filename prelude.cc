@@ -25,11 +25,11 @@
       # warning "Compiler mode enabling a more recent spec may cause backward-compatibility issues"
    # endif
 # endif
-# if __NO_MATH_ERRNO__
+# if __NO_MATH_ERRNO__ // TODO: maybe use math_errhandling?
    # if MNL_STRICT
-      # error   "-fno-math-errno may break third-party libraries assuming glibc-like APIs"
+      # error   "-fno-math-errno may break third-party libraries assuming (math_errhandling & MATH_ERRNO)"
    # else
-      # warning "-fno-math-errno may break third-party libraries assuming glibc-like APIs"
+      # error   "-fno-math-errno may break third-party libraries assuming (math_errhandling & MATH_ERRNO)"
    # endif
 # endif
 
