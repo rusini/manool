@@ -25,13 +25,15 @@
       # warning "Compiler mode enabling a more recent spec may cause backward-compatibility issues"
    # endif
 # endif
-# if __NO_MATH_ERRNO__ // TODO: maybe use math_errhandling?
+# if __NO_MATH_ERRNO__
    # if MNL_STRICT
-      # error   "-fno-math-errno may break third-party libraries assuming (math_errhandling & MATH_ERRNO)"
+      # error   "-fno-math-errno may break third-party libraries relying on (math_errhandling & MATH_ERRNO)"
    # else
-      # warning "-fno-math-errno may break third-party libraries assuming (math_errhandling & MATH_ERRNO)"
+      # warning "-fno-math-errno may break third-party libraries relying on (math_errhandling & MATH_ERRNO)"
    # endif
 # endif
+# include <cmath>
+static_assert(math_errhandling & MATH_ERRNO);
 
 // undesirable (but detectable) defaults on modern Ubuntu
 # if __SSP__ || __SSP_ALL__ || __SSP_STRONG__
