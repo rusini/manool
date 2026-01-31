@@ -20,13 +20,17 @@
 # endif
 # if __STDC_VERSION__ > 201710
    # if MNL_STRICT
-      # error   "-fno-math-errno may break third-party libraries assuming glibc-like APIs"
+      # error   "Compiler mode enabling a more recent spec may cause backward-compatibility issues"
    # else
-      # warning "-fno-math-errno may break third-party libraries assuming glibc-like APIs"
+      # warning "Compiler mode enabling a more recent spec may cause backward-compatibility issues"
    # endif
 # endif
 # if __NO_MATH_ERRNO__
-   # warning "-fno-math-errno may break third-party libraries assuming glibc-like APIs");
+   # if MNL_STRICT
+      # error   "-fno-math-errno may break third-party libraries assuming (math_errhandling & MATH_ERRNO)"
+   # else
+      # warning "-fno-math-errno may break third-party libraries assuming (math_errhandling & MATH_ERRNO)"
+   # endif
 # endif
 
 // undesirable (but detectable) defaults on modern Ubuntu

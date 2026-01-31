@@ -29,7 +29,7 @@
    # if MNL_STRICT
       # error   "-fno-math-errno may break third-party libraries assuming (math_errhandling & MATH_ERRNO)"
    # else
-      # error   "-fno-math-errno may break third-party libraries assuming (math_errhandling & MATH_ERRNO)"
+      # warning "-fno-math-errno may break third-party libraries assuming (math_errhandling & MATH_ERRNO)"
    # endif
 # endif
 
