@@ -15,7 +15,7 @@
 
 # Configuration Variables ######################################################################################################################################
 CC       = $(SCL) $(GCC) $(PIPE) -w -Wno-psabi $(MARCH) -pthread -std=c99
-CXX      = $(SCL) $(GXX) $(PIPE) -w -Wno-psabi $(MARCH) -pthread -std=c++11
+CXX      = $(SCL) $(GXX) $(PIPE) -w -Werror $(MARCH) -pthread -std=c++11
 CPPFLAGS =
 CFLAGS   = -O3 -fno-math-errno -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE
 CXXFLAGS = $(CFLAGS)
