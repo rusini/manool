@@ -273,8 +273,6 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        #ls -l /usr/${{matrix.target.triple}}/lib
-        #ls -l /usr/${{matrix.target.triple}}/lib64 || :
         tee hi.cc <<'END' >/dev/null
         # include <cstdio>
         int main() {
@@ -282,7 +280,7 @@ jobs:
            return 0;
         }
         END
-        ${{matrix.target.triple}}-g++-${{matrix.compiler.ver}} -pipe -Wno-psabi \
+        ${{matrix.target.triple}}-g++-${{matrix.compiler.ver}} -{pipe,Wno-psabi} \
            ${{matrix.target.march}} -Wl,-{I/usr/${{matrix.target.triple}}/lib/${{matrix.target.ld}},R/usr/${{matrix.target.triple}}/lib} \
            -pthread --std=c++17 \
            -{O3,f{no-{math-errno,stack-protector},cf-protection=none,no-stack-clash-protection},U_FORTIFY_SOURCE} \
@@ -307,7 +305,7 @@ jobs:
       run: |
         exec 2>&1
         set -x
-        make -j4 \
+        make -{j4,Otarget} \
            GCC=${{matrix.target.triple}}-gcc-${{matrix.compiler.ver}} \
            GXX=${{matrix.target.triple}}-g++-${{matrix.compiler.ver}} \
            MARCH='${{matrix.target.march}} -Wl,-I/usr/${{matrix.target.triple}}/lib/${{matrix.target.ld}} -Wl,-rpath=/usr/${{matrix.target.triple}}/lib' \
