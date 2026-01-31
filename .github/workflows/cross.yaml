@@ -281,13 +281,13 @@ jobs:
            return 0;
         }
         END
-        ${{matrix.target.triple}}-g++-${{matrix.compiler.ver}} -{pipe,Wno-psabi} \
+        ${{matrix.target.triple}}-g++-${{matrix.compiler.ver}} -pipe -{w,Wno-psabi} -DMNL_STRICT \
            ${{matrix.target.march}} -Wl,-{I/usr/${{matrix.target.triple}}/lib/${{matrix.target.ld}},R/usr/${{matrix.target.triple}}/lib} \
            -pthread --std=c++17 \
            -{O3,f{no-stack-{protector,clash-protection},cf-protection=none},U_FORTIFY_SOURCE} \
            -include prelude.cc \
            -{S,o-} -Werror hi.cc
-        ${{matrix.target.triple}}-g++-${{matrix.compiler.ver}} -pipe -Wno-psabi \
+        ${{matrix.target.triple}}-g++-${{matrix.compiler.ver}} -pipe -{w,Wno-psabi} -DMNL_STRICT \
            ${{matrix.target.march}} -Wl,-{I/usr/${{matrix.target.triple}}/lib/${{matrix.target.ld}},R/usr/${{matrix.target.triple}}/lib} \
            -pthread --std=c++17 \
            -{O3,f{no-stack-{protector,clash-protection},cf-protection=none},U_FORTIFY_SOURCE} \
