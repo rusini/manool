@@ -21,22 +21,21 @@
 # if __STDC_VERSION__ > 201710
    # warning "Compiler mode enabling a more recent spec may cause backward-compatibility issues"
 # endif
+# if __NO_MATH_ERRNO__
+   # warning "-fno-math-errno may break third-party libraries assuming glibc-like APIs");
+# endif
 
 // undesirable (but detectable) defaults on modern Ubuntu
 # if __SSP__ || __SSP_ALL__ || __SSP_STRONG__
-   # warning "Please recompile with -fno-stack-protector"
+   # warning "Consider recompiling with -fno-stack-protector"
 # endif
 # if __CET__
-   # warning "Please recompile with -fcf-protection=none"
+   # warning "Consider recompiling with -fcf-protection=none"
 # endif
 # ifdef _FORTIFY_SOURCE
-   # warning "Please recompile with -U_FORTIFY_SOURCE"
+   # warning "Consider recompiling with -U_FORTIFY_SOURCE"
 # endif
-// also please use: -fno-stack-clash-protection
-
-# if __NO_MATH_ERRNO__ // mostly useless but disabling it may cause compatibility issues with third-party libraries
-   _Static_assert(0, "Please do not use -fno-math-errno");
-# endif
+// also please use: -fno-stack-clash-protection (and no -fstack-check)
 
 // Feature-Test Macros
 # define _GNU_SOURCE // just ignored on many platforms not using glibc

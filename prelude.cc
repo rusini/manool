@@ -21,18 +21,21 @@
 # if __cplusplus > 201703
    # warning "Compiler mode enabling a more recent spec may cause backward-compatibility issues"
 # endif
+# if __NO_MATH_ERRNO__
+   # warning "-fno-math-errno may break third-party libraries assuming glibc-like APIs");
+# endif
 
 // undesirable (but detectable) defaults on modern Ubuntu
 # if __SSP__ || __SSP_ALL__ || __SSP_STRONG__
-   # warning "Please recompile with -fno-stack-protector"
+   # warning "Consider recompiling with -fno-stack-protector"
 # endif
 # if __CET__
-   # warning "Please recompile with -fcf-protection=none"
+   # warning "Consider recompiling with -fcf-protection=none"
 # endif
 # ifdef _FORTIFY_SOURCE
-   # warning "Please recompile with -U_FORTIFY_SOURCE"
+   # warning "Consider recompiling with -U_FORTIFY_SOURCE"
 # endif
-// also please use: -fno-stack-clash-protection
+// also please use: -fno-stack-clash-protection (and no -fstack-check)
 
 # if !__GXX_WEAK__
    static_assert(false, "Please do not use -fno-weak");
@@ -42,9 +45,6 @@
 # endif
 # if !__EXCEPTIONS
    static_assert(false, "Please do not use -fno-exceptions");
-# endif
-# if !__NO_MATH_ERRNO__ // universally preferred due to several reasons
-   static_assert(false, "Please use -fno-math-errno");
 # endif
 
 static_assert( // `__has_cpp_attribute` is an extension adopted by C++20
