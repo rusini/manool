@@ -19,7 +19,11 @@
    # error "Unsupported C compiler or compiler mode"
 # endif
 # if __STDC_VERSION__ > 201710
-   # warning "Compiler mode enabling a more recent spec may cause backward-compatibility issues"
+   # if MNL_STRICT
+      # error   "-fno-math-errno may break third-party libraries assuming glibc-like APIs"
+   # else
+      # warning "-fno-math-errno may break third-party libraries assuming glibc-like APIs"
+   # endif
 # endif
 # if __NO_MATH_ERRNO__
    # warning "-fno-math-errno may break third-party libraries assuming glibc-like APIs");

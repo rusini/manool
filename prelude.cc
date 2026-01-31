@@ -19,10 +19,18 @@
    # error "Unsupported C++ compiler or compiler mode"
 # endif
 # if __cplusplus > 201703
-   # warning "Compiler mode enabling a more recent spec may cause backward-compatibility issues"
+   # if MNL_STRICT
+      # error   "Compiler mode enabling a more recent spec may cause backward-compatibility issues"
+   # else
+      # warning "Compiler mode enabling a more recent spec may cause backward-compatibility issues"
+   # endif
 # endif
 # if __NO_MATH_ERRNO__
-   # warning "-fno-math-errno may break third-party libraries assuming glibc-like APIs");
+   # if MNL_STRICT
+      # error   "-fno-math-errno may break third-party libraries assuming glibc-like APIs"
+   # else
+      # warning "-fno-math-errno may break third-party libraries assuming glibc-like APIs"
+   # endif
 # endif
 
 // undesirable (but detectable) defaults on modern Ubuntu
