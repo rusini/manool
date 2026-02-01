@@ -25,13 +25,6 @@
       # warning "Compiler mode enabling a more recent spec may cause backward-compatibility issues"
    # endif
 # endif
-# if __NO_MATH_ERRNO__
-   # if MNL_STRICT
-      # error   "-fno-math-errno may break third-party libraries assuming (math_errhandling & MATH_ERRNO)"
-   # else
-      # warning "-fno-math-errno may break third-party libraries assuming (math_errhandling & MATH_ERRNO)"
-   # endif
-# endif
 
 // undesirable (but detectable) defaults on modern Ubuntu
 # if __SSP__ || __SSP_ALL__ || __SSP_STRONG__
@@ -44,6 +37,10 @@
    # warning "Consider recompiling with -U_FORTIFY_SOURCE"
 # endif
 // also please use: -fno-stack-clash-protection (and no -fstack-check)
+
+# if !__NO_MATH_ERRNO__ // universally preferred due to several reasons (keep legacy code properly isolated!)
+   _Static_assert(0, "Please use -fno-math-errno");
+# endif
 
 // Feature-Test Macros
 # define _GNU_SOURCE // just ignored on many platforms not using glibc

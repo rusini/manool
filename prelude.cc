@@ -19,21 +19,8 @@
    # error "Unsupported C++ compiler or compiler mode"
 # endif
 # if __cplusplus > 201703
-   # if MNL_STRICT
-      # error   "Compiler mode enabling a more recent spec may cause backward-compatibility issues"
-   # else
-      # warning "Compiler mode enabling a more recent spec may cause backward-compatibility issues"
-   # endif
+   # warning "Compiler mode enabling a more recent spec may cause backward-compatibility issues"
 # endif
-# if __NO_MATH_ERRNO__
-   # if MNL_STRICT
-      # error   "-fno-math-errno may break third-party libraries relying on (math_errhandling & MATH_ERRNO)"
-   # else
-      # warning "-fno-math-errno may break third-party libraries relying on (math_errhandling & MATH_ERRNO)"
-   # endif
-# endif
-# include <cmath>
-static_assert(math_errhandling & MATH_ERRNO);
 
 // undesirable (but detectable) defaults on modern Ubuntu
 # if __SSP__ || __SSP_ALL__ || __SSP_STRONG__
@@ -55,6 +42,9 @@ static_assert(math_errhandling & MATH_ERRNO);
 # endif
 # if !__EXCEPTIONS
    static_assert(false, "Please do not use -fno-exceptions");
+# endif
+# if !__NO_MATH_ERRNO__ // universally preferred due to several reasons (keep legacy code properly isolated!)
+   static_assert(false, "Please use -fno-math-errno");
 # endif
 
 static_assert( // `__has_cpp_attribute` is an extension adopted by C++20
