@@ -56,7 +56,7 @@ static_assert(([][[gnu::always_inline]](){}, true)); // syntactic test: attribut
 // supported by genuine g++ 9.3+ and clang++ 13.0.0+ (icpx 2021.3+); other compilers must match
 
 // Feature-Test Macros
-# ifndef _GNU_SOURCE // may already be defined by the compiler to satisfy libstdc++ requirements
+# ifndef _GNU_SOURCE // may already be defined by the compiler to satisfy libstdc++ requirements (even when -stdlib=libc++)
    # define _GNU_SOURCE // just ignored on many platforms not using glibc
 # endif
 // use -D_{FILE_OFFSET,TIME}_BITS=64 consistently with how third-party SOs are compiled!
