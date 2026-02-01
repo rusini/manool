@@ -24,18 +24,18 @@
 
 // undesirable (but detectable) defaults on modern Ubuntu
 # if __SSP__ || __SSP_ALL__ || __SSP_STRONG__
-   # warning "Consider recompiling with -fno-stack-protector"
+   # warning "Consider using -fno-stack-protector"
 # endif
 # if __CET__
-   # warning "Consider recompiling with -fcf-protection=none"
+   # warning "Consider using -fcf-protection=none"
 # endif
 # ifdef _FORTIFY_SOURCE
-   # warning "Consider recompiling with -U_FORTIFY_SOURCE"
+   # warning "Consider using -U_FORTIFY_SOURCE"
 # endif
 // also please use: -fno-stack-clash-protection (and no -fstack-check)
 
-# if !__NO_MATH_ERRNO__ // avoid compiling legacy math code if you can
-   # warning "Consider recompiling with -fno-math-errno"
+# if !__NO_MATH_ERRNO__
+   # warning "Consider using -fno-math-errno (except for legacy code)"
 # endif
 
 // Feature-Test Macros
