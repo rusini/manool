@@ -19,11 +19,7 @@
    # error "Unsupported C compiler or compiler mode"
 # endif
 # if __STDC_VERSION__ > 201710
-   # if MNL_STRICT
-      # error   "Compiler mode enabling a more recent spec may cause backward-compatibility issues"
-   # else
-      # warning "Compiler mode enabling a more recent spec may cause backward-compatibility issues"
-   # endif
+   # warning "Compiler mode enabling a more recent spec may cause backward-compatibility issues"
 # endif
 
 // undesirable (but detectable) defaults on modern Ubuntu
@@ -38,8 +34,8 @@
 # endif
 // also please use: -fno-stack-clash-protection (and no -fstack-check)
 
-# if !__NO_MATH_ERRNO__ // universally preferred due to several reasons (keep legacy code properly isolated!)
-   _Static_assert(0, "Please use -fno-math-errno");
+# if !__NO_MATH_ERRNO__ // avoid compiling legacy math code if you can
+   # warning "Consider recompiling with -fno-math-errno"
 # endif
 
 // Feature-Test Macros

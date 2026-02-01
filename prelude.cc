@@ -34,6 +34,10 @@
 # endif
 // also please use: -fno-stack-clash-protection (and no -fstack-check)
 
+# if !__NO_MATH_ERRNO__ // avoid compiling legacy math code if you can
+   # warning "Consider recompiling with -fno-math-errno"
+# endif
+
 # if !__GXX_WEAK__
    static_assert(false, "Please do not use -fno-weak");
 # endif
@@ -42,9 +46,6 @@
 # endif
 # if !__EXCEPTIONS
    static_assert(false, "Please do not use -fno-exceptions");
-# endif
-# if !__NO_MATH_ERRNO__ // universally preferred due to several reasons (keep legacy code properly isolated!)
-   static_assert(false, "Please use -fno-math-errno");
 # endif
 
 static_assert( // `__has_cpp_attribute` is an extension adopted by C++20
