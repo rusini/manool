@@ -35,7 +35,7 @@
 // also please use: -fno-stack-clash-protection (and no -fstack-check)
 
 # if !__NO_MATH_ERRNO__
-   # warning "Consider using -fno-math-errno (except for legacy code)"
+   # warning "Consider using -fno-math-errno (except for legacy FP code)"
 # endif
 
 // Feature-Test Macros
