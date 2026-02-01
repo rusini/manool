@@ -117,7 +117,7 @@ jobs:
         }
         EOF
         ${{matrix.compiler.gxx}} -pipe -w -Wno-psabi -pthread -std=c++17 \
-           -fmath-errno -O3 -fno-stack-protector -fcf-protection=none -fno-stack-clash-protection -U_FORTIFY_SOURCE \
+           -fno-math-errno -O3 -fno-stack-protector -fno-stack-clash-protection -fcf-protection=none -U_FORTIFY_SOURCE \
            -include manool/prelude.cc main.cc -s -Wl,--as-needed -lm -ldl -lrt &&
         ./a.out
         END
