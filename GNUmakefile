@@ -91,7 +91,7 @@ libdecnumber-objs = $(patsubst %,build/obj/libdecnumber/%.o, \
 ) # end
 
 build/mnlexec : $(manool-objs) $(libdecnumber-objs) | build/lib/manool.org.18/std/0.6/all.mnl ; @mkdir -p $(dir $@)
-	$(strip $(CXX) -rdynamic -o $@ $(LDFLAGS) $^ $(LDLIBS))
+	$(strip $(CXX) -rdynamic -no-pie -fno-pie -o $@ $(LDFLAGS) $^ $(LDLIBS))
 	@printf '\33[0m\33[1m*** Success! To run MANOOL try: ./mnl \33[4mmanool-source-file\33[24m [\33[4margument\33[24m...] ***\33[0m\n'
 
 plugins = $(patsubst %,build/lib/manool.org.18/std/_%.mnl-plugin, \
@@ -111,7 +111,7 @@ $(plugins) : build/lib/manool.org.18/std/_%.mnl-plugin : lib-%-main.cc ; @mkdir 
 
 # Intermediate Objects #########################################################################################################################################
 $(manool-objs) : build/obj/%.o : %.cc ; @mkdir -p $(dir $@)
-	$(strip $(CXX) -c -o $@ -MMD -MP $(CXXFLAGS) $(CPPFLAGS) $(mnl_config) $<)
+	$(strip $(CXX) -c -o $@ -MMD -MP $(CXXFLAGS) -fno-pie $(CPPFLAGS) $(mnl_config) $<)
 $(libdecnumber-objs) : build/obj/%.o : %.c ; @mkdir -p $(dir $@)
 	$(strip $(CC) -c -o $@ -MMD -MP $(CFLAGS) $(CPPFLAGS) $<)
 -include $(patsubst %.o,%.d,$(manool-objs) $(libdecnumber-objs))
